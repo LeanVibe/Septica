@@ -292,41 +292,7 @@ enum CardSize {
 }
 
 // MARK: - Card Back View
-
-/// View for displaying the back of a card
-struct CardBackView: View {
-    let cardSize: CardSize
-    
-    var body: some View {
-        ZStack {
-            // Card background
-            RoundedRectangle(cornerRadius: cardSize.cornerRadius)
-                .fill(
-                    LinearGradient(
-                        colors: [Color.blue.opacity(0.8), Color.blue.opacity(0.6)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-                .stroke(Color.blue.opacity(0.5), lineWidth: cardSize.borderWidth)
-                .frame(width: cardSize.width, height: cardSize.height)
-            
-            // Romanian pattern (simplified)
-            VStack(spacing: 4) {
-                ForEach(0..<3) { row in
-                    HStack(spacing: 4) {
-                        ForEach(0..<2) { col in
-                            Circle()
-                                .fill(Color.white.opacity(0.3))
-                                .frame(width: 4, height: 4)
-                        }
-                    }
-                }
-            }
-        }
-        .shadow(color: Color.black.opacity(0.3), radius: 4, x: 0, y: 2)
-    }
-}
+// Note: CardBackView is defined in OpponentHandView.swift
 
 // MARK: - Preview
 
@@ -348,7 +314,8 @@ struct CardView_Previews: PreviewProvider {
             }
             
             // Card back
-            CardBackView(cardSize: .normal)
+            CardBackView()
+                .frame(width: CardSize.normal.width, height: CardSize.normal.height)
         }
         .padding()
         .background(Color.green.opacity(0.3))
