@@ -2,34 +2,27 @@
 //  SepticaGameViewController.swift
 //  Septica
 //
-//  SwiftUI host controller for Septica card game
-//  Replaces the Metal-based GameViewController with SwiftUI game interface
+//  Main view controller hosting the SwiftUI navigation system
+//  Entry point for the Septica card game application
 //
 
 import UIKit
 import SwiftUI
 
-/// Main view controller that hosts the SwiftUI-based Septica game interface
+/// Main view controller that hosts the SwiftUI-based Septica application
 class SepticaGameViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        setupSepticaGame()
+        setupMainMenu()
     }
     
-    private func setupSepticaGame() {
-        // Create game state with initial setup
-        let gameController = GameController()
-        let gameSession = gameController.startSinglePlayerGame(
-            playerName: "Player", 
-            difficulty: .medium
-        )
-        
-        // Create SwiftUI game board view
-        let gameBoardView = GameBoardView(gameState: gameSession.gameState)
+    private func setupMainMenu() {
+        // Create SwiftUI main menu view with navigation system
+        let mainMenuView = MainMenuView()
         
         // Wrap in UIHostingController
-        let hostingController = UIHostingController(rootView: gameBoardView)
+        let hostingController = UIHostingController(rootView: mainMenuView)
         
         // Add as child view controller
         addChild(hostingController)
@@ -45,7 +38,7 @@ class SepticaGameViewController: UIViewController {
             hostingController.view.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
         
-        // Configure appearance
+        // Configure appearance for SwiftUI
         view.backgroundColor = UIColor.systemBackground
     }
     
