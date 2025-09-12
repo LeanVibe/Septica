@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import Combine
 
 /// Base protocol for all player types in Septica
 protocol SepticaPlayer: AnyObject {
@@ -182,7 +183,7 @@ enum AIDifficulty: String, CaseIterable {
     }
 }
 
-/// AI strategy for card selection
+/// AI strategy for card selection - Enhanced with Unity AI patterns
 struct AIStrategy {
     let difficulty: AIDifficulty
     
@@ -193,82 +194,213 @@ struct AIStrategy {
     ///   - playerHand: AI player's full hand
     /// - Returns: Best card to play
     func chooseOptimalCard(from validMoves: [Card], gameState: GameState, playerHand: [Card]) -> Card {
-        // TODO: Implement sophisticated AI logic
-        // For now, use basic heuristics
+        guard !validMoves.isEmpty else { fatalError("No valid moves provided") }
         
-        // Apply difficulty-based randomization
+        // Apply difficulty-based randomization for sub-optimal play
         if Double.random(in: 0...1) > difficulty.accuracy {
             return validMoves.randomElement() ?? validMoves.first!
         }
         
-        // Basic strategy priorities:
-        // 1. Play point cards when safe
-        // 2. Use 7s strategically
-        // 3. Save strong cards for later
-        // 4. Consider opponent's likely responses
-        
-        let scoredMoves = validMoves.map { card in
-            (card: card, score: evaluateMove(card: card, gameState: gameState, playerHand: playerHand))
+        // Determine game context for strategy selection
+        if gameState.tableCards.isEmpty {
+            // Starting a new trick - use optimal move strategy
+            return chooseOptimalMove(from: validMoves, gameState: gameState, playerHand: playerHand)
+        } else {
+            // Continuing a trick - use throw card strategy
+            return chooseThrowCard(from: validMoves, gameState: gameState, playerHand: playerHand)
         }
-        
-        // Return the highest scored move
-        return scoredMoves.max { $0.score < $1.score }?.card ?? validMoves.first!
     }
     
-    /// Evaluate the quality of a potential move
-    private func evaluateMove(card: Card, gameState: GameState, playerHand: [Card]) -> Double {
-        var score: Double = 0
+    /// Port of Unity's chooseOptimalMove - for starting tricks
+    /// Prioritizes cards based on weight system and prefers 7s
+    private func chooseOptimalMove(from validMoves: [Card], gameState: GameState, playerHand: [Card]) -> Card {
+        let cardWeights = computeCardWeights(gameState: gameState, playerHand: playerHand)
         
-        // Point card considerations
-        if card.isPointCard {
-            // Bonus for playing point cards when likely to win trick
-            score += 10
-            
-            // Penalty if opponent likely has cards that can beat
-            if gameState.tableCards.isEmpty {
-                score -= 5 // Don't lead with point cards
+        var maxWeight = 0
+        var bestCard: Card?
+        
+        // Find the highest weight card, considering difficulty-based 7 preference
+        for card in validMoves {
+            if card.value == 7 && shouldPrefer7sInDifficulty(difficulty) {
+                // 7s are prioritized based on difficulty level
+                bestCard = card
+                break
+            } else {
+                let weight = cardWeights[card.value - 7] // Adjust for 0-based array (values 7-14)
+                if weight >= maxWeight {
+                    maxWeight = weight
+                    bestCard = card
+                }
             }
         }
         
-        // Wild card (7) considerations
-        if card.value == 7 {
-            score += 15 // 7s are very valuable
-            
-            // Save 7s for critical moments if we have other options
-            if validMoves(from: playerHand, excluding: card, gameState: gameState).count > 0 {
-                score -= 5
-            }
-        }
-        
-        // Special 8 rule considerations
-        if card.value == 8 && gameState.tableCards.count % 3 == 0 {
-            score += 12 // 8 can beat when table count is divisible by 3
-        }
-        
-        // Hand management - prefer playing lower value cards first
-        score -= Double(card.value) * 0.5
-        
-        // Endgame considerations
-        if playerHand.count <= 2 {
-            // In endgame, be more aggressive with point cards
-            if card.isPointCard {
-                score += 5
-            }
-        }
-        
-        return score
+        let finalCard = bestCard ?? validMoves.first!
+        return applyDifficultyModification(bestCard: finalCard, validMoves: validMoves)
     }
     
-    /// Get valid moves excluding a specific card
-    private func validMoves(from hand: [Card], excluding excludedCard: Card, gameState: GameState) -> [Card] {
-        let filteredHand = hand.filter { !($0.suit == excludedCard.suit && $0.value == excludedCard.value) }
-        let topCard = gameState.tableCards.last
+    /// Port of Unity's ThrowCard strategy - for continuing tricks
+    /// 1. Try to match the trick start card
+    /// 2. Use 7 if there are points on the table
+    /// 3. Otherwise play a cheap card
+    private func chooseThrowCard(from validMoves: [Card], gameState: GameState, playerHand: [Card]) -> Card {
+        guard let trickStartCard = gameState.tableCards.first else {
+            return chooseOptimalMove(from: validMoves, gameState: gameState, playerHand: playerHand)
+        }
         
-        return GameRules.validMoves(
-            from: filteredHand,
-            against: topCard,
+        // 1. Try to find a matching card (same value)
+        for card in validMoves {
+            if card.value == trickStartCard.value {
+                return card
+            }
+        }
+        
+        // 2. If there are points on the table, consider using 7
+        let pointsOnTable = GameRules.calculatePoints(from: gameState.tableCards)
+        if pointsOnTable > 0 {
+            for card in validMoves {
+                if card.value == 7 {
+                    return card
+                }
+            }
+        }
+        
+        // 3. Choose a cheap card (non-valuable)
+        let cheapCard = chooseACheapCard(from: validMoves)
+        return applyDifficultyModification(bestCard: cheapCard, validMoves: validMoves)
+    }
+    
+    /// Port of Unity's chooseACheapCard - plays non-valuable cards
+    /// Avoids 7s, 10s, and Aces when possible
+    private func chooseACheapCard(from validMoves: [Card]) -> Card {
+        // Look for cards that are not 7, 10, or 11 (Ace)
+        for card in validMoves {
+            let value = card.value
+            if value != 7 && value != 10 && value != 11 {
+                return card
+            }
+        }
+        
+        // If all cards are valuable, return the first one
+        return validMoves.first!
+    }
+    
+    /// Port of Unity's computeCardWeights method
+    /// Tracks frequency of each card value that has been played
+    private func computeCardWeights(gameState: GameState, playerHand: [Card]) -> [Int] {
+        // Array for card values 7-14 (8 positions, 0-based indexing)
+        var weights = Array(repeating: 0, count: 8)
+        
+        // Count cards from the current trick
+        for card in gameState.tableCards {
+            let index = card.value - 7 // Convert to 0-based index
+            if index >= 0 && index < 8 {
+                weights[index] += 1
+            }
+        }
+        
+        // Count cards from completed tricks (won cards from all players)
+        for trick in gameState.trickHistory {
+            for card in trick.cards {
+                let index = card.value - 7
+                if index >= 0 && index < 8 {
+                    weights[index] += 1
+                }
+            }
+        }
+        
+        // Count cards in current player's hand
+        for card in playerHand {
+            let index = card.value - 7
+            if index >= 0 && index < 8 {
+                weights[index] += 1
+            }
+        }
+        
+        return weights
+    }
+    
+    /// Enhanced version of shouldContinueTrick based on Unity's ContinueTrick logic
+    /// - Parameters:
+    ///   - gameState: Current game state
+    ///   - playerHand: AI player's hand
+    /// - Returns: true if AI should continue the trick
+    func shouldContinueTrick(gameState: GameState, playerHand: [Card]) -> Bool {
+        guard let trickStartCard = gameState.tableCards.first else {
+            return false // No trick to continue
+        }
+        
+        let validMoves = GameRules.validMoves(
+            from: playerHand, 
+            against: gameState.topTableCard, 
             tableCardsCount: gameState.tableCards.count
         )
+        
+        var hasSevenCard = false
+        
+        // Check if we have a matching card or a 7
+        for card in validMoves {
+            if card.value == trickStartCard.value {
+                return true // Can match, should continue
+            } else if card.value == 7 {
+                hasSevenCard = true
+            }
+        }
+        
+        // If we have a 7 and there are points on the table, continue
+        let pointsOnTable = GameRules.calculatePoints(from: gameState.tableCards)
+        return hasSevenCard && pointsOnTable > 0
+    }
+    
+    /// Apply difficulty-based modifications to the chosen card
+    /// This allows easier difficulties to make occasional suboptimal plays
+    private func applyDifficultyModification(bestCard: Card, validMoves: [Card]) -> Card {
+        switch difficulty {
+        case .easy:
+            // 40% chance to make a random move instead of optimal
+            if Double.random(in: 0...1) < 0.4 {
+                return validMoves.randomElement() ?? bestCard
+            }
+        case .medium:
+            // 20% chance to make a slightly suboptimal move
+            if Double.random(in: 0...1) < 0.2 {
+                // Prefer non-optimal but reasonable moves
+                let nonOptimalMoves = validMoves.filter { $0 != bestCard }
+                return nonOptimalMoves.randomElement() ?? bestCard
+            }
+        case .hard, .expert:
+            // Always play optimally
+            break
+        }
+        
+        return bestCard
+    }
+    
+    /// Enhanced strategic considerations based on difficulty level
+    private func shouldPrefer7sInDifficulty(_ difficulty: AIDifficulty) -> Bool {
+        switch difficulty {
+        case .easy:
+            return false // Don't always prioritize 7s
+        case .medium:
+            return true // Sometimes prioritize 7s
+        case .hard, .expert:
+            return true // Always prioritize 7s optimally
+        }
+    }
+    
+    /// Determine if AI should be aggressive with point cards based on difficulty
+    private func shouldBeAggressiveWithPoints(_ difficulty: AIDifficulty, gameState: GameState) -> Bool {
+        let handSize = gameState.currentPlayer?.hand.count ?? 4
+        
+        switch difficulty {
+        case .easy:
+            return handSize <= 1 // Only aggressive in endgame
+        case .medium:
+            return handSize <= 2 // Moderately aggressive
+        case .hard:
+            return handSize <= 3 // More strategic aggression
+        case .expert:
+            return true // Always consider strategic aggression
+        }
     }
 }
 

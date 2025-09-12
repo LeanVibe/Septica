@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import Combine
 
 /// Represents the complete state of a Septica game
 class GameState: ObservableObject {
