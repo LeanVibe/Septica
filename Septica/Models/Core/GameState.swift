@@ -335,9 +335,6 @@ class GameState: ObservableObject, Codable {
         let playersData = try container.decode([PlayerData].self, forKey: .players)
         players = playersData.map { $0.toPlayer() }
         
-        // Call super.init() after all properties are set
-        super.init()
-        
         // Set the id (it's a let constant)
         _ = decodedId // We can't change the id after init, so we'll use the auto-generated one
     }
