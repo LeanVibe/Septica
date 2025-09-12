@@ -12,7 +12,7 @@ import Combine
 
 /// Main navigation coordinator managing app flow and screen transitions
 @MainActor
-class NavigationManager: ObservableObject {
+final class NavigationManager: ObservableObject {
     
     // MARK: - Published Properties
     
@@ -260,7 +260,7 @@ enum PresentedSheet: Identifiable {
 }
 
 /// User settings and preferences
-class UserSettings: ObservableObject {
+final class UserSettings: ObservableObject {
     static let shared = UserSettings()
     
     @Published var soundEnabled = true

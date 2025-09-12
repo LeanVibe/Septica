@@ -22,6 +22,9 @@ class GameState: ObservableObject, Codable {
     @Published var roundNumber: Int = 1
     @Published var trickNumber: Int = 1
     
+    // MARK: - Game Configuration
+    @Published var targetScore: Int = 11  // Romanian Septica traditional target
+    
     // MARK: - Players
     @Published var players: [Player] = []
     @Published var currentPlayerIndex: Int = 0
@@ -59,10 +62,16 @@ class GameState: ObservableObject, Codable {
     
     /// Whether the game is complete
     var isGameComplete: Bool {
-        return GameRules.isGameComplete(
+        // Check if any player has reached the target score
+        let hasWinner = players.contains { $0.score >= targetScore }
+        
+        // Also check if all cards have been played (traditional end condition)
+        let allCardsPlayed = GameRules.isGameComplete(
             allPlayerHands: players.map { $0.hand },
             deckEmpty: deck.isEmpty
         )
+        
+        return hasWinner || allCardsPlayed
     }
     
     // MARK: - Initialization
@@ -307,7 +316,7 @@ class GameState: ObservableObject, Codable {
     // MARK: - Codable Implementation
     
     enum CodingKeys: String, CodingKey {
-        case id, createdAt, updatedAt, phase, roundNumber, trickNumber
+        case id, createdAt, updatedAt, phase, roundNumber, trickNumber, targetScore
         case players, currentPlayerIndex, dealerIndex, deck, tableCards
         case trickHistory, lastMove, gameResult, isWaitingForPlayerInput
     }
@@ -322,6 +331,7 @@ class GameState: ObservableObject, Codable {
         phase = try container.decode(GamePhase.self, forKey: .phase)
         roundNumber = try container.decode(Int.self, forKey: .roundNumber)
         trickNumber = try container.decode(Int.self, forKey: .trickNumber)
+        targetScore = try container.decodeIfPresent(Int.self, forKey: .targetScore) ?? 11
         currentPlayerIndex = try container.decode(Int.self, forKey: .currentPlayerIndex)
         dealerIndex = try container.decode(Int.self, forKey: .dealerIndex)
         deck = try container.decode(Deck.self, forKey: .deck)
@@ -348,6 +358,7 @@ class GameState: ObservableObject, Codable {
         try container.encode(phase, forKey: .phase)
         try container.encode(roundNumber, forKey: .roundNumber)
         try container.encode(trickNumber, forKey: .trickNumber)
+        try container.encode(targetScore, forKey: .targetScore)
         try container.encode(currentPlayerIndex, forKey: .currentPlayerIndex)
         try container.encode(dealerIndex, forKey: .dealerIndex)
         try container.encode(deck, forKey: .deck)

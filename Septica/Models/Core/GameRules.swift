@@ -121,9 +121,22 @@ struct GameRules {
     /// - Returns: Index of the winning card (0 = first card played)
     static func determineTrickWinner(tableCards: [Card]) -> Int {
         guard !tableCards.isEmpty else { return 0 }
+        guard tableCards.count > 1 else { return 0 }
         
-        // The last card played wins the trick (since each subsequent card beat the previous)
-        return tableCards.count - 1
+        var winningIndex = 0
+        var currentWinningCard = tableCards[0]
+        
+        // Check each subsequent card to see if it beats the current winner
+        for i in 1..<tableCards.count {
+            let challengingCard = tableCards[i]
+            // tableCardsCount should be the total cards when this card was played (i+1)
+            if canBeat(attackingCard: challengingCard, targetCard: currentWinningCard, tableCardsCount: i + 1) {
+                winningIndex = i
+                currentWinningCard = challengingCard
+            }
+        }
+        
+        return winningIndex
     }
     
     /// Calculate points from a collection of cards
