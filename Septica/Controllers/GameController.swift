@@ -26,12 +26,13 @@ class GameController: ObservableObject {
     // MARK: - Game Session Management
     
     /// Create a new single-player game session
-    func startSinglePlayerGame(playerName: String, difficulty: AIDifficulty = .medium) -> GameSession {
+    func startSinglePlayerGame(playerName: String, difficulty: AIDifficulty = .medium, targetScore: Int = 11) -> GameSession {
         let humanPlayer = Player(name: playerName)
         let aiPlayer = AIPlayer(name: "Computer", difficulty: difficulty)
         
         let gameState = GameState()
         gameState.players = [humanPlayer, aiPlayer]
+        gameState.targetScore = targetScore
         gameState.setupNewGame()
         
         let session = GameSession(

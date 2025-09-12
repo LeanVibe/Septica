@@ -374,7 +374,8 @@ struct StartGameButton: View {
         // Start the game
         navigationManager.startNewGame(
             playerName: playerName,
-            difficulty: difficulty
+            difficulty: difficulty,
+            targetScore: targetScore
         )
     }
 }

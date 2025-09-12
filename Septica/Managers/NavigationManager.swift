@@ -12,7 +12,7 @@ import Combine
 
 /// Main navigation coordinator managing app flow and screen transitions
 @MainActor
-final class NavigationManager: ObservableObject {
+class NavigationManager: ObservableObject {
     
     // MARK: - Published Properties
     
@@ -85,10 +85,11 @@ final class NavigationManager: ObservableObject {
     // MARK: - Game Flow Methods
     
     /// Start a new single-player game with specified difficulty
-    func startNewGame(playerName: String = "Player", difficulty: AIDifficulty) {
+    func startNewGame(playerName: String = "Player", difficulty: AIDifficulty, targetScore: Int = 11) {
         let session = gameController.startSinglePlayerGame(
             playerName: playerName,
-            difficulty: difficulty
+            difficulty: difficulty,
+            targetScore: targetScore
         )
         gameSession = session
         navigateTo(.gamePlay(session))
@@ -260,7 +261,7 @@ enum PresentedSheet: Identifiable {
 }
 
 /// User settings and preferences
-final class UserSettings: ObservableObject {
+class UserSettings: ObservableObject {
     static let shared = UserSettings()
     
     @Published var soundEnabled = true
