@@ -7,7 +7,6 @@
 //
 
 import SwiftUI
-import MetalKit
 
 /// Main game board view that displays the complete Septica game interface
 struct GameBoardView: View {

@@ -2,44 +2,34 @@
 //  GameViewController.swift
 //  Septica
 //
-//  Created by Bogdan Veliscu on 12.09.2025.
+//  Legacy Metal-based view controller (disabled)
+//  Replaced by SepticaGameViewController with SwiftUI interface
 //
 
 import UIKit
-import MetalKit
 
-// Our iOS specific view controller
+// Legacy iOS view controller (no longer used)
 class GameViewController: UIViewController {
-
-    var renderer: Renderer!
-    var mtkView: MTKView!
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        guard let mtkView = view as? MTKView else {
-            print("View of Gameview controller is not an MTKView")
-            return
-        }
-
-        // Select the device to render with.  We choose the default device
-        guard let defaultDevice = MTLCreateSystemDefaultDevice() else {
-            print("Metal is not supported")
-            return
-        }
         
-        mtkView.device = defaultDevice
-        mtkView.backgroundColor = UIColor.black
-
-        guard let newRenderer = Renderer(metalKitView: mtkView) else {
-            print("Renderer cannot be initialized")
-            return
-        }
-
-        renderer = newRenderer
-
-        renderer.mtkView(mtkView, drawableSizeWillChange: mtkView.drawableSize)
-
-        mtkView.delegate = renderer
+        // This controller is no longer used
+        // The app now uses SepticaGameViewController with SwiftUI
+        print("Legacy GameViewController loaded - this should not happen")
+        view.backgroundColor = UIColor.systemBackground
+        
+        // Add a simple label to indicate this is not the active controller
+        let label = UILabel()
+        label.text = "Legacy Controller\n(Should use SepticaGameViewController)"
+        label.numberOfLines = 0
+        label.textAlignment = .center
+        label.translatesAutoresizingMaskIntoConstraints = false
+        
+        view.addSubview(label)
+        NSLayoutConstraint.activate([
+            label.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            label.centerYAnchor.constraint(equalTo: view.centerYAnchor)
+        ])
     }
 }
