@@ -108,23 +108,7 @@ struct GameTableView: View {
 // MARK: - Game Result View
 // Note: GameResultView is defined in GameResultView.swift
 
-/// Button style for result view buttons
-struct ResultButtonStyle: ButtonStyle {
-    let isPrimary: Bool
-    
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .frame(maxWidth: .infinity)
-            .frame(height: 44)
-            .background(isPrimary ? Color.blue : Color.gray.opacity(0.6))
-            .foregroundColor(.white)
-            .font(.headline)
-            .cornerRadius(12)
-            .scaleEffect(configuration.isPressed ? 0.95 : 1.0)
-            .opacity(configuration.isPressed ? 0.8 : 1.0)
-            .animation(.easeInOut(duration: 0.1), value: configuration.isPressed)
-    }
-}
+// Note: ResultButtonStyle is defined in GameResultView.swift
 
 // MARK: - Preview
 

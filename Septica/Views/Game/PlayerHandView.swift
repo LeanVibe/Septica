@@ -143,81 +143,6 @@ struct PlayerHandView: View {
     }
 }
 
-/// View for displaying opponent's hand (cards face down)
-struct OpponentHandView: View {
-    let player: Player
-    let isCurrentPlayer: Bool
-    
-    var body: some View {
-        VStack(spacing: 8) {
-            // Player info
-            HStack {
-                HStack(spacing: 8) {
-                    if isCurrentPlayer {
-                        Circle()
-                            .fill(Color.orange)
-                            .frame(width: 6, height: 6)
-                            .scaleEffect(1.2)
-                            .animation(.easeInOut(duration: 0.8).repeatForever(autoreverses: true), value: isCurrentPlayer)
-                    }
-                    
-                    Text(player.name)
-                        .font(.subheadline)
-                        .foregroundColor(.white)
-                }
-                
-                Spacer()
-                
-                Text("Score: \(player.score)")
-                    .font(.caption)
-                    .foregroundColor(.yellow)
-                
-                Text("(\(player.hand.count))")
-                    .font(.caption2)
-                    .foregroundColor(.white.opacity(0.6))
-            }
-            
-            // Face-down cards
-            if !player.hand.isEmpty {
-                HStack(spacing: -8) {
-                    ForEach(0..<Swift.min(player.hand.count, 8), id: \.self) { index in
-                        CardBackView(cardSize: .small)
-                            .rotation3DEffect(
-                                .degrees(Double(index - player.hand.count/2) * 3),
-                                axis: (x: 0, y: 0, z: 1)
-                            )
-                            .offset(y: CGFloat(abs(index - player.hand.count/2)) * -1)
-                    }
-                    
-                    // Show count if more than 8 cards
-                    if player.hand.count > 8 {
-                        Text("+\(player.hand.count - 8)")
-                            .font(.caption2)
-                            .foregroundColor(.white.opacity(0.7))
-                            .padding(.horizontal, 8)
-                    }
-                }
-            } else {
-                // Empty hand
-                Text("No cards")
-                    .font(.caption2)
-                    .foregroundColor(.white.opacity(0.5))
-                    .padding(.vertical, 8)
-            }
-        }
-        .padding()
-        .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(Color.black.opacity(0.3))
-                .stroke(
-                    isCurrentPlayer ? Color.orange.opacity(0.6) : Color.clear,
-                    lineWidth: 1.5
-                )
-        )
-        .animation(.easeInOut(duration: 0.3), value: isCurrentPlayer)
-    }
-}
-
 // MARK: - Preview
 
 struct PlayerHandView_Previews: PreviewProvider {
@@ -245,21 +170,6 @@ struct PlayerHandView_Previews: PreviewProvider {
                 onCardPlayed: { _ in },
                 isCurrentPlayer: true,
                 isInteractionEnabled: true
-            )
-            
-            // Opponent hand
-            OpponentHandView(
-                player: {
-                    let player = AIPlayer(name: "AI Player")
-                    player.hand = [
-                        Card(suit: .hearts, value: 8),
-                        Card(suit: .spades, value: 9),
-                        Card(suit: .diamonds, value: 12)
-                    ]
-                    player.score = 2
-                    return player
-                }(),
-                isCurrentPlayer: false
             )
         }
         .padding()
