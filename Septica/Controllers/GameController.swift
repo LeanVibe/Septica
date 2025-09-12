@@ -356,6 +356,45 @@ enum GameType: Codable {
             return "Online Multiplayer"
         }
     }
+    
+    // MARK: - Codable Implementation
+    
+    enum CodingKeys: String, CodingKey {
+        case type, difficulty
+    }
+    
+    enum TypeKey: String, Codable {
+        case singlePlayer, localMultiplayer, onlineMultiplayer
+    }
+    
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let type = try container.decode(TypeKey.self, forKey: .type)
+        
+        switch type {
+        case .singlePlayer:
+            let difficulty = try container.decode(AIDifficulty.self, forKey: .difficulty)
+            self = .singlePlayer(difficulty: difficulty)
+        case .localMultiplayer:
+            self = .localMultiplayer
+        case .onlineMultiplayer:
+            self = .onlineMultiplayer
+        }
+    }
+    
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        
+        switch self {
+        case .singlePlayer(let difficulty):
+            try container.encode(TypeKey.singlePlayer, forKey: .type)
+            try container.encode(difficulty, forKey: .difficulty)
+        case .localMultiplayer:
+            try container.encode(TypeKey.localMultiplayer, forKey: .type)
+        case .onlineMultiplayer:
+            try container.encode(TypeKey.onlineMultiplayer, forKey: .type)
+        }
+    }
 }
 
 /// Record of a completed game

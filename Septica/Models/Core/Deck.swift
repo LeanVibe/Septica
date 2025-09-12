@@ -9,7 +9,7 @@
 import Foundation
 
 /// Manages a Romanian 32-card deck used in Septica
-struct Deck {
+struct Deck: Codable {
     private var cards: [Card]
     
     /// Create a new standard 32-card Romanian deck

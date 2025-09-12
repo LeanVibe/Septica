@@ -195,7 +195,7 @@ class TestGameState {
         
         guard validMoves.contains(where: { $0.suit == card.suit && $0.value == card.value }) else { return false }
         
-        player.removeCard(card)
+        guard player.removeCard(card) else { return false }
         tableCards.append(card)
         
         return true
@@ -203,9 +203,10 @@ class TestGameState {
     
     func completeTrick() {
         guard !tableCards.isEmpty else { return }
-        let winnerIndex = GameRules.determineTrickWinner(tableCards: tableCards)
+        let cardWinnerIndex = GameRules.determineTrickWinner(tableCards: tableCards)
+        let playerWinnerIndex = cardWinnerIndex % players.count // Convert card index to player index
         let points = GameRules.calculatePoints(from: tableCards)
-        players[winnerIndex].addPoints(points)
+        players[playerWinnerIndex].addPoints(points)
         tableCards.removeAll()
     }
 }
@@ -268,15 +269,14 @@ func testCardPlayValidation(validator: GameStateValidator) {
     
     let player1 = TestPlayer(name: "Player 1")
     let player2 = TestPlayer(name: "Player 2")
+    let gameState = TestGameState(players: [player1, player2])
     
-    // Set up specific hands for testing
+    // Set up specific hands for testing (after gameState creation to override dealing)
     player1.hand = [
         Card(suit: .hearts, value: 7),   // Wild card
         Card(suit: .spades, value: 10)   // Regular card
     ]
     player2.hand = [Card(suit: .clubs, value: 9)]
-    
-    let gameState = TestGameState(players: [player1, player2])
     
     // Test valid card play
     let validCard = Card(suit: .hearts, value: 7)
@@ -304,11 +304,12 @@ func testTrickCompletion(validator: GameStateValidator) {
         Card(suit: .spades, value: 14)   // 1 point (Ace)
     ]
     
-    let initialPlayer1Score = player1.score
+    let initialPlayer2Score = player2.score
     gameState.completeTrick()
     
     validator.test(gameState.tableCards.isEmpty, "Table cleared after trick completion")
-    validator.test(player1.score == initialPlayer1Score + 2, "Winner received correct points (2 for 10 + Ace)")
+    // The last card played wins (index 1 = player2), so player2 should get the points
+    validator.test(player2.score == initialPlayer2Score + 2, "Winner received correct points (2 for 10 + Ace)")
 }
 
 func testGameCompletion(validator: GameStateValidator) {

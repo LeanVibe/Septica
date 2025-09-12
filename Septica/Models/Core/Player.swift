@@ -31,7 +31,7 @@ protocol SepticaPlayer: AnyObject {
 
 /// Represents a player in the Septica game
 class Player: SepticaPlayer, ObservableObject {
-    let id = UUID()
+    let id: UUID
     @Published var name: String
     @Published var hand: [Card] = []
     @Published var score: Int = 0
@@ -40,7 +40,8 @@ class Player: SepticaPlayer, ObservableObject {
     /// Whether this is a human player
     var isHuman: Bool { return true }
     
-    init(name: String) {
+    init(name: String, id: UUID = UUID()) {
+        self.id = id
         self.name = name
         self.statistics = PlayerStatistics()
     }
@@ -121,10 +122,10 @@ class AIPlayer: Player {
     
     override var isHuman: Bool { return false }
     
-    init(name: String, difficulty: AIDifficulty = .medium) {
+    init(name: String, difficulty: AIDifficulty = .medium, id: UUID = UUID()) {
         self.difficulty = difficulty
         self.strategy = AIStrategy(difficulty: difficulty)
-        super.init(name: name)
+        super.init(name: name, id: id)
     }
     
     /// AI chooses the best card to play based on strategy
@@ -146,7 +147,7 @@ class AIPlayer: Player {
 // MARK: - Supporting Types
 
 /// AI difficulty levels
-enum AIDifficulty: String, CaseIterable {
+enum AIDifficulty: String, CaseIterable, Codable {
     case easy = "Easy"
     case medium = "Medium"
     case hard = "Hard"

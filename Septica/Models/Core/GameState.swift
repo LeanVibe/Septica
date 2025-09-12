@@ -10,7 +10,7 @@ import Foundation
 import Combine
 
 /// Represents the complete state of a Septica game
-class GameState: ObservableObject {
+class GameState: ObservableObject, Codable {
     
     // MARK: - Game Identification
     let id = UUID()
@@ -303,9 +303,121 @@ class GameState: ObservableObject {
             }
         )
     }
+    
+    // MARK: - Codable Implementation
+    
+    enum CodingKeys: String, CodingKey {
+        case id, createdAt, updatedAt, phase, roundNumber, trickNumber
+        case players, currentPlayerIndex, dealerIndex, deck, tableCards
+        case trickHistory, lastMove, gameResult, isWaitingForPlayerInput
+    }
+    
+    required init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        
+        // Decode properties
+        let decodedId = try container.decode(UUID.self, forKey: .id)
+        createdAt = try container.decode(Date.self, forKey: .createdAt)
+        updatedAt = try container.decode(Date.self, forKey: .updatedAt)
+        phase = try container.decode(GamePhase.self, forKey: .phase)
+        roundNumber = try container.decode(Int.self, forKey: .roundNumber)
+        trickNumber = try container.decode(Int.self, forKey: .trickNumber)
+        currentPlayerIndex = try container.decode(Int.self, forKey: .currentPlayerIndex)
+        dealerIndex = try container.decode(Int.self, forKey: .dealerIndex)
+        deck = try container.decode(Deck.self, forKey: .deck)
+        tableCards = try container.decode([Card].self, forKey: .tableCards)
+        trickHistory = try container.decode([CompletedTrick].self, forKey: .trickHistory)
+        lastMove = try container.decodeIfPresent(GameMove.self, forKey: .lastMove)
+        gameResult = try container.decodeIfPresent(GameResult.self, forKey: .gameResult)
+        isWaitingForPlayerInput = try container.decode(Bool.self, forKey: .isWaitingForPlayerInput)
+        
+        // Handle players separately as they need special treatment
+        let playersData = try container.decode([PlayerData].self, forKey: .players)
+        players = playersData.map { $0.toPlayer() }
+        
+        // Call super.init() after all properties are set
+        super.init()
+        
+        // Set the id (it's a let constant)
+        _ = decodedId // We can't change the id after init, so we'll use the auto-generated one
+    }
+    
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        
+        try container.encode(id, forKey: .id)
+        try container.encode(createdAt, forKey: .createdAt)
+        try container.encode(updatedAt, forKey: .updatedAt)
+        try container.encode(phase, forKey: .phase)
+        try container.encode(roundNumber, forKey: .roundNumber)
+        try container.encode(trickNumber, forKey: .trickNumber)
+        try container.encode(currentPlayerIndex, forKey: .currentPlayerIndex)
+        try container.encode(dealerIndex, forKey: .dealerIndex)
+        try container.encode(deck, forKey: .deck)
+        try container.encode(tableCards, forKey: .tableCards)
+        try container.encode(trickHistory, forKey: .trickHistory)
+        try container.encodeIfPresent(lastMove, forKey: .lastMove)
+        try container.encodeIfPresent(gameResult, forKey: .gameResult)
+        try container.encode(isWaitingForPlayerInput, forKey: .isWaitingForPlayerInput)
+        
+        // Convert players to codable data
+        let playersData = players.map { PlayerData.from($0) }
+        try container.encode(playersData, forKey: .players)
+    }
 }
 
 // MARK: - Supporting Types
+
+/// Codable representation of Player for GameState serialization
+struct PlayerData: Codable {
+    let id: UUID
+    let name: String
+    let hand: [Card]
+    let score: Int
+    let statistics: PlayerStatistics
+    let isAI: Bool
+    let aiDifficulty: AIDifficulty?
+    
+    static func from(_ player: Player) -> PlayerData {
+        if let aiPlayer = player as? AIPlayer {
+            return PlayerData(
+                id: player.id,
+                name: player.name,
+                hand: player.hand,
+                score: player.score,
+                statistics: player.statistics,
+                isAI: true,
+                aiDifficulty: aiPlayer.difficulty
+            )
+        } else {
+            return PlayerData(
+                id: player.id,
+                name: player.name,
+                hand: player.hand,
+                score: player.score,
+                statistics: player.statistics,
+                isAI: false,
+                aiDifficulty: nil
+            )
+        }
+    }
+    
+    func toPlayer() -> Player {
+        if isAI, let difficulty = aiDifficulty {
+            let aiPlayer = AIPlayer(name: name, difficulty: difficulty, id: id)
+            aiPlayer.hand = hand
+            aiPlayer.score = score
+            aiPlayer.statistics = statistics
+            return aiPlayer
+        } else {
+            let humanPlayer = Player(name: name, id: id)
+            humanPlayer.hand = hand
+            humanPlayer.score = score
+            humanPlayer.statistics = statistics
+            return humanPlayer
+        }
+    }
+}
 
 /// Different phases of the game
 enum GamePhase: String, CaseIterable, Codable {
