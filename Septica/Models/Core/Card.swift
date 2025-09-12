@@ -140,7 +140,21 @@ extension Card {
     }
 }
 
-// MARK: - Comparable Conformance
+// MARK: - Equatable and Comparable Conformance
+
+extension Card {
+    /// Custom Equatable implementation that ignores the id field
+    /// Two cards are equal if they have the same suit and value
+    static func == (lhs: Card, rhs: Card) -> Bool {
+        return lhs.suit == rhs.suit && lhs.value == rhs.value
+    }
+    
+    /// Custom Hashable implementation that matches our Equatable implementation
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(suit)
+        hasher.combine(value)
+    }
+}
 
 extension Card: Comparable {
     static func < (lhs: Card, rhs: Card) -> Bool {

@@ -118,7 +118,7 @@ class Player: SepticaPlayer, ObservableObject {
 /// AI player that makes automated decisions
 class AIPlayer: Player {
     let difficulty: AIDifficulty
-    let strategy: AIStrategy
+    var strategy: AIStrategy // Made mutable to support learning
     
     override var isHuman: Bool { return false }
     
@@ -141,6 +141,108 @@ class AIPlayer: Player {
             gameState: gameState,
             playerHand: hand
         )
+    }
+}
+
+// MARK: - Supporting Types for Enhanced AI
+
+/// AI Game phases for strategic decision making
+enum AIGamePhase {
+    case earlyGame   // Conservative, information gathering
+    case midGame     // Balanced, tactical
+    case endGame     // Aggressive, point maximizing
+}
+
+/// Opponent modeling for predictive play
+struct OpponentModel {
+    private var cardPlayHistory: [Card] = []
+    private var strategicPatterns: [String: Int] = [:]
+    
+    /// Predict opponent's next likely card based on learned patterns
+    mutating func predictNextCard(gameState: GameState) -> Card? {
+        // Analyze opponent's previous plays
+        recordOpponentMoves(gameState: gameState)
+        
+        // Simple pattern recognition: opponent's tendency toward certain values
+        let currentPlayer = gameState.currentPlayer
+        let opponentPlayers = gameState.players.filter { $0.id != currentPlayer?.id }
+        
+        guard opponentPlayers.first != nil else { return nil }
+        
+        // Romanian Septica insight: Players often follow value preference patterns
+        let valuePreferences = analyzeValuePreferences()
+        
+        // Return most likely card value (simplified prediction)
+        if let preferredValue = valuePreferences.max(by: { $0.value < $1.value })?.key,
+           let intValue = Int(preferredValue) {
+            // Create a representative card for prediction
+            return Card(suit: .hearts, value: intValue) // Suit doesn't matter for prediction
+        }
+        
+        return nil
+    }
+    
+    /// Record opponent moves for pattern learning
+    private mutating func recordOpponentMoves(gameState: GameState) {
+        // Track cards played in recent tricks
+        for trick in gameState.trickHistory.suffix(3) { // Last 3 tricks
+            cardPlayHistory.append(contentsOf: trick.cards)
+        }
+        
+        // Keep history manageable
+        if cardPlayHistory.count > 20 {
+            cardPlayHistory = Array(cardPlayHistory.suffix(20))
+        }
+    }
+    
+    /// Analyze opponent's value preferences
+    private func analyzeValuePreferences() -> [String: Int] {
+        var preferences: [String: Int] = [:]
+        
+        for card in cardPlayHistory {
+            let key = "\(card.value)"
+            preferences[key, default: 0] += 1
+        }
+        
+        return preferences
+    }
+}
+
+/// Game memory for learning and adaptation
+struct GameMemory {
+    private var gameStates: [(GameState, [Card])] = []
+    private var successfulMoves: [Card] = []
+    
+    /// Record current game state and hand for learning
+    mutating func recordGameState(_ gameState: GameState, playerHand: [Card]) {
+        gameStates.append((gameState, playerHand))
+        
+        // Keep memory manageable - store last 10 states
+        if gameStates.count > 10 {
+            gameStates = Array(gameStates.suffix(10))
+        }
+    }
+    
+    /// Record a successful move outcome
+    mutating func recordSuccessfulMove(_ card: Card) {
+        successfulMoves.append(card)
+        
+        // Keep successful moves history reasonable
+        if successfulMoves.count > 15 {
+            successfulMoves = Array(successfulMoves.suffix(15))
+        }
+    }
+    
+    /// Get insights about successful strategies
+    func getStrategicInsights() -> [String: Int] {
+        var insights: [String: Int] = [:]
+        
+        for card in successfulMoves {
+            let key = card.value == 7 ? "seven" : (card.isPointCard ? "point" : "regular")
+            insights[key, default: 0] += 1
+        }
+        
+        return insights
     }
 }
 
@@ -184,18 +286,31 @@ enum AIDifficulty: String, CaseIterable, Codable {
     }
 }
 
-/// AI strategy for card selection - Enhanced with Unity AI patterns
+/// Enhanced AI strategy for authentic Romanian Septica gameplay
+/// Incorporates traditional Romanian card game tactics and cultural playing styles
 struct AIStrategy {
     let difficulty: AIDifficulty
+    private var opponentModel: OpponentModel
+    private var gameMemory: GameMemory
     
-    /// Choose the optimal card from available moves
+    /// Initialize AI strategy with difficulty and learning capabilities
+    init(difficulty: AIDifficulty) {
+        self.difficulty = difficulty
+        self.opponentModel = OpponentModel()
+        self.gameMemory = GameMemory()
+    }
+    
+    /// Choose the optimal card from available moves using Romanian Septica tactics
     /// - Parameters:
     ///   - validMoves: Cards that can legally be played
     ///   - gameState: Current state of the game
     ///   - playerHand: AI player's full hand
     /// - Returns: Best card to play
-    func chooseOptimalCard(from validMoves: [Card], gameState: GameState, playerHand: [Card]) -> Card {
+    mutating func chooseOptimalCard(from validMoves: [Card], gameState: GameState, playerHand: [Card]) -> Card {
         guard !validMoves.isEmpty else { fatalError("No valid moves provided") }
+        
+        // Record current game context for learning
+        gameMemory.recordGameState(gameState, playerHand: playerHand)
         
         // Apply difficulty-based randomization for sub-optimal play
         if Double.random(in: 0...1) > difficulty.accuracy {
@@ -212,22 +327,101 @@ struct AIStrategy {
         }
     }
     
-    /// Port of Unity's chooseOptimalMove - for starting tricks
-    /// Prioritizes cards based on weight system and prefers 7s
-    private func chooseOptimalMove(from validMoves: [Card], gameState: GameState, playerHand: [Card]) -> Card {
+    /// Choose optimal move when starting a new trick - Romanian Septica style
+    /// Incorporates traditional aggressive-defensive balance and 7 hoarding tactics
+    private mutating func chooseOptimalMove(from validMoves: [Card], gameState: GameState, playerHand: [Card]) -> Card {
+        // Romanian Septica Strategy: Assess game phase and adapt
+        let gamePhase = determineGamePhase(gameState: gameState, playerHand: playerHand)
+        
+        switch gamePhase {
+        case .earlyGame:
+            return chooseEarlyGameMove(from: validMoves, gameState: gameState, playerHand: playerHand)
+        case .midGame:
+            return chooseMidGameMove(from: validMoves, gameState: gameState, playerHand: playerHand)
+        case .endGame:
+            return chooseEndGameMove(from: validMoves, gameState: gameState, playerHand: playerHand)
+        }
+    }
+    
+    /// Early game strategy: Conservative play, build card frequency knowledge
+    private func chooseEarlyGameMove(from validMoves: [Card], gameState: GameState, playerHand: [Card]) -> Card {
+        // In early game, Romanian players traditionally:
+        // 1. Avoid playing 7s unless necessary
+        // 2. Test opponent's card strength with mid-range cards
+        // 3. Collect information about opponent's hand
+        
+        // Prefer non-7, non-point cards to gather intelligence
+        let safeCards = validMoves.filter { card in
+            card.value != 7 && !card.isPointCard
+        }
+        
+        if !safeCards.isEmpty {
+            // Play a moderately valuable card to test opponent
+            return safeCards.sorted { $0.value > $1.value }.first ?? safeCards.randomElement()!
+        }
+        
+        // If only 7s or point cards available, play strategically
+        return chooseFromLimitedOptions(validMoves, gameState: gameState, playerHand: playerHand)
+    }
+    
+    /// Mid game strategy: Balanced aggression, capitalize on opponent patterns
+    private mutating func chooseMidGameMove(from validMoves: [Card], gameState: GameState, playerHand: [Card]) -> Card {
+        // Mid-game Romanian strategy:
+        // 1. Use learned opponent patterns
+        // 2. Strategic 7 usage for point capture
+        // 3. Adaptive difficulty scaling
+        
+        _ = GameRules.calculatePoints(from: gameState.tableCards)
+        let opponentPredictedMove = opponentModel.predictNextCard(gameState: gameState)
+        
+        // If opponent likely to play valuable card, prepare to beat it
+        if let predictedCard = opponentPredictedMove, predictedCard.isPointCard {
+            if let counter7 = validMoves.first(where: { $0.value == 7 }) {
+                return counter7 // Use 7 to capture points
+            }
+        }
+        
+        // Traditional Romanian tactic: Strategic value assessment
+        return chooseBestStrategicCard(from: validMoves, gameState: gameState, playerHand: playerHand)
+    }
+    
+    /// End game strategy: Aggressive point capture, optimal 7 timing
+    private func chooseEndGameMove(from validMoves: [Card], gameState: GameState, playerHand: [Card]) -> Card {
+        // End-game Romanian tactics:
+        // 1. Maximize points with remaining cards
+        // 2. Use 7s aggressively
+        // 3. Block opponent's final point collection
+        
+        let sevenCards = validMoves.filter { $0.value == 7 }
+        
+        // In endgame, 7s become highly valuable - use them strategically
+        if !sevenCards.isEmpty && difficulty == .expert {
+            return sevenCards.first! // Expert AI uses 7s optimally in endgame
+        }
+        
+        // Otherwise play highest value non-7 card to pressure opponent
+        let nonSevens = validMoves.filter { $0.value != 7 }
+        if !nonSevens.isEmpty {
+            return nonSevens.max { $0.value < $1.value } ?? validMoves.first!
+        }
+        
+        return validMoves.first!
+    }
+    
+    /// Legacy method adapted with Romanian strategy enhancements
+    private func chooseBestStrategicCard(from validMoves: [Card], gameState: GameState, playerHand: [Card]) -> Card {
         let cardWeights = computeCardWeights(gameState: gameState, playerHand: playerHand)
         
         var maxWeight = 0
         var bestCard: Card?
         
-        // Find the highest weight card, considering difficulty-based 7 preference
+        // Romanian Septica: Weight 7s differently based on context
         for card in validMoves {
-            if card.value == 7 && shouldPrefer7sInDifficulty(difficulty) {
-                // 7s are prioritized based on difficulty level
+            if card.value == 7 && shouldUse7Strategically(gameState: gameState, playerHand: playerHand) {
                 bestCard = card
                 break
             } else {
-                let weight = cardWeights[card.value - 7] // Adjust for 0-based array (values 7-14)
+                let weight = cardWeights[card.value - 7]
                 if weight >= maxWeight {
                     maxWeight = weight
                     bestCard = card
@@ -236,14 +430,14 @@ struct AIStrategy {
         }
         
         let finalCard = bestCard ?? validMoves.first!
-        return applyDifficultyModification(bestCard: finalCard, validMoves: validMoves)
+        return applyRomanianDifficultyModification(bestCard: finalCard, validMoves: validMoves)
     }
     
     /// Port of Unity's ThrowCard strategy - for continuing tricks
     /// 1. Try to match the trick start card
     /// 2. Use 7 if there are points on the table
     /// 3. Otherwise play a cheap card
-    private func chooseThrowCard(from validMoves: [Card], gameState: GameState, playerHand: [Card]) -> Card {
+    private mutating func chooseThrowCard(from validMoves: [Card], gameState: GameState, playerHand: [Card]) -> Card {
         guard let trickStartCard = gameState.tableCards.first else {
             return chooseOptimalMove(from: validMoves, gameState: gameState, playerHand: playerHand)
         }
@@ -352,28 +546,99 @@ struct AIStrategy {
         return hasSevenCard && pointsOnTable > 0
     }
     
-    /// Apply difficulty-based modifications to the chosen card
-    /// This allows easier difficulties to make occasional suboptimal plays
-    private func applyDifficultyModification(bestCard: Card, validMoves: [Card]) -> Card {
+    /// Romanian-style difficulty modification with cultural authenticity
+    /// Incorporates traditional Romanian playing styles and regional variations
+    private func applyRomanianDifficultyModification(bestCard: Card, validMoves: [Card]) -> Card {
         switch difficulty {
         case .easy:
-            // 40% chance to make a random move instead of optimal
+            // Beginner Romanian player: Often plays emotionally, 40% suboptimal
             if Double.random(in: 0...1) < 0.4 {
                 return validMoves.randomElement() ?? bestCard
             }
         case .medium:
-            // 20% chance to make a slightly suboptimal move
+            // Casual Romanian player: Good intuition, occasional mistakes (20%)
             if Double.random(in: 0...1) < 0.2 {
-                // Prefer non-optimal but reasonable moves
-                let nonOptimalMoves = validMoves.filter { $0 != bestCard }
-                return nonOptimalMoves.randomElement() ?? bestCard
+                // Traditional Romanian tactic: Sometimes hold back strong cards
+                let conservativeMoves = validMoves.filter { $0.value != 7 && $0 != bestCard }
+                return conservativeMoves.randomElement() ?? bestCard
             }
-        case .hard, .expert:
-            // Always play optimally
+        case .hard:
+            // Experienced Romanian player: Strategic with occasional brilliance
+            if Double.random(in: 0...1) < 0.1 {
+                // 10% chance for "inspired" play - aggressive moves
+                let aggressiveMoves = validMoves.filter { $0.value == 7 || $0.isPointCard }
+                return aggressiveMoves.randomElement() ?? bestCard
+            }
+        case .expert:
+            // Master Romanian player: Near-perfect with cultural flair
+            // Always plays optimally but with Romanian strategic preferences
             break
         }
         
         return bestCard
+    }
+    
+    /// Enhanced legacy method with Romanian strategic considerations
+    private func applyDifficultyModification(bestCard: Card, validMoves: [Card]) -> Card {
+        return applyRomanianDifficultyModification(bestCard: bestCard, validMoves: validMoves)
+    }
+    
+    /// Determine current game phase based on cards remaining and scoring
+    private func determineGamePhase(gameState: GameState, playerHand: [Card]) -> AIGamePhase {
+        let totalCardsRemaining = gameState.players.reduce(0) { $0 + $1.hand.count }
+        _ = gameState.trickHistory.count
+        let maxPossibleScore = GameRules.totalPoints
+        
+        // Early game: More than 50% cards remaining
+        if totalCardsRemaining > 16 {
+            return .earlyGame
+        }
+        
+        // End game: Few cards left or someone close to winning
+        if totalCardsRemaining <= 6 || 
+           gameState.players.contains(where: { $0.score >= maxPossibleScore - 2 }) {
+            return .endGame
+        }
+        
+        // Mid game: Everything else
+        return .midGame
+    }
+    
+    /// Strategic 7 usage decision based on Romanian traditional tactics
+    private func shouldUse7Strategically(gameState: GameState, playerHand: [Card]) -> Bool {
+        let pointsOnTable = GameRules.calculatePoints(from: gameState.tableCards)
+        let sevenCount = playerHand.filter { $0.value == 7 }.count
+        let gamePhase = determineGamePhase(gameState: gameState, playerHand: playerHand)
+        
+        switch gamePhase {
+        case .earlyGame:
+            // Early game: Hoard 7s unless forced or big point opportunity
+            return pointsOnTable >= 2
+        case .midGame:
+            // Mid game: Balanced usage, consider opponent behavior
+            return pointsOnTable >= 1 || sevenCount >= 3
+        case .endGame:
+            // End game: Use 7s more aggressively
+            return pointsOnTable >= 1 || difficulty == .expert
+        }
+    }
+    
+    /// Choose from limited options when only valuable cards available
+    private func chooseFromLimitedOptions(_ validMoves: [Card], gameState: GameState, playerHand: [Card]) -> Card {
+        let pointCards = validMoves.filter { $0.isPointCard }
+        let sevenCards = validMoves.filter { $0.value == 7 }
+        
+        // Romanian strategy: In tough spots, prefer keeping 7s over point cards
+        if !pointCards.isEmpty && pointCards.count < sevenCards.count {
+            return pointCards.first!
+        }
+        
+        // Otherwise play the "least valuable" card
+        return validMoves.min { card1, card2 in
+            let value1 = card1.value == 7 ? 15 : (card1.isPointCard ? card1.value + 5 : card1.value)
+            let value2 = card2.value == 7 ? 15 : (card2.isPointCard ? card2.value + 5 : card2.value)
+            return value1 < value2
+        } ?? validMoves.first!
     }
     
     /// Enhanced strategic considerations based on difficulty level

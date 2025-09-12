@@ -207,13 +207,15 @@ final class DeckTests: XCTestCase {
         for suit in Suit.allCases {
             for value in 7...14 {
                 let card = Card(suit: suit, value: value)
-                XCTAssertTrue(deck.contains(card))
+                XCTAssertTrue(deck.contains(card), "Deck should contain \(card.displayName)")
             }
         }
         
-        // Should not contain cards with invalid values
-        let invalidCard = Card(suit: .hearts, value: 6)
-        // Note: Can't actually create this due to precondition, so we'll skip this test
+        // Test that deck doesn't contain a card after it's drawn
+        var mutableDeck = Deck()
+        if let drawnCard = mutableDeck.drawCard() {
+            XCTAssertFalse(mutableDeck.contains(drawnCard), "Deck should not contain drawn card \(drawnCard.displayName)")
+        }
     }
     
     // MARK: - Point Card Tests
@@ -261,23 +263,26 @@ final class DeckTests: XCTestCase {
     
     func testDeckStatisticsAfterDrawing() {
         var deck = Deck()
+        let initialStats = deck.statistics
         
-        // Draw all hearts
-        let heartsCards = deck.cards(ofSuit: .hearts)
-        for _ in heartsCards {
-            if let card = deck.drawCard(), card.suit == .hearts {
-                // Drew a heart
-            }
-        }
+        // Verify initial state
+        XCTAssertEqual(initialStats.totalCards, 32)
+        XCTAssertEqual(initialStats.pointCards, 8) // 4 tens + 4 aces
+        XCTAssertEqual(initialStats.totalPoints, 8)
         
-        // This is a complex test since we can't easily draw specific cards
-        // Let's just test that statistics update correctly
-        _ = deck.drawCards(10)
-        let stats = deck.statistics
+        // Draw some cards and check statistics update
+        let cardsDrawn = 10
+        _ = deck.drawCards(cardsDrawn)
+        let statsAfterDrawing = deck.statistics
         
-        XCTAssertEqual(stats.totalCards, 22)
-        XCTAssertTrue(stats.pointCards <= 8)
-        XCTAssertEqual(stats.totalPoints, stats.pointCards)
+        XCTAssertEqual(statsAfterDrawing.totalCards, 32 - cardsDrawn)
+        XCTAssertTrue(statsAfterDrawing.pointCards <= 8) // Can't have more than initial
+        XCTAssertTrue(statsAfterDrawing.pointCards >= 0) // Can't have negative
+        XCTAssertEqual(statsAfterDrawing.totalPoints, statsAfterDrawing.pointCards)
+        
+        // Verify that all suit counts sum to total
+        let totalBySuit = statsAfterDrawing.cardsBySuit.values.reduce(0, +)
+        XCTAssertEqual(totalBySuit, statsAfterDrawing.totalCards)
     }
     
     // MARK: - Collection Conformance Tests
