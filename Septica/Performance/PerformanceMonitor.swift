@@ -92,6 +92,18 @@ class PerformanceMonitor: ObservableObject {
         frameDropTracker.recordFrameDrop()
     }
     
+    /// Start monitoring a specific component
+    func startMonitoring(component: String) {
+        print("📊 Starting performance monitoring for \(component)")
+        startMonitoring()
+    }
+    
+    /// Record a metric value
+    func recordMetric(name: String, value: Double, unit: String) {
+        print("📈 \(name): \(value) \(unit)")
+        // In a full implementation, this would store metrics for analysis
+    }
+    
     // MARK: - Performance Analysis
     
     /// Get detailed performance report
