@@ -420,13 +420,9 @@ class Renderer: NSObject, MTKViewDelegate, ObservableObject {
         
         // Update card uniforms with Romanian cultural colors
         cardUniforms[0].highlightColor = simd_float4(ROMANIAN_GOLD_R, ROMANIAN_GOLD_G, ROMANIAN_GOLD_B, 1.0)
-        cardUniforms[0].edgeGlowColor = simd_float4(ROMANIAN_RED_R, ROMANIAN_RED_G, ROMANIAN_RED_B, 0.8)
-        cardUniforms[0].selectionIntensity = culturalIntensity
         cardUniforms[0].flipAngle = 0.0
         cardUniforms[0].glowIntensity = DEFAULT_GLOW_INTENSITY * culturalIntensity
-        cardUniforms[0].animationState = .idle
-        cardUniforms[0].cardSize = simd_float2(2.5, 3.5)
-        cardUniforms[0].cornerRadius = CARD_CORNER_RADIUS
+        cardUniforms[0].animationProgress = 0.0
     }
     
     // MARK: - Rendering Methods
@@ -634,7 +630,7 @@ class Renderer: NSObject, MTKViewDelegate, ObservableObject {
     /// Add card selection effect
     func setCardHighlighted(_ cardId: UUID, highlighted: Bool) {
         if highlighted {
-            setCardAnimation(cardId, state: .selected)
+            // Animation state management moved to CardRenderer
         } else {
             removeCardAnimation(cardId)
         }

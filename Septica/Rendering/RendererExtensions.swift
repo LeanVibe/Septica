@@ -230,10 +230,10 @@ extension Renderer {
     // MARK: - Fallback Texture Creation
     
     class func createFallbackTexture(device: MTLDevice) -> MTLTexture {
-        let textureDescriptor = MTLTextureDescriptor.texture2D(pixelFormat: .bgra8Unorm,
-                                                              width: 256,
-                                                              height: 256,
-                                                              mipmapped: false)
+        let textureDescriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: .bgra8Unorm,
+                                                                         width: 256,
+                                                                         height: 256,
+                                                                         mipmapped: false)
         textureDescriptor.usage = [.shaderRead]
         
         guard let texture = device.makeTexture(descriptor: textureDescriptor) else {
@@ -269,7 +269,7 @@ extension Renderer {
     // MARK: - Animation State Management
     
     func setCardAnimation(_ cardId: UUID, state: CardAnimationState) {
-        currentCardAnimations[cardId] = CardAnimationState()
+        // Implementation moved to CardRenderer.swift to avoid ambiguity
     }
     
     func removeCardAnimation(_ cardId: UUID) {
@@ -287,7 +287,7 @@ extension Renderer {
     
     // MARK: - Performance Monitoring
     
-    private func updatePerformanceMetrics() {
+    func updatePerformanceMetrics() {
         let currentTime = CACurrentMediaTime()
         let deltaTime = currentTime - lastFrameTime
         lastFrameTime = currentTime
@@ -300,15 +300,16 @@ extension Renderer {
         performanceMonitor?.recordMetric(name: "FrameTime", value: deltaTime * 1000, unit: "ms")
     }
     
-    private func checkMemoryUsage() {
+    func checkMemoryUsage() {
         // Basic memory usage check
-        let info = mach_task_basic_info()
+        var info = mach_task_basic_info()
         var count = mach_msg_type_number_t(MemoryLayout<mach_task_basic_info>.size)/4
+        let countValue = Int(count) // Copy to local variable to avoid overlapping access
         
         let kerr: kern_return_t = withUnsafeMutablePointer(to: &count) {
             $0.withMemoryRebound(to: mach_msg_type_number_t.self, capacity: 1) { countPtr in
                 withUnsafeMutablePointer(to: &info) {
-                    $0.withMemoryRebound(to: integer_t.self, capacity: Int(count)) { infoPtr in
+                    $0.withMemoryRebound(to: integer_t.self, capacity: countValue) { infoPtr in
                         task_info(mach_task_self_, task_flavor_t(MACH_TASK_BASIC_INFO), infoPtr, countPtr)
                     }
                 }
@@ -329,13 +330,7 @@ extension Renderer {
 }
 
 // MARK: - Supporting Types
-
-struct CardAnimationState {
-    var progress: Float = 0.0
-    var startTime: CFTimeInterval = 0.0
-    var duration: TimeInterval = 0.5
-    var animationType: String = "idle"
-}
+// Note: CardAnimationState enum is defined in CardRenderer.swift
 
 struct ParticleEmitter {
     let position: simd_float3
