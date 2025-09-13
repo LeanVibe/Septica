@@ -39,6 +39,38 @@ class FluidCardInteractionSync: ObservableObject {
     
     // MARK: - Card Interaction Models
     
+    /// Visual effect definition for card interactions
+    struct VisualEffect: Codable {
+        let type: EffectType
+        let intensity: Float
+        let duration: TimeInterval
+        let startTime: Date
+        let color: EffectColor
+        
+        enum EffectType: String, Codable {
+            case glow = "glow"
+            case sparkle = "sparkle"
+            case trail = "trail"
+            case bounce = "bounce"
+            case shake = "shake"
+            case pulse = "pulse"
+            case romanianGold = "romanian_gold" // Cultural theme
+            case folkPattern = "folk_pattern"   // Traditional patterns
+        }
+        
+        struct EffectColor: Codable {
+            let red: Float
+            let green: Float
+            let blue: Float
+            let alpha: Float
+            
+            static let romanianRed = EffectColor(red: 0.8, green: 0.1, blue: 0.1, alpha: 1.0)
+            static let romanianYellow = EffectColor(red: 1.0, green: 0.8, blue: 0.0, alpha: 1.0)
+            static let romanianBlue = EffectColor(red: 0.0, green: 0.3, blue: 0.6, alpha: 1.0)
+            static let folkGold = EffectColor(red: 0.9, green: 0.7, blue: 0.2, alpha: 1.0)
+        }
+    }
+    
     /// Individual card's current interaction state (Shuffle Cats inspired)
     struct CardInteractionState: Codable {
         let cardId: UUID
@@ -83,37 +115,6 @@ class FluidCardInteractionSync: ObservableObject {
                 case .hovering, .snapping, .playing, .celebrating: return true
                 default: return false
                 }
-            }
-        }
-        
-        struct VisualEffect: Codable {
-            let type: EffectType
-            let intensity: Float
-            let duration: TimeInterval
-            let startTime: Date
-            let color: EffectColor
-            
-            enum EffectType: String, Codable {
-                case glow = "glow"
-                case sparkle = "sparkle"
-                case trail = "trail"
-                case bounce = "bounce"
-                case shake = "shake"
-                case pulse = "pulse"
-                case romanianGold = "romanian_gold" // Cultural theme
-                case folkPattern = "folk_pattern"   // Traditional patterns
-            }
-            
-            struct EffectColor: Codable {
-                let red: Float
-                let green: Float
-                let blue: Float
-                let alpha: Float
-                
-                static let romanianRed = EffectColor(red: 0.8, green: 0.1, blue: 0.1, alpha: 1.0)
-                static let romanianYellow = EffectColor(red: 1.0, green: 0.8, blue: 0.0, alpha: 1.0)
-                static let romanianBlue = EffectColor(red: 0.0, green: 0.3, blue: 0.6, alpha: 1.0)
-                static let folkGold = EffectColor(red: 0.9, green: 0.7, blue: 0.2, alpha: 1.0)
             }
         }
         
@@ -532,7 +533,7 @@ class FluidCardInteractionSync: ObservableObject {
     
     private func triggerZoneHoverEffect(_ zone: DropZone) async {
         // Add visual feedback for drop zone hover
-        await hapticManager?.triggerImpact(.light)
+        hapticManager?.trigger(.cardHover)
     }
     
     private func snapToDropZone(cardId: UUID, zone: DropZone) async {
@@ -555,7 +556,7 @@ class FluidCardInteractionSync: ObservableObject {
         await updateCardInteraction(cardId: cardId, newState: .returning, position: handPosition)
         
         // Play gentle feedback
-        await hapticManager?.triggerNotification(.warning)
+        hapticManager?.trigger(.cardInvalid)
     }
     
     private func playCard(cardId: UUID, in zone: DropZone) async {
@@ -628,18 +629,18 @@ class FluidCardInteractionSync: ObservableObject {
         
         switch pattern {
         case .gentleHover:
-            await hapticManager?.triggerSelection()
+            hapticManager?.trigger(.cardSelect)
         case .confirmSelection:
-            await hapticManager?.triggerImpact(.light)
+            hapticManager?.trigger(.cardHover)
         case .successfulPlay:
-            await hapticManager?.triggerImpact(.medium)
+            hapticManager?.trigger(.cardPlay)
         case .invalidMove:
-            await hapticManager?.triggerNotification(.warning)
+            hapticManager?.trigger(.cardInvalid)
         case .celebration:
-            await hapticManager?.triggerNotification(.success)
+            hapticManager?.trigger(.success)
         case .sevenWildCard, .eightSpecial:
             // Special pattern for Romanian cultural cards
-            await hapticManager?.triggerImpact(.heavy)
+            hapticManager?.trigger(.gameVictory)
         }
     }
     

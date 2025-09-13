@@ -8,6 +8,7 @@
 
 import Foundation
 import CloudKit
+import Combine
 
 /// Validates CloudKit integration with existing game architecture
 @MainActor
@@ -22,7 +23,7 @@ class CloudKitIntegrationValidator {
     
     // MARK: - Test State
     
-    @Published var validationResults: [ValidationResult] = []
+    @Published var validationResults: [CloudKitCloudKitValidationResult] = []
     @Published var isValidating: Bool = false
     
     // MARK: - Initialization
@@ -30,15 +31,14 @@ class CloudKitIntegrationValidator {
     init() {
         // Initialize CloudKit services
         self.cloudKitManager = SepticaCloudKitManager()
-        self.culturalSystem = CulturalAchievementSystem(
-            cloudKitManager: cloudKitManager,
-            audioManager: nil, // Test without audio
-            hapticManager: nil, // Test without haptics
-            errorManager: nil   // Test without error manager
-        )
         self.playerProfileService = PlayerProfileService(
             cloudKitManager: cloudKitManager,
-            culturalSystem: culturalSystem
+            errorManager: nil // Test without error manager
+        )
+        self.culturalSystem = CulturalAchievementSystem(
+            playerProfileService: playerProfileService,
+            audioManager: nil, // Test without audio
+            hapticManager: nil  // Test without haptics
         )
         self.rewardService = RewardChestService(
             cloudKitManager: cloudKitManager,
@@ -81,14 +81,14 @@ class CloudKitIntegrationValidator {
             // Test basic connectivity without requiring actual iCloud account
             let isAvailable = cloudKitManager.isAvailable || !cloudKitManager.isAvailable // Always pass this test since we can't control iCloud in simulator
             
-            validationResults.append(ValidationResult(
+            validationResults.append(CloudKitCloudKitValidationResult(
                 test: test,
                 status: .passed,
                 message: "CloudKit availability checked successfully",
                 details: "Account Status: \(cloudKitManager.accountStatus.rawValue)"
             ))
         } catch {
-            validationResults.append(ValidationResult(
+            validationResults.append(CloudKitCloudKitValidationResult(
                 test: test,
                 status: .failed,
                 message: "CloudKit availability check failed: \(error.localizedDescription)"
@@ -121,7 +121,7 @@ class CloudKitIntegrationValidator {
                     cardsUsed: ["7_hearts", "ace_spades"]
                 )
                 
-                validationResults.append(ValidationResult(
+                validationResults.append(CloudKitValidationResult(
                     test: test,
                     status: .passed,
                     message: "Player profile flow working correctly",
@@ -132,7 +132,7 @@ class CloudKitIntegrationValidator {
             }
             
         } catch {
-            validationResults.append(ValidationResult(
+            validationResults.append(CloudKitValidationResult(
                 test: test,
                 status: .failed,
                 message: "Player profile flow failed: \(error.localizedDescription)"
@@ -167,7 +167,7 @@ class CloudKitIntegrationValidator {
             if let slotIndex = rewardService.chestSlots.firstIndex(where: { !$0.isEmpty }) {
                 try await rewardService.startOpeningChest(at: slotIndex)
                 
-                validationResults.append(ValidationResult(
+                validationResults.append(CloudKitValidationResult(
                     test: test,
                     status: .passed,
                     message: "Reward system flow working correctly",
@@ -178,7 +178,7 @@ class CloudKitIntegrationValidator {
             }
             
         } catch {
-            validationResults.append(ValidationResult(
+            validationResults.append(CloudKitValidationResult(
                 test: test,
                 status: .failed,
                 message: "Reward system flow failed: \(error.localizedDescription)"
@@ -211,7 +211,7 @@ class CloudKitIntegrationValidator {
             )
             
             if engagementLevel > 0 {
-                validationResults.append(ValidationResult(
+                validationResults.append(CloudKitValidationResult(
                     test: test,
                     status: .passed,
                     message: "Cultural system working correctly",
@@ -222,7 +222,7 @@ class CloudKitIntegrationValidator {
             }
             
         } catch {
-            validationResults.append(ValidationResult(
+            validationResults.append(CloudKitValidationResult(
                 test: test,
                 status: .failed,
                 message: "Cultural system failed: \(error.localizedDescription)"
@@ -268,7 +268,7 @@ class CloudKitIntegrationValidator {
                 let hasChest = !rewardService.chestSlots.allSatisfy { $0.isEmpty }
                 
                 if trophiesGained && hasChest {
-                    validationResults.append(ValidationResult(
+                    validationResults.append(CloudKitValidationResult(
                         test: test,
                         status: .passed,
                         message: "Complete game flow integration successful",
@@ -282,7 +282,7 @@ class CloudKitIntegrationValidator {
             }
             
         } catch {
-            validationResults.append(ValidationResult(
+            validationResults.append(CloudKitValidationResult(
                 test: test,
                 status: .failed,
                 message: "Game flow integration failed: \(error.localizedDescription)"
@@ -328,7 +328,7 @@ struct ValidationTest {
     let description: String
 }
 
-struct ValidationResult {
+struct CloudKitValidationResult {
     let test: ValidationTest
     let status: ValidationStatus
     let message: String
