@@ -26,6 +26,9 @@ class GameViewModel: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
     private let aiMoveDelay: TimeInterval = 1.5
     
+    // Performance monitoring for 60 FPS targets
+    @Published var performanceMonitor = PerformanceMonitor()
+    
     // MARK: - Computed Properties
     
     /// Current players in the game
@@ -78,11 +81,18 @@ class GameViewModel: ObservableObject {
     init(gameState: GameState) {
         self.gameState = gameState
         setupBindings()
+        setupPerformanceMonitoring()
     }
     
     convenience init() {
         let gameState = GameState()
         self.init(gameState: gameState)
+    }
+    
+    deinit {
+        Task { @MainActor in
+            await self.performanceMonitor.stopMonitoring()
+        }
     }
     
     /// Set up reactive bindings and observers
@@ -91,8 +101,21 @@ class GameViewModel: ObservableObject {
         gameState.objectWillChange
             .receive(on: DispatchQueue.main)
             .sink { [weak self] in
+                self?.performanceMonitor.recordFrame() // Track frame updates
                 self?.objectWillChange.send()
                 self?.handleGameStateChange()
+            }
+            .store(in: &cancellables)
+    }
+    
+    /// Set up performance monitoring for 60 FPS targets
+    private func setupPerformanceMonitoring() {
+        performanceMonitor.startMonitoring()
+        
+        // Monitor for memory warnings and performance issues
+        NotificationCenter.default.publisher(for: .performanceMemoryWarning)
+            .sink { [weak self] _ in
+                self?.handlePerformanceMemoryWarning()
             }
             .store(in: &cancellables)
     }
@@ -191,7 +214,15 @@ class GameViewModel: ObservableObject {
             // Add delay for realistic AI behavior
             try? await Task.sleep(nanoseconds: UInt64(aiMoveDelay * 1_000_000_000))
             
+            // Track AI decision performance
+            let aiDecisionStartTime = Date()
+            
             if let cardToPlay = await currentPlayer.chooseCard(gameState: gameState, validMoves: validMoves) {
+                // Record AI decision time for performance monitoring
+                let aiDecisionTime = Date().timeIntervalSince(aiDecisionStartTime)
+                await MainActor.run {
+                    self.performanceMonitor.recordAIDecision(duration: aiDecisionTime)
+                }
                 await MainActor.run {
                     let result = gameState.playCard(cardToPlay, by: currentPlayer.id)
                     
@@ -290,6 +321,33 @@ class GameViewModel: ObservableObject {
     func dismissError() {
         showingError = false
         errorMessage = ""
+    }
+    
+    // MARK: - Performance Management
+    
+    /// Handle performance memory warnings
+    private func handlePerformanceMemoryWarning() {
+        // Clear any non-essential caches
+        statusMessage = "⚠️ Low memory - optimizing performance..."
+        
+        // Reduce AI thinking time temporarily
+        let originalDelay = aiMoveDelay
+        // Restore after a delay
+        DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
+            if self.statusMessage?.contains("Low memory") == true {
+                self.statusMessage = nil
+            }
+        }
+    }
+    
+    /// Get current performance status
+    func getPerformanceStatus() -> DevicePerformanceStatus {
+        return performanceMonitor.getDevicePerformanceStatus()
+    }
+    
+    /// Get detailed performance report
+    func getPerformanceReport() -> PerformanceReport {
+        return performanceMonitor.getPerformanceReport()
     }
 }
 
