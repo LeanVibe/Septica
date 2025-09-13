@@ -7,8 +7,9 @@
 //
 
 import SwiftUI
+import UIKit
 
-/// SwiftUI view for displaying a single playing card
+/// SwiftUI view for displaying a single playing card with full accessibility support
 struct CardView: View {
     let card: Card
     let isSelected: Bool
@@ -17,8 +18,16 @@ struct CardView: View {
     let cardSize: CardSize
     let onTap: (() -> Void)?
     
+    // Accessibility and UX managers
+    @EnvironmentObject private var accessibilityManager: AccessibilityManager
+    @EnvironmentObject private var hapticManager: HapticManager
+    @EnvironmentObject private var audioManager: AudioManager
+    @EnvironmentObject private var animationManager: AnimationManager
+    
     @State private var isPressed = false
     @State private var rotationAngle: Double = 0
+    @State private var isFocused = false
+    @State private var playAnimationTrigger = false
     
     init(
         card: Card,
@@ -121,59 +130,142 @@ struct CardView: View {
         .rotationEffect(.degrees(rotationAngle))
         .opacity(opacity)
         .shadow(color: shadowColor, radius: shadowRadius, x: 0, y: shadowOffset)
-        .animation(.easeInOut(duration: 0.2), value: isSelected)
-        .animation(.easeInOut(duration: 0.2), value: isPressed)
+        .animation(animationManager.accessibleAnimation(.easeInOut(duration: 0.2)), value: isSelected)
+        .animation(animationManager.accessibleAnimation(.easeInOut(duration: 0.2)), value: isPressed)
+        .cardPlayAnimation(isActive: playAnimationTrigger, manager: animationManager)
         .onTapGesture {
             if isPlayable {
+                // Trigger haptic feedback
+                hapticManager.trigger(.cardPlay)
+                
+                // Play audio feedback
+                audioManager.playSound(.cardPlace)
+                
+                // Trigger play animation
+                playAnimationTrigger = true
+                
                 onTap?()
+            } else {
+                // Invalid move feedback
+                hapticManager.trigger(.cardInvalid)
+                audioManager.playSound(.cardInvalid)
             }
         }
         .onLongPressGesture(minimumDuration: 0) { pressing in
             isPressed = pressing
+            if pressing {
+                // Light haptic for press start
+                hapticManager.trigger(.cardSelect)
+            }
         } perform: {
-            // Long press completed
+            // Long press completed - could show card details
         }
         .onAppear {
             if isAnimating {
-                withAnimation(.easeInOut(duration: 0.5)) {
+                withAnimation(animationManager.accessibleAnimation(.easeInOut(duration: 0.5))) {
                     rotationAngle = 360
                 }
             }
+        }
+        // Comprehensive accessibility support
+        .cardAccessibility(card: card, isPlayable: isPlayable, manager: accessibilityManager)
+        .accessibleTouchTarget(manager: accessibilityManager)
+        // Alternative focus management for iOS accessibility
+        .onReceive(NotificationCenter.default.publisher(for: UIAccessibility.elementFocusedNotification)) { _ in
+            // Handle accessibility focus changes
+            hapticManager.trigger(.focusChange)
+            audioManager.playAccessibilitySound(.focusChanged)
+        }
+        // High contrast support
+        .overlay(
+            RoundedRectangle(cornerRadius: cardSize.cornerRadius)
+                .stroke(
+                    accessibilityManager.isIncreaseContrastEnabled ? Color.primary : Color.clear,
+                    lineWidth: isFocused ? 3 : 0
+                )
+        )
+        .scaleEffect(accessibilityManager.isLargeTextEnabled ? 1.1 : 1.0)
+        .onReceive(NotificationCenter.default.publisher(for: UIAccessibility.voiceOverStatusDidChangeNotification)) { _ in
+            // Respond to VoiceOver state changes
         }
     }
     
     // MARK: - Computed Properties
     
-    /// Background color based on card state
+    /// Background color based on card state with accessibility support
     private var cardBackground: Color {
+        let baseColor: Color
+        
         if isSelected {
-            return Color.white
+            baseColor = Color.white
         } else if !isPlayable {
-            return Color.gray.opacity(0.8)
+            baseColor = Color.gray.opacity(0.8)
         } else {
-            return Color.white.opacity(0.95)
+            baseColor = Color.white.opacity(0.95)
         }
+        
+        // Apply high contrast adjustments if needed
+        if accessibilityManager.isIncreaseContrastEnabled {
+            if isSelected {
+                return Color.white
+            } else if !isPlayable {
+                return Color.gray.opacity(0.6)
+            } else {
+                return Color.white
+            }
+        }
+        
+        return baseColor
     }
     
-    /// Border color based on card state
+    /// Border color based on card state with accessibility support
     private var cardBorder: Color {
+        let baseColor: Color
+        
         if isSelected {
-            return Color.blue
+            baseColor = Color.blue
         } else if !isPlayable {
-            return Color.gray
+            baseColor = Color.gray
         } else {
-            return Color.black.opacity(0.2)
+            baseColor = Color.black.opacity(0.2)
         }
+        
+        // Apply high contrast adjustments
+        if accessibilityManager.isIncreaseContrastEnabled {
+            if isSelected {
+                return Color.blue
+            } else if !isPlayable {
+                return Color.red.opacity(0.7) // Make disabled state more obvious
+            } else {
+                return Color.black.opacity(0.5) // Stronger border
+            }
+        }
+        
+        return baseColor
     }
     
-    /// Color for suit symbols
+    /// Color for suit symbols with color-blind accessibility support
     private var suitColor: Color {
+        // Base colors
+        let baseColor: Color
         switch card.suit {
         case .hearts, .diamonds:
-            return Color.red
+            baseColor = Color.red
         case .clubs, .spades:
-            return Color.black
+            baseColor = Color.black
         }
+        
+        // High contrast adjustments
+        if accessibilityManager.isIncreaseContrastEnabled {
+            switch card.suit {
+            case .hearts, .diamonds:
+                return Color.red
+            case .clubs, .spades:
+                return Color.black
+            }
+        }
+        
+        return baseColor
     }
     
     /// Scale effect based on state

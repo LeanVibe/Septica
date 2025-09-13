@@ -12,6 +12,9 @@ import SwiftUI
 struct SettingsView: View {
     @EnvironmentObject var navigationManager: NavigationManager
     @StateObject var userSettings = UserSettings.shared
+    @StateObject private var accessibilityManager = AccessibilityManager()
+    @StateObject private var hapticManager = HapticManager()
+    @StateObject private var audioManager = AudioManager()
     @State private var showingResetConfirmation = false
     @State private var showingAbout = false
     
@@ -20,11 +23,19 @@ struct SettingsView: View {
             VStack(spacing: 0) {
                 // Settings sections
                 VStack(spacing: 16) {
+                    // Accessibility settings - prioritized at top
+                    AccessibilitySettingsSection()
+                        .environmentObject(accessibilityManager)
+                        .environmentObject(hapticManager)
+                        .environmentObject(audioManager)
+                    
                     // Audio settings
                     AudioSettingsSection()
+                        .environmentObject(audioManager)
                     
                     // Visual settings
                     VisualSettingsSection()
+                        .environmentObject(accessibilityManager)
                     
                     // Gameplay settings
                     GameplaySettingsSection()
@@ -42,6 +53,8 @@ struct SettingsView: View {
         .background(RomanianSettingsBackground())
         .navigationTitle("Settings")
         .navigationBarTitleDisplayMode(.large)
+        .accessibilityLabel("Settings Screen")
+        .accessibilityHint("Configure app preferences and accessibility options")
         .alert("Reset Statistics", isPresented: $showingResetConfirmation) {
             Button("Cancel", role: .cancel) { }
             Button("Reset", role: .destructive) {
@@ -77,9 +90,115 @@ struct SettingsView: View {
 
 // MARK: - Settings Sections
 
+/// Comprehensive accessibility settings section
+struct AccessibilitySettingsSection: View {
+    @EnvironmentObject var accessibilityManager: AccessibilityManager
+    @EnvironmentObject var hapticManager: HapticManager
+    @EnvironmentObject var audioManager: AudioManager
+    
+    var body: some View {
+        SettingsCard(title: "Accessibility", icon: "accessibility") {
+            VStack(spacing: 20) {
+                // VoiceOver and screen reader support
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("Screen Reader Support")
+                        .font(.subheadline.bold())
+                        .foregroundColor(.white)
+                    
+                    SettingsToggle(
+                        title: "Announce Game State",
+                        subtitle: "Voice descriptions of game events",
+                        isOn: Binding(
+                            get: { accessibilityManager.announceGameState },
+                            set: { accessibilityManager.setAnnounceGameState($0) }
+                        )
+                    )
+                    
+                    SettingsToggle(
+                        title: "Announce Card Details",
+                        subtitle: "Detailed card descriptions",
+                        isOn: Binding(
+                            get: { accessibilityManager.announceCardDetails },
+                            set: { accessibilityManager.setAnnounceCardDetails($0) }
+                        )
+                    )
+                }
+                
+                Divider().background(Color.white.opacity(0.2))
+                
+                // Haptic feedback settings
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("Haptic Feedback")
+                        .font(.subheadline.bold())
+                        .foregroundColor(.white)
+                    
+                    if hapticManager.supportsHaptics {
+                        Picker("Haptic Level", selection: Binding(
+                            get: { accessibilityManager.hapticFeedbackLevel },
+                            set: { accessibilityManager.setHapticFeedbackLevel($0) }
+                        )) {
+                            ForEach(AccessibilityManager.HapticLevel.allCases, id: \.self) { level in
+                                Text(level.rawValue).tag(level)
+                            }
+                        }
+                        .pickerStyle(.segmented)
+                        .accentColor(.blue)
+                    } else {
+                        Text("Haptic feedback not available on this device")
+                            .font(.caption)
+                            .foregroundColor(.white.opacity(0.6))
+                    }
+                }
+                
+                Divider().background(Color.white.opacity(0.2))
+                
+                // Game speed adjustment
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("Game Speed")
+                        .font(.subheadline.bold())
+                        .foregroundColor(.white)
+                    
+                    Picker("Speed", selection: Binding(
+                        get: { accessibilityManager.gameSpeedAdjustment },
+                        set: { accessibilityManager.setGameSpeedAdjustment($0) }
+                    )) {
+                        ForEach(AccessibilityManager.SpeedAdjustment.allCases, id: \.self) { speed in
+                            Text(speed.rawValue).tag(speed)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                    .accentColor(.blue)
+                }
+                
+                // Accessibility status info
+                if accessibilityManager.isVoiceOverEnabled {
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            Image(systemName: "checkmark.circle.fill")
+                                .foregroundColor(.green)
+                            Text("VoiceOver Active")
+                                .font(.caption.bold())
+                                .foregroundColor(.green)
+                        }
+                        
+                        Text("VoiceOver is currently active. All accessibility features are optimized for screen reader use.")
+                            .font(.caption)
+                            .foregroundColor(.white.opacity(0.7))
+                    }
+                    .padding(.top, 8)
+                }
+            }
+        }
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("Accessibility Settings")
+        .accessibilityHint("Configure screen reader, haptic feedback, and other accessibility options")
+    }
+}
+
 /// Audio and sound settings
 struct AudioSettingsSection: View {
     @StateObject var userSettings = UserSettings.shared
+    @EnvironmentObject var audioManager: AudioManager
     
     var body: some View {
         SettingsCard(title: "Audio", icon: "speaker.wave.2.fill") {
@@ -604,5 +723,8 @@ struct SettingsView_Previews: PreviewProvider {
                 .environmentObject(NavigationManager())
         }
         .preferredColorScheme(.dark)
+        .environmentObject(AccessibilityManager.preview)
+        .environmentObject(HapticManager.preview)
+        .environmentObject(AudioManager.preview)
     }
 }
