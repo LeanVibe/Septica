@@ -2,6 +2,107 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with the Septica iOS Metal card game project.
 
+## 🚀 SESSION CONTEXT MANAGEMENT - READ THIS FIRST
+
+### **CURRENT PROJECT STATUS (September 13, 2025)**
+```
+✅ Phase 1: Core Game Implementation - COMPLETE (97.98% test success)
+✅ Phase 2: UI/UX Polish & App Store Readiness - COMPLETE 
+✅ Phase 3 Sprint 1: Metal Rendering Infrastructure - COMPLETE
+🎯 CURRENT FOCUS: Phase 3 Sprint 2 - CloudKit Integration (Weeks 5-8)
+```
+
+### **CRITICAL CONTEXT FILES TO READ ON SESSION START:**
+1. **FINAL_COMPREHENSIVE_EVALUATION_AND_PHASE_3_COMPLETE_ROADMAP.md** - Complete project status & Phase 3 roadmap
+2. **PHASE_3_SPRINT_1_PROGRESS_REPORT.md** - Recently completed Sprint 1 details
+3. **docs/PHASE3_IMPLEMENTATION_PLAN.md** - Current phase implementation details
+4. **Build Status**: ✅ All compilation errors resolved, project builds successfully
+
+### **IMMEDIATE NEXT PRIORITIES (Sprint 2 - CloudKit):**
+1. **CloudKit Architecture Implementation** - Cross-device game state sync
+2. **Enhanced Statistics System** - Romanian strategy analysis
+3. **Player Profile System** - Cultural achievements tracking  
+4. **Offline-First Architecture** - Robust sync with conflict resolution
+
+### **SESSION CONTINUATION CHECKLIST:**
+- [ ] Read FINAL_COMPREHENSIVE_EVALUATION_AND_PHASE_3_COMPLETE_ROADMAP.md (Sprint 2 details)
+- [ ] Verify build status with `xcodebuild -project Septica.xcodeproj -scheme Septica build`
+- [ ] Check current git status and recent commits
+- [ ] Review any failing tests or compilation issues
+- [ ] Update TodoWrite with current Sprint 2 tasks if needed
+
+### **CRITICAL ARCHITECTURAL CONTEXT:**
+- **Metal Rendering**: Implemented with SwiftUI fallback (CardRenderer.swift)
+- **Manager System**: Complete integration (Audio, Haptic, Error, Performance)
+- **Romanian Cultural Features**: Traditional music, colors, patterns integrated
+- **Child Safety**: Age-appropriate design (6-12 years target), 250MB memory limit
+- **Performance**: 60 FPS target, comprehensive monitoring system
+
+## 🔧 AUTOMATION HOOKS & SESSION MANAGEMENT
+
+### **Hook: Context Restoration on Session Start**
+Create a `/project:context` command or hook that automatically:
+```bash
+# Auto-trigger on session start/wake/consolidation
+echo "📋 Restoring Septica iOS project context..."
+
+# 1. Display current status
+echo "✅ Phase 1 & 2 Complete | 🎯 Sprint 2: CloudKit Integration"
+
+# 2. Check build status  
+echo "🔨 Verifying build status..."
+xcodebuild -project Septica.xcodeproj -scheme Septica -destination 'platform=iOS Simulator,name=iPhone 16 Pro' -quiet build
+
+# 3. Show git status
+echo "📝 Git status:"
+git status --porcelain
+
+# 4. Display next priorities
+echo "🎯 Next: CloudKit architecture & player profiles"
+echo "📚 Critical docs: FINAL_COMPREHENSIVE_EVALUATION_AND_PHASE_3_COMPLETE_ROADMAP.md"
+```
+
+### **Hook: Quality Gate Validation** 
+Auto-trigger before any major task completion:
+```bash
+# Pre-commit validation
+echo "🔍 Running quality gates..."
+xcodebuild -project Septica.xcodeproj -scheme Septica test
+swiftlint lint --quiet
+echo "✅ Quality gates passed - ready to proceed"
+```
+
+### **Hook: Context Compression on Sleep/Consolidation**
+```bash
+# Before sleep/consolidation - save critical state
+echo "💾 Saving session context..."
+echo "Current Sprint 2 Progress:" > .claude/session_context.md
+echo "- CloudKit: $(git log --oneline | grep -i cloudkit | wc -l) commits" >> .claude/session_context.md  
+echo "- Last build: $(date)" >> .claude/session_context.md
+echo "- Next priority: $(cat current_priority.txt)" >> .claude/session_context.md
+```
+
+### **Proposed Hook Integration:**
+1. **Session Start Hook**: `/project:context` or auto-trigger on wake
+2. **Quality Gate Hook**: Pre-commit validation with build + test
+3. **Progress Tracking Hook**: Auto-update progress reports
+4. **Documentation Sync Hook**: Keep CLAUDE.md current with actual status
+
+### **Manual Commands for Immediate Use:**
+```bash
+# Quick context restore
+/project:context
+
+# Quick build verification  
+/project:build
+
+# Sprint progress check
+/project:sprint-status
+
+# Quality gate validation
+/project:quality-gate
+```
+
 ## Project Overview
 Septica is a Romanian card game implementation for iOS using Metal for high-performance rendering, with a Go backend for real-time multiplayer, matchmaking, and competitive ranking systems.
 
