@@ -28,170 +28,6 @@ class RewardChestService: ObservableObject {
     @Published var dailyChestAvailable: Bool = true
     @Published var nextFreeChestTime: Date?
     
-    // MARK: - Romanian Cultural Chest System
-    
-    /// Romanian-themed chest types with cultural significance
-    enum ChestType: String, CaseIterable, Codable {
-        case wooden = "wooden"           // Basic village chest
-        case folk = "folk"               // Romanian folk art themed
-        case cultural = "cultural"       // Special Romanian heritage chest
-        case seasonal = "seasonal"       // Holiday-themed (Martisor, etc.)
-        case legendary = "legendary"     // Great Romanian masters
-        case daily = "daily"             // Daily folk blessing
-        
-        var displayName: String {
-            switch self {
-            case .wooden: return "Lada de Lemn"
-            case .folk: return "Lada Populară"
-            case .cultural: return "Lada Culturală"
-            case .seasonal: return "Lada Sărbătorii"
-            case .legendary: return "Lada Legendară"
-            case .daily: return "Binecuvântarea Zilnică"
-            }
-        }
-        
-        var culturalDescription: String {
-            switch self {
-            case .wooden: return "Traditional wooden chest from Romanian villages"
-            case .folk: return "Decorated with authentic Romanian folk art patterns"
-            case .cultural: return "Contains treasures of Romanian heritage"
-            case .seasonal: return "Special celebration chest with holiday themes"
-            case .legendary: return "Honors great Romanian cultural figures"
-            case .daily: return "Daily blessing with folk wisdom"
-            }
-        }
-        
-        var openDuration: TimeInterval {
-            switch self {
-            case .wooden: return 4 * 3600      // 4 hours
-            case .folk: return 8 * 3600        // 8 hours
-            case .cultural: return 12 * 3600   // 12 hours
-            case .seasonal: return 24 * 3600   // 24 hours
-            case .legendary: return 48 * 3600  // 48 hours
-            case .daily: return 0               // Instant
-            }
-        }
-        
-        var gemCost: Int {
-            switch self {
-            case .wooden: return 25
-            case .folk: return 50
-            case .cultural: return 100
-            case .seasonal: return 200
-            case .legendary: return 500
-            case .daily: return 0
-            }
-        }
-        
-        var rarity: ChestRarity {
-            switch self {
-            case .wooden, .daily: return .common
-            case .folk: return .rare
-            case .cultural: return .epic
-            case .seasonal, .legendary: return .legendary
-            }
-        }
-    }
-    
-    enum ChestRarity: String, Codable {
-        case common = "common"
-        case rare = "rare"
-        case epic = "epic"
-        case legendary = "legendary"
-        
-        var glowColor: String {
-            switch self {
-            case .common: return "#8B4513"      // Wood brown
-            case .rare: return "#4169E1"        // Romanian blue
-            case .epic: return "#FFD700"        // Romanian gold
-            case .legendary: return "#DC143C"   // Romanian red
-            }
-        }
-    }
-    
-    /// Individual reward chest with Romanian cultural theming
-    struct RewardChest: Codable, Identifiable {
-        let id: String
-        let type: ChestType
-        let earnedDate: Date
-        var isOpening: Bool = false
-        var openStartTime: Date?
-        var rewards: [ChestReward] = []
-        
-        // Romanian cultural metadata
-        let culturalTheme: String       // e.g., "transylvania_folk", "moldovan_traditions"
-        let folkPattern: String         // Visual pattern identifier
-        let seasonalBonus: Bool         // Extra rewards for Romanian holidays
-        
-        var timeUntilOpen: TimeInterval? {
-            guard let startTime = openStartTime else { return nil }
-            let elapsed = Date().timeIntervalSince(startTime)
-            let remaining = type.openDuration - elapsed
-            return max(0, remaining)
-        }
-        
-        var isReadyToOpen: Bool {
-            timeUntilOpen == 0
-        }
-        
-        var progressPercentage: Float {
-            guard let startTime = openStartTime else { return 0 }
-            let elapsed = Date().timeIntervalSince(startTime)
-            return Float(elapsed / type.openDuration).clamped(to: 0...1)
-        }
-    }
-    
-    /// Romanian-themed rewards with cultural education value
-    enum RewardType: String, CaseIterable, Codable {
-        case trophies = "trophies"
-        case cards = "cards"
-        case cardBacks = "card_backs"
-        case folkMusic = "folk_music"
-        case colorThemes = "color_themes"
-        case culturalStories = "cultural_stories"
-        case traditionalPatterns = "traditional_patterns"
-        case achievements = "achievements"
-        case gems = "gems"
-        
-        var displayName: String {
-            switch self {
-            case .trophies: return "Trofee"
-            case .cards: return "Cărți de Joc"
-            case .cardBacks: return "Modele de Cărți"
-            case .folkMusic: return "Muzică Populară"
-            case .colorThemes: return "Teme Tradiționale"
-            case .culturalStories: return "Povești Culturale"
-            case .traditionalPatterns: return "Modele Populare"
-            case .achievements: return "Realizări"
-            case .gems: return "Pietre Prețioase"
-            }
-        }
-    }
-    
-    struct ChestReward: Codable, Identifiable {
-        let id: String
-        let type: RewardType
-        let quantity: Int
-        let itemKey: String         // Specific item identifier
-        let displayName: String
-        let culturalSignificance: String
-        let rarity: ChestRarity
-        
-        // Educational content for cultural rewards
-        let educationalContent: String?
-        let folkTaleReference: String?
-        let historicalContext: String?
-    }
-    
-    /// Chest slot for queue management (4 slots like Clash Royale)
-    struct ChestSlot: Identifiable {
-        let id: Int
-        var chest: RewardChest?
-        var isUnlocked: Bool
-        
-        var isEmpty: Bool { chest == nil }
-    }
-    
     // MARK: - Initialization
     
     init(cloudKitManager: SepticaCloudKitManager, culturalSystem: CulturalAchievementSystem) {
@@ -212,7 +48,7 @@ class RewardChestService: ObservableObject {
     // MARK: - Chest Management
     
     /// Award chest based on game performance and cultural engagement
-    func awardChest(for gameResult: GameResult, culturalEngagement: Float) async throws {
+    func awardChest(for gameResult: CloudKitGameResult, culturalEngagement: Float) async throws {
         let chestType = determineChestType(gameResult: gameResult, culturalEngagement: culturalEngagement)
         let culturalTheme = selectCulturalTheme(for: chestType)
         
@@ -382,7 +218,7 @@ class RewardChestService: ObservableObject {
     
     // MARK: - Helper Methods
     
-    private func determineChestType(gameResult: GameResult, culturalEngagement: Float) -> ChestType {
+    private func determineChestType(gameResult: CloudKitGameResult, culturalEngagement: Float) -> ChestType {
         // Higher cultural engagement = better chests
         if culturalEngagement > 0.8 {
             return Bool.random() ? .cultural : .folk
@@ -636,6 +472,7 @@ class RewardChestService: ObservableObject {
     
     // MARK: - Error Types
     
+    @MainActor
     enum ChestError: LocalizedError {
         case invalidSlot
         case chestNotOpening
@@ -660,22 +497,5 @@ class RewardChestService: ObservableObject {
                 return "Not enough gems to speed up chest."
             }
         }
-    }
-}
-
-// MARK: - Supporting Types
-
-struct GameResult {
-    let isWin: Bool
-    let score: Int
-    let opponentType: String
-    let culturalEngagement: Float
-}
-
-// MARK: - Extensions
-
-extension Float {
-    func clamped(to range: ClosedRange<Float>) -> Float {
-        return Swift.max(range.lowerBound, Swift.min(range.upperBound, self))
     }
 }

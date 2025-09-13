@@ -21,11 +21,11 @@ class PlayerProfileService: ObservableObject {
     
     // MARK: - Published State
     
-    @Published var currentProfile: SepticaCloudKitManager.CloudKitPlayerProfile?
+    @Published var currentProfile: CloudKitPlayerProfile?
     @Published var isLoading: Bool = false
     @Published var syncStatus: SyncStatus = .idle
-    @Published var cardMasteries: [String: SepticaCloudKitManager.CardMastery] = [:]
-    @Published var currentArena: SepticaCloudKitManager.RomanianArena = .sateImarica
+    @Published var cardMasteries: [String: CardMastery] = [:]
+    @Published var currentArena: RomanianArena = .sateImarica
     @Published var trophyProgress: TrophyProgress?
     
     // MARK: - Progression State
@@ -33,7 +33,7 @@ class PlayerProfileService: ObservableObject {
     @Published var seasonalRewards: [SeasonalReward] = []
     @Published var availableChests: [RewardChest] = []
     @Published var dailyQuests: [DailyQuest] = []
-    @Published var achievements: [SepticaCloudKitManager.CulturalAchievement] = []
+    @Published var achievements: [CulturalAchievement] = []
     
     // MARK: - Romanian Cultural Features
     
@@ -53,8 +53,8 @@ class PlayerProfileService: ObservableObject {
     
     struct TrophyProgress {
         let currentTrophies: Int
-        let currentArena: SepticaCloudKitManager.RomanianArena
-        let nextArena: SepticaCloudKitManager.RomanianArena?
+        let currentArena: RomanianArena
+        let nextArena: RomanianArena?
         let trophiesNeeded: Int
         let progressPercentage: Float
         
@@ -262,7 +262,7 @@ class PlayerProfileService: ObservableObject {
     }
     
     private func createNewPlayerProfile() async {
-        let newProfile = SepticaCloudKitManager.CloudKitPlayerProfile(
+        let newProfile = CloudKitPlayerProfile(
             playerID: getCurrentPlayerID(),
             displayName: "New Player",
             currentArena: .sateImarica,
@@ -274,7 +274,7 @@ class PlayerProfileService: ObservableObject {
             favoriteAIDifficulty: "medium",
             cardMasteries: initializeCardMasteries(),
             achievements: [],
-            seasonalProgress: SepticaCloudKitManager.SeasonalProgress(
+            seasonalProgress: SeasonalProgress(
                 seasonID: getCurrentSeasonID(),
                 seasonTrophies: 0,
                 seasonWins: 0,
@@ -282,8 +282,8 @@ class PlayerProfileService: ObservableObject {
                 seasonAchievements: [],
                 celebrationParticipation: [:] // Empty dictionary for Romanian holidays
             ),
-            preferences: SepticaCloudKitManager.GamePreferences(),
-            culturalEducationProgress: SepticaCloudKitManager.CulturalEducationProgress(
+            preferences: GamePreferences(),
+            culturalEducationProgress: CulturalEducationProgress(
                 gameRulesLearned: [],
                 folkTalesRead: 0,
                 traditionalMusicKnowledge: 0,
@@ -311,7 +311,7 @@ class PlayerProfileService: ObservableObject {
         }
     }
     
-    private func updateLocalState(from profile: SepticaCloudKitManager.CloudKitPlayerProfile) {
+    private func updateLocalState(from profile: CloudKitPlayerProfile) {
         cardMasteries = profile.cardMasteries
         currentArena = profile.currentArena
         achievements = profile.achievements
@@ -325,8 +325,8 @@ class PlayerProfileService: ObservableObject {
     private func updateTrophyProgress(_ trophies: Int) {
         let current = cloudKitManager.checkArenaProgression(currentTrophies: trophies)
         let nextArenaIndex = current.rawValue + 1
-        let nextArena = nextArenaIndex < SepticaCloudKitManager.RomanianArena.allCases.count ? 
-            SepticaCloudKitManager.RomanianArena(rawValue: nextArenaIndex) : nil
+        let nextArena = nextArenaIndex < RomanianArena.allCases.count ? 
+            RomanianArena(rawValue: nextArenaIndex) : nil
         
         let trophiesNeeded = nextArena?.requiredTrophies ?? 0
         let progress = nextArena != nil ? Float(trophies - current.requiredTrophies) / Float(trophiesNeeded - current.requiredTrophies) : 1.0
@@ -394,8 +394,8 @@ class PlayerProfileService: ObservableObject {
         }
     }
     
-    private func updateCardMastery(cardKey: String, won: Bool, in profile: inout SepticaCloudKitManager.CloudKitPlayerProfile) {
-        var mastery = profile.cardMasteries[cardKey] ?? SepticaCloudKitManager.CardMastery(cardKey: cardKey)
+    private func updateCardMastery(cardKey: String, won: Bool, in profile: inout CloudKitPlayerProfile) {
+        var mastery = profile.cardMasteries[cardKey] ?? CardMastery(cardKey: cardKey)
         
         mastery.timesPlayed += 1
         if won {
@@ -427,7 +427,7 @@ class PlayerProfileService: ObservableObject {
         }
     }
     
-    private func calculateTrophiesEarned(arena: SepticaCloudKitManager.RomanianArena, opponentType: String) -> Int {
+    private func calculateTrophiesEarned(arena: RomanianArena, opponentType: String) -> Int {
         let baseTrophies = 25
         let arenaMultiplier = Float(arena.rawValue + 1) * 0.1 + 1.0
         let opponentMultiplier = opponentType == "AI" ? 1.0 : 1.2
@@ -435,7 +435,7 @@ class PlayerProfileService: ObservableObject {
         return Int(Float(baseTrophies) * arenaMultiplier * Float(opponentMultiplier))
     }
     
-    private func calculateTrophiesLost(arena: SepticaCloudKitManager.RomanianArena) -> Int {
+    private func calculateTrophiesLost(arena: RomanianArena) -> Int {
         // Child-friendly: lose fewer trophies in lower arenas
         switch arena {
         case .sateImarica, .satuMihai: return 5  // Very forgiving for beginners
@@ -504,7 +504,7 @@ class PlayerProfileService: ObservableObject {
     
     // MARK: - Celebration Events
     
-    private func celebrateArenaPromotion(_ newArena: SepticaCloudKitManager.RomanianArena) async {
+    private func celebrateArenaPromotion(_ newArena: RomanianArena) async {
         print("🎉 Arena promotion! Welcome to \(newArena.displayName)")
         print("📚 Cultural Info: \(newArena.culturalDescription)")
         // This would trigger UI animations and educational content display
@@ -533,8 +533,8 @@ class PlayerProfileService: ObservableObject {
         print("⚠️ Loading local profile fallback")
     }
     
-    private func initializeCardMasteries() -> [String: SepticaCloudKitManager.CardMastery] {
-        var masteries: [String: SepticaCloudKitManager.CardMastery] = [:]
+    private func initializeCardMasteries() -> [String: CardMastery] {
+        var masteries: [String: CardMastery] = [:]
         
         // Initialize all Romanian Septica cards (7, 8, 9, 10, J, Q, K, A for each suit)
         let suits = ["hearts", "diamonds", "clubs", "spades"]
@@ -543,7 +543,7 @@ class PlayerProfileService: ObservableObject {
         for suit in suits {
             for value in values {
                 let cardKey = "\(value)_\(suit)"
-                masteries[cardKey] = SepticaCloudKitManager.CardMastery(cardKey: cardKey)
+                masteries[cardKey] = CardMastery(cardKey: cardKey)
             }
         }
         
