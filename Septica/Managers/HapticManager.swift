@@ -24,6 +24,31 @@ class HapticManager: ObservableObject {
     private let notificationGenerator = UINotificationFeedbackGenerator()
     
     @Published var isHapticsEnabled = true
+    @Published var ageGroup: AgeGroup = .ages6to8 // Septica target demographic
+    
+    // MARK: - Age-Appropriate Haptic Configuration
+    
+    enum AgeGroup {
+        case ages6to8   // Gentle, encouraging feedback
+        case ages9to12  // More sophisticated patterns
+        case adult      // Full intensity haptics
+        
+        var hapticIntensityModifier: Float {
+            switch self {
+            case .ages6to8: return 0.6   // Gentler haptics for younger children
+            case .ages9to12: return 0.8  // Moderate haptics
+            case .adult: return 1.0      // Full intensity
+            }
+        }
+        
+        var maxSequenceLength: Int {
+            switch self {
+            case .ages6to8: return 3     // Shorter sequences to avoid overwhelming
+            case .ages9to12: return 5    // Moderate complexity
+            case .adult: return 8        // Full complexity allowed
+            }
+        }
+    }
     
     // MARK: - Initialization
     

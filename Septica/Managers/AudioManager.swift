@@ -69,6 +69,22 @@ class AudioManager: ObservableObject {
         case gameplayTheme = "romanian_gameplay_theme"
         case victoryTheme = "victory_celebration"
         case traditionalFolk = "traditional_folk"
+        
+        // Traditional Romanian cultural music (public domain)
+        case horaUnirii = "hora_unirii"           // Traditional Romanian folk dance
+        case sarbaIernii = "sarba_iernii"         // Winter celebration music
+        case jocMuntesc = "joc_muntesc"           // Mountain folk dance
+        case doiDeTeai = "doi_de_teai"            // Traditional linden dance
+        
+        var culturalDescription: String {
+            switch self {
+            case .horaUnirii: return "Hora Unirii - Traditional Unity Dance"
+            case .sarbaIernii: return "Sărbă Iernii - Winter Celebration"
+            case .jocMuntesc: return "Joc Muntesc - Mountain Folk Dance"
+            case .doiDeTeai: return "Doi de Tei - Traditional Linden Dance"
+            default: return rawValue.replacingOccurrences(of: "_", with: " ").capitalized
+            }
+        }
     }
     
     // MARK: - Initialization

@@ -20,6 +20,7 @@ class ErrorManager: ObservableObject {
     @Published var isShowingError = false
     @Published var errorQueue: [GameError] = []
     @Published var showErrorDetails = false
+    @Published var useRomanianLanguage = false // For cultural localization
     
     // MARK: - Error Types
     
