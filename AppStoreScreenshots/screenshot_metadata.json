@@ -1,0 +1,90 @@
+{
+  "app_name": "Septica - Romanian Card Game",
+  "cultural_theme": "Authentic Romanian Heritage",
+  "target_audience": "Romanian diaspora, cultural enthusiasts, premium card game players",
+  "screenshots": {
+    "01_main_menu": {
+      "title": "Welcome to Romanian Septica",
+      "description": "Experience Authentic Romanian Card Gaming",
+      "romanian_text": "Jocul Tradițional Românesc",
+      "english_text": "Traditional Romanian Game",
+      "focus": "Romanian cultural welcome with traditional patterns and flag colors"
+    },
+    "02_gameplay": {
+      "title": "Authentic Gameplay",
+      "description": "7s Beat Any Card - Traditional Romanian Rules",
+      "romanian_text": "Șaptele bate orice carte",
+      "english_text": "Sevens beat any card",
+      "focus": "Active game showing 7 of Hearts being played (wild card)"
+    },
+    "03_ai_opponent": {
+      "title": "Intelligent AI Opponent",
+      "description": "4 Difficulty Levels - From Novice to Romanian Master",
+      "romanian_text": "Adversar inteligent - De la începător la maestru",
+      "english_text": "Smart opponent - From beginner to master",
+      "focus": "AI making strategic decision with Romanian strategy patterns"
+    },
+    "04_cultural_heritage": {
+      "title": "Cultural Heritage Design",
+      "description": "Preserving Romanian Card Game Traditions",
+      "romanian_text": "Păstrăm tradițiile jocurilor românești",
+      "english_text": "Preserving Romanian gaming traditions",
+      "focus": "Romanian folk art patterns and cultural color schemes"
+    },
+    "05_accessibility": {
+      "title": "Accessibility Excellence",
+      "description": "Inclusive Gaming for All Romanian Heritage Enthusiasts",
+      "romanian_text": "Joc accesibil pentru toți iubitorii culturii românești",
+      "english_text": "Accessible gaming for all Romanian culture lovers",
+      "focus": "VoiceOver, Dynamic Type, and accessibility features"
+    },
+    "06_victory": {
+      "title": "Victory & Achievement",
+      "description": "Celebrate Your Romanian Heritage Victories",
+      "romanian_text": "Sărbătorește victoriile tale românești",
+      "english_text": "Celebrate your Romanian victories",
+      "focus": "Game victory with Romanian cultural celebration"
+    }
+  },
+  "device_specs": {
+    "iPhone_6.7": {
+      "resolution": "1290x2796",
+      "device": "iPhone 14 Pro Max",
+      "simulator": "iPhone 16 Pro Max"
+    },
+    "iPhone_6.5": {
+      "resolution": "1242x2688",
+      "device": "iPhone XS Max",
+      "simulator": "iPhone 16 Plus"
+    },
+    "iPhone_5.5": {
+      "resolution": "1242x2208",
+      "device": "iPhone 8 Plus",
+      "simulator": "iPhone 16"
+    },
+    "iPad_12.9": {
+      "resolution": "2048x2732",
+      "device": "iPad Pro 12.9\"",
+      "simulator": "iPad Pro 13-inch (M4)"
+    },
+    "iPad_11.0": {
+      "resolution": "1668x2388",
+      "device": "iPad Pro 11\"",
+      "simulator": "iPad Pro 11-inch (M4)"
+    }
+  },
+  "romanian_cultural_elements": {
+    "colors": {
+      "blue": "#004C9F",
+      "yellow": "#FCD535",
+      "red": "#CE1126"
+    },
+    "phrases": {
+      "main_title": "Septica Românească",
+      "subtitle": "Jocul Tradițional Românesc",
+      "welcome": "Bine ai venit la Septica!",
+      "rules": "Regulile tradiționale românești",
+      "victory": "Felicitări! Ai câștigat!"
+    }
+  }
+}
