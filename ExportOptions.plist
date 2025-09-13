@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>method</key>
+    <string>app-store</string>
+    <key>teamID</key>
+    <string>GLKDB2BTQG</string>
+    <key>uploadBitcode</key>
+    <false/>
+    <key>uploadSymbols</key>
+    <true/>
+    <key>compileBitcode</key>
+    <false/>
+    <key>signingStyle</key>
+    <string>automatic</string>
+    <key>signingCertificate</key>
+    <string>Apple Distribution</string>
+    <key>destination</key>
+    <string>upload</string>
+    <key>generateAppStoreInformation</key>
+    <true/>
+    <key>stripSwiftSymbols</key>
+    <true/>
+    <key>provisioningProfiles</key>
+    <dict>
+        <key>dev.leanvibe.game.Septica</key>
+        <string>match AppStore dev.leanvibe.game.Septica</string>
+    </dict>
+</dict>
+</plist>

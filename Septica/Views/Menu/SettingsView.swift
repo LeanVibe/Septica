@@ -723,8 +723,8 @@ struct SettingsView_Previews: PreviewProvider {
                 .environmentObject(NavigationManager())
         }
         .preferredColorScheme(.dark)
-        .environmentObject(AccessibilityManager.preview)
-        .environmentObject(HapticManager.preview)
-        .environmentObject(AudioManager.preview)
+        .environmentObject(AccessibilityManager())
+        .environmentObject(HapticManager())
+        .environmentObject(AudioManager())
     }
 }

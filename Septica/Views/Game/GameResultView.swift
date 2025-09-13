@@ -17,7 +17,7 @@ struct GameResultView: View {
     
     private var winnerName: String? {
         guard let winnerId = result.winnerId,
-              let winnerIndex = playerNames.firstIndex(where: { _ in true }) else {
+              let _ = playerNames.firstIndex(where: { _ in true }) else {
             return nil
         }
         return playerNames.first // Simplified for now
