@@ -7,18 +7,20 @@
 //
 
 import Foundation
+import XCTest
+import Combine
 @testable import Septica
 
 // MARK: - Mock Game State
 
 class MockGameState: ObservableObject {
-    var phase: GamePhase = .playing
-    var players: [Player] = []
-    var currentPlayerIndex: Int = 0
-    var tableCards: [Card] = []
-    var trickHistory: [CompletedTrick] = []
-    var targetScore: Int = 11
-    var gameResult: GameResult?
+    @Published var phase: GamePhase = .playing
+    @Published var players: [Player] = []
+    @Published var currentPlayerIndex: Int = 0
+    @Published var tableCards: [Card] = []
+    @Published var trickHistory: [CompletedTrick] = []
+    @Published var targetScore: Int = 11
+    @Published var gameResult: GameResult?
     
     var currentPlayer: Player? {
         guard currentPlayerIndex < players.count else { return nil }
@@ -250,13 +252,13 @@ class MockDeck {
         }
     }
     
-    mutating func shuffle() {
+    func shuffle() {
         shuffled = true
         // Deterministic shuffle for testing
         cards.reverse()
     }
     
-    mutating func drawCard() -> Card? {
+    func drawCard() -> Card? {
         guard !cards.isEmpty else { return nil }
         drawCount += 1
         return cards.removeFirst()
@@ -266,11 +268,11 @@ class MockDeck {
         return cards.first
     }
     
-    mutating func addCard(_ card: Card) {
+    func addCard(_ card: Card) {
         cards.append(card)
     }
     
-    mutating func reset() {
+    func reset() {
         drawCount = 0
         shuffled = false
     }
