@@ -30,6 +30,11 @@ struct CardView: View {
     @State private var isFocused = false
     @State private var playAnimationTrigger = false
     
+    // Metal rendering computed properties
+    private var rotationAxis: (x: CGFloat, y: CGFloat, z: CGFloat) {
+        return (x: 0, y: 1, z: 0)
+    }
+    
     init(
         card: Card,
         isSelected: Bool = false,
@@ -47,20 +52,57 @@ struct CardView: View {
     }
     
     var body: some View {
-        // Metal rendering temporarily disabled - use SwiftUI fallback
-        swiftUICardView
+        // Use Metal rendering if available, otherwise fallback to SwiftUI
+        if shouldUseMetalRendering() {
+            MetalCardView(card: card, isSelected: isSelected, isPlayable: isPlayable, isAnimating: isAnimating)
+                .frame(width: cardSize.width, height: cardSize.height)
+                .scaleEffect(scaleEffect)
+                .rotation3DEffect(.degrees(rotationAngle), axis: rotationAxis)
+                .shadow(color: shadowColor, radius: shadowRadius, x: shadowOffset, y: shadowOffset)
+                .animation(.spring(response: 0.6, dampingFraction: 0.7, blendDuration: 0.3), value: isSelected)
+                .animation(.spring(response: 0.4, dampingFraction: 0.8, blendDuration: 0.2), value: isAnimating)
+                .onTapGesture {
+                    handleCardTap()
+                }
+                .accessibilityElement()
+                .accessibilityLabel(accessibilityLabel)
+                .accessibilityAddTraits(isPlayable ? .isButton : [])
+                .accessibilityHint(isPlayable ? "Double tap to play this card" : "")
+        } else {
+            swiftUICardView
+        }
+    }
+    
+    // MARK: - Event Handlers
+    
+    private func handleCardTap() {
+        if isPlayable {
+            // Trigger haptic feedback
+            hapticManager.trigger(.cardPlay)
+            
+            // Play audio feedback
+            audioManager.playSound(.cardPlace)
+            
+            // Trigger play animation
+            playAnimationTrigger = true
+            
+            onTap?()
+        } else {
+            // Invalid move feedback
+            hapticManager.trigger(.cardInvalid)
+            audioManager.playSound(.cardInvalid)
+        }
+    }
+    
+    private var accessibilityLabel: String {
+        return "\(card.displayValue) of \(card.suit.rawValue)\(isSelected ? ", selected" : "")\(isPlayable ? "" : ", not playable")"
     }
     
     /// Check if Metal rendering should be used
     private func shouldUseMetalRendering() -> Bool {
-        // Temporarily disabled until Metal toolchain is properly configured in Xcode Beta
-        // TODO: Re-enable once Metal shaders compile successfully
-        return false
-        
-        // Future implementation:
-        // return MTLCreateSystemDefaultDevice() != nil && 
-        //        !ProcessInfo.processInfo.arguments.contains("--disable-metal") &&
-        //        shadersCompiledSuccessfully()
+        // Metal rendering enabled - require Metal device
+        return MTLCreateSystemDefaultDevice() != nil && 
+               !ProcessInfo.processInfo.arguments.contains("--disable-metal")
     }
     
     /// SwiftUI fallback implementation
@@ -434,6 +476,81 @@ struct CardView_Previews: PreviewProvider {
     }
 }
 
-// MARK: - Metal Card View (Disabled)
-// TODO: Re-enable when Metal toolchain is properly configured
-// MetalCardView implementation removed temporarily to avoid compilation issues
+// MARK: - Metal Card View
+
+/// Metal-powered card view with advanced rendering and interactions
+struct MetalCardView: UIViewRepresentable {
+    let card: Card
+    let isSelected: Bool
+    let isPlayable: Bool  
+    let isAnimating: Bool
+    
+    func makeUIView(context: Context) -> MTKView {
+        let mtkView = MTKView()
+        mtkView.device = MTLCreateSystemDefaultDevice()
+        mtkView.delegate = context.coordinator
+        mtkView.preferredFramesPerSecond = 60
+        mtkView.enableSetNeedsDisplay = true
+        mtkView.isPaused = false
+        mtkView.backgroundColor = UIColor.clear
+        
+        return mtkView
+    }
+    
+    func updateUIView(_ uiView: MTKView, context: Context) {
+        context.coordinator.updateCard(card: card, isSelected: isSelected, isPlayable: isPlayable, isAnimating: isAnimating)
+    }
+    
+    func makeCoordinator() -> MetalCardCoordinator {
+        MetalCardCoordinator(card: card)
+    }
+}
+
+/// Coordinator for Metal card rendering  
+class MetalCardCoordinator: NSObject, MTKViewDelegate {
+    private var renderer: Renderer?
+    private var cardRenderer: CardRenderer?
+    private var card: Card
+    private var isSelected = false
+    private var isPlayable = true
+    private var isAnimating = false
+    
+    init(card: Card) {
+        self.card = card
+        super.init()
+    }
+    
+    func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {
+        // Handle view size changes - Metal views handle this internally
+    }
+    
+    func draw(in view: MTKView) {
+        guard let device = view.device,
+              let drawable = view.currentDrawable else { return }
+        
+        // Initialize renderers if needed
+        if cardRenderer == nil {
+            guard let commandQueue = device.makeCommandQueue() else { return }
+            cardRenderer = CardRenderer(device: device, commandQueue: commandQueue)
+        }
+        
+        // Render the card with Metal
+        cardRenderer?.renderCard(
+            card: card,
+            isSelected: isSelected,
+            isPlayable: isPlayable,
+            isAnimating: isAnimating,
+            to: drawable,
+            view: view
+        )
+        
+        drawable.present()
+    }
+    
+    func updateCard(card: Card, isSelected: Bool, isPlayable: Bool, isAnimating: Bool) {
+        self.card = card
+        self.isSelected = isSelected
+        self.isPlayable = isPlayable
+        self.isAnimating = isAnimating
+    }
+}
