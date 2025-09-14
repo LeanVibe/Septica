@@ -187,3 +187,56 @@ extension SepticaCloudKitManager {
         // This will trigger UI celebration and educational content
     }
 }
+
+// MARK: - CloudKit Sync Status
+
+enum CloudKitSyncStatus: String, CaseIterable {
+    case idle = "idle"
+    case syncing = "syncing"
+    case uploading = "uploading"
+    case downloading = "downloading"
+    case conflictResolution = "conflict_resolution"
+    case error = "error"
+    
+    var displayName: String {
+        switch self {
+        case .idle: return "Ready"
+        case .syncing: return "Synchronizing..."
+        case .uploading: return "Uploading Romanian heritage data..."
+        case .downloading: return "Downloading cultural progress..."
+        case .conflictResolution: return "Resolving conflicts..."
+        case .error: return "Sync error"
+        }
+    }
+}
+
+// MARK: - CloudKit Conflict Resolution
+
+struct CloudKitConflict: Identifiable {
+    let id = UUID()
+    let recordType: String
+    let recordID: CKRecord.ID
+    let serverRecord: CKRecord?
+    let clientRecord: CKRecord
+    let conflictType: ConflictType
+    let culturalImpact: CulturalImpact
+    
+    enum ConflictType {
+        case dataModified
+        case recordDeleted
+        case culturalProgressMismatch
+        case achievementDuplicate
+    }
+    
+    enum CulturalImpact {
+        case none
+        case minor           // Preferences, non-critical data
+        case moderate        // Game statistics, partial cultural progress
+        case significant     // Major cultural achievements, heritage milestones
+        case critical        // Cultural education progress, rare achievements
+        
+        var requiresUserIntervention: Bool {
+            return self == .significant || self == .critical
+        }
+    }
+}
