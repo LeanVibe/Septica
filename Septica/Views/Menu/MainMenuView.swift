@@ -418,12 +418,14 @@ struct NavigationDestinationView: View {
                 .environmentObject(AccessibilityManager())
                 .environmentObject(HapticManager())
                 .environmentObject(AudioManager())
+                .environmentObject(AnimationManager())
         case .gamePlay(let session):
             GameBoardView(gameState: session.gameState)
                 .environmentObject(navigationManager)
                 .environmentObject(AccessibilityManager())
                 .environmentObject(HapticManager())
                 .environmentObject(AudioManager())
+                .environmentObject(AnimationManager())
         case .gameResults(let result, let session):
             GameResultsView(result: result, session: session)
                 .environmentObject(navigationManager)
@@ -439,6 +441,7 @@ struct NavigationDestinationView: View {
                 .environmentObject(AccessibilityManager())
                 .environmentObject(HapticManager())
                 .environmentObject(AudioManager())
+                .environmentObject(AnimationManager())
         case .mainMenu:
             MainMenuView() // Shouldn't reach here in navigation stack
         }
