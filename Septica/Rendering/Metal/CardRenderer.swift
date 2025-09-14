@@ -491,41 +491,77 @@ extension CardRenderer {
     
     /// Render a single card to a drawable (for MetalCardView integration)
     func renderCard(card: Card, isSelected: Bool, isPlayable: Bool, isAnimating: Bool, to drawable: CAMetalDrawable, view: MTKView) {
-        // Create a simple programmatic Metal rendering without external shaders
+        // Single render pass with enhanced card appearance
         guard let commandBuffer = commandQueue.makeCommandBuffer() else { return }
+        commandBuffer.label = "CardRenderCommand"
+        
+        // Determine final card appearance based on state
+        let finalColor = calculateFinalCardColor(card: card, isSelected: isSelected, isPlayable: isPlayable)
         
         // Create render pass descriptor
         let renderPassDescriptor = MTLRenderPassDescriptor()
         renderPassDescriptor.colorAttachments[0].texture = drawable.texture
         renderPassDescriptor.colorAttachments[0].loadAction = .clear
-        renderPassDescriptor.colorAttachments[0].clearColor = MTLClearColor(red: 0.0, green: 0.0, blue: 0.0, alpha: 0.0)
+        renderPassDescriptor.colorAttachments[0].clearColor = MTLClearColor(
+            red: Double(finalColor.x), 
+            green: Double(finalColor.y), 
+            blue: Double(finalColor.z), 
+            alpha: 1.0
+        )
         renderPassDescriptor.colorAttachments[0].storeAction = .store
         
         guard let renderEncoder = commandBuffer.makeRenderCommandEncoder(descriptor: renderPassDescriptor) else { return }
+        renderEncoder.label = "CardRenderEncoder"
         
-        // Simple programmatic rendering - draw a colored rectangle representing the card
-        let cardColor = getCardColor(for: card, isSelected: isSelected, isPlayable: isPlayable)
-        
-        // Create vertices for a simple quad (without external shaders, we'll use built-in rendering)
-        let vertices: [Float] = [
-            -0.8, -1.0, 0.0,  // Bottom left
-             0.8, -1.0, 0.0,  // Bottom right
-             0.8,  1.0, 0.0,  // Top right
-            -0.8,  1.0, 0.0   // Top left
-        ]
-        
-        // For now, just clear with the card color to show Metal is working
-        renderPassDescriptor.colorAttachments[0].clearColor = MTLClearColor(
-            red: Double(cardColor.x), 
-            green: Double(cardColor.y), 
-            blue: Double(cardColor.z), 
-            alpha: Double(cardColor.w)
-        )
-        
+        // For now, we use the clear color to represent the card
+        // Future enhancement: draw actual card geometry with suit symbols and values
         renderEncoder.endEncoding()
+        
+        // Present and commit
         commandBuffer.present(drawable)
         commandBuffer.commit()
     }
+    
+    /// Calculate the final card color considering all states and Romanian aesthetics
+    private func calculateFinalCardColor(card: Card, isSelected: Bool, isPlayable: Bool) -> simd_float4 {
+        // Start with authentic Romanian card background
+        var finalColor = simd_float4(0.95, 0.95, 0.90, 1.0) // Cream card background
+        
+        // Get suit-specific accent color
+        let suitColor = getSuitColor(for: card.suit)
+        
+        // Blend suit color with background (30% suit, 70% background)
+        finalColor = finalColor * 0.7 + suitColor * 0.3
+        
+        // Apply state modifications
+        if !isPlayable {
+            // Desaturate and darken for disabled state
+            finalColor = finalColor * 0.5
+        }
+        
+        if isSelected {
+            // Add golden Romanian highlight
+            let gold = RomanianCardConstants.folkGold
+            finalColor = finalColor * 0.8 + gold * 0.2
+        }
+        
+        return finalColor
+    }
+    
+    /// Get authentic Romanian suit colors
+    private func getSuitColor(for suit: Suit) -> simd_float4 {
+        switch suit {
+        case .hearts:
+            return RomanianCardConstants.traditionalRed
+        case .diamonds:
+            return RomanianCardConstants.traditionalYellow
+        case .clubs:
+            return simd_float4(0.1, 0.4, 0.1, 1.0) // Romanian forest green
+        case .spades:
+            return simd_float4(0.1, 0.1, 0.1, 1.0) // Deep black
+        }
+    }
+    
     
     /// Get color for card based on suit and state
     private func getCardColor(for card: Card, isSelected: Bool, isPlayable: Bool) -> simd_float4 {

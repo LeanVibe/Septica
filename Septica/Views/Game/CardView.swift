@@ -587,7 +587,7 @@ class MetalCardCoordinator: NSObject, MTKViewDelegate {
                 view: view
             )
             
-            drawable.present()
+            // Don't call drawable.present() here - it's handled in CardRenderer.renderCard()
         } catch {
             print("Metal rendering error: \(error)")
         }
