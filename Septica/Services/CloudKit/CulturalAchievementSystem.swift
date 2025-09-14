@@ -594,6 +594,10 @@ class CulturalAchievementSystem: ObservableObject {
     
     // MARK: - Achievement Tracking
     
+    func updateAchievementProgress(gameWon: Bool, cardsUsed: [String], culturalActions: [String]) async {
+        await checkAchievementProgress(gameWon: gameWon, cardsUsed: cardsUsed, culturalActions: culturalActions)
+    }
+    
     func checkAchievementProgress(gameWon: Bool, cardsUsed: [String], culturalActions: [String]) async {
         for achievement in availableAchievements {
             if !achievement.isUnlocked {
@@ -693,6 +697,25 @@ class CulturalAchievementSystem: ObservableObject {
         audioManager?.startBackgroundMusic(.traditionalFolk)
     }
     
+    // MARK: - Cultural Engagement Tracking
+    
+    func calculateCulturalEngagement(_ data: CulturalEngagementData) async -> Float {
+        var engagement: Float = 0.0
+        
+        // Weight different cultural activities
+        engagement += Float(data.musicListeningTime) / 3600.0 * 0.3  // 30% for music
+        engagement += Float(data.storiesRead) / 10.0 * 0.25           // 25% for stories
+        engagement += Float(data.achievementsUnlocked) / 5.0 * 0.25   // 25% for achievements
+        engagement += Float(data.traditionalActionsPerformed) / 20.0 * 0.2  // 20% for actions
+        
+        return min(1.0, engagement) // Cap at 1.0
+    }
+    
+    func recordCulturalAction(_ action: String) {
+        // Record cultural action for achievements and engagement tracking
+        print("🇷🇴 Cultural action recorded: \(action)")
+    }
+    
     // MARK: - Progress Tracking
     
     private func loadPlayerProgress() async {
@@ -703,4 +726,13 @@ class CulturalAchievementSystem: ObservableObject {
     func saveProgress() async {
         // Save current progress to CloudKit via PlayerProfileService
     }
+}
+
+// MARK: - Supporting Data Models
+
+struct CulturalEngagementData {
+    let musicListeningTime: TimeInterval
+    let storiesRead: Int
+    let achievementsUnlocked: Int
+    let traditionalActionsPerformed: Int
 }

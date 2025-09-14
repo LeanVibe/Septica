@@ -6,8 +6,10 @@
 //  Provides premium visual effects for authentic card game experience
 //
 
+#if canImport(Metal)
 import Metal
 import MetalKit
+#endif
 import simd
 import SwiftUI
 import Combine

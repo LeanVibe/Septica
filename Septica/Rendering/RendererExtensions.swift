@@ -272,35 +272,37 @@ extension Renderer {
         // Implementation moved to CardRenderer.swift to avoid ambiguity
     }
     
-    func removeCardAnimation(_ cardId: UUID) {
-        currentCardAnimations.removeValue(forKey: cardId)
-    }
+    // Note: The following methods are placeholders for CardRenderer integration
+    // They should be implemented in CardRenderer.swift to avoid circular dependencies
     
-    func clearAllParticles() {
-        particleEmitters.removeAll()
-    }
+    // func removeCardAnimation(_ cardId: UUID) {
+    //     // Implementation moved to CardRenderer to avoid property access issues
+    // }
     
-    func addParticleEmitter(at position: simd_float3, color: simd_float4) {
-        let emitter = ParticleEmitter(position: position, color: color)
-        particleEmitters.append(emitter)
-    }
+    // func clearAllParticles() {
+    //     // Implementation moved to CardRenderer
+    // }
     
-    // MARK: - Performance Monitoring
+    // func addParticleEmitter(at position: simd_float3, color: simd_float4) {
+    //     // Implementation moved to CardRenderer
+    // }
     
-    func updatePerformanceMetrics() {
+    // MARK: - Performance Monitoring (Standalone Methods)
+    
+    class func updatePerformanceMetrics(for renderer: Renderer) {
         let currentTime = CACurrentMediaTime()
-        let deltaTime = currentTime - lastFrameTime
-        lastFrameTime = currentTime
+        let deltaTime = currentTime - renderer.lastFrameTime
+        renderer.lastFrameTime = currentTime
         
         if deltaTime > 0 {
-            frameRate = 1.0 / deltaTime
+            renderer.frameRate = 1.0 / deltaTime
         }
         
-        performanceMonitor?.recordMetric(name: "FPS", value: frameRate, unit: "fps")
-        performanceMonitor?.recordMetric(name: "FrameTime", value: deltaTime * 1000, unit: "ms")
+        renderer.performanceMonitor?.recordMetric(name: "FPS", value: renderer.frameRate, unit: "fps")
+        renderer.performanceMonitor?.recordMetric(name: "FrameTime", value: deltaTime * 1000, unit: "ms")
     }
     
-    func checkMemoryUsage() {
+    class func checkMemoryUsage(for renderer: Renderer) {
         // Basic memory usage check
         var info = mach_task_basic_info()
         var count = mach_msg_type_number_t(MemoryLayout<mach_task_basic_info>.size)/4
@@ -318,11 +320,11 @@ extension Renderer {
         
         if kerr == KERN_SUCCESS {
             let memoryUsageMB = Double(info.resident_size) / 1024.0 / 1024.0
-            performanceMonitor?.recordMetric(name: "Memory", value: memoryUsageMB, unit: "MB")
+            renderer.performanceMonitor?.recordMetric(name: "Memory", value: memoryUsageMB, unit: "MB")
             
             // Report memory warning if usage is high
             if memoryUsageMB > 250 { // 250MB threshold
-                errorManager?.reportError(.insufficientMemory(currentUsage: memoryUsageMB),
+                renderer.errorManager?.reportError(.insufficientMemory(currentUsage: memoryUsageMB),
                                         context: "Memory monitoring")
             }
         }

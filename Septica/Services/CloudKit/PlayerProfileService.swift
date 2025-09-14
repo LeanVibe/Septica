@@ -261,7 +261,7 @@ class PlayerProfileService: ObservableObject {
         isLoading = false
     }
     
-    private func createNewPlayerProfile() async {
+    func createNewPlayerProfile() async {
         let newProfile = CloudKitPlayerProfile(
             playerID: getCurrentPlayerID(),
             displayName: "New Player",
@@ -308,6 +308,98 @@ class PlayerProfileService: ObservableObject {
             syncStatus = .idle
         } catch {
             syncStatus = .error("Failed to save new profile")
+        }
+    }
+    
+    // MARK: - Game Result Processing
+    
+    func processGameResult(isWin: Bool, finalScore: Int, opponentType: String, cardsUsed: [String]) async {
+        guard var profile = currentProfile else { return }
+        
+        profile.totalGamesPlayed += 1
+        
+        if isWin {
+            profile.totalWins += 1
+            profile.currentStreak += 1
+            profile.longestStreak = max(profile.longestStreak, profile.currentStreak)
+            
+            // Award trophies based on opponent type
+            let trophyGain = calculateTrophyGain(opponentType: opponentType, finalScore: finalScore)
+            profile.trophies += trophyGain
+            
+            // Check for arena progression
+            if let newArena = checkArenaProgression(trophies: profile.trophies) {
+                profile.currentArena = newArena
+            }
+        } else {
+            profile.currentStreak = 0
+            
+            // Lose fewer trophies to encourage continued play
+            let trophyLoss = calculateTrophyLoss(opponentType: opponentType)
+            profile.trophies = max(0, profile.trophies - trophyLoss)
+        }
+        
+        // Update card masteries
+        updateCardMasteries(cardsUsed: cardsUsed, gameWon: isWin, profile: &profile)
+        
+        // Update profile
+        profile.lastPlayedDate = Date()
+        currentProfile = profile
+        updateLocalState(from: profile)
+        
+        // Sync to CloudKit
+        do {
+            try await cloudKitManager.savePlayerProfile(profile)
+            syncStatus = .idle
+        } catch {
+            syncStatus = .error("Failed to save game result")
+        }
+    }
+    
+    private func calculateTrophyGain(opponentType: String, finalScore: Int) -> Int {
+        let baseTrophies = 30
+        let scoreBonus = finalScore / 10
+        let difficultyMultiplier = opponentType.contains("EXPERT") ? 1.5 : 1.0
+        
+        return Int(Float(baseTrophies + scoreBonus) * Float(difficultyMultiplier))
+    }
+    
+    private func calculateTrophyLoss(opponentType: String) -> Int {
+        let baseLoss = 15
+        let difficultyReducer = opponentType.contains("EASY") ? 0.5 : 1.0
+        
+        return Int(Float(baseLoss) * Float(difficultyReducer))
+    }
+    
+    private func checkArenaProgression(trophies: Int) -> RomanianArena? {
+        let allArenas = RomanianArena.allCases.sorted { $0.requiredTrophies < $1.requiredTrophies }
+        
+        for arena in allArenas.reversed() {
+            if trophies >= arena.requiredTrophies {
+                return arena
+            }
+        }
+        
+        return .sateImarica // Fallback to starting arena
+    }
+    
+    private func updateCardMasteries(cardsUsed: [String], gameWon: Bool, profile: inout CloudKitPlayerProfile) {
+        for cardKey in cardsUsed {
+            if var mastery = profile.cardMasteries[cardKey] {
+                mastery.timesPlayed += 1
+                if gameWon {
+                    mastery.successfulPlays += 1
+                }
+                profile.cardMasteries[cardKey] = mastery
+            } else {
+                // Create new mastery record
+                var newMastery = CardMastery(cardKey: cardKey)
+                newMastery.timesPlayed = 1
+                if gameWon {
+                    newMastery.successfulPlays = 1
+                }
+                profile.cardMasteries[cardKey] = newMastery
+            }
         }
     }
     

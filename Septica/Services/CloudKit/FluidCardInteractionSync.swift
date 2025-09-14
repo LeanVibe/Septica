@@ -11,33 +11,7 @@ import CloudKit
 import Combine
 import SwiftUI
 
-/// Manages synchronization of fluid card interactions for seamless cross-device gameplay
-@MainActor
-class FluidCardInteractionSync: ObservableObject {
-    
-    // MARK: - Dependencies
-    
-    private let cloudKitManager: SepticaCloudKitManager
-    private let hapticManager: HapticManager?
-    private let cardRenderer: CardRenderer?
-    
-    // MARK: - Published State
-    
-    @Published var cardStates: [UUID: CardInteractionState] = [:]
-    @Published var activeGestureState: GestureState?
-    @Published var ghostCardPosition: CGPoint?
-    @Published var validDropZones: [DropZone] = []
-    @Published var currentHoverZone: DropZone?
-    @Published var interactionHistory: [CardInteraction] = []
-    
-    // MARK: - Real-time Sync State
-    
-    @Published var syncConnected: Bool = false
-    @Published var pendingSyncs: Int = 0
-    private var syncTimer: Timer?
-    private let syncInterval: TimeInterval = 0.1 // 100ms for smooth real-time updates
-    
-    // MARK: - Card Interaction Models
+// MARK: - Card Interaction Models (Outside @MainActor for Codable compatibility)
     
     /// Visual effect definition for card interactions
     struct VisualEffect: Codable {
@@ -162,7 +136,7 @@ class FluidCardInteractionSync: ObservableObject {
     }
     
     /// Valid drop zones with Romanian cultural themes
-    struct DropZone: Codable, Identifiable {
+    struct InteractionDropZone: Codable, Identifiable {
         let id: UUID
         let type: ZoneType
         let bounds: CGRect
@@ -216,6 +190,32 @@ class FluidCardInteractionSync: ObservableObject {
             let helpHintsUsed: Bool
         }
     }
+
+/// Manages synchronization of fluid card interactions for seamless cross-device gameplay
+@MainActor
+class FluidCardInteractionSync: ObservableObject {
+    
+    // MARK: - Dependencies
+    
+    private let cloudKitManager: SepticaCloudKitManager
+    private let hapticManager: HapticManager?
+    private let cardRenderer: CardRenderer?
+    
+    // MARK: - Published State
+    
+    @Published var cardStates: [UUID: CardInteractionState] = [:]
+    @Published var activeGestureState: GestureState?
+    @Published var ghostCardPosition: CGPoint?
+    @Published var validDropZones: [InteractionDropZone] = []
+    @Published var currentHoverZone: InteractionDropZone?
+    @Published var interactionHistory: [CardInteraction] = []
+    
+    // MARK: - Real-time Sync State
+    
+    @Published var syncConnected: Bool = false
+    @Published var pendingSyncs: Int = 0
+    private var syncTimer: Timer?
+    private let syncInterval: TimeInterval = 0.1 // 100ms for smooth real-time updates
     
     // MARK: - Initialization
     
@@ -252,23 +252,23 @@ class FluidCardInteractionSync: ObservableObject {
     
     private func setupDefaultDropZones() {
         validDropZones = [
-            DropZone(
+            InteractionDropZone(
                 id: UUID(),
-                type: .playArea,
+                type: InteractionDropZone.ZoneType.playArea,
                 bounds: CGRect(x: 100, y: 200, width: 200, height: 150),
                 isValid: true,
                 hoverEffect: VisualEffect(
-                    type: .glow,
+                    type: VisualEffect.EffectType.glow,
                     intensity: 0.5,
                     duration: 0.2,
                     startTime: Date(),
-                    color: .folkGold
+                    color: VisualEffect.EffectColor.folkGold
                 ),
                 culturalTheme: "traditional_table"
             ),
-            DropZone(
+            InteractionDropZone(
                 id: UUID(),
-                type: .playerHand,
+                type: InteractionDropZone.ZoneType.playerHand,
                 bounds: CGRect(x: 50, y: 400, width: 300, height: 80),
                 isValid: true,
                 hoverEffect: nil,
@@ -307,7 +307,7 @@ class FluidCardInteractionSync: ObservableObject {
         cardState.lastUpdate = currentTime
         
         // Apply state-specific modifications
-        await applyInteractionEffects(&cardState, newState: newState)
+        applyInteractionEffects(&cardState, newState: newState)
         
         // Update local state
         cardStates[cardId] = cardState
@@ -324,7 +324,7 @@ class FluidCardInteractionSync: ObservableObject {
         recordInteraction(cardId: cardId, interactionType: newState, position: position)
     }
     
-    private func applyInteractionEffects(_ cardState: inout CardInteractionState, newState: CardInteractionState.InteractionType) async {
+    private func applyInteractionEffects(_ cardState: inout CardInteractionState, newState: CardInteractionState.InteractionType) {
         switch newState {
         case .idle:
             cardState.scale = 1.0
@@ -339,12 +339,12 @@ class FluidCardInteractionSync: ObservableObject {
             cardState.hapticPattern = .gentleHover
             
             // Add gentle glow effect
-            cardState.visualEffects.append(CardInteractionState.VisualEffect(
-                type: .glow,
+            cardState.visualEffects.append(VisualEffect(
+                type: VisualEffect.EffectType.glow,
                 intensity: 0.4,
                 duration: 0.2,
                 startTime: Date(),
-                color: .folkGold
+                color: VisualEffect.EffectColor.folkGold
             ))
             
         case .dragging:
@@ -354,12 +354,12 @@ class FluidCardInteractionSync: ObservableObject {
             cardState.opacity = 0.9
             
             // Add trail effect for smooth dragging
-            cardState.visualEffects.append(CardInteractionState.VisualEffect(
-                type: .trail,
+            cardState.visualEffects.append(VisualEffect(
+                type: VisualEffect.EffectType.trail,
                 intensity: 0.7,
                 duration: 0.1,
                 startTime: Date(),
-                color: .romanianBlue
+                color: VisualEffect.EffectColor.romanianBlue
             ))
             
         case .ghosting:
@@ -368,41 +368,41 @@ class FluidCardInteractionSync: ObservableObject {
             
         case .snapping:
             cardState.hapticPattern = .confirmSelection
-            cardState.visualEffects.append(CardInteractionState.VisualEffect(
-                type: .bounce,
+            cardState.visualEffects.append(VisualEffect(
+                type: VisualEffect.EffectType.bounce,
                 intensity: 0.8,
                 duration: 0.3,
                 startTime: Date(),
-                color: .folkGold
+                color: VisualEffect.EffectColor.folkGold
             ))
             
         case .playing:
             cardState.scale = 1.2
             cardState.hapticPattern = .successfulPlay
-            cardState.visualEffects.append(CardInteractionState.VisualEffect(
-                type: .pulse,
+            cardState.visualEffects.append(VisualEffect(
+                type: VisualEffect.EffectType.pulse,
                 intensity: 1.0,
                 duration: 0.5,
                 startTime: Date(),
-                color: .romanianRed
+                color: VisualEffect.EffectColor.romanianRed
             ))
             
         case .celebrating:
             // Special celebration for successful plays
             cardState.visualEffects.append(contentsOf: [
-                CardInteractionState.VisualEffect(
-                    type: .sparkle,
+                VisualEffect(
+                    type: VisualEffect.EffectType.sparkle,
                     intensity: 1.0,
                     duration: 1.0,
                     startTime: Date(),
-                    color: .romanianYellow
+                    color: VisualEffect.EffectColor.romanianYellow
                 ),
-                CardInteractionState.VisualEffect(
-                    type: .folkPattern,
+                VisualEffect(
+                    type: VisualEffect.EffectType.folkPattern,
                     intensity: 0.8,
                     duration: 1.0,
                     startTime: Date(),
-                    color: .folkGold
+                    color: VisualEffect.EffectColor.folkGold
                 )
             ])
             cardState.hapticPattern = .celebration
@@ -491,7 +491,7 @@ class FluidCardInteractionSync: ObservableObject {
         // Update which drop zones are valid for the current card
         // This would be based on game rules and current game state
         for index in validDropZones.indices {
-            validDropZones[index] = DropZone(
+            validDropZones[index] = InteractionDropZone(
                 id: validDropZones[index].id,
                 type: validDropZones[index].type,
                 bounds: validDropZones[index].bounds,
@@ -502,7 +502,7 @@ class FluidCardInteractionSync: ObservableObject {
         }
     }
     
-    private func isValidDropZone(zone: DropZone, for cardId: UUID) -> Bool {
+    private func isValidDropZone(zone: InteractionDropZone, for cardId: UUID) -> Bool {
         // Implement game rules logic here
         // For now, return true for play area and false for opponent area
         switch zone.type {
@@ -531,12 +531,12 @@ class FluidCardInteractionSync: ObservableObject {
         }
     }
     
-    private func triggerZoneHoverEffect(_ zone: DropZone) async {
+    private func triggerZoneHoverEffect(_ zone: InteractionDropZone) async {
         // Add visual feedback for drop zone hover
-        hapticManager?.trigger(.cardHover)
+        hapticManager?.trigger(.cardSelect)
     }
     
-    private func snapToDropZone(cardId: UUID, zone: DropZone) async {
+    private func snapToDropZone(cardId: UUID, zone: InteractionDropZone) async {
         let snapPosition = CGPoint(x: zone.bounds.midX, y: zone.bounds.midY)
         
         // Animate snap with haptic feedback
@@ -559,7 +559,7 @@ class FluidCardInteractionSync: ObservableObject {
         hapticManager?.trigger(.cardInvalid)
     }
     
-    private func playCard(cardId: UUID, in zone: DropZone) async {
+    private func playCard(cardId: UUID, in zone: InteractionDropZone) async {
         // Update to playing state with celebration
         await updateCardInteraction(cardId: cardId, newState: .playing, position: CGPoint(x: zone.bounds.midX, y: zone.bounds.midY))
         
@@ -584,7 +584,7 @@ class FluidCardInteractionSync: ObservableObject {
     // MARK: - CloudKit Synchronization
     
     private func establishCloudKitSync() async {
-        syncConnected = await cloudKitManager.isAvailable
+        syncConnected = cloudKitManager.isAvailable
         
         if syncConnected {
             print("✅ Fluid card interaction sync established")
@@ -631,7 +631,7 @@ class FluidCardInteractionSync: ObservableObject {
         case .gentleHover:
             hapticManager?.trigger(.cardSelect)
         case .confirmSelection:
-            hapticManager?.trigger(.cardHover)
+            hapticManager?.trigger(.cardPlay)
         case .successfulPlay:
             hapticManager?.trigger(.cardPlay)
         case .invalidMove:

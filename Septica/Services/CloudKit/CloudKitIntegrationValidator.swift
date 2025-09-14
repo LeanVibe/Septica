@@ -23,7 +23,7 @@ class CloudKitIntegrationValidator {
     
     // MARK: - Test State
     
-    @Published var validationResults: [CloudKitCloudKitValidationResult] = []
+    @Published var validationResults: [CloudKitValidationResult] = []
     @Published var isValidating: Bool = false
     
     // MARK: - Initialization
@@ -81,14 +81,14 @@ class CloudKitIntegrationValidator {
             // Test basic connectivity without requiring actual iCloud account
             let isAvailable = cloudKitManager.isAvailable || !cloudKitManager.isAvailable // Always pass this test since we can't control iCloud in simulator
             
-            validationResults.append(CloudKitCloudKitValidationResult(
+            validationResults.append(CloudKitValidationResult(
                 test: test,
                 status: .passed,
                 message: "CloudKit availability checked successfully",
                 details: "Account Status: \(cloudKitManager.accountStatus.rawValue)"
             ))
         } catch {
-            validationResults.append(CloudKitCloudKitValidationResult(
+            validationResults.append(CloudKitValidationResult(
                 test: test,
                 status: .failed,
                 message: "CloudKit availability check failed: \(error.localizedDescription)"
@@ -380,9 +380,4 @@ enum ValidationError: LocalizedError {
     }
 }
 
-struct CulturalEngagementData {
-    let musicListeningTime: TimeInterval
-    let storiesRead: Int
-    let achievementsUnlocked: Int
-    let traditionalActionsPerformed: Int
-}
+// CulturalEngagementData moved to CulturalAchievementSystem.swift

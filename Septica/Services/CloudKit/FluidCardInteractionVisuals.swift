@@ -410,17 +410,17 @@ class FluidCardInteractionVisuals: ObservableObject {
         }
     }
     
-    /// Map cultural sounds to AudioManager's Romanian sound system
+    /// Map cultural sounds to AudioManager's sound system
     private func playCulturalSound(_ soundType: CulturalSoundType) {
         switch soundType {
         case .traditionalFolk:
-            audioManager?.playRomanianSound(.gameVictory)
+            audioManager?.playSound(.gameVictory)
         case .nationalHymn:
-            audioManager?.playRomanianSound(.gameVictory)
+            audioManager?.playSound(.gameVictory)
         case .bellChime:
-            audioManager?.playRomanianSound(.trickComplete)
+            audioManager?.playSound(.trickWon)
         case .folkDance:
-            audioManager?.playRomanianSound(.gameStart)
+            audioManager?.playSound(.cardSelect)
         }
     }
     

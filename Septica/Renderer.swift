@@ -7,8 +7,10 @@
 
 // Our platform independent renderer class
 
+#if canImport(Metal)
 import Metal
 import MetalKit
+#endif
 import simd
 import SwiftUI
 import Combine
@@ -508,11 +510,11 @@ class Renderer: NSObject, MTKViewDelegate, ObservableObject {
     
     func draw(in view: MTKView) {
         // Performance monitoring
-        updatePerformanceMetrics()
+        Renderer.updatePerformanceMetrics(for: self)
         
         // Memory check (periodic)
         if Int(time) % 60 == 0 { // Check every ~60 frames
-            checkMemoryUsage()
+            Renderer.checkMemoryUsage(for: self)
         }
         
         _ = inFlightSemaphore.wait(timeout: DispatchTime.distantFuture)
@@ -615,15 +617,17 @@ class Renderer: NSObject, MTKViewDelegate, ObservableObject {
         
         // Update particle system based on quality
         if !RenderQualityManager.shouldUseParticles(quality: quality) {
-            clearAllParticles()
+            particleEmitters.removeAll() // clearAllParticles implementation
         }
     }
     
     /// Add victory celebration effect
     func triggerVictoryCelebration(at position: simd_float3) {
         if RenderQualityManager.shouldUseParticles(quality: renderQuality) {
-            addParticleEmitter(at: position, 
-                             color: simd_float4(ROMANIAN_GOLD_R, ROMANIAN_GOLD_G, ROMANIAN_GOLD_B, 1.0))
+            // addParticleEmitter implementation
+            let emitter = ParticleEmitter(position: position, 
+                                        color: simd_float4(ROMANIAN_GOLD_R, ROMANIAN_GOLD_G, ROMANIAN_GOLD_B, 1.0))
+            particleEmitters.append(emitter)
         }
     }
     
@@ -632,7 +636,8 @@ class Renderer: NSObject, MTKViewDelegate, ObservableObject {
         if highlighted {
             // Animation state management moved to CardRenderer
         } else {
-            removeCardAnimation(cardId)
+            // removeCardAnimation implementation
+            currentCardAnimations.removeValue(forKey: cardId)
         }
     }
     
