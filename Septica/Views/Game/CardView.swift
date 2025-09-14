@@ -73,6 +73,112 @@ struct CardView: View {
         }
     }
     
+    // MARK: - Card View Components
+    
+    private var cardBackgroundView: some View {
+        RoundedRectangle(cornerRadius: cardSize.cornerRadius)
+            .fill(cardBackground)
+            .overlay(
+                RoundedRectangle(cornerRadius: cardSize.cornerRadius)
+                    .stroke(cardBorder, lineWidth: cardSize.borderWidth)
+            )
+            .frame(width: cardSize.width, height: cardSize.height)
+    }
+    
+    private var cardContentView: some View {
+        VStack(spacing: cardSize.contentSpacing) {
+            // Top left value and suit
+            HStack {
+                VStack(spacing: 1) {
+                    Text(card.displayValue)
+                        .font(cardSize.valueFont.weight(.bold))
+                        .foregroundStyle(suitColor)
+                    
+                    Text(card.suit.symbol)
+                        .font(cardSize.suitFont)
+                        .foregroundStyle(suitColor)
+                }
+                Spacer()
+            }
+            
+            Spacer()
+            
+            // Center suit symbol
+            Text(card.suit.symbol)
+                .font(cardSize.centerSuitFont)
+                .foregroundStyle(suitColor.opacity(0.4))
+            
+            Spacer()
+            
+            // Bottom right value and suit (rotated)
+            HStack {
+                Spacer()
+                VStack(spacing: 1) {
+                    Text(card.suit.symbol)
+                        .font(cardSize.suitFont)
+                        .foregroundStyle(suitColor)
+                    
+                    Text(card.displayValue)
+                        .font(cardSize.valueFont.weight(.bold))
+                        .foregroundStyle(suitColor)
+                }
+                .rotationEffect(.degrees(180))
+            }
+        }
+        .padding(cardSize.contentPadding)
+    }
+    
+    private var cardIndicatorsView: some View {
+        ZStack {
+            // Point card indicator
+            if card.isPointCard {
+                VStack {
+                    HStack {
+                        Spacer()
+                        Circle()
+                            .fill(Color.yellow.gradient)
+                            .frame(width: 10, height: 10)
+                            .overlay(
+                                Text("P")
+                                    .font(.system(size: 7, weight: .bold))
+                                    .foregroundColor(.black)
+                            )
+                            .offset(x: -8, y: 8)
+                    }
+                    Spacer()
+                }
+            }
+            
+            // Wild card indicator
+            if card.value == 7 {
+                VStack {
+                    HStack {
+                        Circle()
+                            .fill(Color.orange.gradient)
+                            .frame(width: 8, height: 8)
+                            .overlay(
+                                Image(systemName: "star.fill")
+                                    .font(.system(size: 4))
+                                    .foregroundColor(.white)
+                            )
+                            .offset(x: 8, y: 8)
+                        Spacer()
+                    }
+                    Spacer()
+                }
+            }
+        }
+    }
+    
+    private var selectionOverlayView: some View {
+        RoundedRectangle(cornerRadius: cardSize.cornerRadius)
+            .stroke(Color.blue, lineWidth: 3)
+            .background(
+                RoundedRectangle(cornerRadius: cardSize.cornerRadius)
+                    .fill(.blue.opacity(0.1))
+            )
+    }
+    
     // MARK: - Event Handlers
     
     private func handleCardTap() {
@@ -100,91 +206,18 @@ struct CardView: View {
     
     /// Check if Metal rendering should be used
     private func shouldUseMetalRendering() -> Bool {
-        // Metal rendering enabled - require Metal device
-        return MTLCreateSystemDefaultDevice() != nil && 
-               !ProcessInfo.processInfo.arguments.contains("--disable-metal")
+        // Temporarily disable Metal rendering to fix crash and focus on UI improvements
+        return false
     }
     
-    /// SwiftUI fallback implementation
+    /// Enhanced SwiftUI card implementation with premium design
     private var swiftUICardView: some View {
         ZStack {
-            // Card background
-            RoundedRectangle(cornerRadius: cardSize.cornerRadius)
-                .fill(cardBackground)
-                .stroke(cardBorder, lineWidth: cardSize.borderWidth)
-                .frame(width: cardSize.width, height: cardSize.height)
-            
-            // Card content
-            VStack(spacing: cardSize.contentSpacing) {
-                // Top left value and suit
-                HStack {
-                    VStack(spacing: 2) {
-                        Text(card.displayValue)
-                            .font(cardSize.valueFont)
-                            .fontWeight(.bold)
-                        
-                        Text(card.suit.symbol)
-                            .font(cardSize.suitFont)
-                    }
-                    .foregroundColor(suitColor)
-                    
-                    Spacer()
-                }
-                
-                Spacer()
-                
-                // Center suit symbol (large)
-                Text(card.suit.symbol)
-                    .font(cardSize.centerSuitFont)
-                    .foregroundColor(suitColor.opacity(0.3))
-                
-                Spacer()
-                
-                // Bottom right value and suit (rotated)
-                HStack {
-                    Spacer()
-                    
-                    VStack(spacing: 2) {
-                        Text(card.suit.symbol)
-                            .font(cardSize.suitFont)
-                        
-                        Text(card.displayValue)
-                            .font(cardSize.valueFont)
-                            .fontWeight(.bold)
-                    }
-                    .foregroundColor(suitColor)
-                    .rotationEffect(.degrees(180))
-                }
-            }
-            .padding(cardSize.contentPadding)
-            
-            // Point card indicator
-            if card.isPointCard {
-                VStack {
-                    HStack {
-                        Spacer()
-                        Circle()
-                            .fill(Color.yellow)
-                            .frame(width: 8, height: 8)
-                            .offset(x: -4, y: 4)
-                    }
-                    Spacer()
-                }
-            }
-            
-            // Special card indicators
-            if card.value == 7 {
-                // Wild card indicator
-                VStack {
-                    HStack {
-                        Circle()
-                            .fill(Color.orange)
-                            .frame(width: 6, height: 6)
-                            .offset(x: 4, y: 4)
-                        Spacer()
-                    }
-                    Spacer()
-                }
+            cardBackgroundView
+            cardContentView
+            cardIndicatorsView
+            if isSelected {
+                selectionOverlayView
             }
         }
         .scaleEffect(scaleEffect)
@@ -260,9 +293,9 @@ struct CardView: View {
         if isSelected {
             baseColor = Color.white
         } else if !isPlayable {
-            baseColor = Color.gray.opacity(0.8)
+            baseColor = Color.gray.opacity(0.6)  // More contrast for disabled state
         } else {
-            baseColor = Color.white.opacity(0.95)
+            baseColor = Color.white
         }
         
         // Apply high contrast adjustments if needed
@@ -270,7 +303,7 @@ struct CardView: View {
             if isSelected {
                 return Color.white
             } else if !isPlayable {
-                return Color.gray.opacity(0.6)
+                return Color.gray.opacity(0.4)  // Even more contrast
             } else {
                 return Color.white
             }
@@ -286,9 +319,9 @@ struct CardView: View {
         if isSelected {
             baseColor = Color.blue
         } else if !isPlayable {
-            baseColor = Color.gray
+            baseColor = Color.red.opacity(0.8)  // Clear visual feedback for non-playable cards
         } else {
-            baseColor = Color.black.opacity(0.2)
+            baseColor = Color.black.opacity(0.3)  // Stronger default border
         }
         
         // Apply high contrast adjustments
@@ -296,9 +329,9 @@ struct CardView: View {
             if isSelected {
                 return Color.blue
             } else if !isPlayable {
-                return Color.red.opacity(0.7) // Make disabled state more obvious
+                return Color.red  // Maximum contrast for disabled state
             } else {
-                return Color.black.opacity(0.5) // Stronger border
+                return Color.black.opacity(0.6) // Very strong border
             }
         }
         
@@ -389,9 +422,9 @@ enum CardSize {
     
     var width: CGFloat {
         switch self {
-        case .small: return 40
-        case .normal: return 60
-        case .large: return 80
+        case .small: return 60    // Increased from 40 - minimum touch target
+        case .normal: return 90   // Increased from 60 - main game cards
+        case .large: return 120   // Increased from 80 - detailed views
         }
     }
     
@@ -421,25 +454,25 @@ enum CardSize {
     
     var valueFont: Font {
         switch self {
-        case .small: return .caption2
-        case .normal: return .caption
-        case .large: return .body
+        case .small: return .caption     // Increased from caption2
+        case .normal: return .body       // Increased from caption  
+        case .large: return .title3      // Increased from body
         }
     }
     
     var suitFont: Font {
         switch self {
-        case .small: return .caption2
-        case .normal: return .caption
-        case .large: return .body
+        case .small: return .caption     // Increased from caption2
+        case .normal: return .body       // Increased from caption
+        case .large: return .title3      // Increased from body
         }
     }
     
     var centerSuitFont: Font {
         switch self {
-        case .small: return .title3
-        case .normal: return .title2
-        case .large: return .title
+        case .small: return .title2      // Increased from title3
+        case .normal: return .largeTitle // Increased from title2  
+        case .large: return .largeTitle  // Increased from title
         }
     }
 }
