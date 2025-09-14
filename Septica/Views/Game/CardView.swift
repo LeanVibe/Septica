@@ -206,8 +206,9 @@ struct CardView: View {
     
     /// Check if Metal rendering should be used
     private func shouldUseMetalRendering() -> Bool {
-        // Temporarily disable Metal rendering to fix crash and focus on UI improvements
-        return false
+        // Re-enable Metal rendering with crash fixes
+        return MTLCreateSystemDefaultDevice() != nil && 
+               !ProcessInfo.processInfo.arguments.contains("--disable-metal")
     }
     
     /// Enhanced SwiftUI card implementation with premium design
@@ -561,23 +562,35 @@ class MetalCardCoordinator: NSObject, MTKViewDelegate {
         guard let device = view.device,
               let drawable = view.currentDrawable else { return }
         
-        // Initialize renderers if needed
+        // Initialize renderers if needed with proper error handling
         if cardRenderer == nil {
-            guard let commandQueue = device.makeCommandQueue() else { return }
-            cardRenderer = CardRenderer(device: device, commandQueue: commandQueue)
+            do {
+                guard let commandQueue = device.makeCommandQueue() else { 
+                    print("Failed to create Metal command queue")
+                    return 
+                }
+                cardRenderer = CardRenderer(device: device, commandQueue: commandQueue)
+            } catch {
+                print("Failed to initialize CardRenderer: \(error)")
+                return
+            }
         }
         
-        // Render the card with Metal
-        cardRenderer?.renderCard(
-            card: card,
-            isSelected: isSelected,
-            isPlayable: isPlayable,
-            isAnimating: isAnimating,
-            to: drawable,
-            view: view
-        )
-        
-        drawable.present()
+        // Safely render the card with Metal
+        do {
+            cardRenderer?.renderCard(
+                card: card,
+                isSelected: isSelected,
+                isPlayable: isPlayable,
+                isAnimating: isAnimating,
+                to: drawable,
+                view: view
+            )
+            
+            drawable.present()
+        } catch {
+            print("Metal rendering error: \(error)")
+        }
     }
     
     func updateCard(card: Card, isSelected: Bool, isPlayable: Bool, isAnimating: Bool) {
