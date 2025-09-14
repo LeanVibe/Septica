@@ -29,8 +29,8 @@ struct MainMenuView: View {
                     
                     Spacer(minLength: 20)
                     
-                    // Main menu buttons
-                    MenuButtonsSection(
+                    // Central PLAY button (Clash Royale style)
+                    ClashRoyaleStyleButtons(
                         navigationManager: navigationManager,
                         showingContinue: showingContinueOption
                     )
@@ -186,72 +186,126 @@ struct CardSymbolView: View {
     }
 }
 
-/// Main menu buttons section
-struct MenuButtonsSection: View {
+/// Clash Royale style main menu with central PLAY button
+struct ClashRoyaleStyleButtons: View {
     let navigationManager: NavigationManager
     let showingContinue: Bool
     
     var body: some View {
-        VStack(spacing: 20) {
-            // Continue Game (if available)
-            if showingContinue {
-                MenuButton(
-                    title: "Continue Game",
-                    subtitle: "Resume your saved game",
-                    iconName: "play.fill",
-                    color: .green,
-                    action: {
-                        navigationManager.resumeSavedGame()
-                    }
+        VStack(spacing: 30) {
+            // Central PLAY button (massive, like Clash Royale BATTLE button)
+            Button(action: {
+                // Start game directly - no setup screen
+                navigationManager.startNewGame(
+                    playerName: UserSettings.shared.playerName,
+                    difficulty: UserSettings.shared.preferredDifficulty,
+                    targetScore: 11
                 )
-                .transition(.slide.combined(with: .opacity))
+            }) {
+                VStack(spacing: 8) {
+                    Image(systemName: "play.fill")
+                        .font(.system(size: 40, weight: .bold))
+                        .foregroundColor(.white)
+                    
+                    Text("PLAY")
+                        .font(.system(size: 28, weight: .black, design: .default))
+                        .foregroundColor(.white)
+                        .tracking(2)
+                    
+                    if showingContinue {
+                        Text("Continue Game")
+                            .font(.caption)
+                            .foregroundColor(.white.opacity(0.8))
+                    } else {
+                        Text("Start New Game")
+                            .font(.caption)
+                            .foregroundColor(.white.opacity(0.8))
+                    }
+                }
+                .frame(width: 200, height: 120)
+                .background(
+                    RoundedRectangle(cornerRadius: 20)
+                        .fill(
+                            LinearGradient(
+                                colors: [
+                                    Color.green.opacity(0.9),
+                                    Color.green.opacity(0.7),
+                                    Color.green.opacity(0.9)
+                                ],
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
+                        )
+                        .shadow(color: .green.opacity(0.5), radius: 10, x: 0, y: 5)
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 20)
+                        .stroke(
+                            LinearGradient(
+                                colors: [.white.opacity(0.3), .clear],
+                                startPoint: .top,
+                                endPoint: .bottom
+                            ),
+                            lineWidth: 2
+                        )
+                )
             }
+            .buttonStyle(PressEffectButtonStyle())
+            .scaleEffect(showingContinue ? 1.05 : 1.0)
+            .animation(.spring(response: 0.3, dampingFraction: 0.7), value: showingContinue)
             
-            // New Game
-            MenuButton(
-                title: "New Game",
-                subtitle: "Start a fresh match",
-                iconName: "plus.circle.fill",
-                color: .blue,
-                action: {
-                    navigationManager.showGameSetup()
-                }
-            )
-            
-            // Statistics
-            MenuButton(
-                title: "Statistics",
-                subtitle: "View your progress",
-                iconName: "chart.bar.fill",
-                color: .purple,
-                action: {
-                    navigationManager.showStatistics()
-                }
-            )
-            
-            // Rules
-            MenuButton(
-                title: "How to Play",
-                subtitle: "Learn Septica rules",
-                iconName: "book.fill",
-                color: .orange,
-                action: {
-                    navigationManager.showRules()
-                }
-            )
-            
-            // Settings
-            MenuButton(
-                title: "Settings",
-                subtitle: "Customize your experience",
-                iconName: "gearshape.fill",
-                color: .gray,
-                action: {
-                    navigationManager.showSettings()
-                }
-            )
+            // Secondary options in horizontal row (like Clash Royale)
+            HStack(spacing: 20) {
+                SmallMenuButton(
+                    icon: "chart.bar.fill",
+                    color: .purple,
+                    action: { navigationManager.showStatistics() }
+                )
+                
+                SmallMenuButton(
+                    icon: "book.fill", 
+                    color: .orange,
+                    action: { navigationManager.showRules() }
+                )
+                
+                SmallMenuButton(
+                    icon: "gearshape.fill",
+                    color: .gray,
+                    action: { navigationManager.showSettings() }
+                )
+            }
         }
-        .animation(.easeInOut, value: showingContinue)
+    }
+}
+
+/// Small circular buttons for secondary options (Clash Royale style)
+struct SmallMenuButton: View {
+    let icon: String
+    let color: Color
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            Image(systemName: icon)
+                .font(.title2)
+                .foregroundColor(.white)
+                .frame(width: 50, height: 50)
+                .background(
+                    Circle()
+                        .fill(color.opacity(0.8))
+                        .shadow(color: color.opacity(0.3), radius: 5, x: 0, y: 2)
+                )
+        }
+        .buttonStyle(PressEffectButtonStyle())
+    }
+}
+
+/// Button style with press effect (like Clash Royale)
+struct PressEffectButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.95 : 1.0)
+            .animation(.easeInOut(duration: 0.1), value: configuration.isPressed)
     }
 }
 

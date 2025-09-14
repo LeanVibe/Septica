@@ -97,27 +97,41 @@ class GameViewModel: ObservableObject {
     
     /// Set up reactive bindings and observers
     private func setupBindings() {
-        // Observe game state changes
+        // Observe game state changes with safety checks
         gameState.objectWillChange
             .receive(on: DispatchQueue.main)
             .sink { [weak self] in
-                self?.performanceMonitor.recordFrame() // Track frame updates
-                self?.objectWillChange.send()
-                self?.handleGameStateChange()
+                guard let self = self else { return }
+                
+                // Record frame with safety check
+                do {
+                    self.performanceMonitor.recordFrame()
+                } catch {
+                    print("Performance monitor frame recording failed: \(error)")
+                }
+                
+                self.objectWillChange.send()
+                self.handleGameStateChange()
             }
             .store(in: &cancellables)
     }
     
     /// Set up performance monitoring for 60 FPS targets
     private func setupPerformanceMonitoring() {
-        performanceMonitor.startMonitoring()
-        
-        // Monitor for memory warnings and performance issues
-        NotificationCenter.default.publisher(for: .performanceMemoryWarning)
-            .sink { [weak self] _ in
-                self?.handlePerformanceMemoryWarning()
-            }
-            .store(in: &cancellables)
+        // Add safety check to prevent crashes
+        do {
+            performanceMonitor.startMonitoring()
+            
+            // Monitor for memory warnings and performance issues
+            NotificationCenter.default.publisher(for: .performanceMemoryWarning)
+                .sink { [weak self] _ in
+                    self?.handlePerformanceMemoryWarning()
+                }
+                .store(in: &cancellables)
+        } catch {
+            print("Performance monitoring failed to start: \(error)")
+            // Continue without performance monitoring to prevent crashes
+        }
     }
     
     // MARK: - Game Management
