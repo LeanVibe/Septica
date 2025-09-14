@@ -7,6 +7,7 @@
 //
 
 import SwiftUI
+import MetalKit
 import UIKit
 
 /// SwiftUI view for displaying a single playing card with full accessibility support
@@ -46,6 +47,24 @@ struct CardView: View {
     }
     
     var body: some View {
+        // Metal rendering temporarily disabled - use SwiftUI fallback
+        swiftUICardView
+    }
+    
+    /// Check if Metal rendering should be used
+    private func shouldUseMetalRendering() -> Bool {
+        // Temporarily disabled until Metal toolchain is properly configured in Xcode Beta
+        // TODO: Re-enable once Metal shaders compile successfully
+        return false
+        
+        // Future implementation:
+        // return MTLCreateSystemDefaultDevice() != nil && 
+        //        !ProcessInfo.processInfo.arguments.contains("--disable-metal") &&
+        //        shadersCompiledSuccessfully()
+    }
+    
+    /// SwiftUI fallback implementation
+    private var swiftUICardView: some View {
         ZStack {
             // Card background
             RoundedRectangle(cornerRadius: cardSize.cornerRadius)
@@ -414,3 +433,7 @@ struct CardView_Previews: PreviewProvider {
         .previewLayout(.sizeThatFits)
     }
 }
+
+// MARK: - Metal Card View (Disabled)
+// TODO: Re-enable when Metal toolchain is properly configured
+// MetalCardView implementation removed temporarily to avoid compilation issues

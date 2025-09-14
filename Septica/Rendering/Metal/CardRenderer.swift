@@ -486,6 +486,75 @@ extension CardRenderer {
         let x = Float(index - gameState.tableCards.count / 2) * spacing
         return simd_float3(x, 0, 0)
     }
+    
+    // MARK: - Single Card Rendering
+    
+    /// Render a single card to a drawable (for MetalCardView integration)
+    /// TODO: Fix compilation issues when Metal toolchain is available
+    func renderCard(card: Card, isSelected: Bool, isPlayable: Bool, isAnimating: Bool, to drawable: CAMetalDrawable, view: MTKView) {
+        // Temporarily disabled due to compilation issues with Metal toolchain
+        print("Metal rendering requested but disabled - using SwiftUI fallback")
+        return
+        
+        // Uncomment when Metal toolchain works:
+        /*
+        guard let commandBuffer = commandQueue.makeCommandBuffer(),
+              let renderPassDescriptor = view.currentRenderPassDescriptor else { return }
+        
+        // Set clear color and configure render pass
+        renderPassDescriptor.colorAttachments[0].clearColor = MTLClearColor(red: 0.0, green: 0.0, blue: 0.0, alpha: 0.0)
+        renderPassDescriptor.colorAttachments[0].loadAction = .clear
+        
+        guard let renderEncoder = commandBuffer.makeRenderCommandEncoder(descriptor: renderPassDescriptor) else { return }
+        
+        // Set up single card properties
+        var cardProperties = CardVisualProperties(
+            position: simd_float3(0, 0, 0), // Centered
+            rotation: simd_float3(0, 0, 0),
+            scale: simd_float3(
+                isSelected ? 1.05 : (isPlayable ? 1.0 : 0.95),
+                isSelected ? 1.05 : (isPlayable ? 1.0 : 0.95),
+                1.0
+            ),
+            highlightIntensity: isSelected ? 1.0 : 0.0,
+            glowColor: isSelected ? simd_float4(0.2, 0.6, 1.0, 1.0) : simd_float4(0.8, 0.6, 0.2, 1.0),
+            flipAngle: 0.0,
+            animationProgress: isAnimating ? 1.0 : 0.0
+        )
+        
+        // Apply animation rotation if animating
+        if isAnimating {
+            cardProperties.rotation.z = Float(Date().timeIntervalSince1970.truncatingRemainder(dividingBy: 2.0)) * Float.pi
+        }
+        
+        // Render the single card
+        renderEncoder.setRenderPipelineState(cardRenderPipeline)
+        renderEncoder.setVertexBuffer(cardVertexBuffer, offset: 0, index: 0)
+        renderEncoder.setVertexBytes(&cardProperties, length: MemoryLayout<CardVisualProperties>.size, index: 1)
+        
+        // Set viewport
+        let viewport = MTLViewport(
+            originX: 0, originY: 0,
+            width: Double(view.drawableSize.width),
+            height: Double(view.drawableSize.height),
+            znear: 0.0, zfar: 1.0
+        )
+        renderEncoder.setViewport(viewport)
+        
+        // Draw the card
+        renderEncoder.drawIndexedPrimitives(
+            type: .triangle,
+            indexCount: 6,
+            indexType: .uint16,
+            indexBuffer: cardIndexBuffer,
+            indexBufferOffset: 0
+        )
+        
+        renderEncoder.endEncoding()
+        commandBuffer.present(drawable)
+        commandBuffer.commit()
+        */
+    }
 }
 
 // CardRenderer.swift created with Metal fallback support
