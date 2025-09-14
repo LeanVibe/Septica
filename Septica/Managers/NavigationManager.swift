@@ -92,7 +92,7 @@ class NavigationManager: ObservableObject {
             targetScore: targetScore
         )
         gameSession = session
-        navigateTo(.gamePlay(session))
+        push(.gamePlay(session))
     }
     
     /// Resume a saved game if available
