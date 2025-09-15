@@ -9,8 +9,7 @@
 import Foundation
 import Combine
 import CoreML
-import CreateML
-import os.log
+import OSLog
 
 /// Advanced AI player with Romanian cultural personality and machine learning adaptation
 @MainActor
