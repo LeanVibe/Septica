@@ -16,6 +16,7 @@ struct PlayerHandView: View {
     let onCardPlayed: (Card) -> Void
     let isCurrentPlayer: Bool
     let isInteractionEnabled: Bool
+    let onDragStateChanged: ((Bool, CGPoint?, Bool) -> Void)?
     
     @State private var dragOffset: CGSize = .zero
     @State private var draggedCard: Card?
@@ -80,6 +81,14 @@ struct PlayerHandView: View {
                                 cardSize: .normal,
                                 onTap: {
                                     handleCardTap(card)
+                                },
+                                onDragChanged: { dragValue in
+                                    // Handle drag feedback - will implement drop zone highlighting
+                                    handleCardDrag(card: card, dragValue: dragValue)
+                                },
+                                onDragEnded: { dragValue in
+                                    // Handle card drop
+                                    handleCardDrop(card: card, dragValue: dragValue)
                                 }
                             )
                             .offset(y: selectedCard?.id == card.id ? -10 : 0)
@@ -186,6 +195,48 @@ struct PlayerHandView: View {
             }
         }
     }
+    
+    /// Handle drag changed event for visual feedback
+    private func handleCardDrag(card: Card, dragValue: DragGesture.Value) {
+        guard isInteractionEnabled && isCardPlayable(card) else { 
+            // Invalid drag - notify with invalid state
+            onDragStateChanged?(true, CGPoint(x: dragValue.location.x, y: dragValue.location.y), false)
+            return 
+        }
+        
+        // Select the card being dragged
+        if selectedCard?.id != card.id {
+            onCardSelected(card)
+        }
+        
+        // Notify drag state change with position and validity
+        let isValidDrop = dragValue.translation.height < -30 // Dragging upward toward play area
+        onDragStateChanged?(
+            true, 
+            CGPoint(x: dragValue.location.x, y: dragValue.location.y), 
+            isValidDrop && isCardPlayable(card)
+        )
+    }
+    
+    /// Handle drag ended event for card drop
+    private func handleCardDrop(card: Card, dragValue: DragGesture.Value) {
+        // Always notify that dragging has ended
+        onDragStateChanged?(false, nil, false)
+        
+        guard isInteractionEnabled && isCardPlayable(card) else { return }
+        
+        // Calculate drag distance to determine if it was a deliberate drop
+        let dragDistance = sqrt(pow(dragValue.translation.width, 2) + pow(dragValue.translation.height, 2))
+        
+        // If dragged far enough upward (toward play area), play the card
+        if dragDistance > 50 && dragValue.translation.height < -30 {
+            onCardPlayed(card)
+        }
+        // Otherwise, just select the card (short drag/tap behavior)
+        else if selectedCard?.id != card.id {
+            onCardSelected(card)
+        }
+    }
 }
 
 // MARK: - Preview
@@ -210,7 +261,8 @@ struct PlayerHandView: View {
             onCardSelected: { _ in },
             onCardPlayed: { _ in },
             isCurrentPlayer: true,
-            isInteractionEnabled: true
+            isInteractionEnabled: true,
+            onDragStateChanged: nil
         )
     }
     .padding()

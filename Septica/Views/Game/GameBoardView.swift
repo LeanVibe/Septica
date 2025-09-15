@@ -14,6 +14,9 @@ struct GameBoardView: View {
     @State private var selectedCard: Card?
     @State private var showingGameMenu = false
     @State private var animatingCard: Card?
+    @State private var isDragActive = false
+    @State private var dragPosition: CGPoint = .zero
+    @State private var isValidDropZone = false
     
     init(gameState: GameState) {
         self._gameViewModel = StateObject(wrappedValue: GameViewModel(gameState: gameState))
@@ -36,13 +39,26 @@ struct GameBoardView: View {
                 
                 Spacer()
                 
-                // Game table (center area)
-                GameTableView(
-                    tableCards: gameViewModel.tableCards,
-                    validMoves: gameViewModel.validMoves,
-                    onCardTapped: playCard,
-                    animatingCard: animatingCard
-                )
+                // Game table (center area) with drop zone overlay
+                ZStack {
+                    GameTableView(
+                        tableCards: gameViewModel.tableCards,
+                        validMoves: gameViewModel.validMoves,
+                        onCardTapped: playCard,
+                        animatingCard: animatingCard
+                    )
+                    
+                    // Shuffle Cats-inspired drop zone feedback
+                    if isDragActive {
+                        DropZoneView(
+                            isHighlighted: true,
+                            isValidDrop: isValidDropZone,
+                            zone: isValidDropZone ? .playArea : .invalidArea
+                        )
+                        .frame(width: 200, height: 120)
+                        .transition(.scale.combined(with: .opacity))
+                    }
+                }
                 
                 Spacer()
                 
@@ -57,7 +73,17 @@ struct GameBoardView: View {
                         },
                         onCardPlayed: playCard,
                         isCurrentPlayer: gameViewModel.isHumanPlayerTurn,
-                        isInteractionEnabled: gameViewModel.canHumanPlayerMove
+                        isInteractionEnabled: gameViewModel.canHumanPlayerMove,
+                        onDragStateChanged: { isActive, position, isValid in
+                            // Update drop zone feedback based on drag state
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                isDragActive = isActive
+                                if let pos = position {
+                                    dragPosition = pos
+                                }
+                                isValidDropZone = isValid
+                            }
+                        }
                     )
                 }
             }

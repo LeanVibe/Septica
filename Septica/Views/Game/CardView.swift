@@ -18,6 +18,8 @@ struct CardView: View {
     let isAnimating: Bool
     let cardSize: CardSize
     let onTap: (() -> Void)?
+    let onDragChanged: ((DragGesture.Value) -> Void)?
+    let onDragEnded: ((DragGesture.Value) -> Void)?
     
     // Accessibility and UX managers
     @EnvironmentObject private var accessibilityManager: AccessibilityManager
@@ -29,6 +31,8 @@ struct CardView: View {
     @State private var rotationAngle: Double = 0
     @State private var isFocused = false
     @State private var playAnimationTrigger = false
+    @State private var dragOffset = CGSize.zero
+    @State private var isDragging = false
     
     // Metal rendering computed properties
     private var rotationAxis: (x: CGFloat, y: CGFloat, z: CGFloat) {
@@ -41,7 +45,9 @@ struct CardView: View {
         isPlayable: Bool = true,
         isAnimating: Bool = false,
         cardSize: CardSize = .normal,
-        onTap: (() -> Void)? = nil
+        onTap: (() -> Void)? = nil,
+        onDragChanged: ((DragGesture.Value) -> Void)? = nil,
+        onDragEnded: ((DragGesture.Value) -> Void)? = nil
     ) {
         self.card = card
         self.isSelected = isSelected
@@ -49,6 +55,8 @@ struct CardView: View {
         self.isAnimating = isAnimating
         self.cardSize = cardSize
         self.onTap = onTap
+        self.onDragChanged = onDragChanged
+        self.onDragEnded = onDragEnded
     }
     
     var body: some View {
@@ -393,27 +401,102 @@ struct CardView: View {
         .scaleEffect(scaleEffect)
         .rotationEffect(.degrees(rotationAngle))
         .opacity(opacity)
+        .offset(dragOffset)
         .animation(.spring(response: 0.4, dampingFraction: 0.6, blendDuration: 0.2), value: isSelected)
         .animation(.spring(response: 0.3, dampingFraction: 0.7, blendDuration: 0.1), value: isPressed)
+        .animation(.spring(response: 0.5, dampingFraction: 0.8, blendDuration: 0.2), value: isDragging)
         .cardPlayAnimation(isActive: playAnimationTrigger, manager: animationManager)
-        .onTapGesture {
-            if isPlayable {
-                // Trigger haptic feedback
-                hapticManager.trigger(.cardPlay)
-                
-                // Play audio feedback
-                audioManager.playSound(.cardPlace)
-                
-                // Trigger play animation
-                playAnimationTrigger = true
-                
-                onTap?()
-            } else {
-                // Invalid move feedback
-                hapticManager.trigger(.cardInvalid)
-                audioManager.playSound(.cardInvalid)
-            }
-        }
+        .gesture(
+            // Combine drag and tap gestures for Shuffle Cats-style interaction
+            DragGesture(minimumDistance: 10, coordinateSpace: .global)
+                .onChanged { value in
+                    guard isPlayable else { 
+                        // Enhanced invalid move feedback with shake
+                        hapticManager.trigger(.cardInvalid)
+                        withAnimation(.easeInOut(duration: 0.1).repeatCount(2, autoreverses: true)) {
+                            dragOffset = CGSize(width: 5, height: 0)
+                        }
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                            withAnimation(.spring()) {
+                                dragOffset = .zero
+                            }
+                        }
+                        return
+                    }
+                    
+                    // Update drag state and visual feedback
+                    if !isDragging {
+                        isDragging = true
+                        hapticManager.trigger(.cardSelect) // Light haptic when drag starts
+                        audioManager.playSound(.cardSelect)
+                    }
+                    
+                    dragOffset = CGSize(
+                        width: value.translation.width,
+                        height: value.translation.height
+                    )
+                    
+                    // Call external drag handler for drop zone feedback
+                    onDragChanged?(value)
+                }
+                .onEnded { value in
+                    guard isPlayable else { return }
+                    
+                    isDragging = false
+                    
+                    // Determine if this was a successful drop or should return to position
+                    let dragDistance = sqrt(pow(value.translation.width, 2) + pow(value.translation.height, 2))
+                    
+                    if dragDistance > 50 { // Minimum drag distance for a valid drop
+                        // This looks like a intentional drop - call the drag end handler
+                        onDragEnded?(value)
+                        
+                        // Play card placement sound and haptic
+                        hapticManager.trigger(.cardPlay)
+                        audioManager.playSound(.cardPlace)
+                        
+                        // Trigger play animation
+                        playAnimationTrigger = true
+                    } else {
+                        // Short drag - treat as tap or return to original position
+                        withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
+                            dragOffset = .zero
+                        }
+                        
+                        // If drag was very short, treat as tap
+                        if dragDistance < 20 {
+                            onTap?()
+                            hapticManager.trigger(.cardPlay)
+                            audioManager.playSound(.cardPlace)
+                            playAnimationTrigger = true
+                        }
+                    }
+                    
+                    // Always reset drag state
+                    withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
+                        dragOffset = .zero
+                    }
+                }
+                .simultaneously(with: 
+                    // Keep tap gesture for accessibility and quick play
+                    TapGesture()
+                        .onEnded {
+                            guard isPlayable && !isDragging else {
+                                if !isPlayable {
+                                    hapticManager.trigger(.cardInvalid)
+                                    audioManager.playSound(.cardInvalid)
+                                }
+                                return
+                            }
+                            
+                            // Quick tap action
+                            hapticManager.trigger(.cardPlay)
+                            audioManager.playSound(.cardPlace)
+                            playAnimationTrigger = true
+                            onTap?()
+                        }
+                )
+        )
         .onLongPressGesture(minimumDuration: 0) { pressing in
             isPressed = pressing
             if pressing {

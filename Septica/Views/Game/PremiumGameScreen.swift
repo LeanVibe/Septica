@@ -133,7 +133,8 @@ struct PremiumGameScreen: View {
                             playCard(card)
                         },
                         isCurrentPlayer: true,
-                        isInteractionEnabled: true
+                        isInteractionEnabled: true,
+                        onDragStateChanged: nil
                     )
                     .padding(.horizontal)
                     
