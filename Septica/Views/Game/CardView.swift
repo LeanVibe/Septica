@@ -86,46 +86,75 @@ struct CardView: View {
     }
     
     private var cardContentView: some View {
-        VStack(spacing: cardSize.contentSpacing) {
-            // Top left value and suit
-            HStack {
-                VStack(spacing: 1) {
-                    Text(card.displayValue)
-                        .font(cardSize.valueFont.weight(.bold))
-                        .foregroundStyle(suitColor)
+        ZStack {
+            // Romanian folk art background pattern
+            RoundedRectangle(cornerRadius: cardSize.cornerRadius * 0.8)
+                .fill(
+                    LinearGradient(
+                        colors: [Color.white, Color.white.opacity(0.95)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .overlay(
+                    // Subtle Romanian pattern overlay
+                    RoundedRectangle(cornerRadius: cardSize.cornerRadius * 0.8)
+                        .stroke(suitColor.opacity(0.1), lineWidth: 1)
+                )
+            
+            VStack(spacing: cardSize.contentSpacing) {
+                // Top left value and suit
+                HStack {
+                    VStack(spacing: 2) {
+                        Text(card.displayValue)
+                            .font(cardSize.valueFont.weight(.black))
+                            .foregroundStyle(suitColor)
+                            .shadow(color: suitColor.opacity(0.3), radius: 1, x: 1, y: 1)
+                        
+                        Text(card.suit.symbol)
+                            .font(cardSize.suitFont.weight(.bold))
+                            .foregroundStyle(suitColor)
+                            .shadow(color: suitColor.opacity(0.3), radius: 1, x: 1, y: 1)
+                    }
+                    Spacer()
+                }
+                
+                Spacer()
+                
+                // Center suit symbol with Romanian enhancement
+                ZStack {
+                    // Background circle for suit symbol
+                    Circle()
+                        .fill(suitColor.opacity(0.08))
+                        .frame(width: cardSize.width * 0.6, height: cardSize.width * 0.6)
                     
                     Text(card.suit.symbol)
-                        .font(cardSize.suitFont)
-                        .foregroundStyle(suitColor)
+                        .font(cardSize.centerSuitFont.weight(.bold))
+                        .foregroundStyle(suitColor.opacity(0.7))
+                        .shadow(color: suitColor.opacity(0.2), radius: 2, x: 2, y: 2)
                 }
+                
                 Spacer()
-            }
-            
-            Spacer()
-            
-            // Center suit symbol
-            Text(card.suit.symbol)
-                .font(cardSize.centerSuitFont)
-                .foregroundStyle(suitColor.opacity(0.4))
-            
-            Spacer()
-            
-            // Bottom right value and suit (rotated)
-            HStack {
-                Spacer()
-                VStack(spacing: 1) {
-                    Text(card.suit.symbol)
-                        .font(cardSize.suitFont)
-                        .foregroundStyle(suitColor)
-                    
-                    Text(card.displayValue)
-                        .font(cardSize.valueFont.weight(.bold))
-                        .foregroundStyle(suitColor)
+                
+                // Bottom right value and suit (rotated)
+                HStack {
+                    Spacer()
+                    VStack(spacing: 2) {
+                        Text(card.suit.symbol)
+                            .font(cardSize.suitFont.weight(.bold))
+                            .foregroundStyle(suitColor)
+                            .shadow(color: suitColor.opacity(0.3), radius: 1, x: 1, y: 1)
+                        
+                        Text(card.displayValue)
+                            .font(cardSize.valueFont.weight(.black))
+                            .foregroundStyle(suitColor)
+                            .shadow(color: suitColor.opacity(0.3), radius: 1, x: 1, y: 1)
+                    }
+                    .rotationEffect(.degrees(180))
                 }
-                .rotationEffect(.degrees(180))
             }
+            .padding(cardSize.contentPadding)
         }
-        .padding(cardSize.contentPadding)
     }
     
     private var cardIndicatorsView: some View {
@@ -171,12 +200,28 @@ struct CardView: View {
     }
     
     private var selectionOverlayView: some View {
-        RoundedRectangle(cornerRadius: cardSize.cornerRadius)
-            .stroke(Color.blue, lineWidth: 3)
-            .background(
-                RoundedRectangle(cornerRadius: cardSize.cornerRadius)
-                    .fill(.blue.opacity(0.1))
-            )
+        ZStack {
+            // Romanian gold selection glow
+            RoundedRectangle(cornerRadius: cardSize.cornerRadius)
+                .stroke(Color.yellow.opacity(0.8), lineWidth: 3)
+                .background(
+                    RoundedRectangle(cornerRadius: cardSize.cornerRadius)
+                        .fill(.yellow.opacity(0.15))
+                )
+                .shadow(color: .yellow.opacity(0.5), radius: 8)
+            
+            // Animated pulse effect
+            RoundedRectangle(cornerRadius: cardSize.cornerRadius)
+                .stroke(
+                    LinearGradient(
+                        colors: [Color.yellow, Color.orange, Color.yellow],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    lineWidth: 2
+                )
+                .opacity(0.8)
+        }
     }
     
     // MARK: - Event Handlers
@@ -368,7 +413,7 @@ struct CardView: View {
         if isPressed {
             return 0.95
         } else if isSelected {
-            return 1.05
+            return 1.08  // More pronounced selection
         } else if !isPlayable {
             return 0.9
         } else {
