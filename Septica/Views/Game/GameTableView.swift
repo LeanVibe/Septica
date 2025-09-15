@@ -45,7 +45,7 @@ struct GameTableView: View {
                             isSelected: false,
                             isPlayable: false,
                             isAnimating: animatingCard?.id == card.id,
-                            cardSize: .normal
+                            cardSize: .large
                         )
                         .offset(
                             x: CGFloat(index * 15) - CGFloat(tableCards.count * 7),
@@ -92,7 +92,7 @@ struct GameTableView: View {
             if let topCard = tableCards.last, tableCards.count > 1 {
                 RoundedRectangle(cornerRadius: 8)
                     .stroke(Color.yellow.opacity(0.8), lineWidth: 3)
-                    .frame(width: 75, height: 117) // Match new .normal card size
+                    .frame(width: 85, height: 133) // Match new .large card size (85 * 1.56 = 132.6 ≈ 133)
                     .offset(
                         x: CGFloat((tableCards.count - 1) * 15) - CGFloat(tableCards.count * 7),
                         y: CGFloat((tableCards.count - 1) * 3) - CGFloat(tableCards.count * 1)

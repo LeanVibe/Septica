@@ -527,11 +527,11 @@ struct CardView: View {
     /// Scale effect based on state
     private var scaleEffect: CGFloat {
         if isPressed {
-            return 0.95
+            return 0.92
         } else if isSelected {
-            return 1.08  // More pronounced selection
+            return 1.15  // Even more pronounced selection for better visibility
         } else if !isPlayable {
-            return 0.9
+            return 0.85
         } else {
             return 1.0
         }
@@ -558,18 +558,18 @@ struct CardView: View {
     /// Shadow radius
     private var shadowRadius: CGFloat {
         if isSelected {
-            return 8
+            return 12  // More prominent shadow for selected cards
         } else {
-            return 4
+            return 6   // Enhanced default shadow
         }
     }
     
     /// Shadow offset
     private var shadowOffset: CGFloat {
         if isSelected {
-            return 4
+            return 6   // Deeper shadow offset for selected cards
         } else {
-            return 2
+            return 3   // Enhanced default offset
         }
     }
 }
@@ -584,9 +584,9 @@ enum CardSize {
     
     var width: CGFloat {
         switch self {
-        case .small: return 50    // Optimized for opponent hands and overlapping layouts
-        case .normal: return 75   // Better proportions for main game cards
-        case .large: return 100   // For detailed views and play area
+        case .small: return 45    // Compact for opponent hands and overlapping layouts
+        case .normal: return 65   // Optimized mobile proportions for main game cards
+        case .large: return 85    // For detailed views and play area
         }
     }
     

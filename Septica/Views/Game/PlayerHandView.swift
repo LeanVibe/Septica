@@ -62,7 +62,7 @@ struct PlayerHandView: View {
             // Cards in hand
             if !player.hand.isEmpty {
                 ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: -20) {
+                    HStack(spacing: -15) {
                         ForEach(Array(player.hand.enumerated()), id: \.element.id) { index, card in
                             CardView(
                                 card: card,
