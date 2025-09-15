@@ -184,7 +184,7 @@ struct GameInfoView: View {
                 Circle()
                     .fill(Color.green)
                     .frame(width: 8, height: 8)
-                Text("\(currentPlayer)'s Turn")
+                Text("Rândul lui \(currentPlayer)")
                     .font(.headline)
                     .foregroundColor(.white)
             }
@@ -204,7 +204,7 @@ struct GameInfoView: View {
             .foregroundColor(.white.opacity(0.9))
             
             // Game progress
-            Text("Round \(roundNumber) • Trick \(trickNumber)")
+            Text("Rundă \(roundNumber) • Mână \(trickNumber)")
                 .font(.caption2)
                 .foregroundColor(.white.opacity(0.7))
         }
@@ -241,20 +241,20 @@ struct GameMenuView: View {
                 Spacer()
                 
                 VStack(spacing: 16) {
-                    Button("Resume Game", action: onResume)
+                    Button("Continuă Jocul", action: onResume)
                         .buttonStyle(GameMenuButtonStyle())
                     
-                    Button("New Game", action: onNewGame)
+                    Button("Joc Nou", action: onNewGame)
                         .buttonStyle(GameMenuButtonStyle())
                     
-                    Button("Main Menu", action: onMainMenu)
+                    Button("Meniu Principal", action: onMainMenu)
                         .buttonStyle(GameMenuButtonStyle())
                 }
                 
                 Spacer()
             }
             .padding()
-            .navigationTitle("Game Menu")
+            .navigationTitle("Meniu Joc")
             .navigationBarTitleDisplayMode(.inline)
         }
     }

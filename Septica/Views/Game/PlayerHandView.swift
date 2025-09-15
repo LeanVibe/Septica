@@ -44,7 +44,7 @@ struct PlayerHandView: View {
                 
                 // Score display
                 HStack(spacing: 4) {
-                    Text("Score:")
+                    Text("Puncte:")
                         .font(.caption)
                         .foregroundColor(.white.opacity(0.8))
                     
@@ -90,7 +90,7 @@ struct PlayerHandView: View {
                     .stroke(Color.white.opacity(0.3), style: StrokeStyle(lineWidth: 2, dash: [5]))
                     .frame(height: 84)
                     .overlay(
-                        Text("No cards")
+                        Text("Fără cărți")
                             .font(.caption)
                             .foregroundColor(.white.opacity(0.5))
                     )
@@ -98,7 +98,7 @@ struct PlayerHandView: View {
             
             // Action hint
             if isCurrentPlayer && isInteractionEnabled {
-                Text("Tap a card to select, tap again to play")
+                Text("Atinge o carte pentru a o selecta, atinge din nou pentru a juca")
                     .font(.caption2)
                     .foregroundColor(.white.opacity(0.7))
                     .transition(.opacity)
