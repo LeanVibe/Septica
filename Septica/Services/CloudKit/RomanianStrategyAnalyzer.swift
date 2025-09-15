@@ -10,24 +10,8 @@ import Foundation
 import Combine
 import os.log
 
-// MARK: - Cultural Moment Type Definition
-
-/// Cultural moment captured during gameplay
-struct CulturalMoment {
-    let type: CulturalMomentType
-    let context: String
-    let significance: Double
-    let timestamp: Date
-}
-
-/// Types of cultural moments that can be captured
-enum CulturalMomentType: String, CaseIterable {
-    case traditionInvoked = "tradition_invoked"
-    case wisdomShared = "wisdom_shared"
-    case folkloreReference = "folklore_reference"
-    case strategicTradition = "strategic_tradition"
-    case culturalPattern = "cultural_pattern"
-}
+// MARK: - Import Shared Cultural Types
+// Cultural types are now defined in CulturalTypes.swift
 
 /// Romanian cultural strategy analyzer with traditional gameplay pattern recognition
 @MainActor

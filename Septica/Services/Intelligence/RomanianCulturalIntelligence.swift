@@ -788,13 +788,6 @@ struct IntelligenceCardMove {
     let gameStateDescription: String
 }
 
-enum CulturalMomentType: String, CaseIterable {
-    case traditionInvoked = "tradition_invoked"
-    case wisdomShared = "wisdom_shared"
-    case folkloreReference = "folklore_reference"
-    case strategicTradition = "strategic_tradition"
-    case culturalPattern = "cultural_pattern"
-}
 
 // MARK: - Game Rules
 

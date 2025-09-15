@@ -560,12 +560,6 @@ struct MasteryCulturalMoment {
     let context: String
     let timestamp: Date
     
-    enum CulturalMomentType: String, CaseIterable {
-        case strategicExcellence = "strategic_excellence"
-        case traditionalWisdom = "traditional_wisdom"
-        case culturalAuthenticity = "cultural_authenticity"
-        case heritageConnection = "heritage_connection"
-    }
 }
 
 enum RomanianCardSymbol: String, CaseIterable {
