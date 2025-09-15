@@ -135,6 +135,27 @@ enum AchievementDifficulty: String, Codable, CaseIterable {
     }
 }
 
+// UI helpers
+extension AchievementDifficulty {
+    var starCount: Int {
+        switch self {
+        case .bronze: return 2
+        case .silver: return 3
+        case .gold: return 4
+        case .legendary: return 5
+        }
+    }
+    
+    var displayName: String {
+        switch self {
+        case .bronze: return "Bronze"
+        case .silver: return "Silver"
+        case .gold: return "Gold"
+        case .legendary: return "Legendary"
+        }
+    }
+}
+
 enum RomanianRegion: String, Codable, CaseIterable {
     case transylvania = "transylvania"
     case moldova = "moldova"

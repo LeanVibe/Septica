@@ -122,6 +122,18 @@ Themes/
 
 ---
 
+### 🔧 Code Health Milestones (Cross‑cutting)
+
+- Single canonical data model per domain
+  - Achievements: use `Services/Achievement/AchievementDataModels.swift` as source of truth; remove parallel legacy models
+- Observation strategy
+  - Don’t combine `@Observable` and `@Published` in the same class
+  - For managers referenced via KeyPaths, prefer `ObservableObject` with plain stored properties
+- Event scoping
+  - Use domain‑scoped enums: `AchievementGameEvent`, `CharacterReactionEvent`, `AccessibilityGameEvent`
+
+---
+
 ### 📅 Phase 3: Backend & Real-time Multiplayer (Months 5-6)
 **Goal:** Scalable multiplayer infrastructure with competitive features
 

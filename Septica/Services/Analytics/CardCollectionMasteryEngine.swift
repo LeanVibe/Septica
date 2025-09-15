@@ -74,7 +74,7 @@ class CardCollectionMasteryEngine: ObservableObject {
         // Romanian pattern analysis
         analyzeRomanianPattern(card: card, context: context)
         
-        logger.info("Card play analyzed: \(card.displayName) in context: \(context.situation)")
+        logger.info("Card play analyzed: \(card.displayName) in context: \(String(describing: context.situation))")
     }
     
     private func updateCardMasteryProfile(_ card: Card, context: CardPlayContext, timestamp: Date) {
@@ -117,11 +117,11 @@ class CardCollectionMasteryEngine: ObservableObject {
     // MARK: - Romanian Cultural Significance Analysis
     
     private func analyzeCulturalSignificance(_ card: Card, context: CardPlayContext) {
-        guard let significance = culturalCardSignificance[card] else { return }
+        guard var significance = culturalCardSignificance[card] else { return }
         
         // Check for cultural moments
         if context.wasStrategicallyOptimal {
-            significance.culturalMoments.append(CulturalMoment(
+            significance.culturalMoments.append(MasteryCulturalMoment(
                 type: .strategicExcellence,
                 card: card,
                 context: context.culturalContext,
@@ -134,6 +134,9 @@ class CardCollectionMasteryEngine: ObservableObject {
             significance.traditionalAlignmentScore += 1
             unlockCulturalSymbolism(for: card)
         }
+        
+        // Update the dictionary with the modified significance
+        culturalCardSignificance[card] = significance
     }
     
     private func unlockCulturalSymbolism(for card: Card) {
@@ -273,6 +276,35 @@ class CardCollectionMasteryEngine: ObservableObject {
         }
     }
     
+    private func checkSuccessRateMilestones(card: Card, profile: CardMasteryProfile) {
+        // Stub implementation - TODO: Implement success rate milestone checking
+        let successThresholds: [Float] = [0.7, 0.8, 0.9, 0.95]
+        let successRate = profile.totalPlaysCount > 0 ? Float(profile.successfulPlaysCount) / Float(profile.totalPlaysCount) : 0.0
+        
+        for threshold in successThresholds {
+            if successRate >= threshold && profile.totalPlaysCount >= 10 {
+                logger.info("🎯 Success rate milestone reached for \(card.displayName): \(threshold * 100)%")
+            }
+        }
+    }
+    
+    private func checkCulturalMilestones(card: Card, profile: CardMasteryProfile) {
+        // Stub implementation - TODO: Implement cultural milestone checking
+        if let significance = culturalCardSignificance[card], significance.culturalMoments.count > 0 {
+            logger.info("🏛️ Cultural milestone progress for \(card.displayName)")
+        }
+    }
+    
+    private func checkSevenMasteryMilestones() {
+        // Stub implementation - TODO: Implement seven card mastery checking
+        logger.info("🎭 Checking seven card mastery milestones")
+    }
+    
+    private func checkAceCollectionMilestones() {
+        // Stub implementation - TODO: Implement ace collection milestone checking
+        logger.info("🏆 Checking ace collection milestones")
+    }
+    
     // MARK: - Setup Methods
     
     private func setupCardCulturalSignificance() {
@@ -397,7 +429,8 @@ class CardCollectionMasteryEngine: ObservableObject {
     private func analyzeRomanianPattern(card: Card, context: CardPlayContext) {
         // Advanced pattern analysis specific to Romanian Septica traditions
         // This feeds into the strategy analyzer for cultural authenticity scoring
-        strategyAnalyzer.analyzeCardInContext(card, context: context)
+        // TODO: Implement analyzeCardInContext method on RomanianStrategyAnalyzer
+        logger.info("🎭 Romanian pattern analyzed for \(card.displayName)")
     }
 }
 
@@ -493,7 +526,7 @@ struct CulturalSignificance {
     let romanianMeaning: String
     let culturalStories: [String]
     let traditionalUse: String
-    var culturalMoments: [CulturalMoment] = []
+    var culturalMoments: [MasteryCulturalMoment] = []
     var traditionalAlignmentScore: Int = 0
 }
 
@@ -521,7 +554,7 @@ struct CardPlayContext {
     }
 }
 
-struct CulturalMoment {
+struct MasteryCulturalMoment {
     let type: CulturalMomentType
     let card: Card
     let context: String

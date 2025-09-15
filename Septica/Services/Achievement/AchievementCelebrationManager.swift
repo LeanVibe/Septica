@@ -455,7 +455,7 @@ class AchievementCelebrationManager: ObservableObject {
         let miniCelebration = CulturalSymbolCelebration(
             symbol: unlock.symbol,
             card: unlock.card,
-            intensity: .gentle
+            intensity: CulturalIntensity.gentle
         )
         
         NotificationCenter.default.post(

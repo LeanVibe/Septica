@@ -32,7 +32,7 @@ class RomanianStrategyAnalyzer: ObservableObject {
     @Published var sevenWildCardMastery: SevenMasteryAnalysis = SevenMasteryAnalysis()
     @Published var eightSpecialUsage: EightSpecialAnalysis = EightSpecialAnalysis()
     @Published var cardValueDistribution: CardValueAnalysis = CardValueAnalysis()
-    @Published var culturalMomentTriggers: [CulturalMoment] = []
+    @Published var culturalMomentTriggers: [StrategyCulturalMoment] = []
     
     // MARK: - Cross-Device Analytics
     
@@ -392,7 +392,7 @@ struct CardValueAnalysis {
     var riskTolerance: Float = 0.0
 }
 
-struct CulturalMoment {
+struct StrategyCulturalMoment {
     let timestamp: Date
     let momentType: CulturalMomentType
     let description: String
@@ -447,7 +447,7 @@ struct AnalyticsGameSession {
     let cardMoves: [CardMove]
     let moveTiming: [TimeInterval]
     let pointCardPlays: [CardMove]
-    let culturalMoments: [CulturalMoment]
+    let culturalMoments: [StrategyCulturalMoment]
     let educationalInteractions: [EducationalInteraction]
 }
 
@@ -505,7 +505,7 @@ private extension RomanianStrategyAnalyzer {
         return 0.5
     }
     
-    func analyzeCulturalAuthenticity(in games: [CloudKitGameRecord]) -> (averageScore: Float, moments: [CulturalMoment]) {
+    func analyzeCulturalAuthenticity(in games: [CloudKitGameRecord]) -> (averageScore: Float, moments: [StrategyCulturalMoment]) {
         // Implementation would analyze cultural moments
         return (0.8, [])
     }
@@ -554,7 +554,7 @@ private extension RomanianStrategyAnalyzer {
     func analyzeEightSpecialAuthenticity(_ moves: [CardMove]) -> Float { return 0.6 }
     func analyzeTimingAuthenticity(_ timing: [TimeInterval]) -> Float { return 0.8 }
     func analyzePointCardAuthenticity(_ pointPlays: [CardMove]) -> Float { return 0.7 }
-    func analyzeCulturalMomentRecognition(_ moments: [CulturalMoment]) -> Float { return 0.9 }
+    func analyzeCulturalMomentRecognition(_ moments: [StrategyCulturalMoment]) -> Float { return 0.9 }
     func analyzeHeritageEngagement(_ interactions: [EducationalInteraction]) -> Float { return 0.6 }
     
     // Heritage metrics properties (placeholder)

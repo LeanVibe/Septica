@@ -406,28 +406,7 @@ struct CloudKitGameResult: Sendable {
 
 // MARK: - CloudKit Error Types
 
-enum CloudKitError: LocalizedError, Sendable {
-    case notAvailable
-    case accountNotAvailable
-    case syncFailed(Error)
-    case recordNotFound
-    case invalidData
-    
-    var errorDescription: String? {
-        switch self {
-        case .notAvailable:
-            return "CloudKit is not available. Please check your iCloud settings."
-        case .accountNotAvailable:
-            return "iCloud account is not available. Please sign in to iCloud."
-        case .syncFailed(let error):
-            return "Sync failed: \(error.localizedDescription)"
-        case .recordNotFound:
-            return "Player profile not found."
-        case .invalidData:
-            return "Invalid data format."
-        }
-    }
-}
+// NOTE: CloudKitError is defined centrally in SepticaCloudKitManager.swift
 
 // MARK: - Extensions
 

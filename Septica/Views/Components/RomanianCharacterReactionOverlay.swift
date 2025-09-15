@@ -268,7 +268,7 @@ class CharacterReactionManager: ObservableObject {
     }
     
     /// Show contextual teaching moment
-    func showTeachingMoment(for gameEvent: GameEvent) {
+    func showTeachingMoment(for gameEvent: CharacterReactionEvent) {
         let character: RomanianCharacterType
         let reaction: CharacterReaction
         let phrase: String
@@ -315,8 +315,8 @@ class CharacterReactionManager: ObservableObject {
     }
 }
 
-/// Game events that trigger character reactions
-enum GameEvent {
+/// Game events that trigger character reactions (UI overlay)
+enum CharacterReactionEvent {
     case firstSevenPlayed
     case eightPlayedAtRightTime
     case pointCardCaptured

@@ -530,7 +530,7 @@ struct RomanianFolkBadgeBackground: View {
 #Preview("Romanian Achievement") {
     let sampleAchievement = RomanianAchievement(
         type: .cultural,
-        category: .folklorelearning,
+        category: .folkloreLearning,
         difficulty: .gold,
         culturalRegion: .transylvania,
         titleKey: "Maestru al Tradițiilor",
@@ -548,7 +548,7 @@ struct RomanianFolkBadgeBackground: View {
         )
     )
     
-    return AchievementNotificationView(
+    AchievementNotificationView(
         achievement: sampleAchievement,
         onDismiss: { }
     )

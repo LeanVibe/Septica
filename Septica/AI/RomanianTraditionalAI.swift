@@ -26,7 +26,7 @@ class RomanianTraditionalAI: AIPlayer {
     
     @Published var currentMood: AIPersonalityMood = .neutral
     @Published var learningProgress: MLLearningProgress = MLLearningProgress()
-    @Published var culturalAlignment: CulturalAlignment = CulturalAlignment()
+    @Published var culturalAlignment: CulturalAlignment = CulturalAlignment(score: 0.5, traits: [])
     @Published var performanceMetrics: AIPerformanceMetrics = AIPerformanceMetrics()
     
     // MARK: - Machine Learning Components
@@ -152,7 +152,7 @@ class RomanianTraditionalAI: AIPlayer {
         // Update personality mood based on game situation
         updatePersonalityMood(gameState: gameState, decision: selectedCard)
         
-        logger.info("Romanian AI (\(personality.displayName)) selected: \(selectedCard?.displayName ?? "none")")
+        self.logger.info("Romanian AI (\(personality.displayName)) selected: \(selectedCard?.displayName ?? "none")")
         return selectedCard
     }
     
@@ -548,7 +548,7 @@ class RomanianTraditionalAI: AIPlayer {
     }
     
     func adaptToPlayerStyle(_ playerAnalysis: PlayerStyleAnalysis) async {
-        logger.info("Adapting Romanian AI to player style: \(playerAnalysis.primaryStyle)")
+        self.logger.info("Adapting Romanian AI to player style: \(playerAnalysis.primaryStyle)")
         
         // Update adaptation engine with new player insights
         await adaptiveLearning.updatePlayerProfile(playerAnalysis)
@@ -563,7 +563,7 @@ class RomanianTraditionalAI: AIPlayer {
         let adaptationEvent = AdaptationEvent(
             trigger: .playerStyleAnalysis,
             context: CulturalGameContext.current,
-            personalityAlignment: culturalAlignment.score,
+            personalityAlignment: self.culturalAlignment.score,
             mlConfidence: playerAnalysis.confidence,
             timestamp: Date()
         )
@@ -572,22 +572,22 @@ class RomanianTraditionalAI: AIPlayer {
         // Update learning progress
         learningProgress.updateAdaptationLevel(basedOn: adaptationHistory)
         
-        logger.info("AI adaptation complete - new alignment score: \(culturalAlignment.score)")
+        self.logger.info("AI adaptation complete - new alignment score: \(self.culturalAlignment.score)")
     }
     
     // MARK: - Cultural Authenticity Maintenance
     
     func expressPersonality(for situation: GameSituation) -> AIExpression {
         let baseExpression = personality.getBaseExpression(for: situation)
-        let culturalModification = culturalAlignment.modifyExpression(baseExpression)
+        let culturalModification = self.culturalAlignment.modifyExpression(baseExpression)
         let moodAdjustment = adjustExpressionForMood(culturalModification)
         
         return AIExpression(
             personality: personality,
             situation: situation,
             expression: moodAdjustment,
-            culturalAuthenticity: culturalAlignment.score,
-            emotionalIntensity: currentMood.intensity
+            culturalAuthenticity: self.culturalAlignment.score,
+            emotionalIntensity: self.currentMood.intensity
         )
     }
     
@@ -598,10 +598,10 @@ class RomanianTraditionalAI: AIPlayer {
         if currentAuthenticity.score < 0.7 {
             // Realign with Romanian cultural values
             culturalAuthenticity.recalibrate(personality: personality)
-            logger.info("Recalibrated cultural authenticity for \(personality.displayName)")
+            self.logger.info("Recalibrated cultural authenticity for \(personality.displayName)")
         }
         
-        culturalAlignment = currentAuthenticity
+        self.culturalAlignment = currentAuthenticity
         return currentAuthenticity
     }
     
@@ -689,14 +689,14 @@ class RomanianTraditionalAI: AIPlayer {
     
     private func recordPerformanceMetrics(startTime: Date) {
         let duration = Date().timeIntervalSince(startTime)
-        performanceMetrics.recordDecisionTime(duration)
-        performanceMonitor.recordAIDecision(duration: duration)
+        self.performanceMetrics.recordDecisionTime(duration)
+        self.performanceMonitor.recordAIDecision(duration: duration)
     }
     
     private func updatePersonalityMood(gameState: GameState, decision: Card?) {
         // Update mood based on game situation and decision confidence
         let moodAdjustment = calculateMoodAdjustment(gameState: gameState, decision: decision)
-        currentMood = currentMood.adjust(by: moodAdjustment)
+        self.currentMood = self.currentMood.adjust(by: moodAdjustment)
     }
     
     // MARK: - Additional helper methods (simplified for brevity)
@@ -756,15 +756,56 @@ class RomanianTraditionalAI: AIPlayer {
     // Additional helper methods would be implemented here...
 }
 
+// MARK: - Minimal helper stubs (compile-time only, replace with real logic during ML phase)
+
+extension RomanianTraditionalAI {
+    fileprivate func calculateCulturalWeight(context: CulturalGameContext) -> Double { 0.5 }
+    fileprivate func calculateAdaptationConfidence() -> Double { learningProgress.decisionAccuracy }
+    fileprivate func createMLInputFeatures(context: CulturalGameContext, situation: StrategicSituation, validMoves: [Card]) -> MLFeatureProvider {
+        let dict: [String : MLFeatureValue] = [
+            "trickNumber": MLFeatureValue(int64: Int64(context.trickNumber)),
+            "tableCardCount": MLFeatureValue(int64: Int64(context.tableCardCount)),
+            "validMoveCount": MLFeatureValue(int64: Int64(validMoves.count))
+        ]
+        return try! MLDictionaryFeatureProvider(dictionary: dict)
+    }
+    fileprivate func parseMLPrediction(_ prediction: MLFeatureProvider, validMoves: [Card]) -> MLStrategyRecommendation {
+        return .fallback
+    }
+    fileprivate func applyRomanianWisdomFilter(decision: Card?, context: CulturalGameContext, validMoves: [Card]) -> Card? {
+        return decision ?? validMoves.first
+    }
+    fileprivate func adjustExpressionForMood(_ expression: String) -> String { expression }
+    fileprivate func calculateMoodAdjustment(gameState: GameState, decision: Card?) -> Double { 0.0 }
+}
+
+// Provide a base expression for personalities when asked by the AI layer
+extension RomanianAIPersonality {
+    func getBaseExpression(for situation: GameSituation) -> String {
+        switch (self, situation) {
+        case (.wiseSage, .winning): return "calm_wisdom"
+        case (.boldWarrior, .winning): return "proud_confidence"
+        case (_, .losing): return "focused_resolve"
+        default: return "neutral_focus"
+        }
+    }
+}
+
 // MARK: - Supporting Data Structures and Enums
 
 // MARK: - Cultural Game Context
 
+private enum TraditionalAIGamePhase {
+    case early
+    case middle
+    case late
+}
+
 struct CulturalGameContext {
-    let gamePhase: GamePhase
+    let gamePhase: TraditionalAIGamePhase
     let trickNumber: Int
     let tableCardCount: Int
-    let culturalMoments: [CulturalMoment]
+    let culturalMoments: [IntelligenceCulturalMoment]
     let regionalInfluence: RomanianRegion?
     let seasonalContext: SeasonalContext
     let folkloreApplicability: Double

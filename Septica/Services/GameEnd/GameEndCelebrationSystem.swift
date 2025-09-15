@@ -673,14 +673,14 @@ enum CulturalColor {
 // MARK: - Visual Effects
 
 struct VisualEffects {
-    let particles: ParticleType
+    let particles: CelebrationParticleType
     let animations: [AnimationType]
     let backgroundEffects: BackgroundEffect
     let intensity: CelebrationIntensity
     let duration: TimeInterval
 }
 
-enum ParticleType {
+enum CelebrationParticleType {
     case confetti
     case gentleSparkles
     case balancedSparkles

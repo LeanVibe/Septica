@@ -22,7 +22,7 @@ class CloudKitSyncEngine: ObservableObject {
     
     // MARK: - Published State
     
-    @Published var syncStatus: CloudKitSyncStatus = .idle
+    @Published var syncStatus: CloudKitSyncState = .idle
     @Published var syncProgress: Double = 0.0
     @Published var lastSyncDate: Date?
     @Published var conflictsRequiringAttention: [CloudKitConflict] = []
@@ -424,36 +424,7 @@ extension CloudKitSyncEngine {
 
 // MARK: - Offline Sync Queue
 
-private class OfflineSyncQueue {
-    private var pendingUpdates: [CloudKitUpdate] = []
-    private let queue = DispatchQueue(label: "OfflineSyncQueue", qos: .utility)
-    
-    func queueUpdate(_ update: CloudKitUpdate) {
-        queue.async {
-            self.pendingUpdates.append(update)
-        }
-    }
-    
-    func processPendingUpdates() async throws {
-        // Implementation would process queued updates when online
-    }
-}
-
-// MARK: - Supporting Types
-
-struct CloudKitUpdate {
-    let recordType: String
-    let recordID: String
-    let updateType: UpdateType
-    let data: Data
-    let timestamp: Date
-    
-    enum UpdateType {
-        case create
-        case update
-        case delete
-    }
-}
+// OfflineSyncQueue and CloudKitUpdate are defined in dedicated files
 
 enum CloudKitSyncError: LocalizedError {
     case cloudKitNotAvailable
@@ -474,4 +445,3 @@ enum CloudKitSyncError: LocalizedError {
         }
     }
 }
-

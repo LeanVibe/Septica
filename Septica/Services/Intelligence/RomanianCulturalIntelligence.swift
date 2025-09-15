@@ -21,7 +21,7 @@ class RomanianCulturalIntelligence: ObservableObject {
     @Published var folkloreNarration: FolkloreStory?
     @Published var culturalInsights: [CulturalInsight] = []
     @Published var isProcessingRequest: Bool = false
-    @Published var educationalContent: [EducationalContent] = []
+    @Published var educationalContent: [CulturalEducationalContent] = []
     
     // MARK: - Intelligence State
     
@@ -147,7 +147,7 @@ class RomanianCulturalIntelligence: ObservableObject {
     }
     
     /// Generate folklore narration triggered by gameplay moments
-    func narrateFolklore(for moment: CulturalMoment) async -> FolkloreStory {
+    func narrateFolklore(for moment: IntelligenceCulturalMoment) async -> FolkloreStory {
         let startTime = Date()
         
         defer {
@@ -327,7 +327,7 @@ class RomanianCulturalIntelligence: ObservableObject {
         """
     }
     
-    private func createFolklorePrompt(for moment: CulturalMoment) -> String {
+    private func createFolklorePrompt(for moment: IntelligenceCulturalMoment) -> String {
         return """
         Create a brief Romanian folklore story or cultural explanation for this moment in the game:
 
@@ -694,7 +694,7 @@ struct CulturalExplanation: EducationalContentProtocol {
     let culturalInsights: [String]
     let folkloreElements: [String]
     let learningTips: [String]
-    let ageGroup: AgeGroup
+    let ageGroup: IntelligenceAgeGroup
     let confidenceScore: Double
     let createdAt: Date
 }
@@ -755,7 +755,7 @@ struct CulturalContext {
     let description: String
 }
 
-struct CulturalMoment {
+struct IntelligenceCulturalMoment {
     let type: CulturalMomentType
     let card: Card?
     let gameContext: String
@@ -819,7 +819,7 @@ enum GameRule {
 
 // MARK: - Age Groups
 
-enum AgeGroup {
+enum IntelligenceAgeGroup {
     case general
     case child
     case teenager
@@ -938,7 +938,7 @@ class RomanianCulturalKnowledgeBase {
 }
 
 class RomanianFolkloreLibrary {
-    func getFallbackStory(for moment: CulturalMoment) -> FolkloreStory {
+    func getFallbackStory(for moment: IntelligenceCulturalMoment) -> FolkloreStory {
         return FolkloreStory(
             id: UUID(),
             title: "Traditional Romanian Wisdom",
@@ -971,12 +971,12 @@ struct CulturalTheme {
 
 // MARK: - Educational Content Structure
 
-struct EducationalContent {
+struct CulturalEducationalContent {
     let id: UUID
     let title: String
     let content: String
     let culturalLevel: CulturalLevel
-    let ageGroup: AgeGroup
+    let ageGroup: IntelligenceAgeGroup
     let interactiveElements: [String]
     let createdAt: Date
 }

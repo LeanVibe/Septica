@@ -93,6 +93,22 @@
 
 ---
 
+## 🧭 Architecture & Data Hygiene (Ongoing)
+
+- [x] Consolidate duplicate achievement models into a single canonical `RomanianAchievement` (data models)
+- [x] Unify achievement events under `AchievementGameEvent`
+- [x] Avoid mixing `@Observable` and `@Published` in the same class; for managers referenced via KeyPaths, use `ObservableObject` with plain stored properties
+- [ ] Migrate remaining UI to canonical achievement model (replace legacy types)
+- [ ] Add unit tests for `AchievementRegistry` and `AchievementProgress`
+
+## ☁️ CloudKit Integration (Sprints 2–3)
+
+- [x] Modernize modify operation (`perRecordSaveBlock`) and await completion
+- [x] Add minimal stubs in `SepticaCloudKitManager` for compile‑time compatibility
+- [ ] Replace stubs with real implementations and add tests
+
+---
+
 ## 🎨 Phase 2: Metal Rendering & UI Polish (Months 3-4)
 
 ### ⚡ Metal Rendering Engine

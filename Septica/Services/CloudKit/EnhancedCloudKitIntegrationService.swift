@@ -411,43 +411,38 @@ class EnhancedCloudKitIntegrationService: ObservableObject {
         let modifyOperation = CKModifyRecordsOperation(recordsToSave: records, recordIDsToDelete: nil)
         modifyOperation.qualityOfService = priority.qualityOfService
         modifyOperation.isAtomic = false // Allow partial success
-        
+
         var savedRecords: [CKRecord] = []
         var conflicts: [CKRecord] = []
         var failures: [Error] = []
-        
-        modifyOperation.modifyRecordsResultBlock = { result in
-            switch result {
-            case .success():
-                break
-            case .failure(let error):
-                failures.append(error)
-            }
-        }
-        
-        modifyOperation.perRecordResultBlock = { recordID, result in
-            switch result {
-            case .success(let record):
-                savedRecords.append(record)
-            case .failure(let error):
-                if let ckError = error as? CKError, ckError.code == .serverRecordChanged {
-                    // Conflict detected
-                    if let serverRecord = ckError.userInfo[CKRecordChangedErrorServerRecordKey] as? CKRecord {
+
+        return try await withCheckedThrowingContinuation { continuation in
+            modifyOperation.perRecordSaveBlock = { _, result in
+                switch result {
+                case .success(let record):
+                    savedRecords.append(record)
+                case .failure(let error):
+                    if let ckError = error as? CKError, ckError.code == .serverRecordChanged,
+                       let serverRecord = ckError.userInfo[CKRecordChangedErrorServerRecordKey] as? CKRecord {
                         conflicts.append(serverRecord)
+                    } else {
+                        failures.append(error)
                     }
-                } else {
-                    failures.append(error)
                 }
             }
+
+            modifyOperation.modifyRecordsResultBlock = { result in
+                switch result {
+                case .success:
+                    let batch = BatchUploadResult(savedRecords: savedRecords, conflicts: conflicts, failures: failures)
+                    continuation.resume(returning: batch)
+                case .failure(let error):
+                    continuation.resume(throwing: error)
+                }
+            }
+
+            self.privateDatabase.add(modifyOperation)
         }
-        
-        try await privateDatabase.add(modifyOperation)
-        
-        return BatchUploadResult(
-            savedRecords: savedRecords,
-            conflicts: conflicts,
-            failures: failures
-        )
     }
     
     // MARK: - Helper Methods

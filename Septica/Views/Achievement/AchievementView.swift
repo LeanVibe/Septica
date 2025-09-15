@@ -11,7 +11,7 @@ import SwiftUI
 /// Main achievement gallery view displaying all Romanian cultural achievements
 struct AchievementView: View {
     @StateObject private var achievementManager = AchievementManager.shared
-    @State private var selectedCategory: RomanianAchievementCategory = .cardMastery
+    @State private var selectedCategory: AchievementCategory = .cardMastery
     @State private var selectedAchievement: RomanianAchievement?
     @State private var showingAchievementDetails = false
     
@@ -104,7 +104,7 @@ struct AchievementView: View {
     private var categorySelector: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 12) {
-                ForEach(RomanianAchievementCategory.allCases, id: \.self) { category in
+                ForEach(AchievementCategory.allCases, id: \.self) { category in
                     CategoryButton(
                         category: category,
                         isSelected: selectedCategory == category
@@ -138,7 +138,7 @@ struct AchievementCardView: View {
                     .frame(width: 80, height: 80)
                     .shadow(color: .black.opacity(0.2), radius: 4, x: 0, y: 2)
                 
-                Image(systemName: achievement.iconName)
+                Image(systemName: achievement.badge.iconName)
                     .font(.system(size: 32, weight: .bold))
                     .foregroundColor(.white)
                     .opacity(isUnlocked ? 1.0 : 0.5)
@@ -146,7 +146,7 @@ struct AchievementCardView: View {
             
             VStack(spacing: 4) {
                 // Achievement name
-                Text(achievement.name)
+                Text(achievement.titleKey)
                     .font(.headline.bold())
                     .foregroundColor(isUnlocked ? .primary : .secondary)
                     .multilineTextAlignment(.center)
@@ -154,7 +154,7 @@ struct AchievementCardView: View {
                 
                 // Rarity indicator
                 HStack(spacing: 4) {
-                    ForEach(0..<achievement.rarity.starCount, id: \.self) { _ in
+                    ForEach(0..<achievement.difficulty.starCount, id: \.self) { _ in
                         Image(systemName: "star.fill")
                             .foregroundColor(rarityColor)
                             .font(.caption2)
@@ -175,7 +175,7 @@ struct AchievementCardView: View {
                 }
                 
                 // Cultural context
-                Text(achievement.culturalContext)
+                Text(achievement.culturalContextKey)
                     .font(.caption2)
                     .foregroundColor(RomanianColors.primaryBlue)
                     .multilineTextAlignment(.center)
@@ -213,26 +213,22 @@ struct AchievementCardView: View {
     }
     
     private var rarityColor: Color {
-        switch achievement.rarity {
-        case .common:
+        switch achievement.difficulty {
+        case .bronze:
             return .gray
-        case .uncommon:
+        case .silver:
             return .green
-        case .rare:
-            return .blue
-        case .epic:
+        case .gold:
             return .purple
         case .legendary:
             return RomanianColors.goldAccent
-        case .mythic:
-            return RomanianColors.embroideryRed
         }
     }
 }
 
 /// Category selection button with Romanian styling
 struct CategoryButton: View {
-    let category: RomanianAchievementCategory
+    let category: AchievementCategory
     let isSelected: Bool
     let action: () -> Void
     
@@ -278,8 +274,8 @@ struct CategoryButton: View {
             return "map.fill"
         case .mastery:
             return "crown.fill"
-        case .legacy:
-            return "star.fill"
+        default:
+            return "star"
         }
     }
 }
@@ -337,7 +333,7 @@ struct AchievementDetailView: View {
                     .frame(width: 120, height: 120)
                     .shadow(color: .black.opacity(0.3), radius: 8, x: 0, y: 4)
                 
-                Image(systemName: achievement.iconName)
+                Image(systemName: achievement.badge.iconName)
                     .font(.system(size: 48, weight: .bold))
                     .foregroundColor(.white)
                     .opacity(isUnlocked ? 1.0 : 0.5)
@@ -345,25 +341,25 @@ struct AchievementDetailView: View {
             
             VStack(alignment: .leading, spacing: 8) {
                 // Achievement name
-                Text(achievement.name)
+                Text(achievement.titleKey)
                     .font(.title.bold())
                     .foregroundColor(.primary)
                 
                 // Rarity with stars
                 HStack(spacing: 4) {
-                    ForEach(0..<achievement.rarity.starCount, id: \.self) { _ in
+                    ForEach(0..<achievement.difficulty.starCount, id: \.self) { _ in
                         Image(systemName: "star.fill")
                             .foregroundColor(rarityColor)
                             .font(.title3)
                     }
                     
-                    Text(achievement.rarity.displayName)
+                    Text(achievement.difficulty.displayName)
                         .font(.headline)
                         .foregroundColor(rarityColor)
                 }
                 
                 // Cultural context
-                Text(achievement.culturalContext)
+                Text(achievement.culturalContextKey)
                     .font(.subheadline)
                     .foregroundColor(RomanianColors.primaryBlue)
                     .italic()

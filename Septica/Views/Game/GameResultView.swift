@@ -18,7 +18,7 @@ struct GameResultView: View {
     
     @StateObject private var celebrationSystem = GameEndCelebrationSystem()
     @StateObject private var characterAnimator = RomanianCharacterAnimator()
-    @State private var celebrationPhase: CelebrationPhase = .initial
+    @State private var celebrationPhase: ResultCelebrationPhase = .initial
     @State private var showParticles = false
     @State private var showExperience = false
     @State private var showAchievements = false
@@ -506,7 +506,7 @@ struct GameResultView: View {
 // MARK: - Supporting Types
 
 /// Phases of the celebration sequence
-enum CelebrationPhase {
+enum ResultCelebrationPhase {
     case initial
     case celebration
     case complete

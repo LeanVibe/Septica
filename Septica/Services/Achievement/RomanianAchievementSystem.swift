@@ -7,6 +7,7 @@
 //
 
 import SwiftUI
+import Observation
 import Foundation
 import Combine
 
@@ -57,7 +58,7 @@ enum RomanianAchievementCategory: String, CaseIterable {
 }
 
 /// Achievement rarity levels with Romanian cultural significance
-enum AchievementRarity: String, CaseIterable {
+enum LegacyAchievementRarity: String, CaseIterable {
     case common = "Obișnuit"        // Common
     case uncommon = "Neobișnuit"    // Uncommon
     case rare = "Rar"               // Rare
@@ -89,18 +90,18 @@ enum AchievementRarity: String, CaseIterable {
 }
 
 /// Romanian cultural achievement with heritage significance
-struct RomanianAchievement: Identifiable, Codable {
+struct LegacyRomanianAchievement: Identifiable {
     let id: UUID
     let category: RomanianAchievementCategory
-    let rarity: AchievementRarity
+    let rarity: LegacyAchievementRarity
     let titleRomanian: String
     let titleEnglish: String
     let descriptionRomanian: String
     let descriptionEnglish: String
     let culturalStory: String
     let historicalContext: String
-    let requirement: AchievementRequirement
-    let reward: AchievementReward
+    let requirement: LegacyAchievementRequirement
+    let reward: LegacyAchievementReward
     let culturalPoints: Int
     let unlockLevel: Int
     let isHidden: Bool
@@ -115,15 +116,15 @@ struct RomanianAchievement: Identifiable, Codable {
     
     init(
         category: RomanianAchievementCategory,
-        rarity: AchievementRarity,
+        rarity: LegacyAchievementRarity,
         titleRomanian: String,
         titleEnglish: String,
         descriptionRomanian: String,
         descriptionEnglish: String,
         culturalStory: String,
         historicalContext: String,
-        requirement: AchievementRequirement,
-        reward: AchievementReward,
+        requirement: LegacyAchievementRequirement,
+        reward: LegacyAchievementReward,
         unlockLevel: Int = 1,
         isHidden: Bool = false
     ) {
@@ -145,7 +146,7 @@ struct RomanianAchievement: Identifiable, Codable {
 }
 
 /// Achievement requirements with cultural context
-enum AchievementRequirement: Codable {
+enum LegacyAchievementRequirement: Codable {
     case playGames(count: Int)
     case winGames(count: Int)
     case playSevenCards(count: Int)
@@ -196,7 +197,7 @@ enum AchievementRequirement: Codable {
 }
 
 /// Achievement rewards with Romanian cultural value
-enum AchievementReward: Codable {
+enum LegacyAchievementReward {
     case culturalPoints(Int)
     case cardBack(String)
     case characterUnlock(RomanianCharacterType)
@@ -231,346 +232,108 @@ enum AchievementReward: Codable {
     }
 }
 
+// MARK: - Legacy Rarity Utilities for UI
+
+extension LegacyAchievementRarity {
+    var starCount: Int {
+        switch self {
+        case .common: return 1
+        case .uncommon: return 2
+        case .rare: return 3
+        case .epic: return 4
+        case .legendary: return 5
+        case .mythic: return 6
+        }
+    }
+    
+    var displayName: String {
+        switch self {
+        case .common: return "Obișnuit"
+        case .uncommon: return "Neobișnuit"
+        case .rare: return "Rar"
+        case .epic: return "Epic"
+        case .legendary: return "Legendar"
+        case .mythic: return "Mitic"
+        }
+    }
+}
+
 /// Main achievement manager with Romanian cultural focus
-@Observable
+@MainActor
 class AchievementManager: ObservableObject {
     static let shared = AchievementManager()
     
-    @Published var unlockedAchievements: Set<UUID> = []
-    @Published var achievementProgress: [UUID: Float] = [:]
-    @Published var totalCulturalPoints: Int = 0
-    @Published var playerLevel: Int = 1
-    @Published var playerTitle: String = "Începător" // Beginner
-    @Published var recentlyUnlocked: [RomanianAchievement] = []
+    var unlockedAchievements: Set<UUID> = []
+    var achievementProgress: [UUID: Float] = [:]
+    var totalCulturalPoints: Int = 0
+    var totalCulturalKnowledgePoints: Int = 0
+    var playerLevel: Int = 1
+    var playerTitle: String = "Începător" // Beginner
+    var recentlyUnlocked: [RomanianAchievement] = []
     
     private var gameStatistics: [String: Int] = [:]
     
     // MARK: - Cultural Achievements Database
     
-    lazy var allAchievements: [RomanianAchievement] = createRomanianAchievements()
+    let allAchievements: [RomanianAchievement]
+    var achievements: [RomanianAchievement] { allAchievements }
     
     private init() {
+        self.allAchievements = AchievementRegistry.shared.getAllAchievements()
         loadProgress()
     }
-    
-    /// Create comprehensive Romanian cultural achievements
-    private func createRomanianAchievements() -> [RomanianAchievement] {
-        return [
-            // MARK: - Card Mastery Achievements
-            RomanianAchievement(
-                category: .cardMastery,
-                rarity: .common,
-                titleRomanian: "Primul Șapte",
-                titleEnglish: "First Seven",
-                descriptionRomanian: "Joacă prima carte de șapte",
-                descriptionEnglish: "Play your first seven card",
-                culturalStory: "În tradiția românească, șapte este numărul norocului și al înțelepciunii.",
-                historicalContext: "Carta de șapte în jocurile românești reprezintă puterea de a învinge orice adversitate.",
-                requirement: .playSevenCards(count: 1),
-                reward: .culturalPoints(25)
-            ),
-            
-            RomanianAchievement(
-                category: .cardMastery,
-                rarity: .rare,
-                titleRomanian: "Stăpânul Șeptelor",
-                titleEnglish: "Master of Sevens",
-                descriptionRomanian: "Joacă 100 de cărți de șapte",
-                descriptionEnglish: "Play 100 seven cards",
-                culturalStory: "Cine stăpânește șapte-le, stăpânește jocul - spunea un bătrân cărturar din Maramureș.",
-                historicalContext: "Maestria cu șapte-le era semnul unui jucător adevărat în cafenelele românești.",
-                requirement: .playSevenCards(count: 100),
-                reward: .cardBack("Șapte de Aur Românesc")
-            ),
-            
-            RomanianAchievement(
-                category: .cardMastery,
-                rarity: .epic,
-                titleRomanian: "Cronometrarea Perfectă",
-                titleEnglish: "Perfect Timing",
-                descriptionRomanian: "Joacă 50 de cărți de opt la momentul perfect",
-                descriptionEnglish: "Play 50 eight cards at the perfect moment",
-                culturalStory: "Așa cum ciobanul știe când să-și mute turma, jucătorul înțelept știe când să joace opt-ul.",
-                historicalContext: "Timing-ul cu opt-ul era considerat artă în jocurile de cărți din Transilvania.",
-                requirement: .playEightAtRightTime(count: 50),
-                reward: .specialAnimation("Cronometru de Aur")
-            ),
-            
-            // MARK: - Traditional Play Achievements
-            RomanianAchievement(
-                category: .traditionalPlay,
-                rarity: .uncommon,
-                titleRomanian: "Păstrătorul Tradițiilor",
-                titleEnglish: "Keeper of Traditions",
-                descriptionRomanian: "Joacă 50 de jocuri menținând stilul tradițional",
-                descriptionEnglish: "Play 50 games maintaining traditional style",
-                culturalStory: "Fiecare joc păstrat în stilul tradițional este o punte către strămoșii noștri.",
-                historicalContext: "Stilul tradițional de joc era transmis din tată în fiu în familiile româneşti.",
-                requirement: .playGames(count: 50),
-                reward: .characterUnlock(.oldWiseMan)
-            ),
-            
-            RomanianAchievement(
-                category: .traditionalPlay,
-                rarity: .legendary,
-                titleRomanian: "Marele Păstrător",
-                titleEnglish: "The Great Keeper",
-                descriptionRomanian: "Păstrează toate tradițiile culturale disponibile",
-                descriptionEnglish: "Preserve all available cultural traditions",
-                culturalStory: "Cel care păstrează toate tradițiile devine legenda satului.",
-                historicalContext: "Marii păstrători erau respectați ca biblioteci vii ale culturii românești.",
-                requirement: .preserveCulturalTraditions(count: 25),
-                reward: .titleUnlock("Marele Păstrător de Tradiții")
-            ),
-            
-            // MARK: - Cultural Wisdom Achievements
-            RomanianAchievement(
-                category: .culturalWisdom,
-                rarity: .common,
-                titleRomanian: "Student al Culturii",
-                titleEnglish: "Student of Culture",
-                descriptionRomanian: "Învață primele 5 fapte culturale românești",
-                descriptionEnglish: "Learn your first 5 Romanian cultural facts",
-                culturalStory: "Învățarea începe cu primul pas pe calea înțelepciunii.",
-                historicalContext: "Educația culturală era fundamentul societății românești tradiționale.",
-                requirement: .learnCulturalFacts(count: 5),
-                reward: .culturalInsight("Începutul Înțelepciunii")
-            ),
-            
-            RomanianAchievement(
-                category: .culturalWisdom,
-                rarity: .epic,
-                titleRomanian: "Biblioteca Vie",
-                titleEnglish: "Living Library",
-                descriptionRomanian: "Acumulează cunoștințe despre toate aspectele culturii românești",
-                descriptionEnglish: "Accumulate knowledge about all aspects of Romanian culture",
-                culturalStory: "Cel ce cunoaște toate poveștile devine el însuși o poveste vie.",
-                historicalContext: "Bibliotecile vii erau oameni care păstrau memoria comunității.",
-                requirement: .learnCulturalFacts(count: 100),
-                reward: .heritageContent("Colecția Completă de Folclor")
-            ),
-            
-            // MARK: - Strategic Thinking Achievements
-            RomanianAchievement(
-                category: .strategicThinking,
-                rarity: .rare,
-                titleRomanian: "Mintea Strategică",
-                titleEnglish: "Strategic Mind",
-                descriptionRomanian: "Câștigă 25 de jocuri cu strategii complexe",
-                descriptionEnglish: "Win 25 games with complex strategies",
-                culturalStory: "Gândirea strategică românească combină înțelepciunea străbună cu inovația modernă.",
-                historicalContext: "Strategia în jocurile de cărți reflecta tactici folosite în diplomația românească.",
-                requirement: .winGames(count: 25),
-                reward: .musicUnlock("Hora Strategilor")
-            ),
-            
-            RomanianAchievement(
-                category: .strategicThinking,
-                rarity: .mythic,
-                titleRomanian: "Marele Strateg",
-                titleEnglish: "Grand Strategist",
-                descriptionRomanian: "Demonstrează măiestrie strategică legendară",
-                descriptionEnglish: "Demonstrate legendary strategic mastery",
-                culturalStory: "Marii strategi sunt amintiti în cântecele populare pentru generații întregi.",
-                historicalContext: "Strategii legendari ca Ștefan cel Mare foloseau gândirea tactică în toate aspectele vieții.",
-                requirement: .achieveWinStreak(count: 20),
-                reward: .titleUnlock("Marele Strateg al Patriei"),
-                isHidden: true
-            ),
-            
-            // MARK: - Community Spirit Achievements
-            RomanianAchievement(
-                category: .communitySpirit,
-                rarity: .uncommon,
-                titleRomanian: "Spirit de Echipă",
-                titleEnglish: "Team Spirit",
-                descriptionRomanian: "Demonstrează sportivitate în 10 jocuri",
-                descriptionEnglish: "Demonstrate sportsmanship in 10 games",
-                culturalStory: "Spiritul de echipă este fundamentul comunității românești tradiționale.",
-                historicalContext: "Claca și șezătoarea demonstrau puterea muncii în echipă românească.",
-                requirement: .exhibitSportsmanship(count: 10),
-                reward: .culturalPoints(100)
-            ),
-            
-            RomanianAchievement(
-                category: .communitySpirit,
-                rarity: .legendary,
-                titleRomanian: "Inima Comunității",
-                titleEnglish: "Heart of the Community",
-                descriptionRomanian: "Învață și sprijină alți jucători",
-                descriptionEnglish: "Teach and support other players",
-                culturalStory: "Cei care dăruiesc din înțelepciunea lor devin inima comunității.",
-                historicalContext: "Învățătorii satelor erau pilonii comunităților românești.",
-                requirement: .teachNewPlayers(count: 10),
-                reward: .characterUnlock(.villageTeacher)
-            ),
-            
-            // MARK: - Heritage Keeper Achievements
-            RomanianAchievement(
-                category: .heritageKeeper,
-                rarity: .epic,
-                titleRomanian: "Gardianul Moștenirii",
-                titleEnglish: "Guardian of Heritage",
-                descriptionRomanian: "Păstrează și promovează cultura românească",
-                descriptionEnglish: "Preserve and promote Romanian culture",
-                culturalStory: "Gardienii moștenirii sunt legătura între trecut și viitor.",
-                historicalContext: "Păstrarea culturii era responsabilitatea sacră a fiecărei generații.",
-                requirement: .preserveCulturalTraditions(count: 15),
-                reward: .storyUnlock("Legendele Dacilor")
-            ),
-            
-            // MARK: - Game Expertise Achievements
-            RomanianAchievement(
-                category: .gameExpertise,
-                rarity: .legendary,
-                titleRomanian: "Maestru Absolut",
-                titleEnglish: "Absolute Master",
-                descriptionRomanian: "Atinge perfecțiunea în toate aspectele jocului",
-                descriptionEnglish: "Achieve perfection in all aspects of the game",
-                culturalStory: "Maestrul absolut este cel care a înțeles esența profundă a jocului tradițional.",
-                historicalContext: "Maeștrii absoluti erau invitați să joace la curțile domnitorilor.",
-                requirement: .masterDifficulty(difficulty: .expert, games: 50),
-                reward: .titleUnlock("Maestru Absolut al Septica")
-            ),
-            
-            // MARK: - Cultural Ambassador Achievements
-            RomanianAchievement(
-                category: .culturalAmbassador,
-                rarity: .mythic,
-                titleRomanian: "Ambasador Cultural Global",
-                titleEnglish: "Global Cultural Ambassador",
-                descriptionRomanian: "Răspândește cultura românească în întreaga lume",
-                descriptionEnglish: "Spread Romanian culture throughout the world",
-                culturalStory: "Adevărații ambasadori culturali fac ca România să fie cunoscută și respectată pretutindeni.",
-                historicalContext: "România și-a câștigat respectul mondial prin ambasadorii culturali.",
-                requirement: .preserveCulturalTraditions(count: 50),
-                reward: .titleUnlock("Ambasador Cultural al României"),
-                unlockLevel: 50,
-                isHidden: true
-            )
-        ]
-    }
-    
-    // MARK: - Achievement Tracking
-    
-    /// Check if achievement is unlocked
+
+    // MARK: - Public Query API
+
     func isAchievementUnlocked(_ achievementId: UUID) -> Bool {
         return unlockedAchievements.contains(achievementId)
     }
-    
-    /// Get achievement progress (0.0 to 1.0)
+
     func getAchievementProgress(_ achievementId: UUID) -> Float {
         return achievementProgress[achievementId] ?? 0.0
     }
-    
-    /// Update achievement progress based on game event
-    func updateProgress(for event: GameEvent, with data: [String: Any] = [:]) {
-        for achievement in allAchievements {
-            guard !isAchievementUnlocked(achievement.id) else { continue }
-            
-            let currentProgress = getAchievementProgress(achievement.id)
-            let newProgress = calculateProgress(for: achievement, event: event, data: data, current: currentProgress)
-            
-            if newProgress > currentProgress {
-                achievementProgress[achievement.id] = newProgress
-                
-                // Check if achievement is completed
-                if newProgress >= 1.0 {
-                    unlockAchievement(achievement)
-                }
-            }
-        }
-        
-        saveProgress()
+
+    func getRecentlyUnlockedAchievements() -> [RomanianAchievement] {
+        return recentlyUnlocked
     }
     
-    /// Calculate progress for specific achievement
-    private func calculateProgress(
-        for achievement: RomanianAchievement,
-        event: GameEvent,
-        data: [String: Any],
-        current: Float
-    ) -> Float {
-        
-        switch (achievement.requirement, event) {
-        case (.playGames(let required), .gameCompleted):
-            let played = gameStatistics["gamesPlayed"] ?? 0
-            return min(Float(played + 1) / Float(required), 1.0)
-            
-        case (.winGames(let required), .gameWon):
-            let won = gameStatistics["gamesWon"] ?? 0
-            return min(Float(won + 1) / Float(required), 1.0)
-            
-        case (.playSevenCards(let required), .sevenCardPlayed):
-            let sevens = gameStatistics["sevensPlayed"] ?? 0
-            return min(Float(sevens + 1) / Float(required), 1.0)
-            
-        case (.playEightAtRightTime(let required), .eightPlayedAtRightTime):
-            let eights = gameStatistics["eightsAtRightTime"] ?? 0
-            return min(Float(eights + 1) / Float(required), 1.0)
-            
-        case (.capturePointCards(let required), .pointCardCaptured):
-            let points = gameStatistics["pointCardsCaptured"] ?? 0
-            return min(Float(points + 1) / Float(required), 1.0)
-            
-        case (.achieveWinStreak(let required), .winStreakUpdated):
-            if let streak = data["currentStreak"] as? Int {
-                return min(Float(streak) / Float(required), 1.0)
-            }
-            
-        case (.learnCulturalFacts(let required), .culturalFactLearned):
-            let facts = gameStatistics["culturalFactsLearned"] ?? 0
-            return min(Float(facts + 1) / Float(required), 1.0)
-            
-        case (.exhibitSportsmanship(let required), .sportsmanshipShown):
-            let instances = gameStatistics["sportsmanshipInstances"] ?? 0
-            return min(Float(instances + 1) / Float(required), 1.0)
-            
-        default:
-            return current
-        }
-        
-        return current
-    }
-    
-    /// Unlock achievement and grant rewards
+    /// Create comprehensive Romanian cultural achievements
+    private static func createRomanianAchievements() -> [LegacyRomanianAchievement] {
+    return []
+}
+
+    /// Unlock achievement and apply rewards
     private func unlockAchievement(_ achievement: RomanianAchievement) {
         unlockedAchievements.insert(achievement.id)
-        totalCulturalPoints += achievement.culturalPoints
+        totalCulturalPoints += achievement.experiencePoints
+        totalCulturalKnowledgePoints += achievement.culturalKnowledgePoints
         recentlyUnlocked.append(achievement)
-        
-        // Grant rewards
-        grantReward(achievement.reward)
-        
+
+        // Apply unlockable content (placeholder routing)
+        grantReward(achievement.unlockableContent)
+
         // Update player level and title
         updatePlayerStatus()
-        
+
         // Trigger achievement notification
         NotificationCenter.default.post(
             name: .achievementUnlocked,
             object: achievement
         )
     }
-    
-    /// Grant achievement reward
-    private func grantReward(_ reward: AchievementReward) {
-        switch reward {
-        case .culturalPoints(let points):
-            totalCulturalPoints += points
-        case .cardBack(let cardBack):
-            // Unlock card back in card collection
-            CardCollectionManager.shared.unlockCardBack(cardBack)
-        case .characterUnlock(let character):
-            // Unlock character in character system
-            CharacterUnlockManager.shared.unlockCharacter(character)
-        case .musicUnlock(let track):
-            // Unlock music track
-            MusicLibraryManager.shared.unlockTrack(track)
-        case .titleUnlock(let title):
-            // Unlock player title
-            PlayerTitleManager.shared.unlockTitle(title)
-        default:
-            break
+
+    /// Grant achievement unlockable content (placeholder)
+    private func grantReward(_ content: [UnlockableContent]) {
+        for item in content {
+            switch item {
+            case .cardBack(let name):
+                CardCollectionManager.shared.unlockCardBack(name)
+            case .title(let title):
+                PlayerTitleManager.shared.unlockTitle(title)
+            case .musicTrack(_), .folkStory(_), .culturalFact(_), .gameTheme(_), .avatar(_), .decorator(_):
+                // Future: route to appropriate systems
+                break
+            }
         }
     }
     
@@ -653,7 +416,7 @@ class AchievementManager: ObservableObject {
 }
 
 /// Achievement-related game events
-enum GameEvent {
+enum AchievementGameEvent {
     case gameCompleted
     case gameWon
     case sevenCardPlayed
@@ -668,9 +431,7 @@ enum GameEvent {
 
 // MARK: - Notification Extensions
 
-extension Notification.Name {
-    static let achievementUnlocked = Notification.Name("achievementUnlocked")
-}
+// Note: Global achievementUnlocked notification is defined in RomanianCulturalAchievementManager
 
 // MARK: - Supporting Managers (Stubs for Integration)
 

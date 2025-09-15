@@ -7,6 +7,7 @@
 //
 
 import SwiftUI
+import Observation
 import Combine
 
 /// Romanian character archetypes with authentic cultural personalities

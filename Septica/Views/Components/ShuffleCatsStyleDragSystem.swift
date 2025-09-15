@@ -7,6 +7,7 @@
 //
 
 import SwiftUI
+import Observation
 
 /// Enhanced drag coordinator for Shuffle Cats-style interactions
 @Observable

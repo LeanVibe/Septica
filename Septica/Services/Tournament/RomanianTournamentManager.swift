@@ -40,7 +40,7 @@ class RomanianTournamentManager: ObservableObject {
     
     @Published var regionalTournaments: [RomanianRegionalTournament] = []
     @Published var playerRegionalProgress: RegionalTournamentProgress = RegionalTournamentProgress()
-    @Published var unlockedRegions: Set<RomanianRegion> = [.wallachia] // Start with Wallachia
+    @Published var unlockedRegions: Set<TournamentRegion> = [.wallachia] // Start with Wallachia
     @Published var culturalRewards: [CulturalReward] = []
     @Published var currentRegionalTournament: RomanianRegionalTournament?
     
@@ -618,7 +618,7 @@ class RomanianTournamentManager: ObservableObject {
         playerRegionalProgress.matchesLost = 0
     }
     
-    func unlockRegion(_ region: RomanianRegion) async {
+    func unlockRegion(_ region: TournamentRegion) async {
         logger.info("Unlocking Romanian region: \(region)")
         
         unlockedRegions.insert(region)
@@ -657,7 +657,7 @@ class RomanianTournamentManager: ObservableObject {
         }
     }
     
-    private func createRegionalUnlockAchievement(for region: RomanianRegion) -> RegionalAchievement {
+    private func createRegionalUnlockAchievement(for region: TournamentRegion) -> RegionalAchievement {
         return RegionalAchievement(
             id: UUID().uuidString,
             region: region,
@@ -668,7 +668,7 @@ class RomanianTournamentManager: ObservableObject {
         )
     }
     
-    private func getRegionalSymbol(for region: RomanianRegion) -> RomanianCardSymbol {
+    private func getRegionalSymbol(for region: TournamentRegion) -> TournamentCardSymbol {
         switch region {
         case .transilvania: return .carpathianCross
         case .moldova: return .moldavianScroll
@@ -990,7 +990,7 @@ extension RomanianTournamentManager {
 
 // MARK: - Romanian Regions
 
-enum RomanianRegion: String, CaseIterable {
+enum TournamentRegion: String, CaseIterable {
     case transilvania = "transilvania"
     case moldova = "moldova" 
     case wallachia = "wallachia"
@@ -1012,7 +1012,7 @@ enum RomanianRegion: String, CaseIterable {
 
 struct RomanianRegionalTournament {
     let id: String
-    let region: RomanianRegion
+    let region: TournamentRegion
     let displayName: String
     let englishName: String
     let culturalTheme: RegionalCulturalTheme
@@ -1032,7 +1032,7 @@ struct RegionalCulturalTheme {
 }
 
 struct RegionalUnlockRequirements {
-    let requiredRegions: [RomanianRegion]
+    let requiredRegions: [TournamentRegion]
     let minimumAchievements: Int
     let culturalKnowledgeLevel: Int
 }
@@ -1059,10 +1059,10 @@ enum CulturalChallengeType {
 }
 
 struct RegionalTournamentRewards {
-    let culturalSymbols: [RomanianCardSymbol]
+    let culturalSymbols: [TournamentCardSymbol]
     let achievementPoints: Int
     let folkloreStories: [String]
-    let unlocksRegion: RomanianRegion?
+    let unlocksRegion: TournamentRegion?
 }
 
 struct RegionalFolklore {
@@ -1087,20 +1087,20 @@ enum RegionalTournamentResult {
 
 struct RegionalAchievement {
     let id: String
-    let region: RomanianRegion
+    let region: TournamentRegion
     let title: String
     let description: String
     let points: Int
-    let culturalSymbol: RomanianCardSymbol
+    let culturalSymbol: TournamentCardSymbol
 }
 
 struct CulturalReward {
     let type: CulturalRewardType
-    let symbol: RomanianCardSymbol?
+    let symbol: TournamentCardSymbol?
     let title: String?
     let earnedAt: Date
     
-    init(type: CulturalRewardType, symbol: RomanianCardSymbol, earnedAt: Date) {
+    init(type: CulturalRewardType, symbol: TournamentCardSymbol, earnedAt: Date) {
         self.type = type
         self.symbol = symbol
         self.title = nil
@@ -1123,7 +1123,7 @@ enum CulturalRewardType {
 
 // MARK: - Romanian Card Symbols
 
-enum RomanianCardSymbol: String, CaseIterable {
+enum TournamentCardSymbol: String, CaseIterable {
     case carpathianCross = "carpathian_cross"
     case moldavianTradition = "moldavian_tradition"
     case moldavianScroll = "moldavian_scroll"

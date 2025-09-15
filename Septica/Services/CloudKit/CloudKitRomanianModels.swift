@@ -161,7 +161,7 @@ extension GameRecord: CloudKitSyncable {
 /// Romanian cultural progress tracking
 struct RomanianCulturalProgress: Codable, Identifiable {
     let id = UUID()
-    let progressID: UUID
+    var progressID: UUID
     let playerID: String
     var storiesRead: Int
     var folkMusicListened: [String]
@@ -248,4 +248,3 @@ enum GameResultType: String, Codable, CaseIterable {
     case loss = "loss"
     case draw = "draw"
 }
-
