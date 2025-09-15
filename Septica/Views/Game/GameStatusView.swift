@@ -16,7 +16,7 @@ struct GameStatusView: View {
     let totalRounds: Int
     let turnTimeRemaining: TimeInterval
     let totalTurnTime: TimeInterval
-    let gamePhase: GamePhase
+    let gamePhase: SepticaGamePhase
     
     @State private var pulseAnimation = false
     
@@ -192,7 +192,7 @@ struct GameStatusView: View {
 
 // MARK: - Game Phase Enum
 
-enum GamePhase {
+enum SepticaGamePhase {
     case dealing
     case playing
     case roundEnd
@@ -203,16 +203,18 @@ enum GamePhase {
 
 struct GameStatusView_Previews: PreviewProvider {
     static var previews: some View {
-        let player = Player(name: "Jucător")
-        player.score = 2
-        
-        let opponent = Player(name: "Computer")
-        opponent.score = 1
-        
         VStack(spacing: 20) {
             GameStatusView(
-                currentPlayer: player,
-                opponentPlayer: opponent,
+                currentPlayer: {
+                    let player = Player(name: "Jucător")
+                    player.score = 2
+                    return player
+                }(),
+                opponentPlayer: {
+                    let opponent = Player(name: "Computer")
+                    opponent.score = 1
+                    return opponent
+                }(),
                 gameRound: 3,
                 totalRounds: 5,
                 turnTimeRemaining: 25,

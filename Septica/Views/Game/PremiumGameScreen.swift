@@ -37,7 +37,7 @@ struct PremiumGameScreen: View {
                         totalRounds: 5,
                         turnTimeRemaining: turnTimeRemaining,
                         totalTurnTime: 30,
-                        gamePhase: .playing
+                        gamePhase: SepticaGamePhase.playing
                     )
                     .padding(.horizontal)
                     .padding(.top, geometry.safeAreaInsets.top + 8)
