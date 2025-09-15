@@ -1,0 +1,184 @@
+/* Achievement System Localization - Romanian */
+
+/* Achievement Categories */
+"category_card_mastery" = "Măiestria Cărților";
+"category_game_wins" = "Realizări de Victorie";
+"category_strategic_play" = "Excelență Strategică";
+"category_perfect_games" = "Jocuri Perfecte";
+"category_folklore_learning" = "Folclorul Românesc";
+"category_traditional_music" = "Muzica Tradițională";
+"category_regional_history" = "Istoria Regională";
+"category_cultural_pride" = "Mândria Culturală";
+"category_mathematical_thinking" = "Gândirea Matematică";
+"category_critical_thinking" = "Gândirea Critică";
+"category_pattern_recognition" = "Maestrul Tiparelor";
+"category_problem_solving" = "Rezolvitor de Probleme";
+"category_friendly_play" = "Joc Prietenos";
+"category_mentorship" = "Mentoratul";
+"category_community_participation" = "Spiritul Comunității";
+"category_cultural_sharing" = "Ambasador Cultural";
+
+/* Achievement Difficulties */
+"difficulty_bronze" = "Bronz";
+"difficulty_silver" = "Argint";
+"difficulty_gold" = "Aur";
+"difficulty_legendary" = "Legendar";
+
+/* Romanian Regions */
+"region_transylvania" = "Transilvania";
+"region_moldova" = "Moldova";
+"region_wallachia" = "Țara Românească";
+"region_dobrudja" = "Dobrogea";
+"region_banat" = "Banatul";
+"region_oltenia" = "Oltenia";
+"region_muntenia" = "Muntenia";
+"region_bucovina" = "Bucovina";
+
+/* Achievement Requirements */
+"requirement_games_played" = "Joacă %d jocuri";
+"requirement_games_won" = "Câștigă %d jocuri";
+"requirement_perfect_games" = "Realizează %d jocuri perfecte";
+"requirement_cards_played" = "Joacă %d cărți";
+"requirement_specific_card" = "Joacă cartea specifică de %d ori";
+"requirement_win_streak" = "Câștigă %d jocuri consecutive";
+"requirement_tournament_participation" = "Participă la %d turnee";
+"requirement_tournament_wins" = "Câștigă %d turnee";
+"requirement_cultural_quiz_answered" = "Răspunde la %d întrebări culturale";
+"requirement_cultural_quiz_perfect" = "Scor perfect la %d teste culturale";
+"requirement_folktale_learned" = "Învață %d basme românești";
+"requirement_tradition_explored" = "Explorează %d tradiții românești";
+"requirement_community_interaction" = "Interacționează cu comunitatea de %d ori";
+"requirement_mentorship_provided" = "Mentorează %d jucători";
+"requirement_seasonal_event" = "Participă la %d evenimente sezoniere";
+"requirement_daily_play_streak" = "Joacă zilnic timp de %d zile";
+"requirement_strategic_moves" = "Fă %d mișcări strategice corecte";
+"requirement_mathematical_puzzle" = "Rezolvă %d puzzle-uri matematice";
+
+/* Starter Achievements */
+"achievement_first_steps_title" = "Primii Pași";
+"achievement_first_steps_desc" = "Joacă primul tău joc de Șeptică";
+"achievement_first_steps_context" = "Orice călătorie mare începe cu un singur pas, cum spune proverbul românesc: 'Drumul se face mergând'.";
+
+"achievement_seven_explorer_title" = "Exploratorul Șepticii";
+"achievement_seven_explorer_desc" = "Joacă Șeptică de Roșu de 7 ori";
+"achievement_seven_explorer_context" = "Numărul șapte are o semnificație specială în cultura românească, apărând în nenumărate basme și tradiții populare.";
+
+"achievement_quick_learner_title" = "Învățăcel Isteț";
+"achievement_quick_learner_desc" = "Câștigă primele tale 3 jocuri";
+"achievement_quick_learner_context" = "Copiii români au fost întotdeauna lăudați pentru abilitățile lor de învățare rapidă, perpetuând tradițiile prin generații.";
+
+/* Gameplay Mastery Achievements */
+"achievement_card_virtuoso_title" = "Virtuozul Cărților";
+"achievement_card_virtuoso_desc" = "Stăpânește toate cele patru culori câștigând 25 de jocuri cu fiecare";
+"achievement_card_virtuoso_context" = "Ca un lăutar priceput care stăpânește fiecare instrument, adevărata măiestrie vine din înțelegerea tuturor aspectelor jocului.";
+
+"achievement_perfect_harmony_title" = "Armonia Perfectă";
+"achievement_perfect_harmony_desc" = "Realizează 10 jocuri perfecte";
+"achievement_perfect_harmony_context" = "În muzica populară românească, armonia perfectă creează cele mai frumoase melodii. În Șeptică, jocurile perfecte arată adevărata măiestrie.";
+
+"achievement_lightning_victory_title" = "Victoria Fulger";
+"achievement_lightning_victory_desc" = "Câștigă un joc în mai puțin de 2 minute";
+"achievement_lightning_victory_context" = "La fel de iute ca legendarul erou românesc Făt-Frumos, care putea împlini fapte mari cu viteza fulgerului.";
+
+/* Cultural Heritage Achievements */
+"achievement_folklore_scholar_title" = "Cărturarul Folclorului";
+"achievement_folklore_scholar_desc" = "Învață 15 basme românești";
+"achievement_folklore_scholar_context" = "Folclorul românesc este una dintre cele mai bogate tradiții din Europa, transmise prin generații de poveștitori.";
+
+"achievement_transylvania_guardian_title" = "Păzitorul Transilvaniei";
+"achievement_transylvania_guardian_desc" = "Completează toate provocările cu tema Transilvania";
+"achievement_transylvania_guardian_context" = "Transilvania, țara de dincolo de pădure, păstrează nenumărate legende și o moștenire culturală mândră ce merită apărată.";
+
+"achievement_moldovan_wisdom_title" = "Înțelepciunea Moldovei";
+"achievement_moldovan_wisdom_desc" = "Stăpânește tiparele strategice de joc din regiunea Moldovei";
+"achievement_moldovan_wisdom_context" = "Gândirea strategică a moldovenilor s-a format prin secole de adaptare la provocări păstrându-și cultura.";
+
+"achievement_wallachian_courage_title" = "Curajul Muntenesc";
+"achievement_wallachian_courage_desc" = "Câștigă 50 de jocuri provocatoare";
+"achievement_wallachian_courage_context" = "Muntenia, țara voievozilor curajoși ca Vlad Țepeș, ne învață că curajul învinge toate obstacolele.";
+
+/* Educational Achievements */
+"achievement_young_mathematician_title" = "Tânărul Matematician";
+"achievement_young_mathematician_desc" = "Rezolvă 20 de puzzle-uri matematice legate de combinațiile de cărți";
+"achievement_young_mathematician_context" = "România a dat matematicieni străluciti. Fiecare combinație de cărți învață probabilități și gândire strategică.";
+
+"achievement_pattern_master_title" = "Maestrul Tiparelor";
+"achievement_pattern_master_desc" = "Recunoaște și folosește 15 tipare strategice diferite";
+"achievement_pattern_master_context" = "Ca tiparele încurcate din covorele tradiționale românești, recunoașterea tiparelor din joc este o artă.";
+
+"achievement_strategic_thinker_title" = "Gânditorul Strategic";
+"achievement_strategic_thinker_desc" = "Fă mișcări optime în 100 de situații provocatoare";
+"achievement_strategic_thinker_context" = "Gândirea strategică a fost întotdeauna prețuită în cultura românească, de la antici războinici daci la marii maeștri șahiști moderni.";
+
+/* Community and Social Achievements */
+"achievement_friendly_neighbor_title" = "Vecinul Prietenos";
+"achievement_friendly_neighbor_desc" = "Joacă 25 de jocuri prietenești cu alții";
+"achievement_friendly_neighbor_context" = "Ospitalitatea românească este legendară. 'Oaspetele în casă, Dumnezeu în casă'.";
+
+"achievement_cultural_ambassador_title" = "Ambasadorul Cultural";
+"achievement_cultural_ambassador_desc" = "Împărtășește 10 curiozități culturale românești cu alții";
+"achievement_cultural_ambassador_context" = "Împărtășirea frumoasei noastre culturi ajută la păstrarea ei pentru generațiile viitoare și construiește punți între popoare.";
+
+"achievement_mentor_elder_title" = "Mentorul Înțelept";
+"achievement_mentor_elder_desc" = "Ajută 5 jucători noi să învețe jocul";
+"achievement_mentor_elder_context" = "În satele românești, bătrânii au transmis întotdeauna înțelepciunea tinerilor. Continuă această frumoasă tradiție.";
+
+/* Seasonal and Special Achievements */
+"achievement_winter_festivities_title" = "Sărbătorile de Iarnă";
+"achievement_winter_festivities_desc" = "Participă la toate evenimentele de sărbători de iarnă";
+"achievement_winter_festivities_context" = "Tradițiile româneștii de iarnă, de la colinde la obiceiuri dramatice, sărbătoresc magia sezonului.";
+
+"achievement_spring_renewal_title" = "Renașterea de Primăvară";
+"achievement_spring_renewal_desc" = "Completează provocarea sezonieră Mărțișor";
+"achievement_spring_renewal_context" = "Mărțișorul, frumoasa tradiție românească de primăvară, simbolizează reînnoirea, speranța și trezirea naturii.";
+
+"achievement_summer_celebration_title" = "Sărbătoarea Verii";
+"achievement_summer_celebration_desc" = "Participă la festivalul de vară Iezna (Sânzienele)";
+"achievement_summer_celebration_context" = "Sânzienele, sărbătoarea românească de mijloc de vară, onorează abundența naturii și puterea plantelor vindecătoare.";
+
+"achievement_autumn_harvest_title" = "Secerișul de Toamnă";
+"achievement_autumn_harvest_desc" = "Completează provocările sezonului secerișului";
+"achievement_autumn_harvest_context" = "Tradițiile românești de toamnă sărbătoresc secerișul și pregătesc comunitățile pentru iarnă prin muncă și sărbătoare împărțite.";
+
+/* Legendary Achievements */
+"achievement_dacian_warrior_title" = "Războinicul Dac";
+"achievement_dacian_warrior_desc" = "Demonstrează curaj și abilitate excepționale în toate modurile de joc";
+"achievement_dacian_warrior_context" = "Anticii daci, strămoșii românilor, erau cunoscuți în tot Imperiul Roman pentru curajul și strălucirea lor tactică.";
+
+"achievement_romanian_pride_title" = "Mândria Românească";
+"achievement_romanian_pride_desc" = "Stăpânește fiecare aspect al jocului în timp ce înveți moștenirea noastră culturală";
+"achievement_romanian_pride_context" = "Adevărata mândrie românească vine din înțelegerea bogatului nostru patrimoniu și din excelarea în toate întreprinderile. 'Români suntem și români să rămânem!'";
+
+"achievement_cultural_treasure_title" = "Comoara Culturală";
+"achievement_cultural_treasure_desc" = "Deblochează tot conținutul cultural și împărtășește-l cu comunitatea";
+"achievement_cultural_treasure_context" = "Ai devenit un păzitor al culturii românești, asigurându-te că aceste comori trăiesc pentru generațiile viitoare.";
+
+/* Milestone Messages */
+"milestone_25_percent" = "Început grozav! Ești pe drumul către stăpânirea acestei realizări.";
+"milestone_50_percent" = "La jumătatea drumului! Dedicarea ta se vede.";
+"milestone_75_percent" = "Aproape gata! Linia de sosire e în vedere.";
+"milestone_100_percent" = "Realizare deblocată! Felicitări pentru succesul tău!";
+
+/* Encouragement Messages */
+"encouragement_keep_playing" = "Fiecare joc te face mai puternic! Continuă să joci și să înveți.";
+"encouragement_cultural_learning" = "Învățarea despre cultura românească te face mai înțelept! Continuă să explorezi moștenirea noastră.";
+"encouragement_mathematical_growth" = "Gândirea ta matematică se îmbunătățește! Numerele sunt peste tot în viață.";
+"encouragement_social_connection" = "Jocul cu alții creează prietenii de durată! Continuă să construiești legături.";
+"encouragement_strategic_development" = "Gândirea ta strategică se dezvoltă frumos! Fiecare mișcare învață răbdarea.";
+
+/* Content Types */
+"content_card_back" = "Spatele Cărții";
+"content_game_theme" = "Tema Jocului";
+"content_folk_story" = "Poveste Populară";
+"content_music_track" = "Piesă Muzicală";
+"content_cultural_fact" = "Curiozitate Culturală";
+"content_avatar" = "Avatar";
+"content_title" = "Titlu";
+"content_decorator" = "Decorațiune";
+
+/* Achievement Completion */
+"achievement_completed" = "Realizare Completată!";
+"achievement_progress" = "Progres: %d/%d";
+"achievement_reward_earned" = "Recompensă Câștigată: %@";
+"achievement_experience_gained" = "+%d Puncte de Experiență";
+"achievement_cultural_knowledge_gained" = "+%d Puncte de Cunoștințe Culturale";

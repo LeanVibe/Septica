@@ -1,0 +1,184 @@
+/* Achievement System Localization - English */
+
+/* Achievement Categories */
+"category_card_mastery" = "Card Mastery";
+"category_game_wins" = "Victory Achievements";
+"category_strategic_play" = "Strategic Excellence";
+"category_perfect_games" = "Perfect Games";
+"category_folklore_learning" = "Romanian Folklore";
+"category_traditional_music" = "Traditional Music";
+"category_regional_history" = "Regional History";
+"category_cultural_pride" = "Cultural Pride";
+"category_mathematical_thinking" = "Mathematical Mind";
+"category_critical_thinking" = "Critical Thinking";
+"category_pattern_recognition" = "Pattern Master";
+"category_problem_solving" = "Problem Solver";
+"category_friendly_play" = "Friendly Play";
+"category_mentorship" = "Mentorship";
+"category_community_participation" = "Community Spirit";
+"category_cultural_sharing" = "Cultural Ambassador";
+
+/* Achievement Difficulties */
+"difficulty_bronze" = "Bronze";
+"difficulty_silver" = "Silver";
+"difficulty_gold" = "Gold";
+"difficulty_legendary" = "Legendary";
+
+/* Romanian Regions */
+"region_transylvania" = "Transylvania";
+"region_moldova" = "Moldova";
+"region_wallachia" = "Wallachia";
+"region_dobrudja" = "Dobrudja";
+"region_banat" = "Banat";
+"region_oltenia" = "Oltenia";
+"region_muntenia" = "Muntenia";
+"region_bucovina" = "Bucovina";
+
+/* Achievement Requirements */
+"requirement_games_played" = "Play %d games";
+"requirement_games_won" = "Win %d games";
+"requirement_perfect_games" = "Achieve %d perfect games";
+"requirement_cards_played" = "Play %d cards";
+"requirement_specific_card" = "Play specific card %d times";
+"requirement_win_streak" = "Win %d games in a row";
+"requirement_tournament_participation" = "Participate in %d tournaments";
+"requirement_tournament_wins" = "Win %d tournaments";
+"requirement_cultural_quiz_answered" = "Answer %d cultural questions";
+"requirement_cultural_quiz_perfect" = "Perfect score on %d cultural quizzes";
+"requirement_folktale_learned" = "Learn %d Romanian folktales";
+"requirement_tradition_explored" = "Explore %d Romanian traditions";
+"requirement_community_interaction" = "Interact with community %d times";
+"requirement_mentorship_provided" = "Mentor %d players";
+"requirement_seasonal_event" = "Participate in %d seasonal events";
+"requirement_daily_play_streak" = "Play daily for %d days";
+"requirement_strategic_moves" = "Make %d strategic moves correctly";
+"requirement_mathematical_puzzle" = "Solve %d mathematical puzzles";
+
+/* Starter Achievements */
+"achievement_first_steps_title" = "First Steps";
+"achievement_first_steps_desc" = "Play your first game of Septica";
+"achievement_first_steps_context" = "Every great journey begins with a single step, just like the Romanian proverb says: 'Drumul se face mergând' (The road is made by walking).";
+
+"achievement_seven_explorer_title" = "Seven Explorer";
+"achievement_seven_explorer_desc" = "Play the Seven of Hearts 7 times";
+"achievement_seven_explorer_context" = "The number seven holds special significance in Romanian culture, appearing in countless fairy tales and folk traditions.";
+
+"achievement_quick_learner_title" = "Quick Learner";
+"achievement_quick_learner_desc" = "Win your first 3 games";
+"achievement_quick_learner_context" = "Romanian children have always been praised for their quick learning abilities, carrying on traditions through generations.";
+
+/* Gameplay Mastery Achievements */
+"achievement_card_virtuoso_title" = "Card Virtuoso";
+"achievement_card_virtuoso_desc" = "Master all four suits by winning 25 games with each";
+"achievement_card_virtuoso_context" = "Like a skilled 'lăutar' (traditional musician) who masters every instrument, true card mastery comes from understanding all aspects of the game.";
+
+"achievement_perfect_harmony_title" = "Perfect Harmony";
+"achievement_perfect_harmony_desc" = "Achieve 10 perfect games";
+"achievement_perfect_harmony_context" = "In Romanian folk music, perfect harmony creates the most beautiful melodies. In Septica, perfect games show true mastery.";
+
+"achievement_lightning_victory_title" = "Lightning Victory";
+"achievement_lightning_victory_desc" = "Win a game in under 2 minutes";
+"achievement_lightning_victory_context" = "As swift as the legendary Romanian hero Făt-Frumos, who could accomplish great deeds with lightning speed.";
+
+/* Cultural Heritage Achievements */
+"achievement_folklore_scholar_title" = "Folklore Scholar";
+"achievement_folklore_scholar_desc" = "Learn 15 Romanian folktales";
+"achievement_folklore_scholar_context" = "Romanian folklore is one of Europe's richest traditions, passed down through generations of storytellers.";
+
+"achievement_transylvania_guardian_title" = "Guardian of Transylvania";
+"achievement_transylvania_guardian_desc" = "Complete all Transylvania-themed challenges";
+"achievement_transylvania_guardian_context" = "Transylvania, the land beyond the forest, holds countless legends and a proud cultural heritage worth protecting.";
+
+"achievement_moldovan_wisdom_title" = "Moldovan Wisdom";
+"achievement_moldovan_wisdom_desc" = "Master strategic play patterns from Moldova region";
+"achievement_moldovan_wisdom_context" = "The strategic thinking of Moldovan people has been honed through centuries of adapting to challenges while preserving their culture.";
+
+"achievement_wallachian_courage_title" = "Wallachian Courage";
+"achievement_wallachian_courage_desc" = "Win 50 challenging games";
+"achievement_wallachian_courage_context" = "Wallachia, the land of brave voivodes like Vlad the Impaler, teaches us that courage conquers all obstacles.";
+
+/* Educational Achievements */
+"achievement_young_mathematician_title" = "Young Mathematician";
+"achievement_young_mathematician_desc" = "Solve 20 mathematical puzzles related to card combinations";
+"achievement_young_mathematician_context" = "Romania has produced brilliant mathematicians. Every card combination teaches probability and strategic thinking.";
+
+"achievement_pattern_master_title" = "Pattern Master";
+"achievement_pattern_master_desc" = "Recognize and use 15 different strategic patterns";
+"achievement_pattern_master_context" = "Like the intricate patterns in Romanian traditional carpets, recognizing game patterns is an art form.";
+
+"achievement_strategic_thinker_title" = "Strategic Thinker";
+"achievement_strategic_thinker_desc" = "Make optimal moves in 100 challenging situations";
+"achievement_strategic_thinker_context" = "Strategic thinking has always been valued in Romanian culture, from ancient Dacian warriors to modern chess grandmasters.";
+
+/* Community and Social Achievements */
+"achievement_friendly_neighbor_title" = "Friendly Neighbor";
+"achievement_friendly_neighbor_desc" = "Play 25 friendly games with others";
+"achievement_friendly_neighbor_context" = "Romanian hospitality is legendary. 'Oaspetele în casă, Dumnezeu în casă' (Guest in the house, God in the house).";
+
+"achievement_cultural_ambassador_title" = "Cultural Ambassador";
+"achievement_cultural_ambassador_desc" = "Share 10 Romanian cultural facts with others";
+"achievement_cultural_ambassador_context" = "Sharing our beautiful culture helps preserve it for future generations and builds bridges between peoples.";
+
+"achievement_mentor_elder_title" = "Wise Mentor";
+"achievement_mentor_elder_desc" = "Help 5 new players learn the game";
+"achievement_mentor_elder_context" = "In Romanian villages, elders have always passed wisdom to the young. Continue this beautiful tradition.";
+
+/* Seasonal and Special Achievements */
+"achievement_winter_festivities_title" = "Winter Festivities";
+"achievement_winter_festivities_desc" = "Participate in all winter holiday events";
+"achievement_winter_festivities_context" = "Romanian winter traditions, from colinde (carols) to dramatic customs, celebrate the magic of the season.";
+
+"achievement_spring_renewal_title" = "Spring Renewal";
+"achievement_spring_renewal_desc" = "Complete the Mărțișor seasonal challenge";
+"achievement_spring_renewal_context" = "Mărțișor, the beautiful Romanian spring tradition, symbolizes renewal, hope, and the awakening of nature.";
+
+"achievement_summer_celebration_title" = "Summer Celebration";
+"achievement_summer_celebration_desc" = "Participate in Iezna (Sânzienele) summer festival";
+"achievement_summer_celebration_context" = "Sânzienele, the Romanian midsummer celebration, honors nature's abundance and the power of healing herbs.";
+
+"achievement_autumn_harvest_title" = "Autumn Harvest";
+"achievement_autumn_harvest_desc" = "Complete harvest season challenges";
+"achievement_autumn_harvest_context" = "Romanian autumn traditions celebrate the harvest and prepare communities for winter through shared work and celebration.";
+
+/* Legendary Achievements */
+"achievement_dacian_warrior_title" = "Dacian Warrior";
+"achievement_dacian_warrior_desc" = "Demonstrate exceptional courage and skill across all game modes";
+"achievement_dacian_warrior_context" = "The ancient Dacians, ancestors of Romanians, were known throughout the Roman Empire for their bravery and tactical brilliance.";
+
+"achievement_romanian_pride_title" = "Romanian Pride";
+"achievement_romanian_pride_desc" = "Master every aspect of the game while learning our cultural heritage";
+"achievement_romanian_pride_context" = "True Romanian pride comes from understanding our rich heritage while excelling in all endeavors. 'Români suntem și români să rămânem!'";
+
+"achievement_cultural_treasure_title" = "Cultural Treasure";
+"achievement_cultural_treasure_desc" = "Unlock all cultural content and share it with the community";
+"achievement_cultural_treasure_context" = "You have become a guardian of Romanian culture, ensuring these treasures live on for future generations.";
+
+/* Milestone Messages */
+"milestone_25_percent" = "Great start! You're on your way to mastering this achievement.";
+"milestone_50_percent" = "Halfway there! Your dedication is showing.";
+"milestone_75_percent" = "Almost complete! The finish line is in sight.";
+"milestone_100_percent" = "Achievement unlocked! Congratulations on your success!";
+
+/* Encouragement Messages */
+"encouragement_keep_playing" = "Every game makes you stronger! Keep playing and learning.";
+"encouragement_cultural_learning" = "Learning about Romanian culture makes you wiser! Continue exploring our heritage.";
+"encouragement_mathematical_growth" = "Your mathematical thinking is improving! Numbers are everywhere in life.";
+"encouragement_social_connection" = "Playing with others creates lasting friendships! Keep building connections.";
+"encouragement_strategic_development" = "Your strategic thinking is developing beautifully! Each move teaches patience.";
+
+/* Content Types */
+"content_card_back" = "Card Back";
+"content_game_theme" = "Game Theme";
+"content_folk_story" = "Folk Story";
+"content_music_track" = "Music Track";
+"content_cultural_fact" = "Cultural Fact";
+"content_avatar" = "Avatar";
+"content_title" = "Title";
+"content_decorator" = "Decorator";
+
+/* Achievement Completion */
+"achievement_completed" = "Achievement Completed!";
+"achievement_progress" = "Progress: %d/%d";
+"achievement_reward_earned" = "Reward Earned: %@";
+"achievement_experience_gained" = "+%d Experience Points";
+"achievement_cultural_knowledge_gained" = "+%d Cultural Knowledge Points";
