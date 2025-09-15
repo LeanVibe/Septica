@@ -193,66 +193,18 @@ struct ClashRoyaleStyleButtons: View {
     
     var body: some View {
         VStack(spacing: 30) {
-            // Central PLAY button (massive, like Clash Royale BATTLE button)
-            Button(action: {
-                // Start game directly - no setup screen
-                navigationManager.startNewGame(
-                    playerName: UserSettings.shared.playerName,
-                    difficulty: UserSettings.shared.preferredDifficulty,
-                    targetScore: 11
-                )
-            }) {
-                VStack(spacing: 8) {
-                    Image(systemName: "play.fill")
-                        .font(.system(size: 40, weight: .bold))
-                        .foregroundColor(.white)
-                    
-                    Text("PLAY")
-                        .font(.system(size: 28, weight: .black, design: .default))
-                        .foregroundColor(.white)
-                        .tracking(2)
-                    
-                    if showingContinue {
-                        Text("Continue Game")
-                            .font(.caption)
-                            .foregroundColor(.white.opacity(0.8))
-                    } else {
-                        Text("Start New Game")
-                            .font(.caption)
-                            .foregroundColor(.white.opacity(0.8))
-                    }
+            // Enhanced PLAY button with Romanian Glass Morphism
+            EnhancedRomanianPlayButton(
+                isShowingContinue: showingContinue,
+                action: {
+                    // Start game directly - no setup screen
+                    navigationManager.startNewGame(
+                        playerName: UserSettings.shared.playerName,
+                        difficulty: UserSettings.shared.preferredDifficulty,
+                        targetScore: 11
+                    )
                 }
-                .frame(width: 200, height: 120)
-                .background(
-                    RoundedRectangle(cornerRadius: 20)
-                        .fill(
-                            LinearGradient(
-                                colors: [
-                                    Color.green.opacity(0.9),
-                                    Color.green.opacity(0.7),
-                                    Color.green.opacity(0.9)
-                                ],
-                                startPoint: .top,
-                                endPoint: .bottom
-                            )
-                        )
-                        .shadow(color: .green.opacity(0.5), radius: 10, x: 0, y: 5)
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 20)
-                        .stroke(
-                            LinearGradient(
-                                colors: [.white.opacity(0.3), .clear],
-                                startPoint: .top,
-                                endPoint: .bottom
-                            ),
-                            lineWidth: 2
-                        )
-                )
-            }
-            .buttonStyle(PressEffectButtonStyle())
-            .scaleEffect(showingContinue ? 1.05 : 1.0)
-            .animation(.spring(response: 0.3, dampingFraction: 0.7), value: showingContinue)
+            )
             
             // Secondary options in horizontal row (like Clash Royale)
             HStack(spacing: 20) {
@@ -531,6 +483,134 @@ struct MenuButtonStyleSimple: ButtonStyle {
             .cornerRadius(12)
             .scaleEffect(configuration.isPressed ? 0.95 : 1.0)
             .animation(.easeInOut(duration: 0.1), value: configuration.isPressed)
+    }
+}
+
+// MARK: - Enhanced Components (Mobile MCP UI/UX Improvements)
+
+/// Enhanced PLAY button with Romanian glass morphism design
+/// Based on Mobile MCP UI/UX Analysis - Priority 1 Improvement
+struct EnhancedRomanianPlayButton: View {
+    let isShowingContinue: Bool
+    let action: () -> Void
+    @State private var isPressed = false
+    @State private var glowIntensity: Double = 0.3
+    
+    var body: some View {
+        Button(action: {
+            // Romanian haptic feedback
+            let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
+            impactFeedback.impactOccurred()
+            action()
+        }) {
+            VStack(spacing: 12) {
+                // Play icon with Romanian cultural styling
+                ZStack {
+                    Image(systemName: "play.fill")
+                        .font(.system(size: 44, weight: .bold))
+                        .foregroundStyle(
+                            LinearGradient(
+                                colors: [.white, .white.opacity(0.9)],
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
+                        )
+                    
+                    // Subtle glow effect
+                    Image(systemName: "play.fill")
+                        .font(.system(size: 44, weight: .bold))
+                        .foregroundColor(.white)
+                        .blur(radius: 4)
+                        .opacity(glowIntensity)
+                }
+                
+                // Romanian-styled text
+                VStack(spacing: 4) {
+                    Text("JOACĂ")  // Romanian for "PLAY"
+                        .font(.system(size: 30, weight: .black, design: .default))
+                        .tracking(2.5)
+                        .foregroundColor(.white)
+                        .shadow(color: .black.opacity(0.3), radius: 2, x: 1, y: 1)
+                    
+                    Text(isShowingContinue ? "Continuă Jocul" : "Joc Nou")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundColor(.white.opacity(0.85))
+                        .tracking(0.5)
+                }
+            }
+            .frame(width: 280, height: 140)
+            .background(
+                ZStack {
+                    // Base glass morphism background
+                    RoundedRectangle(cornerRadius: 24)
+                        .fill(.ultraThinMaterial.opacity(0.8))
+                        .background(
+                            // Romanian cultural gradient
+                            RoundedRectangle(cornerRadius: 24)
+                                .fill(
+                                    LinearGradient(
+                                        colors: [
+                                            Color(red: 0.2, green: 0.6, blue: 0.3),    // Forest green
+                                            Color(red: 0.15, green: 0.5, blue: 0.25),  // Deeper green
+                                            Color(red: 0.1, green: 0.4, blue: 0.2)     // Dark green
+                                        ],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
+                                )
+                        )
+                    
+                    // Elegant border with Romanian colors
+                    RoundedRectangle(cornerRadius: 24)
+                        .stroke(
+                            LinearGradient(
+                                colors: [
+                                    Color(red: 1.0, green: 0.84, blue: 0.0).opacity(0.6), // Gold
+                                    Color.clear,
+                                    Color(red: 0.8, green: 0.2, blue: 0.2).opacity(0.4)  // Romanian red
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 2
+                        )
+                    
+                    // Inner highlight for premium feel
+                    RoundedRectangle(cornerRadius: 24)
+                        .stroke(
+                            LinearGradient(
+                                colors: [.white.opacity(0.4), .clear],
+                                startPoint: .top,
+                                endPoint: .bottom
+                            ),
+                            lineWidth: 1
+                        )
+                        .padding(1)
+                }
+            )
+            .shadow(
+                color: Color(red: 0.1, green: 0.4, blue: 0.2).opacity(0.6),
+                radius: 20,
+                x: 0,
+                y: 10
+            )
+            .scaleEffect(isPressed ? 0.96 : 1.0)
+            .animation(.spring(response: 0.3, dampingFraction: 0.6), value: isPressed)
+        }
+        .onLongPressGesture(minimumDuration: 0, maximumDistance: .infinity, pressing: { pressing in
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                isPressed = pressing
+            }
+        }, perform: {})
+        .onAppear {
+            // Subtle breathing animation for the glow
+            withAnimation(
+                .easeInOut(duration: 2.5)
+                .repeatForever(autoreverses: true)
+            ) {
+                glowIntensity = 0.6
+            }
+        }
     }
 }
 
