@@ -91,7 +91,7 @@ struct GameBoardView: View {
                 
                 // Game status messages
                 if let statusMessage = gameViewModel.statusMessage {
-                    GameStatusView(message: statusMessage)
+                    GameStatusMessageView(message: statusMessage)
                         .transition(.opacity)
                 }
             }
@@ -215,7 +215,7 @@ struct GameInfoView: View {
 }
 
 /// Status message display
-struct GameStatusView: View {
+struct GameStatusMessageView: View {
     let message: String
     
     var body: some View {
