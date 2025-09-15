@@ -27,12 +27,20 @@ struct CardView: View {
     @EnvironmentObject private var audioManager: AudioManager
     @EnvironmentObject private var animationManager: AnimationManager
     
+    // Visual effects system
+    @StateObject private var visualEffectsManager = CardVisualEffectsManager()
+    
     @State private var isPressed = false
     @State private var rotationAngle: Double = 0
     @State private var isFocused = false
     @State private var playAnimationTrigger = false
     @State private var dragOffset = CGSize.zero
     @State private var isDragging = false
+    
+    // Enhanced visual effects state
+    @State private var showPremiumAnimation = false
+    @State private var currentAnimationSequence: AnimationSequenceType = .sevenPlaySpecial
+    @State private var particleEffectActive = false
     
     // Metal rendering computed properties
     private var rotationAxis: (x: CGFloat, y: CGFloat, z: CGFloat) {
@@ -352,11 +360,43 @@ struct CardView: View {
             // Trigger play animation
             playAnimationTrigger = true
             
+            // Trigger enhanced visual effects
+            triggerPlayVisualEffects()
+            
             onTap?()
         } else {
             // Invalid move feedback
             hapticManager.trigger(.cardInvalid)
             audioManager.playSound(.cardInvalid)
+            
+            // Trigger invalid move visual effects
+            visualEffectsManager.triggerEffect(.invalidCardShake, for: card)
+        }
+    }
+    
+    /// Trigger visual effects when card is played
+    private func triggerPlayVisualEffects() {
+        // Determine the type of play and trigger appropriate effects
+        if card.value == 7 {
+            // Special seven play effects
+            visualEffectsManager.triggerEffect(.goldenGlow, for: card)
+            currentAnimationSequence = .sevenPlaySpecial
+            showPremiumAnimation = true
+        } else if card.isPointCard {
+            // Point card effects
+            visualEffectsManager.triggerEffect(.pointCardShimmer, for: card)
+            currentAnimationSequence = .pointCardCapture
+            showPremiumAnimation = true
+        } else {
+            // Standard play effects
+            visualEffectsManager.triggerEffect(.sparklePlay, for: card)
+        }
+        
+        // Add Romanian cultural flourish for authentic cultural moments
+        if card.suit == .hearts && card.value == 10 {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                self.visualEffectsManager.triggerEffect(.romanianFlourish, for: self.card)
+            }
         }
     }
     
@@ -389,6 +429,15 @@ struct CardView: View {
                     .opacity(0.8)
                     .animation(.easeInOut(duration: 1.5).repeatForever(autoreverses: true), value: UUID())
             }
+            
+            // Premium animation overlay
+            if showPremiumAnimation {
+                PremiumCardAnimationSequence(
+                    card: card,
+                    sequenceType: currentAnimationSequence,
+                    isActive: $showPremiumAnimation
+                )
+            }
         }
         .frame(width: cardSize.width, height: cardSize.height) // CRITICAL: Enforce proper card dimensions to prevent stretching
         .romanianPatternOverlay() // Subtle Romanian cultural pattern
@@ -398,6 +447,12 @@ struct CardView: View {
             isSpecialCard: card.value == 7 || card.isPointCard // 7s and point cards get special treatment
         )
         .premiumDepth(isLifted: isSelected, isPressed: isPressed)
+        .cardVisualEffects(
+            card: card,
+            isSelected: isSelected,
+            isPlayable: isPlayable,
+            effectsManager: visualEffectsManager
+        )
         .scaleEffect(scaleEffect)
         .rotationEffect(.degrees(rotationAngle))
         .opacity(opacity)
@@ -429,6 +484,9 @@ struct CardView: View {
                         isDragging = true
                         hapticManager.trigger(.cardSelect)
                         audioManager.playSound(.cardSelect)
+                        
+                        // Trigger magnetic attraction effect
+                        visualEffectsManager.triggerEffect(.magneticAttraction, for: card)
                         
                         // Enhanced lift effect for drag start
                         withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
@@ -466,6 +524,10 @@ struct CardView: View {
                         hapticManager.trigger(.cardPlay)
                         audioManager.playSound(.cardPlace)
                         playAnimationTrigger = true
+                        
+                        // Trigger card trail effect and play effects
+                        visualEffectsManager.triggerEffect(.cardTrail, for: card)
+                        triggerPlayVisualEffects()
                         
                         // Celebrate successful drag
                         withAnimation(.spring(response: 0.4, dampingFraction: 0.6)) {
@@ -513,6 +575,9 @@ struct CardView: View {
                             hapticManager.trigger(.cardPlay)
                             audioManager.playSound(.cardPlace)
                             playAnimationTrigger = true
+                            
+                            // Trigger visual effects for tap
+                            triggerPlayVisualEffects()
                             
                             // Quick tap animation
                             withAnimation(.spring(response: 0.2, dampingFraction: 0.6)) {
