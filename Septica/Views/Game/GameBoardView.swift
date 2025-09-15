@@ -174,6 +174,16 @@ struct GameBoardView: View {
                 .transition(.scale.combined(with: .opacity))
                 .zIndex(1000)
             }
+            
+            // Achievement unlock overlay
+            if let achievement = gameViewModel.unlockedAchievement {
+                AchievementUnlockedOverlay(
+                    achievement: achievement,
+                    isVisible: $gameViewModel.showingAchievementUnlock
+                )
+                .transition(.scale.combined(with: .opacity))
+                .zIndex(1100) // Above game result
+            }
         }
         .navigationBarHidden(true)
         .preferredColorScheme(.dark)

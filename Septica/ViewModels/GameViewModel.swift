@@ -29,6 +29,11 @@ class GameViewModel: ObservableObject {
     // Performance monitoring for 60 FPS targets
     @Published var performanceMonitor = PerformanceMonitor()
     
+    // Achievement system integration
+    private let achievementManager = AchievementManager.shared
+    @Published var showingAchievementUnlock = false
+    @Published var unlockedAchievement: RomanianAchievement?
+    
     // MARK: - Computed Properties
     
     /// Current players in the game
@@ -178,6 +183,9 @@ class GameViewModel: ObservableObject {
         case .success:
             statusMessage = "\(humanPlayer.name) played \(card.displayName)"
             
+            // Track achievements for the played card
+            trackCardPlayAchievements(card: card, player: humanPlayer)
+            
             // Check for AI move after a delay
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                 self.checkForAIMove()
@@ -290,6 +298,9 @@ class GameViewModel: ObservableObject {
         } else {
             statusMessage = "🤝 It's a tie!"
         }
+        
+        // Track game completion achievements
+        trackGameCompletionAchievements()
     }
     
     /// Update status message based on current game state
@@ -362,6 +373,92 @@ class GameViewModel: ObservableObject {
     /// Get detailed performance report
     func getPerformanceReport() -> PerformanceReport {
         return performanceMonitor.getPerformanceReport()
+    }
+    
+    // MARK: - Achievement System Integration
+    
+    /// Track achievements related to card play
+    private func trackCardPlayAchievements(card: Card, player: Player) {
+        guard player.isHuman else { return }
+        
+        Task { @MainActor in
+            // Track seven plays
+            if card.value == 7 {
+                achievementManager.trackEvent(.playedSevenCard)
+            }
+            
+            // Track strategic plays (high-value cards)
+            if card.isPointCard {
+                achievementManager.trackEvent(.playedPointCard)
+            }
+            
+            // Track specific card types
+            if card.value == 8 && tableCards.count % 3 == 0 {
+                achievementManager.trackEvent(.perfectTiming)
+            }
+            
+            // Track consecutive games
+            achievementManager.trackEvent(.gameStarted)
+            
+            // Check for newly unlocked achievements
+            checkForUnlockedAchievements()
+        }
+    }
+    
+    /// Track achievements related to game completion
+    func trackGameCompletionAchievements() {
+        guard let result = gameState.gameResult,
+              let humanPlayer = humanPlayer else { return }
+        
+        Task { @MainActor in
+            // Track game completion
+            achievementManager.trackEvent(.gameCompleted)
+            
+            // Track wins
+            if result.winnerId == humanPlayer.id {
+                achievementManager.trackEvent(.gameWon)
+                
+                // Track specific win conditions
+                if let score = result.winningScore {
+                    if score >= 50 {
+                        achievementManager.trackEvent(.dominantVictory)
+                    }
+                }
+            }
+            
+            // Track cultural learning moments (based on character interactions)
+            achievementManager.trackEvent(.culturalInteraction)
+            
+            // Check for newly unlocked achievements
+            checkForUnlockedAchievements()
+        }
+    }
+    
+    /// Check for any newly unlocked achievements and display them
+    private func checkForUnlockedAchievements() {
+        if let newlyUnlocked = achievementManager.getRecentlyUnlockedAchievements().first {
+            unlockedAchievement = newlyUnlocked
+            showingAchievementUnlock = true
+        }
+    }
+    
+    /// Start a new game and track related achievements
+    func startNewGame() {
+        gameState.setupNewGame()
+        
+        Task { @MainActor in
+            // Track new game start
+            achievementManager.trackEvent(.gameStarted)
+            
+            // Check for dedication achievements (consecutive plays)
+            checkForUnlockedAchievements()
+        }
+    }
+    
+    /// Dismiss achievement unlock overlay
+    func dismissAchievementUnlock() {
+        showingAchievementUnlock = false
+        unlockedAchievement = nil
     }
 }
 
