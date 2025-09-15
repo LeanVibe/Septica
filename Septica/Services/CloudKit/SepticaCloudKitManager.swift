@@ -111,7 +111,7 @@ class SepticaCloudKitManager: ObservableObject {
         reachabilityMonitor.startMonitoring { [weak self] isReachable in
             Task { @MainActor in
                 self?.networkReachable = isReachable
-                if isReachable && !self?.offlineSyncQueue.isEmpty() {
+                if isReachable && !(self?.offlineSyncQueue.isEmpty() ?? true) {
                     await self?.processPendingOfflineUpdates()
                 }
             }

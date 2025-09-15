@@ -48,7 +48,7 @@ class RomanianCulturalIntelligence: ObservableObject {
     // MARK: - Initialization
     
     init(performanceMonitor: PerformanceMonitor) {
-        self.languageModel = SystemLanguageModel.default
+        // self.languageModel = SystemLanguageModel.default
         self.culturalKnowledgeBase = RomanianCulturalKnowledgeBase()
         self.folkloreLibrary = RomanianFolkloreLibrary()
         self.performanceMonitor = performanceMonitor
@@ -764,23 +764,7 @@ struct IntelligenceCulturalMoment {
     let culturalTheme: CulturalTheme?
 }
 
-enum CulturalMomentType {
-    case strategicWildCard
-    case perfectTiming
-    case culturalTradition
-    case folkloreConnection
-    case seasonalReference
-    
-    var displayName: String {
-        switch self {
-        case .strategicWildCard: return "Strategic Wild Card"
-        case .perfectTiming: return "Perfect Timing"
-        case .culturalTradition: return "Cultural Tradition"
-        case .folkloreConnection: return "Folklore Connection"
-        case .seasonalReference: return "Seasonal Reference"
-        }
-    }
-}
+// CulturalMomentType is now defined in CulturalTypes.swift
 
 struct IntelligenceCardMove {
     let card: Card
@@ -964,12 +948,7 @@ protocol EducationalContentProtocol {
 
 // MARK: - Cultural Theme Structure
 
-struct CulturalTheme {
-    let name: String
-    let description: String
-    let region: RomanianRegion?
-    let elements: [String]
-}
+// CulturalTheme is now defined in CulturalTypes.swift
 
 // MARK: - Educational Content Structure
 

@@ -116,7 +116,7 @@ class RomanianCulturalContentLibrary: ObservableObject {
             createFolkloreStory(
                 id: "shepherd_seven_hills",
                 title: "The Wise Shepherd of Seven Hills",
-                region: .transilvania,
+                region: .transylvania,
                 content: """
                 High in the Carpathian Mountains, there lived a shepherd known for his wisdom in playing Septica. Every evening, after tending his flock across seven hills, he would sit by the fire and play cards with travelers. 
                 
@@ -215,7 +215,7 @@ class RomanianCulturalContentLibrary: ObservableObject {
                 english: "In the mountains, weather teaches you strategy",
                 context: "Transilvanian saying about adapting strategy to conditions",
                 usage: .adaptation,
-                region: .transilvania,
+                region: .transylvania,
                 culturalSignificance: "Mountain wisdom applied to card game flexibility"
             ),
             
@@ -304,7 +304,7 @@ class RomanianCulturalContentLibrary: ObservableObject {
                 culturalImpact: "Foundation of Romanian strategic gaming culture",
                 gameEvolution: "Early forms of trick-taking games established",
                 notableFigures: ["Prince Neagoe Basarab", "Prince Petru Rareș"],
-                regions: [.wallachia, .moldova, .transilvania]
+                regions: [.wallachia, .moldova, .transylvania]
             ),
             
             HistoricalPeriod(
@@ -318,7 +318,7 @@ class RomanianCulturalContentLibrary: ObservableObject {
                 culturalImpact: "Preservation of Romanian identity through traditional games",
                 gameEvolution: "Modern Septica rules solidified",
                 notableFigures: ["Village elders", "Traveling merchants"],
-                regions: [.wallachia, .moldova, .transilvania, .banat, .dobrudja]
+                regions: [.wallachia, .moldova, .transylvania, .banat, .dobrudja]
             ),
             
             HistoricalPeriod(
@@ -346,7 +346,7 @@ class RomanianCulturalContentLibrary: ObservableObject {
         
         regionalTraditions = [
             RegionalTradition(
-                region: .transilvania,
+                region: .transylvania,
                 name: "Carpathian Mountain Strategy",
                 description: "Transilvanian players traditionally emphasize patience and observation, like shepherds watching their flocks. They prefer defensive strategies and careful timing.",
                 uniqueElements: ["Patience-focused gameplay", "Observational skills", "Defensive strategies"],
@@ -717,7 +717,7 @@ class RomanianCulturalContentLibrary: ObservableObject {
         return createFolkloreStory(
             id: "carpathian_legend_cards",
             title: "The Legend of the Golden Cards",
-            region: .transilvania,
+            region: .transylvania,
             content: """
             High in the Carpathian Mountains, there's a legend about a set of golden Septica cards that appear only to those who play with pure hearts and honest intentions.
             
@@ -1133,10 +1133,7 @@ struct DailyCulturalChallenge: Identifiable {
     // Would contain daily challenge data
 }
 
-struct FolkMusicTrack: Identifiable {
-    let id = UUID()
-    // Would contain music track data
-}
+// FolkMusicTrack is now defined in TournamentDataModels.swift
 
 struct TraditionalArtwork: Identifiable {
     let id = UUID()

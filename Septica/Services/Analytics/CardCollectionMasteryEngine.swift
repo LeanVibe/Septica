@@ -460,21 +460,7 @@ struct CardMasteryProfile {
     }
 }
 
-enum CulturalMasteryLevel: String, CaseIterable {
-    case beginner = "beginner"
-    case culturalApprentice = "cultural_apprentice"
-    case traditionalist = "traditionalist"
-    case culturalMaster = "cultural_master"
-    
-    var displayName: String {
-        switch self {
-        case .beginner: return "Începător"
-        case .culturalApprentice: return "Ucenic Cultural"
-        case .traditionalist: return "Tradiționalist"
-        case .culturalMaster: return "Maestru Cultural"
-        }
-    }
-}
+// CulturalMasteryLevel is now defined in CulturalTypes.swift
 
 enum SevenMasteryLevel: String, CaseIterable {
     case novice = "novice"
@@ -562,16 +548,7 @@ struct MasteryCulturalMoment {
     
 }
 
-enum RomanianCardSymbol: String, CaseIterable {
-    case luckyHeart = "lucky_heart"
-    case mysticalSpade = "mystical_spade"
-    case fortuneDiamond = "fortune_diamond"
-    case protectiveClub = "protective_club"
-    case aceOfHearts = "ace_of_hearts"
-    case aceOfSpades = "ace_of_spades"
-    case valueCard = "value_card"
-    case traditionalCard = "traditional_card"
-}
+// RomanianCardSymbol is now defined in CulturalTypes.swift
 
 struct MasteryMilestone {
     let type: MilestoneType

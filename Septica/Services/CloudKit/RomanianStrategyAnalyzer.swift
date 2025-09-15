@@ -438,7 +438,7 @@ struct CulturalProgressAnalysis {
 struct CardMove {
     let card: Card
     let timestamp: Date
-    let gameContext: GameContext
+    let gameContext: AnalyticsGameContext
     let wasSuccessful: Bool
     let culturalSignificance: Float
 }
@@ -454,7 +454,7 @@ struct AnalyticsGameSession {
     let educationalInteractions: [EducationalInteraction]
 }
 
-struct GameContext {
+struct AnalyticsGameContext {
     let cardsOnTable: Int
     let opponentType: String
     let currentScore: Int

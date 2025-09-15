@@ -15,7 +15,7 @@ import CloudKit
 struct RomanianTournament: Identifiable, Codable {
     let id: String
     let type: TournamentType
-    let culturalTheme: CulturalTheme
+    let culturalTheme: TournamentCulturalTheme
     let arenaLocation: RomanianArena
     let createdBy: String
     let maxParticipants: Int
@@ -182,7 +182,7 @@ enum TournamentType: String, CaseIterable, Codable {
 }
 
 /// Romanian cultural themes for tournaments
-enum CulturalTheme: String, CaseIterable, Codable {
+enum TournamentCulturalTheme: String, CaseIterable, Codable {
     case transylvanianTraditions = "transylvanian_traditions"
     case moldavianHeritage = "moldavian_heritage"
     case wallachianWisdom = "wallachian_wisdom"

@@ -156,33 +156,7 @@ extension AchievementDifficulty {
     }
 }
 
-enum RomanianRegion: String, Codable, CaseIterable {
-    case transylvania = "transylvania"
-    case moldova = "moldova"
-    case wallachia = "wallachia"
-    case dobrudja = "dobrudja"
-    case banat = "banat"
-    case oltenia = "oltenia"
-    case muntenia = "muntenia"
-    case bucovina = "bucovina"
-    
-    public var localizedNameKey: String {
-        return "region_\(rawValue)"
-    }
-    
-    public var culturalColorScheme: (primary: String, secondary: String) {
-        switch self {
-        case .transylvania: return ("#8B0000", "#FFD700") // Dark red, gold
-        case .moldova: return ("#000080", "#FFFFFF") // Navy blue, white
-        case .wallachia: return ("#228B22", "#FFD700") // Forest green, gold
-        case .dobrudja: return ("#4169E1", "#F0E68C") // Royal blue, khaki
-        case .banat: return ("#8B4513", "#FFA500") // Saddle brown, orange
-        case .oltenia: return ("#2E8B57", "#F5F5DC") // Sea green, beige
-        case .muntenia: return ("#B22222", "#F0F8FF") // Fire brick, alice blue
-        case .bucovina: return ("#4B0082", "#E6E6FA") // Indigo, lavender
-        }
-    }
-}
+// RomanianRegion is now defined in CulturalTypes.swift
 
 // MARK: - Achievement Requirements
 

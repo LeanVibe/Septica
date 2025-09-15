@@ -112,7 +112,7 @@ class RomanianTournamentManager: ObservableObject {
     // MARK: - Tournament Creation & Management
     
     /// Create a new Romanian cultural tournament
-    func createTournament(type: TournamentType, theme: CulturalTheme) async throws -> RomanianTournament {
+    func createTournament(type: TournamentType, theme: TournamentCulturalTheme) async throws -> RomanianTournament {
         guard let profile = playerTournamentProfile else {
             throw TournamentError.playerProfileNotFound
         }
@@ -763,7 +763,7 @@ class RomanianTournamentManager: ObservableObject {
     // MARK: - Cultural Education Integration
     
     /// Generate educational content based on tournament theme
-    private func generateEducationalContent(for theme: CulturalTheme) -> [EducationalContentItem] {
+    private func generateEducationalContent(for theme: TournamentCulturalTheme) -> [EducationalContentItem] {
         switch theme {
         case .transylvanianTraditions:
             return [
@@ -826,7 +826,7 @@ class RomanianTournamentManager: ObservableObject {
     }
     
     /// Generate folk music playlist for tournament theme
-    private func generateFolkMusicPlaylist(for theme: CulturalTheme) -> [FolkMusicTrack] {
+    private func generateFolkMusicPlaylist(for theme: TournamentCulturalTheme) -> [FolkMusicTrack] {
         switch theme {
         case .transylvanianTraditions:
             return [
@@ -972,7 +972,7 @@ extension RomanianTournamentManager {
         logger.info("Awarded tournament rewards for \(tournament.originalTournament.culturalTheme.romanianName)")
     }
     
-    private func generateCulturalRewards(for type: TournamentType, theme: CulturalTheme) -> [CulturalReward] {
+    private func generateCulturalRewards(for type: TournamentType, theme: TournamentCulturalTheme) -> [CulturalReward] {
         // Implementation would generate theme-appropriate rewards
         return []
     }
@@ -1094,32 +1094,7 @@ struct RegionalAchievement {
     let culturalSymbol: TournamentCardSymbol
 }
 
-struct CulturalReward {
-    let type: CulturalRewardType
-    let symbol: TournamentCardSymbol?
-    let title: String?
-    let earnedAt: Date
-    
-    init(type: CulturalRewardType, symbol: TournamentCardSymbol, earnedAt: Date) {
-        self.type = type
-        self.symbol = symbol
-        self.title = nil
-        self.earnedAt = earnedAt
-    }
-    
-    init(type: CulturalRewardType, title: String, earnedAt: Date) {
-        self.type = type
-        self.symbol = nil
-        self.title = title
-        self.earnedAt = earnedAt
-    }
-}
-
-enum CulturalRewardType {
-    case symbol
-    case folkloreStory
-    case achievement
-}
+// CulturalReward and CulturalRewardType are now defined in TournamentDataModels.swift
 
 // MARK: - Romanian Card Symbols
 
