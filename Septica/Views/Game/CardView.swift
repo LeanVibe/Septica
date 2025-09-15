@@ -591,7 +591,7 @@ enum CardSize {
     }
     
     var height: CGFloat {
-        return width * 1.56 // Proper playing card ratio (closer to real cards: 2.5" × 3.5" = 1.4, but 1.56 works better on mobile)
+        return width * 1.4 // Standard playing card ratio (2.5" × 3.5" = 1.4) - matches reference card proportions better
     }
     
     var cornerRadius: CGFloat {

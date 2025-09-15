@@ -92,7 +92,7 @@ struct GameTableView: View {
             if let topCard = tableCards.last, tableCards.count > 1 {
                 RoundedRectangle(cornerRadius: 8)
                     .stroke(Color.yellow.opacity(0.8), lineWidth: 3)
-                    .frame(width: 65, height: 101) // Match .normal card size (65 * 1.56 = 101.4 ≈ 101)
+                    .frame(width: 65, height: 91) // Match .normal card size (65 * 1.4 = 91)
                     .offset(
                         x: CGFloat((tableCards.count - 1) * 15) - CGFloat(tableCards.count * 7),
                         y: CGFloat((tableCards.count - 1) * 3) - CGFloat(tableCards.count * 1)
