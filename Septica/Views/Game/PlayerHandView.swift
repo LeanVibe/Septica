@@ -1,4 +1,3 @@
-//
 //  PlayerHandView.swift
 //  Septica
 //
@@ -93,7 +92,9 @@ struct PlayerHandView: View {
                         }
                     }
                     .padding(.horizontal, 20)
+                    .frame(height: 300)
                 }
+                .frame(height: 300)
             } else {
                 // Empty hand placeholder
                 RoundedRectangle(cornerRadius: 8)
@@ -189,35 +190,29 @@ struct PlayerHandView: View {
 
 // MARK: - Preview
 
-struct PlayerHandView_Previews: PreviewProvider {
-    static var previews: some View {
-        VStack(spacing: 40) {
-            // Human player hand
-            PlayerHandView(
-                player: {
-                    let player = Player(name: "Player 1")
-                    player.hand = [
-                        Card(suit: .hearts, value: 10),
-                        Card(suit: .spades, value: 7),
-                        Card(suit: .diamonds, value: 14),
-                        Card(suit: .clubs, value: 11)
-                    ]
-                    player.score = 3
-                    return player
-                }(),
-                selectedCard: Card(suit: .spades, value: 7),
-                validMoves: [
-                    Card(suit: .spades, value: 7),
-                    Card(suit: .hearts, value: 10)
-                ],
-                onCardSelected: { _ in },
-                onCardPlayed: { _ in },
-                isCurrentPlayer: true,
-                isInteractionEnabled: true
-            )
-        }
-        .padding()
-        .background(Color.green.opacity(0.3))
-        .previewLayout(.sizeThatFits)
+#Preview("Normal Player Hand") {
+    let player = Player(name: "Player 1")
+    player.hand = [
+        Card(suit: .hearts, value: 10),
+        Card(suit: .spades, value: 7),
+        Card(suit: .diamonds, value: 14),
+        Card(suit: .clubs, value: 11)
+    ]
+    player.score = 3
+    return VStack(spacing: 40) {
+        PlayerHandView(
+            player: player,
+            selectedCard: Card(suit: .spades, value: 7),
+            validMoves: [
+                Card(suit: .spades, value: 7),
+                Card(suit: .hearts, value: 10)
+            ],
+            onCardSelected: { _ in },
+            onCardPlayed: { _ in },
+            isCurrentPlayer: true,
+            isInteractionEnabled: true
+        )
     }
+    .padding()
+    .background(Color.green.opacity(0.3))
 }

@@ -383,10 +383,16 @@ struct CardView: View {
             }
         }
         .frame(width: cardSize.width, height: cardSize.height) // CRITICAL: Enforce proper card dimensions to prevent stretching
+        .romanianPatternOverlay() // Subtle Romanian cultural pattern
+        .premiumSelection(
+            isSelected: isSelected,
+            isPlayable: isPlayable,
+            isSpecialCard: card.value == 7 || card.isPointCard // 7s and point cards get special treatment
+        )
+        .premiumDepth(isLifted: isSelected, isPressed: isPressed)
         .scaleEffect(scaleEffect)
         .rotationEffect(.degrees(rotationAngle))
         .opacity(opacity)
-        .shadow(color: shadowColor, radius: shadowRadius, x: 0, y: shadowOffset)
         .animation(.spring(response: 0.4, dampingFraction: 0.6, blendDuration: 0.2), value: isSelected)
         .animation(.spring(response: 0.3, dampingFraction: 0.7, blendDuration: 0.1), value: isPressed)
         .cardPlayAnimation(isActive: playAnimationTrigger, manager: animationManager)
@@ -587,7 +593,7 @@ enum CardSize {
         switch self {
         case .small: return 45    // Compact for opponent hands and overlapping layouts
         case .normal: return 65   // Optimized mobile proportions for main game cards
-        case .large: return 85    // For detailed views and play area
+        case .large: return 100    // For detailed views and play area
         }
     }
     
