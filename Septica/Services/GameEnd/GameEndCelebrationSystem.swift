@@ -195,7 +195,7 @@ class GameEndCelebrationSystem: ObservableObject {
         await hapticManager?.playVictoryPattern()
         
         // Audio burst
-        audioManager?.playSound(.victoryFanfare, volume: 0.8)
+        audioManager?.playSound(.gameVictory, volume: 0.8)
         
         // Visual burst start
         if let visualEffects = celebration.visualEffects {
@@ -318,7 +318,7 @@ class GameEndCelebrationSystem: ObservableObject {
         await hapticManager?.playGentle()
         
         // Soft audio acknowledgment
-        audioManager?.playSound(.defeatAcknowledgment, volume: 0.6)
+        audioManager?.playSound(.gameDefeat, volume: 0.6)
         
         try? await Task.sleep(nanoseconds: 1_000_000_000) // 1.0s
     }
