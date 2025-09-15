@@ -36,6 +36,14 @@ class RomanianTournamentManager: ObservableObject {
     @Published var romanianCelebrationTournaments: [CelebrationTournament] = []
     @Published var localFolkFestivalEvents: [FolkFestivalEvent] = []
     
+    // MARK: - Sprint 3: Regional Tournament System
+    
+    @Published var regionalTournaments: [RomanianRegionalTournament] = []
+    @Published var playerRegionalProgress: RegionalTournamentProgress = RegionalTournamentProgress()
+    @Published var unlockedRegions: Set<RomanianRegion> = [.wallachia] // Start with Wallachia
+    @Published var culturalRewards: [CulturalReward] = []
+    @Published var currentRegionalTournament: RomanianRegionalTournament?
+    
     // MARK: - Tournament Management State
     
     @Published var isSearchingForTournament: Bool = false
@@ -69,7 +77,10 @@ class RomanianTournamentManager: ObservableObject {
             // Initialize seasonal Romanian cultural events
             await initializeSeasonalRomanianEvents()
             
-            logger.info("Romanian tournament system initialized with \(self.activeTournaments.count) active tournaments")
+            // Initialize regional tournaments for Sprint 3
+            await initializeRegionalTournaments()
+            
+            logger.info("Romanian tournament system initialized with \(self.activeTournaments.count) active tournaments and \(self.regionalTournaments.count) regional tournaments")
             
         } catch {
             logger.error("Failed to initialize tournament system: \(error.localizedDescription)")
@@ -259,6 +270,412 @@ class RomanianTournamentManager: ObservableObject {
         )
         
         romanianCelebrationTournaments.append(nationalDayTournament)
+    }
+    
+    // MARK: - Sprint 3: Regional Tournament System Implementation
+    
+    private func initializeRegionalTournaments() async {
+        logger.info("Initializing Romanian regional tournaments - Sprint 3")
+        
+        // Create regional tournaments for all five Romanian regions
+        regionalTournaments = [
+            createTransilvaniaTournament(),
+            createMoldovaTournament(),
+            createWallachiaTournament(),
+            createBanatTournament(),
+            createDobrudjaTournament()
+        ]
+        
+        logger.info("Created \(regionalTournaments.count) regional tournaments")
+    }
+    
+    private func createTransilvaniaTournament() -> RomanianRegionalTournament {
+        return RomanianRegionalTournament(
+            id: "transilvania_cup",
+            region: .transilvania,
+            displayName: "Cupa Transilvaniei",
+            englishName: "Transilvania Cup",
+            culturalTheme: RegionalCulturalTheme(
+                name: "Mountain Wisdom",
+                folklore: "Ancient strategies passed down through Carpathian valleys",
+                traditionalColors: ["#2B5F3F", "#4A5D68", "#D4AF37"], // Forest Green, Mountain Gray, Gold
+                folkPattern: .carpathianMotif
+            ),
+            difficulty: .beginner,
+            unlockRequirements: RegionalUnlockRequirements(
+                requiredRegions: [.wallachia],
+                minimumAchievements: 3,
+                culturalKnowledgeLevel: 1
+            ),
+            opponents: [
+                RegionalOpponent(name: "Mihai Munteanul", personality: .wiseSage, difficulty: .easy),
+                RegionalOpponent(name: "Ana Păstorița", personality: .patientScholar, difficulty: .medium),
+                RegionalOpponent(name: "Ștefan Carpatin", personality: .mountainHunter, difficulty: .hard)
+            ],
+            culturalChallenges: [
+                CulturalChallenge(
+                    type: .traditionalStrategy,
+                    description: "Play like a Transilvanian shepherd - patient and observant",
+                    requirement: "Use traditional Carpathian defensive strategy",
+                    bonus: 50
+                )
+            ],
+            rewards: RegionalTournamentRewards(
+                culturalSymbols: [.carpathianCross, .moldavianTradition],
+                achievementPoints: 100,
+                folkloreStories: ["The Wise Shepherd of Bucegi"],
+                unlocksRegion: .transilvania
+            ),
+            folklore: RegionalFolklore(
+                openingStory: "In the shadow of the Carpathians, where ancient wisdom flows like mountain streams...",
+                victoryTale: "Your strategic wisdom echoes through the valleys, earning the respect of mountain folk.",
+                traditionExplanation: "Transilvanian Septica emphasizes patience and careful observation, like shepherds watching their flocks."
+            )
+        )
+    }
+    
+    private func createMoldovaTournament() -> RomanianRegionalTournament {
+        return RomanianRegionalTournament(
+            id: "moldova_league",
+            region: .moldova,
+            displayName: "Liga Moldovei",
+            englishName: "Moldova League",
+            culturalTheme: RegionalCulturalTheme(
+                name: "Scholarly Tradition",
+                folklore: "The wisdom of Moldavian scholars and their strategic minds",
+                traditionalColors: ["#1B4B8C", "#D4AF37", "#F5F5DC"], // Monastery Blue, Scholar Gold, Wisdom White
+                folkPattern: .moldavianScroll
+            ),
+            difficulty: .intermediate,
+            unlockRequirements: RegionalUnlockRequirements(
+                requiredRegions: [.wallachia, .transilvania],
+                minimumAchievements: 8,
+                culturalKnowledgeLevel: 3
+            ),
+            opponents: [
+                RegionalOpponent(name: "Învățătorul Radu", personality: .patientScholar, difficulty: .medium),
+                RegionalOpponent(name: "Maica Teodora", personality: .wiseSage, difficulty: .hard),
+                RegionalOpponent(name: "Domnu' Bogdan", personality: .scholarlyWisdom, difficulty: .expert)
+            ],
+            culturalChallenges: [
+                CulturalChallenge(
+                    type: .scholarlyWisdom,
+                    description: "Channel the wisdom of Moldavian scholars",
+                    requirement: "Make thoughtful, calculated moves (minimum 5 seconds thinking time)",
+                    bonus: 75
+                )
+            ],
+            rewards: RegionalTournamentRewards(
+                culturalSymbols: [.moldavianScroll, .scholarSeal],
+                achievementPoints: 200,
+                folkloreStories: ["The Scholar's Strategic Mind", "Monastery Games"],
+                unlocksRegion: .moldova
+            ),
+            folklore: RegionalFolklore(
+                openingStory: "In the monasteries of Moldova, where scholars pondered both faith and strategy...",
+                victoryTale: "Your thoughtful play honors the scholarly tradition of Moldavian masters.",
+                traditionExplanation: "Moldavian strategy values deep thinking and careful planning, like monks illuminating manuscripts."
+            )
+        )
+    }
+    
+    private func createWallachiaTournament() -> RomanianRegionalTournament {
+        return RomanianRegionalTournament(
+            id: "wallachia_championship",
+            region: .wallachia,
+            displayName: "Campionatul Țării Românești",
+            englishName: "Wallachia Championship",
+            culturalTheme: RegionalCulturalTheme(
+                name: "Royal Court",
+                folklore: "Strategic games of the Wallachian royal court",
+                traditionalColors: ["#6A0DAD", "#D4AF37", "#8B0000"], // Royal Purple, Court Gold, Velvet Red
+                folkPattern: .wallachianCrown
+            ),
+            difficulty: .beginner,
+            unlockRequirements: RegionalUnlockRequirements(
+                requiredRegions: [], // Starting region
+                minimumAchievements: 0,
+                culturalKnowledgeLevel: 0
+            ),
+            opponents: [
+                RegionalOpponent(name: "Boierul Matei", personality: .boldWarrior, difficulty: .easy),
+                RegionalOpponent(name: "Doamna Ecaterina", personality: .craftyCunning, difficulty: .medium),
+                RegionalOpponent(name: "Principele Alexandru", personality: .royalStrategist, difficulty: .hard)
+            ],
+            culturalChallenges: [
+                CulturalChallenge(
+                    type: .royalBoldness,
+                    description: "Play with the boldness of Wallachian princes",
+                    requirement: "Make decisive, confident moves",
+                    bonus: 60
+                )
+            ],
+            rewards: RegionalTournamentRewards(
+                culturalSymbols: [.wallachianEagle, .courtScepter],
+                achievementPoints: 50,
+                folkloreStories: ["The Prince's Favorite Game"],
+                unlocksRegion: nil // Already unlocked
+            ),
+            folklore: RegionalFolklore(
+                openingStory: "In the grand halls of Curtea de Argeș, where princes played games of wit and strategy...",
+                victoryTale: "Your noble play would have impressed the greatest Wallachian princes.",
+                traditionExplanation: "Wallachian style emphasizes bold moves and decisive action, like the great princes of old."
+            )
+        )
+    }
+    
+    private func createBanatTournament() -> RomanianRegionalTournament {
+        return RomanianRegionalTournament(
+            id: "banat_festival",
+            region: .banat,
+            displayName: "Festivalul Banatului",
+            englishName: "Banat Festival",
+            culturalTheme: RegionalCulturalTheme(
+                name: "Community Celebration",
+                folklore: "Joyful games during Banat harvest festivals",
+                traditionalColors: ["#DAA520", "#DC143C", "#228B22"], // Harvest Gold, Festival Red, Community Green
+                folkPattern: .banatWheat
+            ),
+            difficulty: .intermediate,
+            unlockRequirements: RegionalUnlockRequirements(
+                requiredRegions: [.wallachia, .transilvania],
+                minimumAchievements: 6,
+                culturalKnowledgeLevel: 2
+            ),
+            opponents: [
+                RegionalOpponent(name: "Vasile Agricultorul", personality: .communityLeader, difficulty: .medium),
+                RegionalOpponent(name: "Maria Sărbătorilor", personality: .festivalSpirit, difficulty: .hard),
+                RegionalOpponent(name: "Ion Secerișul", personality: .harvestMaster, difficulty: .expert)
+            ],
+            culturalChallenges: [
+                CulturalChallenge(
+                    type: .communitySpirit,
+                    description: "Play with the joy of Banat harvest festivals",
+                    requirement: "Maintain positive cultural authenticity throughout the game",
+                    bonus: 80
+                )
+            ],
+            rewards: RegionalTournamentRewards(
+                culturalSymbols: [.banatWheat, .harvestCrown],
+                achievementPoints: 150,
+                folkloreStories: ["The Great Harvest Game", "Festival of Strategy"],
+                unlocksRegion: .banat
+            ),
+            folklore: RegionalFolklore(
+                openingStory: "During the golden harvest of Banat, when communities gathered to celebrate abundance...",
+                victoryTale: "Your spirited play brings joy to the festival, like the best harvest celebrations.",
+                traditionExplanation: "Banat strategy is social and adaptive, reflecting the region's diverse cultural heritage."
+            )
+        )
+    }
+    
+    private func createDobrudjaTournament() -> RomanianRegionalTournament {
+        return RomanianRegionalTournament(
+            id: "dobrudja_classic",
+            region: .dobrudja,
+            displayName: "Clasicul Dobrogei",
+            englishName: "Dobrudja Classic",
+            culturalTheme: RegionalCulturalTheme(
+                name: "Coastal Heritage",
+                folklore: "Strategic games by the Danube Delta and Black Sea",
+                traditionalColors: ["#1E90FF", "#2E8B57", "#DAA520"], // Sea Blue, Delta Green, Coastal Gold
+                folkPattern: .danubeWave
+            ),
+            difficulty: .advanced,
+            unlockRequirements: RegionalUnlockRequirements(
+                requiredRegions: [.wallachia, .transilvania, .moldova, .banat],
+                minimumAchievements: 15,
+                culturalKnowledgeLevel: 4
+            ),
+            opponents: [
+                RegionalOpponent(name: "Pescaru' Gheorghe", personality: .fluidAdaptation, difficulty: .hard),
+                RegionalOpponent(name: "Elena Deltaică", personality: .naturalFlow, difficulty: .expert),
+                RegionalOpponent(name: "Căpitanul Dunării", personality: .riverMaster, difficulty: .master)
+            ],
+            culturalChallenges: [
+                CulturalChallenge(
+                    type: .fluidAdaptation,
+                    description: "Adapt like the Danube Delta waters",
+                    requirement: "Show strategic flexibility and adaptability",
+                    bonus: 100
+                )
+            ],
+            rewards: RegionalTournamentRewards(
+                culturalSymbols: [.danubeWave, .blackSeaPearl],
+                achievementPoints: 300,
+                folkloreStories: ["The Fisherman's Strategy", "Songs of the Delta"],
+                unlocksRegion: .dobrudja
+            ),
+            folklore: RegionalFolklore(
+                openingStory: "Where the mighty Danube meets the Black Sea, ancient strategies flow like river currents...",
+                victoryTale: "Your strategic mastery flows like the great river, connecting all Romanian lands.",
+                traditionExplanation: "Dobrudja strategy is fluid and adaptable, like the ever-changing delta waters."
+            )
+        )
+    }
+    
+    // MARK: - Regional Tournament Management
+    
+    func enterRegionalTournament(_ tournament: RomanianRegionalTournament) async throws {
+        logger.info("Entering regional tournament: \(tournament.displayName)")
+        
+        // Check unlock requirements
+        guard canEnterRegionalTournament(tournament) else {
+            throw TournamentError.requirementsNotMet
+        }
+        
+        currentRegionalTournament = tournament
+        
+        // Track achievement
+        // achievementManager?.trackGameEvent(type: .regionalTournamentEntered, value: 1)
+        
+        logger.info("Successfully entered regional tournament: \(tournament.displayName)")
+    }
+    
+    func canEnterRegionalTournament(_ tournament: RomanianRegionalTournament) -> Bool {
+        // Check required regions are unlocked
+        for requiredRegion in tournament.unlockRequirements.requiredRegions {
+            if !unlockedRegions.contains(requiredRegion) {
+                return false
+            }
+        }
+        
+        // Check minimum achievements
+        let currentAchievements = playerTournamentProfile?.tournamentsWon ?? 0
+        if currentAchievements < tournament.unlockRequirements.minimumAchievements {
+            return false
+        }
+        
+        // Check cultural knowledge level
+        let culturalLevel = playerTournamentProfile?.culturalKnowledgeLevel ?? 0
+        if culturalLevel < tournament.unlockRequirements.culturalKnowledgeLevel {
+            return false
+        }
+        
+        return true
+    }
+    
+    func completeRegionalMatch(_ opponent: RegionalOpponent, playerWon: Bool, culturalChallengeCompleted: Bool) async {
+        logger.info("Completed regional match against \(opponent.name), victory: \(playerWon)")
+        
+        if playerWon {
+            playerRegionalProgress.matchesWon += 1
+            
+            if culturalChallengeCompleted {
+                playerRegionalProgress.culturalChallengesCompleted += 1
+                logger.info("Cultural challenge completed!")
+            }
+        } else {
+            playerRegionalProgress.matchesLost += 1
+        }
+        
+        // Check if tournament is complete
+        if let tournament = currentRegionalTournament {
+            await checkRegionalTournamentCompletion(tournament)
+        }
+    }
+    
+    private func checkRegionalTournamentCompletion(_ tournament: RomanianRegionalTournament) async {
+        let victories = playerRegionalProgress.matchesWon
+        let totalOpponents = tournament.opponents.count
+        
+        if victories >= (totalOpponents / 2) + 1 { // Majority wins
+            await completeRegionalTournament(tournament, with: .victory)
+        } else if (playerRegionalProgress.matchesWon + playerRegionalProgress.matchesLost) >= totalOpponents {
+            await completeRegionalTournament(tournament, with: .defeat)
+        }
+    }
+    
+    private func completeRegionalTournament(_ tournament: RomanianRegionalTournament, with result: RegionalTournamentResult) async {
+        logger.info("Regional tournament completed with result: \(result)")
+        
+        if result == .victory {
+            // Award rewards
+            await awardRegionalTournamentRewards(tournament.rewards)
+            
+            // Unlock region if applicable
+            if let regionToUnlock = tournament.rewards.unlocksRegion {
+                await unlockRegion(regionToUnlock)
+            }
+            
+            // Track achievement
+            playerRegionalProgress.tournamentsWon += 1
+            
+            // Trigger regional celebration
+            NotificationCenter.default.post(
+                name: .regionalTournamentVictory,
+                object: RegionalTournamentVictoryNotification(tournament: tournament, rewards: tournament.rewards)
+            )
+        } else {
+            playerRegionalProgress.tournamentsLost += 1
+        }
+        
+        // Reset current tournament
+        currentRegionalTournament = nil
+        
+        // Reset match progress for next tournament
+        playerRegionalProgress.matchesWon = 0
+        playerRegionalProgress.matchesLost = 0
+    }
+    
+    func unlockRegion(_ region: RomanianRegion) async {
+        logger.info("Unlocking Romanian region: \(region)")
+        
+        unlockedRegions.insert(region)
+        
+        // Create regional unlock achievement
+        let regionAchievement = createRegionalUnlockAchievement(for: region)
+        
+        // Track regional unlock
+        // achievementManager?.unlockAchievement(regionAchievement)
+        
+        logger.info("Region unlocked: \(region.displayName)")
+    }
+    
+    private func awardRegionalTournamentRewards(_ rewards: RegionalTournamentRewards) async {
+        logger.info("Awarding regional tournament rewards")
+        
+        // Add cultural symbols to collection
+        for symbol in rewards.culturalSymbols {
+            culturalRewards.append(CulturalReward(
+                type: .symbol,
+                symbol: symbol,
+                earnedAt: Date()
+            ))
+        }
+        
+        // Add achievement points
+        playerRegionalProgress.totalAchievementPoints += rewards.achievementPoints
+        
+        // Unlock folklore stories
+        for storyTitle in rewards.folkloreStories {
+            culturalRewards.append(CulturalReward(
+                type: .folkloreStory,
+                title: storyTitle,
+                earnedAt: Date()
+            ))
+        }
+    }
+    
+    private func createRegionalUnlockAchievement(for region: RomanianRegion) -> RegionalAchievement {
+        return RegionalAchievement(
+            id: UUID().uuidString,
+            region: region,
+            title: "Master of \(region.displayName)",
+            description: "Unlocked the \(region.displayName) region through tournament victory",
+            points: 100,
+            culturalSymbol: getRegionalSymbol(for: region)
+        )
+    }
+    
+    private func getRegionalSymbol(for region: RomanianRegion) -> RomanianCardSymbol {
+        switch region {
+        case .transilvania: return .carpathianCross
+        case .moldova: return .moldavianScroll
+        case .wallachia: return .wallachianEagle
+        case .banat: return .banatWheat
+        case .dobrudja: return .danubeWave
+        }
     }
     
     // MARK: - Arena Championship System
@@ -567,4 +984,222 @@ extension RomanianTournamentManager {
     private func createWinterHeritageTournaments() async {
         // Implementation would create winter heritage tournaments
     }
+}
+
+// MARK: - Sprint 3 Regional Tournament Data Structures
+
+// MARK: - Romanian Regions
+
+enum RomanianRegion: String, CaseIterable {
+    case transilvania = "transilvania"
+    case moldova = "moldova" 
+    case wallachia = "wallachia"
+    case banat = "banat"
+    case dobrudja = "dobrudja"
+    
+    var displayName: String {
+        switch self {
+        case .transilvania: return "Transilvania"
+        case .moldova: return "Moldova"
+        case .wallachia: return "Țara Românească"
+        case .banat: return "Banat"
+        case .dobrudja: return "Dobrogea"
+        }
+    }
+}
+
+// MARK: - Regional Tournament Structures
+
+struct RomanianRegionalTournament {
+    let id: String
+    let region: RomanianRegion
+    let displayName: String
+    let englishName: String
+    let culturalTheme: RegionalCulturalTheme
+    let difficulty: TournamentDifficulty
+    let unlockRequirements: RegionalUnlockRequirements
+    let opponents: [RegionalOpponent]
+    let culturalChallenges: [CulturalChallenge]
+    let rewards: RegionalTournamentRewards
+    let folklore: RegionalFolklore
+}
+
+struct RegionalCulturalTheme {
+    let name: String
+    let folklore: String
+    let traditionalColors: [String] // Hex color codes
+    let folkPattern: FolkPattern
+}
+
+struct RegionalUnlockRequirements {
+    let requiredRegions: [RomanianRegion]
+    let minimumAchievements: Int
+    let culturalKnowledgeLevel: Int
+}
+
+struct RegionalOpponent {
+    let name: String
+    let personality: RomanianAIPersonality
+    let difficulty: AIDifficulty
+}
+
+struct CulturalChallenge {
+    let type: CulturalChallengeType
+    let description: String
+    let requirement: String
+    let bonus: Int
+}
+
+enum CulturalChallengeType {
+    case traditionalStrategy
+    case scholarlyWisdom
+    case royalBoldness
+    case communitySpirit
+    case fluidAdaptation
+}
+
+struct RegionalTournamentRewards {
+    let culturalSymbols: [RomanianCardSymbol]
+    let achievementPoints: Int
+    let folkloreStories: [String]
+    let unlocksRegion: RomanianRegion?
+}
+
+struct RegionalFolklore {
+    let openingStory: String
+    let victoryTale: String
+    let traditionExplanation: String
+}
+
+struct RegionalTournamentProgress {
+    var tournamentsWon: Int = 0
+    var tournamentsLost: Int = 0
+    var matchesWon: Int = 0
+    var matchesLost: Int = 0
+    var culturalChallengesCompleted: Int = 0
+    var totalAchievementPoints: Int = 0
+}
+
+enum RegionalTournamentResult {
+    case victory
+    case defeat
+}
+
+struct RegionalAchievement {
+    let id: String
+    let region: RomanianRegion
+    let title: String
+    let description: String
+    let points: Int
+    let culturalSymbol: RomanianCardSymbol
+}
+
+struct CulturalReward {
+    let type: CulturalRewardType
+    let symbol: RomanianCardSymbol?
+    let title: String?
+    let earnedAt: Date
+    
+    init(type: CulturalRewardType, symbol: RomanianCardSymbol, earnedAt: Date) {
+        self.type = type
+        self.symbol = symbol
+        self.title = nil
+        self.earnedAt = earnedAt
+    }
+    
+    init(type: CulturalRewardType, title: String, earnedAt: Date) {
+        self.type = type
+        self.symbol = nil
+        self.title = title
+        self.earnedAt = earnedAt
+    }
+}
+
+enum CulturalRewardType {
+    case symbol
+    case folkloreStory
+    case achievement
+}
+
+// MARK: - Romanian Card Symbols
+
+enum RomanianCardSymbol: String, CaseIterable {
+    case carpathianCross = "carpathian_cross"
+    case moldavianTradition = "moldavian_tradition"
+    case moldavianScroll = "moldavian_scroll"
+    case scholarSeal = "scholar_seal"
+    case wallachianEagle = "wallachian_eagle"
+    case courtScepter = "court_scepter"
+    case banatWheat = "banat_wheat"
+    case harvestCrown = "harvest_crown"
+    case danubeWave = "danube_wave"
+    case blackSeaPearl = "black_sea_pearl"
+}
+
+// MARK: - Folk Patterns
+
+enum FolkPattern: String, CaseIterable {
+    case carpathianMotif = "carpathian_motif"
+    case moldavianScroll = "moldavian_scroll"
+    case wallachianCrown = "wallachian_crown"
+    case banatWheat = "banat_wheat"
+    case danubeWave = "danube_wave"
+}
+
+// MARK: - AI Personalities
+
+enum RomanianAIPersonality: String, CaseIterable {
+    case wiseSage = "wise_sage"
+    case boldWarrior = "bold_warrior"
+    case patientScholar = "patient_scholar"
+    case craftyCunning = "crafty_cunning"
+    case mountainHunter = "mountain_hunter"
+    case scholarlyWisdom = "scholarly_wisdom"
+    case royalStrategist = "royal_strategist"
+    case communityLeader = "community_leader"
+    case festivalSpirit = "festival_spirit"
+    case harvestMaster = "harvest_master"
+    case fluidAdaptation = "fluid_adaptation"
+    case naturalFlow = "natural_flow"
+    case riverMaster = "river_master"
+    
+    var displayName: String {
+        switch self {
+        case .wiseSage: return "Înțeleptul Satului"
+        case .boldWarrior: return "Războinicul Curajos"
+        case .patientScholar: return "Învățatul Răbdător"
+        case .craftyCunning: return "Vicleanul Isteț"
+        case .mountainHunter: return "Vânătorul Munților"
+        case .scholarlyWisdom: return "Înțelepciunea Monastirilor"
+        case .royalStrategist: return "Strategul Curții"
+        case .communityLeader: return "Liderul Comunității"
+        case .festivalSpirit: return "Spiritul Sărbătorii"
+        case .harvestMaster: return "Maestrul Secerișului"
+        case .fluidAdaptation: return "Adaptarea Fluvială"
+        case .naturalFlow: return "Curgerea Naturală"
+        case .riverMaster: return "Maestrul Râului"
+        }
+    }
+}
+
+// MARK: - Tournament Difficulties
+
+enum TournamentDifficulty {
+    case beginner
+    case intermediate
+    case advanced
+    case expert
+}
+
+// MARK: - Tournament Victory Notification
+
+struct RegionalTournamentVictoryNotification {
+    let tournament: RomanianRegionalTournament
+    let rewards: RegionalTournamentRewards
+}
+
+// MARK: - Notification Names Extension
+
+extension Notification.Name {
+    static let regionalTournamentVictory = Notification.Name("regionalTournamentVictory")
 }
