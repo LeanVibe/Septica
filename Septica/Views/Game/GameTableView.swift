@@ -19,22 +19,38 @@ struct GameTableView: View {
     
     var body: some View {
         ZStack {
-            // Table surface
+            // Romanian cultural table surface
             RoundedRectangle(cornerRadius: 20)
                 .fill(
                     RadialGradient(
                         colors: [
-                            Color(red: 0.2, green: 0.4, blue: 0.2),
-                            Color(red: 0.1, green: 0.3, blue: 0.1)
+                            RomanianColors.tableGreen,
+                            RomanianColors.tableGreen.opacity(0.8),
+                            Color(red: 0.05, green: 0.25, blue: 0.05)
                         ],
                         center: .center,
-                        startRadius: 50,
-                        endRadius: 150
+                        startRadius: 30,
+                        endRadius: 140
                     )
                 )
-                .stroke(Color.white.opacity(0.3), lineWidth: 2)
+                .overlay(
+                    // Traditional Romanian pattern border
+                    RoundedRectangle(cornerRadius: 20)
+                        .stroke(
+                            LinearGradient(
+                                colors: [
+                                    RomanianColors.goldAccent.opacity(0.6),
+                                    RomanianColors.primaryYellow.opacity(0.4),
+                                    RomanianColors.goldAccent.opacity(0.6)
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 3
+                        )
+                )
                 .frame(width: 280, height: 180)
-                .shadow(color: Color.black.opacity(0.3), radius: 10, x: 0, y: 5)
+                .shadow(color: RomanianColors.primaryBlue.opacity(0.2), radius: 12, x: 0, y: 6)
             
             // Table cards
             if !tableCards.isEmpty {
@@ -71,27 +87,54 @@ struct GameTableView: View {
                     removal: .move(edge: .bottom).combined(with: .opacity)
                 ))
             } else {
-                // Empty table placeholder
-                VStack(spacing: 8) {
-                    Image(systemName: "rectangle.dashed")
-                        .font(.largeTitle)
-                        .foregroundColor(.white.opacity(0.3))
+                // Romanian cultural empty table placeholder
+                VStack(spacing: 10) {
+                    // Traditional Romanian card symbol
+                    Text("♠♥♣♦")
+                        .font(.title)
+                        .foregroundStyle(
+                            LinearGradient(
+                                colors: [
+                                    RomanianColors.goldAccent,
+                                    RomanianColors.primaryYellow,
+                                    RomanianColors.goldAccent
+                                ],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                        .shadow(color: RomanianColors.primaryBlue.opacity(0.3), radius: 2, x: 1, y: 1)
                     
-                    Text("Play Area")
-                        .font(.headline)
-                        .foregroundColor(.white.opacity(0.5))
+                    // Romanian cultural title
+                    Text("Zona de Joc")
+                        .font(.headline.weight(.semibold))
+                        .foregroundColor(RomanianColors.goldAccent)
+                        .shadow(color: Color.black.opacity(0.5), radius: 1, x: 0, y: 1)
                     
-                    Text("Cards played will appear here")
-                        .font(.caption)
-                        .foregroundColor(.white.opacity(0.3))
+                    // Traditional Romanian game instruction
+                    Text("Cărțile jucate vor apărea aici")
+                        .font(.caption.weight(.medium))
+                        .foregroundColor(RomanianColors.primaryYellow.opacity(0.9))
                         .multilineTextAlignment(.center)
+                        .shadow(color: Color.black.opacity(0.3), radius: 1, x: 0, y: 1)
                 }
             }
             
-            // Top card highlight (for beating reference)
+            // Romanian cultural top card highlight (for beating reference)
             if let topCard = tableCards.last, tableCards.count > 1 {
                 RoundedRectangle(cornerRadius: 8)
-                    .stroke(Color.yellow.opacity(0.8), lineWidth: 3)
+                    .stroke(
+                        LinearGradient(
+                            colors: [
+                                RomanianColors.goldAccent,
+                                RomanianColors.primaryYellow,
+                                RomanianColors.goldAccent
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ),
+                        lineWidth: 3
+                    )
                     .frame(width: 65, height: 91) // Match .normal card size (65 * 1.4 = 91)
                     .offset(
                         x: CGFloat((tableCards.count - 1) * 15) - CGFloat(tableCards.count * 7),

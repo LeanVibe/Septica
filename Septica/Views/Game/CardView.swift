@@ -501,24 +501,24 @@ struct CardView: View {
         return baseColor
     }
     
-    /// Color for suit symbols with color-blind accessibility support
+    /// Romanian cultural color for suit symbols with accessibility support
     private var suitColor: Color {
-        // Base colors
+        // Romanian cultural colors maintaining traditional distinction
         let baseColor: Color
         switch card.suit {
         case .hearts, .diamonds:
-            baseColor = Color.red
+            baseColor = RomanianColors.primaryRed // Romanian flag red
         case .clubs, .spades:
-            baseColor = Color.black
+            baseColor = RomanianColors.primaryBlue // Romanian flag blue (darker than black for cultural authenticity)
         }
         
-        // High contrast adjustments
+        // High contrast adjustments for accessibility
         if accessibilityManager.isIncreaseContrastEnabled {
             switch card.suit {
             case .hearts, .diamonds:
-                return Color.red
+                return RomanianColors.embroideryRed // More vibrant red for high contrast
             case .clubs, .spades:
-                return Color.black
+                return Color.black // Ensure maximum contrast for accessibility
             }
         }
         

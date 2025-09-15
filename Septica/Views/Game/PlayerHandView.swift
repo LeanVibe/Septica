@@ -42,21 +42,31 @@ struct PlayerHandView: View {
                 
                 Spacer()
                 
-                // Score display
+                // Romanian cultural score display
                 HStack(spacing: 4) {
                     Text("Puncte:")
-                        .font(.caption)
-                        .foregroundColor(.white.opacity(0.8))
+                        .font(.caption.weight(.medium))
+                        .foregroundColor(RomanianColors.primaryYellow.opacity(0.9))
                     
                     Text("\(player.score)")
-                        .font(.headline)
-                        .foregroundColor(.yellow)
+                        .font(.headline.weight(.bold))
+                        .foregroundStyle(
+                            LinearGradient(
+                                colors: [
+                                    RomanianColors.goldAccent,
+                                    RomanianColors.primaryYellow
+                                ],
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
+                        )
+                        .shadow(color: RomanianColors.primaryBlue.opacity(0.4), radius: 1, x: 0, y: 1)
                 }
                 
-                // Hand count
+                // Romanian cultural hand count
                 Text("(\(player.hand.count))")
-                    .font(.caption)
-                    .foregroundColor(.white.opacity(0.6))
+                    .font(.caption.weight(.medium))
+                    .foregroundColor(RomanianColors.primaryYellow.opacity(0.8))
             }
             
             // Cards in hand
@@ -96,21 +106,55 @@ struct PlayerHandView: View {
                     )
             }
             
-            // Action hint
+            // Romanian cultural action hint
             if isCurrentPlayer && isInteractionEnabled {
                 Text("Atinge o carte pentru a o selecta, atinge din nou pentru a juca")
-                    .font(.caption2)
-                    .foregroundColor(.white.opacity(0.7))
+                    .font(.caption2.weight(.medium))
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [
+                                RomanianColors.primaryYellow.opacity(0.9),
+                                RomanianColors.goldAccent.opacity(0.7)
+                            ],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+                    .shadow(color: Color.black.opacity(0.3), radius: 1, x: 0, y: 1)
                     .transition(.opacity)
             }
         }
         .padding()
         .background(
             RoundedRectangle(cornerRadius: 16)
-                .fill(Color.black.opacity(0.4))
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            Color.black.opacity(0.3),
+                            RomanianColors.primaryBlue.opacity(0.1),
+                            Color.black.opacity(0.4)
+                        ],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                )
                 .stroke(
-                    isCurrentPlayer ? Color.green.opacity(0.8) : Color.clear,
-                    lineWidth: 2
+                    isCurrentPlayer ? 
+                        LinearGradient(
+                            colors: [
+                                RomanianColors.goldAccent,
+                                RomanianColors.primaryYellow,
+                                RomanianColors.goldAccent
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ) :
+                        LinearGradient(
+                            colors: [Color.clear],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        ),
+                    lineWidth: isCurrentPlayer ? 3 : 0
                 )
         )
         .animation(.easeInOut(duration: 0.3), value: isCurrentPlayer)
