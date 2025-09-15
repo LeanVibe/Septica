@@ -31,7 +31,8 @@ class GameState: ObservableObject, Codable {
     
     // MARK: - Game Configuration
     // Non-published - rarely changes during game
-    var targetScore: Int = 11  // Romanian Septica traditional target
+    // Note: Traditional Septica doesn't use target score - game ends when all cards are played
+    var targetScore: Int = 11  // Legacy field, not used in traditional Septica gameplay
     
     // MARK: - Players
     @Published var players: [Player] = []
@@ -103,16 +104,14 @@ class GameState: ObservableObject, Codable {
     
     /// Whether the game is complete
     var isGameComplete: Bool {
-        // Check if any player has reached the target score
-        let hasWinner = players.contains { $0.score >= targetScore }
-        
-        // Also check if all cards have been played (traditional end condition)
+        // Traditional Romanian Septica: Game ends when all cards have been played
+        // Not when a target score is reached
         let allCardsPlayed = GameRules.isGameComplete(
             allPlayerHands: players.map { $0.hand },
             deckEmpty: deck.isEmpty
         )
         
-        return hasWinner || allCardsPlayed
+        return allCardsPlayed
     }
     
     // MARK: - Initialization
@@ -272,11 +271,13 @@ class GameState: ObservableObject, Codable {
     }
     
     /// Deal new cards to players if needed and available
+    /// Traditional Septica: After each trick, players draw cards to maintain hand size until deck is empty
     private func dealNewCardsIfNeeded() {
-        let minHandSize = Swift.min(GameRules.initialHandSize, _deck.count / players.count)
+        // In traditional Septica, maintain hand size of 4 until deck is exhausted
+        let targetHandSize = GameRules.initialHandSize
         
         for player in players {
-            while player.hand.count < minHandSize && !_deck.isEmpty {
+            while player.hand.count < targetHandSize && !_deck.isEmpty {
                 if let card = _deck.drawCard() {
                     player.addCard(card)
                 }
