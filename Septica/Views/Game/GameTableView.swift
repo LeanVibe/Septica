@@ -33,7 +33,7 @@ struct GameTableView: View {
                     )
                 )
                 .stroke(Color.white.opacity(0.3), lineWidth: 2)
-                .frame(width: 250, height: 150)
+                .frame(width: 280, height: 180)
                 .shadow(color: Color.black.opacity(0.3), radius: 10, x: 0, y: 5)
             
             // Table cards
@@ -92,7 +92,7 @@ struct GameTableView: View {
             if let topCard = tableCards.last, tableCards.count > 1 {
                 RoundedRectangle(cornerRadius: 8)
                     .stroke(Color.yellow.opacity(0.8), lineWidth: 3)
-                    .frame(width: 68, height: 92)
+                    .frame(width: 75, height: 117) // Match new .normal card size
                     .offset(
                         x: CGFloat((tableCards.count - 1) * 15) - CGFloat(tableCards.count * 7),
                         y: CGFloat((tableCards.count - 1) * 3) - CGFloat(tableCards.count * 1)
@@ -101,7 +101,7 @@ struct GameTableView: View {
                     .animation(.easeInOut(duration: 0.3), value: topCard.id)
             }
         }
-        .frame(width: 280, height: 180)
+        .frame(width: 320, height: 200)
     }
 }
 

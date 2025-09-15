@@ -584,14 +584,14 @@ enum CardSize {
     
     var width: CGFloat {
         switch self {
-        case .small: return 60    // Increased from 40 - minimum touch target
-        case .normal: return 90   // Increased from 60 - main game cards
-        case .large: return 120   // Increased from 80 - detailed views
+        case .small: return 50    // Optimized for opponent hands and overlapping layouts
+        case .normal: return 75   // Better proportions for main game cards
+        case .large: return 100   // For detailed views and play area
         }
     }
     
     var height: CGFloat {
-        return width * 1.4 // Standard card ratio
+        return width * 1.56 // Proper playing card ratio (closer to real cards: 2.5" × 3.5" = 1.4, but 1.56 works better on mobile)
     }
     
     var cornerRadius: CGFloat {
