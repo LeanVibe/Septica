@@ -382,6 +382,7 @@ struct CardView: View {
                     .animation(.easeInOut(duration: 1.5).repeatForever(autoreverses: true), value: UUID())
             }
         }
+        .frame(width: cardSize.width, height: cardSize.height) // CRITICAL: Enforce proper card dimensions to prevent stretching
         .scaleEffect(scaleEffect)
         .rotationEffect(.degrees(rotationAngle))
         .opacity(opacity)

@@ -503,7 +503,7 @@ extension CardRenderer {
         renderPassDescriptor.colorAttachments[0].texture = drawable.texture
         renderPassDescriptor.colorAttachments[0].loadAction = .clear
         renderPassDescriptor.colorAttachments[0].clearColor = MTLClearColor(
-            red: Double(finalColor.x), 
+            red: Double(0), 
             green: Double(finalColor.y), 
             blue: Double(finalColor.z), 
             alpha: 1.0
