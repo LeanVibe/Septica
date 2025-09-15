@@ -11,12 +11,10 @@ import SwiftUI
 /// Main game board view that displays the complete Septica game interface
 struct GameBoardView: View {
     @StateObject private var gameViewModel: GameViewModel
+    @StateObject private var dragCoordinator = ShuffleCatsDragCoordinator()
     @State private var selectedCard: Card?
     @State private var showingGameMenu = false
     @State private var animatingCard: Card?
-    @State private var isDragActive = false
-    @State private var dragPosition: CGPoint = .zero
-    @State private var isValidDropZone = false
     
     init(gameState: GameState) {
         self._gameViewModel = StateObject(wrappedValue: GameViewModel(gameState: gameState))
@@ -39,7 +37,7 @@ struct GameBoardView: View {
                 
                 Spacer()
                 
-                // Game table (center area) with drop zone overlay
+                // Game table (center area) with enhanced Shuffle Cats-style drop zones
                 ZStack {
                     GameTableView(
                         tableCards: gameViewModel.tableCards,
@@ -48,21 +46,35 @@ struct GameBoardView: View {
                         animatingCard: animatingCard
                     )
                     
-                    // Shuffle Cats-inspired drop zone feedback
-                    if isDragActive {
-                        DropZoneView(
-                            isHighlighted: true,
-                            isValidDrop: isValidDropZone,
-                            zone: isValidDropZone ? .playArea : .invalidArea
+                    // Enhanced drop zones with magnetic snapping
+                    ForEach(dragCoordinator.dropZones) { zone in
+                        EnhancedDropZoneView(
+                            zone: zone,
+                            coordinator: dragCoordinator
                         )
-                        .frame(width: 200, height: 120)
                         .transition(.scale.combined(with: .opacity))
+                    }
+                    
+                    // Ghost card for Shuffle Cats-style drag preview
+                    if dragCoordinator.showGhostCard,
+                       let draggedCard = dragCoordinator.draggedCard {
+                        GhostCardView(
+                            card: draggedCard,
+                            position: dragCoordinator.ghostCardPosition,
+                            opacity: dragCoordinator.ghostCardOpacity,
+                            isSnapping: dragCoordinator.magneticSnappingActive
+                        )
+                        .transition(.asymmetric(
+                            insertion: .scale.combined(with: .opacity),
+                            removal: .scale.combined(with: .opacity)
+                        ))
+                        .zIndex(1000) // Always on top
                     }
                 }
                 
                 Spacer()
                 
-                // Bottom player area (human player)
+                // Bottom player area (human player) with enhanced Shuffle Cats-style interactions
                 if let currentPlayer = gameViewModel.humanPlayer {
                     PlayerHandView(
                         player: currentPlayer,
@@ -70,18 +82,29 @@ struct GameBoardView: View {
                         validMoves: gameViewModel.validMoves,
                         onCardSelected: { card in
                             selectedCard = card
+                            updateDropZones(for: card)
                         },
                         onCardPlayed: playCard,
                         isCurrentPlayer: gameViewModel.isHumanPlayerTurn,
                         isInteractionEnabled: gameViewModel.canHumanPlayerMove,
                         onDragStateChanged: { isActive, position, isValid in
-                            // Update drop zone feedback based on drag state
-                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                isDragActive = isActive
-                                if let pos = position {
-                                    dragPosition = pos
+                            // Use enhanced drag coordinator for Shuffle Cats-style interactions
+                            if isActive, let pos = position, let selected = selectedCard {
+                                if !dragCoordinator.isDragActive {
+                                    // Start drag with ghost card
+                                    dragCoordinator.startDrag(card: selected, at: pos)
+                                } else {
+                                    // Update drag position with magnetic snapping
+                                    dragCoordinator.updateDrag(position: pos)
                                 }
-                                isValidDropZone = isValid
+                            } else if !isActive && dragCoordinator.isDragActive {
+                                // End drag and check for successful drop
+                                if let dropZone = dragCoordinator.endDrag(at: dragCoordinator.dragPosition) {
+                                    // Successful drop in valid zone
+                                    if dropZone.isValid {
+                                        playCard(dragCoordinator.draggedCard ?? selectedCard!)
+                                    }
+                                }
                             }
                         }
                     )
@@ -155,6 +178,7 @@ struct GameBoardView: View {
         }
         .onAppear {
             gameViewModel.startGame()
+            setupDropZones()
         }
     }
     
@@ -174,6 +198,63 @@ struct GameBoardView: View {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             animatingCard = nil
         }
+    }
+    
+    /// Setup drop zones for Shuffle Cats-style drag interactions
+    private func setupDropZones() {
+        let screenBounds = UIScreen.main.bounds
+        let centerX = screenBounds.width / 2
+        let centerY = screenBounds.height / 2
+        
+        // Main play area drop zone (center of screen)
+        let playAreaZone = DropZoneInfo(
+            center: CGPoint(x: centerX, y: centerY - 50),
+            size: CGSize(width: 200, height: 120),
+            type: .playArea,
+            isValid: true,
+            isActive: true
+        )
+        
+        // Special move zone for 7s (wild cards)
+        let specialMoveZone = DropZoneInfo(
+            center: CGPoint(x: centerX + 120, y: centerY - 50),
+            size: CGSize(width: 140, height: 100),
+            type: .specialMove,
+            isValid: false, // Will be determined dynamically based on selected card
+            isActive: false // Will be activated when dragging a 7
+        )
+        
+        dragCoordinator.setDropZones([playAreaZone, specialMoveZone])
+    }
+    
+    /// Update drop zones based on current game state and selected card
+    private func updateDropZones(for card: Card?) {
+        guard var zones = dragCoordinator.dropZones as [DropZoneInfo]? else { return }
+        
+        // Update main play area validity
+        if let selectedCard = card {
+            let canPlay = gameViewModel.canPlayCard(selectedCard)
+            zones[0] = DropZoneInfo(
+                center: zones[0].center,
+                size: zones[0].size,
+                type: .playArea,
+                isValid: canPlay,
+                isActive: true
+            )
+            
+            // Update special move zone for wild cards (7s)
+            if selectedCard.value == 7 && zones.count > 1 {
+                zones[1] = DropZoneInfo(
+                    center: zones[1].center,
+                    size: zones[1].size,
+                    type: .specialMove,
+                    isValid: canPlay,
+                    isActive: true
+                )
+            }
+        }
+        
+        dragCoordinator.setDropZones(zones)
     }
 }
 
