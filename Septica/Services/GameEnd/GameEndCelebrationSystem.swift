@@ -251,8 +251,8 @@ class GameEndCelebrationSystem: ObservableObject {
     
     private func displayCulturalMoment(celebration: GameEndCelebration) async {
         // Show Romanian cultural wisdom or proverb
-        if enableCulturalElements,
-           let wisdom = celebration.culturalElements.culturalWisdom {
+        if enableCulturalElements {
+            let wisdom = celebration.culturalElements.culturalWisdom
             await animationManager?.displayCulturalWisdom(wisdom)
         }
         

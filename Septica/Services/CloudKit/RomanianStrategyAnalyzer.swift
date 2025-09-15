@@ -10,6 +10,25 @@ import Foundation
 import Combine
 import os.log
 
+// MARK: - Cultural Moment Type Definition
+
+/// Cultural moment captured during gameplay
+struct CulturalMoment {
+    let type: CulturalMomentType
+    let context: String
+    let significance: Double
+    let timestamp: Date
+}
+
+/// Types of cultural moments that can be captured
+enum CulturalMomentType: String, CaseIterable {
+    case traditionInvoked = "tradition_invoked"
+    case wisdomShared = "wisdom_shared"
+    case folkloreReference = "folklore_reference"
+    case strategicTradition = "strategic_tradition"
+    case culturalPattern = "cultural_pattern"
+}
+
 /// Romanian cultural strategy analyzer with traditional gameplay pattern recognition
 @MainActor
 class RomanianStrategyAnalyzer: ObservableObject {
@@ -566,6 +585,12 @@ private extension RomanianStrategyAnalyzer {
     var culturalEducationLevel: Int { 6 }
     var communityContributions: Int { 2 }
     var traditionalKnowledgeScore: Float { 0.75 }
+    
+    // Cultural moment recording
+    func recordCulturalMoment(_ moment: CulturalMoment) {
+        // Stub implementation for recording cultural moments
+        logger.info("Recorded cultural moment: \(moment.type.rawValue)")
+    }
 }
 
 // MARK: - Extensions

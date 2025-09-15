@@ -317,6 +317,16 @@ extension GameViewModel {
         return evaluateTraditionalStrategy(card)
     }
     
+    private func evaluateTraditionalStrategy(_ card: Card) -> Bool {
+        // Stub implementation for traditional strategy evaluation
+        return true
+    }
+    
+    private func determineCulturalMomentType(_ context: String) -> CulturalMomentType {
+        // Stub implementation for cultural moment type determination
+        return .strategicTradition
+    }
+    
     private func assessPointValueOptimization(_ card: Card) -> Bool {
         // Check if the play maximized point value capture
         return card.isPointCard && canCapturePoints()
@@ -409,7 +419,7 @@ extension GameViewModel {
     
     // Analytics state
     @Published var culturalAuthenticityScore: Float = 0.0
-    @Published var currentPlayingStyle: TraditionalStrategy = .wiseSage
+    @Published var currentPlayingStyle: AnalyticsTraditionalStrategy = .wiseSage
     @Published var masteryLevel: CulturalMasteryLevel = .beginner
     @Published var unlockedSymbols: Set<RomanianCardSymbol> = []
     
@@ -458,7 +468,7 @@ extension Notification.Name {
 
 // MARK: - Traditional Strategy Extension
 
-enum TraditionalStrategy: String, CaseIterable {
+enum AnalyticsTraditionalStrategy: String, CaseIterable {
     case wiseSage = "wise_sage"
     case boldWarrior = "bold_warrior"
     case patientScholar = "patient_scholar"

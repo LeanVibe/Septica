@@ -19,7 +19,7 @@ class RomanianCulturalIntelligence: ObservableObject {
     
     @Published var currentExplanation: CulturalExplanation?
     @Published var folkloreNarration: FolkloreStory?
-    @Published var culturalInsights: [CulturalInsight] = []
+    @Published var culturalInsights: [IntelligenceCulturalInsight] = []
     @Published var isProcessingRequest: Bool = false
     @Published var educationalContent: [CulturalEducationalContent] = []
     
@@ -31,8 +31,9 @@ class RomanianCulturalIntelligence: ObservableObject {
     
     // MARK: - Private Properties
     
-    private let languageModel: SystemLanguageModel
-    private var modelSession: LanguageModelSession?
+    // TODO: Re-enable when targeting iOS 26.0+
+    // private let languageModel: SystemLanguageModel?
+    // private var modelSession: LanguageModelSession?
     private let logger = Logger(subsystem: "dev.leanvibe.game.Septica", category: "RomanianCulturalIntelligence")
     private var cancellables = Set<AnyCancellable>()
     
@@ -179,7 +180,7 @@ class RomanianCulturalIntelligence: ObservableObject {
     }
     
     /// Generate cultural insight for a specific card move
-    func generateCulturalInsight(for move: CardMove) async -> CulturalInsight {
+    func generateCulturalInsight(for move: IntelligenceCardMove) async -> IntelligenceCulturalInsight {
         let startTime = Date()
         
         defer {
@@ -345,7 +346,7 @@ class RomanianCulturalIntelligence: ObservableObject {
         """
     }
     
-    private func createCulturalInsightPrompt(for move: CardMove) -> String {
+    private func createCulturalInsightPrompt(for move: IntelligenceCardMove) -> String {
         return """
         Provide a cultural insight for this Septica card move:
 
@@ -418,7 +419,7 @@ class RomanianCulturalIntelligence: ObservableObject {
         )
     }
     
-    private func parseFolkloreResponse(_ response: String, moment: CulturalMoment) -> FolkloreStory {
+    private func parseFolkloreResponse(_ response: String, moment: IntelligenceCulturalMoment) -> FolkloreStory {
         return FolkloreStory(
             id: UUID(),
             title: generateStoryTitle(from: moment),
@@ -432,8 +433,8 @@ class RomanianCulturalIntelligence: ObservableObject {
         )
     }
     
-    private func parseCulturalInsightResponse(_ response: String, move: CardMove) -> CulturalInsight {
-        return CulturalInsight(
+    private func parseCulturalInsightResponse(_ response: String, move: IntelligenceCardMove) -> IntelligenceCulturalInsight {
+        return IntelligenceCulturalInsight(
             id: UUID(),
             move: move,
             insight: response,
@@ -492,8 +493,8 @@ class RomanianCulturalIntelligence: ObservableObject {
         )
     }
     
-    private func createFallbackInsight(for move: CardMove) -> CulturalInsight {
-        return CulturalInsight(
+    private func createFallbackInsight(for move: IntelligenceCardMove) -> IntelligenceCulturalInsight {
+        return IntelligenceCulturalInsight(
             id: UUID(),
             move: move,
             insight: culturalKnowledgeBase.getGenericInsight(for: move.card),
@@ -599,7 +600,7 @@ class RomanianCulturalIntelligence: ObservableObject {
         return 0.85
     }
     
-    private func generateStoryTitle(from moment: CulturalMoment) -> String {
+    private func generateStoryTitle(from moment: IntelligenceCulturalMoment) -> String {
         return "The \(moment.type.displayName) Story"
     }
     
@@ -626,7 +627,7 @@ class RomanianCulturalIntelligence: ObservableObject {
         return nil
     }
     
-    private func calculateStrategicValue(for move: CardMove) -> Double {
+    private func calculateStrategicValue(for move: IntelligenceCardMove) -> Double {
         return 0.7
     }
     
@@ -711,9 +712,9 @@ struct FolkloreStory: EducationalContentProtocol {
     let createdAt: Date
 }
 
-struct CulturalInsight: EducationalContentProtocol {
+struct IntelligenceCulturalInsight: EducationalContentProtocol {
     let id: UUID
-    let move: CardMove
+    let move: IntelligenceCardMove
     let insight: String
     let culturalWisdom: String
     let traditionalSaying: String?
@@ -781,10 +782,18 @@ enum CulturalMomentType {
     }
 }
 
-struct CardMove {
+struct IntelligenceCardMove {
     let card: Card
     let strategicReasoning: String?
     let gameStateDescription: String
+}
+
+enum CulturalMomentType: String, CaseIterable {
+    case traditionInvoked = "tradition_invoked"
+    case wisdomShared = "wisdom_shared"
+    case folkloreReference = "folklore_reference"
+    case strategicTradition = "strategic_tradition"
+    case culturalPattern = "cultural_pattern"
 }
 
 // MARK: - Game Rules

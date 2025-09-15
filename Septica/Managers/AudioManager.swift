@@ -380,6 +380,31 @@ class AudioManager: ObservableObject {
         saveAudioPreferences()
     }
     
+    // MARK: - Game End Celebration Audio
+    
+    /// Play narration audio file
+    func playNarration(_ audioFile: String) {
+        guard isSoundEnabled else { return }
+        
+        // Try to load and play the narration file
+        guard let url = Bundle.main.url(forResource: audioFile, withExtension: "mp3") ??
+                        Bundle.main.url(forResource: audioFile, withExtension: "wav") else {
+            // Fallback to system sound if file not found
+            playSystemSound(1519)
+            return
+        }
+        
+        do {
+            let player = try AVAudioPlayer(contentsOf: url)
+            player.volume = soundVolume * 0.8 // Slightly lower volume for narration
+            player.play()
+        } catch {
+            print("Failed to play narration \(audioFile): \(error)")
+            // Fallback to system sound
+            playSystemSound(1519)
+        }
+    }
+    
     // MARK: - Utility Functions
     
     /// Stop all currently playing sounds

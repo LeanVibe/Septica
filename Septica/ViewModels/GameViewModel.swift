@@ -442,18 +442,6 @@ class GameViewModel: ObservableObject {
         }
     }
     
-    /// Start a new game and track related achievements
-    func startNewGame() {
-        gameState.setupNewGame()
-        
-        Task { @MainActor in
-            // Track new game start
-            achievementManager.trackEvent(.gameStarted)
-            
-            // Check for dedication achievements (consecutive plays)
-            checkForUnlockedAchievements()
-        }
-    }
     
     /// Dismiss achievement unlock overlay
     func dismissAchievementUnlock() {
