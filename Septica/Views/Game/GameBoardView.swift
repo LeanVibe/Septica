@@ -12,6 +12,7 @@ import SwiftUI
 struct GameBoardView: View {
     @StateObject private var gameViewModel: GameViewModel
     @StateObject private var dragCoordinator = ShuffleCatsDragCoordinator()
+    @StateObject private var characterAnimator = RomanianCharacterAnimator()
     @State private var selectedCard: Card?
     @State private var showingGameMenu = false
     @State private var animatingCard: Card?
@@ -26,13 +27,25 @@ struct GameBoardView: View {
             GameTableBackground()
             
             VStack(spacing: 20) {
-                // Top player area (opponent)
-                if gameViewModel.players.count > 1 {
-                    OpponentHandView(
-                        player: gameViewModel.players[1],
-                        isCurrentPlayer: gameViewModel.currentPlayerIndex == 1
+                // Top player area with character reactions
+                HStack {
+                    // Opponent hand
+                    if gameViewModel.players.count > 1 {
+                        OpponentHandView(
+                            player: gameViewModel.players[1],
+                            isCurrentPlayer: gameViewModel.currentPlayerIndex == 1
+                        )
+                        .rotationEffect(.degrees(180))
+                    }
+                    
+                    Spacer()
+                    
+                    // Romanian character for opponent reactions
+                    RomanianCharacterView(
+                        animator: characterAnimator,
+                        size: CGSize(width: 80, height: 100)
                     )
-                    .rotationEffect(.degrees(180))
+                    .scaleEffect(0.8)
                 }
                 
                 Spacer()
@@ -182,12 +195,24 @@ struct GameBoardView: View {
         }
     }
     
-    /// Play a card with animation
+    /// Play a card with animation and character reactions
     private func playCard(_ card: Card) {
-        guard gameViewModel.canPlayCard(card) else { return }
+        guard gameViewModel.canPlayCard(card) else { 
+            // Invalid move - trigger disappointed character reaction
+            characterAnimator.triggerReaction(
+                .badMove,
+                context: .encouragement,
+                intensity: .subtle
+            )
+            return 
+        }
         
         selectedCard = nil
         animatingCard = card
+        
+        // Determine move quality for character reaction
+        let moveQuality = evaluateMoveQuality(card)
+        triggerMoveReaction(moveQuality, card: card)
         
         // Animate card to table
         withAnimation(.easeInOut(duration: 0.5)) {
@@ -198,6 +223,91 @@ struct GameBoardView: View {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             animatingCard = nil
         }
+    }
+    
+    /// Evaluate move quality for appropriate character reactions
+    private func evaluateMoveQuality(_ card: Card) -> MoveQuality {
+        // Check if this is a strategic seven play
+        if card.value == 7 {
+            return .excellent // Seven is always a strong move
+        }
+        
+        // Check if this wins the trick
+        if gameViewModel.validMoves.count == 1 && gameViewModel.validMoves.contains(card) {
+            return .good // Only valid move available
+        }
+        
+        // Check if this is a point card play
+        if card.isPointCard {
+            return .strategic // Playing point cards requires strategy
+        }
+        
+        // Check if this is an 8 when table count % 3 == 0
+        if card.value == 8 && gameViewModel.tableCards.count % 3 == 0 {
+            return .excellent // Perfect timing for 8
+        }
+        
+        return .average
+    }
+    
+    /// Trigger appropriate character reaction based on move quality
+    private func triggerMoveReaction(_ quality: MoveQuality, card: Card) {
+        let context: GameContext = determineGameContext()
+        
+        switch quality {
+        case .excellent:
+            characterAnimator.triggerReaction(
+                .goodMove,
+                context: context,
+                intensity: .dramatic
+            )
+        case .good:
+            characterAnimator.triggerReaction(
+                .goodMove,
+                context: context,
+                intensity: .normal
+            )
+        case .strategic:
+            characterAnimator.triggerReaction(
+                .wisdom,
+                context: .strategic_thinking,
+                intensity: .normal
+            )
+        case .average:
+            characterAnimator.triggerReaction(
+                .encouragement,
+                context: context,
+                intensity: .subtle
+            )
+        case .poor:
+            characterAnimator.triggerReaction(
+                .badMove,
+                context: .encouragement,
+                intensity: .subtle
+            )
+        }
+    }
+    
+    /// Determine current game context for character selection
+    private func determineGameContext() -> GameContext {
+        // Check if this is early in the game (learning phase)
+        if gameViewModel.gameState.trickNumber <= 2 {
+            return .learning
+        }
+        
+        // Check if this is end game (expert play)
+        if gameViewModel.tableCards.count >= 6 {
+            return .expert_play
+        }
+        
+        // Check if player is winning (celebration context)
+        if let humanPlayer = gameViewModel.humanPlayer,
+           humanPlayer.score > (gameViewModel.players.first { $0.id != humanPlayer.id }?.score ?? 0) {
+            return .celebration
+        }
+        
+        // Default to strategic thinking
+        return .strategic_thinking
     }
     
     /// Setup drop zones for Shuffle Cats-style drag interactions
@@ -256,6 +366,15 @@ struct GameBoardView: View {
         
         dragCoordinator.setDropZones(zones)
     }
+}
+
+/// Move quality assessment for character reactions
+enum MoveQuality {
+    case excellent  // Seven plays, perfect timing moves
+    case good       // Valid strategic moves
+    case strategic  // Point card plays, thoughtful moves
+    case average    // Standard legal moves
+    case poor       // Suboptimal but legal moves
 }
 
 /// Background view for the game table

@@ -17,6 +17,7 @@ struct GameResultView: View {
     let onMainMenu: () -> Void
     
     @StateObject private var celebrationSystem = GameEndCelebrationSystem()
+    @StateObject private var characterAnimator = RomanianCharacterAnimator()
     @State private var celebrationPhase: CelebrationPhase = .initial
     @State private var showParticles = false
     @State private var showExperience = false
@@ -46,6 +47,20 @@ struct GameResultView: View {
         ZStack {
             // Background with celebration effects
             backgroundView()
+            
+            // Romanian character for game end reactions
+            VStack {
+                HStack {
+                    Spacer()
+                    RomanianCharacterView(
+                        animator: characterAnimator,
+                        size: CGSize(width: 100, height: 120)
+                    )
+                }
+                .padding(.top, 20)
+                .padding(.trailing, 20)
+                Spacer()
+            }
             
             // Main content with celebration overlay
             VStack(spacing: 24) {
@@ -91,6 +106,7 @@ struct GameResultView: View {
         }
         .onAppear {
             startCelebrationSequence()
+            triggerGameEndCharacterReaction()
         }
     }
     
@@ -145,6 +161,32 @@ struct GameResultView: View {
         }
         
         celebrationPhase = .complete
+    }
+    
+    /// Trigger appropriate character reaction for game end
+    private func triggerGameEndCharacterReaction() {
+        let context: GameContext
+        let reaction: CharacterReaction
+        let intensity: AnimationIntensity
+        
+        if isPlayerVictory {
+            context = .celebration
+            reaction = .victory
+            intensity = .celebration
+        } else if isDraw {
+            context = .learning
+            reaction = .encouragement
+            intensity = .normal
+        } else {
+            context = .encouragement
+            reaction = .defeat
+            intensity = .subtle
+        }
+        
+        // Delay character reaction to sync with celebration
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            characterAnimator.triggerReaction(reaction, context: context, intensity: intensity)
+        }
     }
     
     // MARK: - View Components
