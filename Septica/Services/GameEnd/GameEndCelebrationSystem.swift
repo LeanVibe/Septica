@@ -23,7 +23,7 @@ class GameEndCelebrationSystem: ObservableObject {
     @Published var celebrationPhase: CelebrationPhase = .none
     @Published var gameEndStatistics: GameEndStatistics?
     @Published var experienceGained: ExperienceReward?
-    @Published var achievementsUnlocked: [Achievement] = []
+    @Published var achievementsUnlocked: [CelebrationAchievement] = []
     
     // MARK: - Celebration Configuration
     
@@ -75,7 +75,7 @@ class GameEndCelebrationSystem: ObservableObject {
     // MARK: - Main Celebration Entry Points
     
     /// Trigger victory celebration with full Romanian cultural experience
-    func celebrateVictory(gameResult: GameResult, gameState: GameState) async {
+    func celebrateVictory(gameResult: CelebrationGameResult, gameState: GameState) async {
         logger.info("🎉 Triggering victory celebration")
         
         let statistics = statisticsCalculator.calculateStatistics(gameResult: gameResult, gameState: gameState)
@@ -101,7 +101,7 @@ class GameEndCelebrationSystem: ObservableObject {
     }
     
     /// Provide encouraging feedback for defeat with Romanian wisdom
-    func showDefeatFeedback(gameResult: GameResult, gameState: GameState) async {
+    func showDefeatFeedback(gameResult: CelebrationGameResult, gameState: GameState) async {
         logger.info("💪 Showing defeat feedback with encouragement")
         
         let statistics = statisticsCalculator.calculateStatistics(gameResult: gameResult, gameState: gameState)
@@ -127,7 +127,7 @@ class GameEndCelebrationSystem: ObservableObject {
     }
     
     /// Show balanced feedback for draw with Romanian philosophical wisdom
-    func showDrawFeedback(gameResult: GameResult, gameState: GameState) async {
+    func showDrawFeedback(gameResult: CelebrationGameResult, gameState: GameState) async {
         logger.info("⚖️ Showing draw feedback with philosophical balance")
         
         let statistics = statisticsCalculator.calculateStatistics(gameResult: gameResult, gameState: gameState)
@@ -156,7 +156,7 @@ class GameEndCelebrationSystem: ObservableObject {
         celebration: GameEndCelebration,
         statistics: GameEndStatistics,
         experience: ExperienceReward,
-        achievements: [Achievement]
+        achievements: [CelebrationAchievement]
     ) async {
         
         isShowingCelebration = true
@@ -233,7 +233,7 @@ class GameEndCelebrationSystem: ObservableObject {
         try? await Task.sleep(nanoseconds: 2_000_000_000) // 2.0s
     }
     
-    private func displayExperienceAndAchievements(experience: ExperienceReward, achievements: [Achievement]) async {
+    private func displayExperienceAndAchievements(experience: ExperienceReward, achievements: [CelebrationAchievement]) async {
         // Experience point animation
         if experience.points > 0 {
             await animationManager?.animateExperienceGain(experience)
@@ -372,7 +372,7 @@ class GameEndCelebrationSystem: ObservableObject {
     
     // MARK: - Cultural Elements Creation
     
-    private func createVictoryCulturalElements(gameResult: GameResult) -> CulturalElements {
+    private func createVictoryCulturalElements(gameResult: CelebrationGameResult) -> CulturalElements {
         return CulturalElements(
             victoryPhrase: culturalPhrases.getVictoryPhrase(),
             encouragementPhrase: nil,
@@ -587,7 +587,7 @@ class GameEndCelebrationSystem: ObservableObject {
 
 struct GameEndCelebration {
     let type: GameEndType
-    let gameResult: GameResult
+    let gameResult: CelebrationGameResult
     let statistics: GameEndStatistics
     let culturalElements: CulturalElements
     let visualEffects: VisualEffects?
@@ -756,7 +756,7 @@ struct ExperienceReward {
     let bonusReasons: [String]
 }
 
-struct Achievement {
+struct CelebrationAchievement {
     let id: String
     let title: String
     let description: String
@@ -849,7 +849,7 @@ class CulturalAnimationLibrary {
 }
 
 class GameStatisticsCalculator {
-    func calculateStatistics(gameResult: GameResult, gameState: GameState) -> GameEndStatistics {
+    func calculateStatistics(gameResult: CelebrationGameResult, gameState: GameState) -> GameEndStatistics {
         return GameEndStatistics(
             finalScore: gameResult.playerScore,
             opponentScore: gameResult.opponentScore,
@@ -864,7 +864,7 @@ class GameStatisticsCalculator {
 }
 
 class ExperienceCalculator {
-    func calculateExperience(gameResult: GameResult, statistics: GameEndStatistics) -> ExperienceReward {
+    func calculateExperience(gameResult: CelebrationGameResult, statistics: GameEndStatistics) -> ExperienceReward {
         let baseXP = statistics.finalScore * 10
         let bonusXP = statistics.strategicMoves * 5
         
@@ -900,12 +900,12 @@ class ExperienceCalculator {
 }
 
 class AchievementTracker {
-    func checkAchievements(gameResult: GameResult, statistics: GameEndStatistics) async -> [Achievement] {
-        var achievements: [Achievement] = []
+    func checkAchievements(gameResult: CelebrationGameResult, statistics: GameEndStatistics) async -> [CelebrationAchievement] {
+        var achievements: [CelebrationAchievement] = []
         
         // Check for various achievements based on performance
         if statistics.finalScore >= 10 {
-            achievements.append(Achievement(
+            achievements.append(CelebrationAchievement(
                 id: "high_scorer",
                 title: "Punctaj Mare",
                 description: "Ai obținut 10+ puncte într-un joc!",
@@ -921,7 +921,7 @@ class AchievementTracker {
 
 // MARK: - Placeholder Game Result Structure
 
-struct GameResult {
+struct CelebrationGameResult {
     let playerScore: Int
     let opponentScore: Int
     let tricksWon: Int

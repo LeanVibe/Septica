@@ -249,9 +249,3 @@ enum GameResultType: String, Codable, CaseIterable {
     case draw = "draw"
 }
 
-enum AIDifficulty: String, Codable, CaseIterable {
-    case easy = "easy"
-    case medium = "medium"
-    case hard = "hard"
-    case expert = "expert"
-}

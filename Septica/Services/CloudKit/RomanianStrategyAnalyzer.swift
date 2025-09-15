@@ -455,9 +455,9 @@ struct GameContext {
     let cardsOnTable: Int
     let opponentType: String
     let currentScore: Int
-    let gamePhase: GamePhase
+    let gamePhase: ContextPhase
     
-    enum GamePhase {
+    enum ContextPhase {
         case opening
         case middle
         case endgame

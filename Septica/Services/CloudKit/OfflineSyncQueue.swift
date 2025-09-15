@@ -9,6 +9,7 @@
 import Foundation
 import CloudKit
 import OSLog
+import Combine
 
 /// Manages offline synchronization queue for CloudKit operations
 @MainActor

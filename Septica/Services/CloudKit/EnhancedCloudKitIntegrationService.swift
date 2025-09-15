@@ -26,7 +26,7 @@ class EnhancedCloudKitIntegrationService: ObservableObject {
     
     @Published var isAvailable: Bool = false
     @Published var accountStatus: CKAccountStatus = .couldNotDetermine
-    @Published var syncStatus: CloudKitSyncStatus = .idle
+    @Published var syncStatus: EnhancedCloudKitSyncStatus = .idle
     @Published var lastSyncDate: Date?
     @Published var pendingOperations: Int = 0
     @Published var totalSyncedAchievements: Int = 0
@@ -510,7 +510,7 @@ class EnhancedCloudKitIntegrationService: ObservableObject {
 
 // MARK: - Supporting Data Structures
 
-enum CloudKitSyncStatus {
+enum EnhancedCloudKitSyncStatus {
     case idle
     case syncing
     case completed

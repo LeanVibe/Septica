@@ -346,7 +346,7 @@ extension SepticaCloudKitManager {
 
 // MARK: - CloudKit Sync Status
 
-enum CloudKitSyncStatus: String, CaseIterable {
+enum CloudKitSyncState: String, CaseIterable {
     case idle = "idle"
     case syncing = "syncing"
     case uploading = "uploading"

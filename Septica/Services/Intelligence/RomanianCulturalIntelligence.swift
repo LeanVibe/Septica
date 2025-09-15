@@ -847,7 +847,7 @@ enum PlayerExperienceLevel {
     case expert
 }
 
-enum GamePhase {
+enum CulturalGamePhase {
     case early
     case middle
     case late

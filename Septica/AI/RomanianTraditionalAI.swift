@@ -829,14 +829,14 @@ enum TimeHorizon {
 // MARK: - Machine Learning Structures
 
 struct AdaptedStrategy {
-    let baseStrategy: TraditionalStrategy
+    let baseStrategy: AITraditionalStrategy
     let mlAdjustment: MLStrategyRecommendation?
     let opponentAnalysis: OpponentAnalysis
     let culturalWeight: Double
     let adaptationConfidence: Double
 }
 
-struct TraditionalStrategy {
+struct AITraditionalStrategy {
     let personality: RomanianAIPersonality
     let primaryApproach: StrategicApproach
     let culturalElements: [CulturalElement]
@@ -1106,8 +1106,8 @@ class TraditionalStrategyDatabase {
         self.personality = personality
     }
     
-    func getStrategy(for situation: StrategicSituation, personality: RomanianAIPersonality, culturalContext: CulturalGameContext) -> TraditionalStrategy {
-        return TraditionalStrategy(
+    func getStrategy(for situation: StrategicSituation, personality: RomanianAIPersonality, culturalContext: CulturalGameContext) -> AITraditionalStrategy {
+        return AITraditionalStrategy(
             personality: personality,
             primaryApproach: .balanced,
             culturalElements: [],
