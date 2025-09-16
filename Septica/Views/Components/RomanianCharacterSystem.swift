@@ -371,8 +371,8 @@ class RomanianCharacterAnimator {
     var showSpeechBubble = false
     
     private var animationTimer: Timer?
-    private let hapticManager = HapticManager.shared
-    private let audioManager = AudioManager.shared
+    private let hapticManager = HapticManager()
+    private let audioManager = AudioManager()
     
     // Character selection based on game context
     func selectAppropriateCharacter(for context: GameContext) -> RomanianCharacterType {
@@ -465,19 +465,19 @@ class RomanianCharacterAnimator {
         
         switch expression.reaction {
         case .victory, .celebration:
-            hapticManager.trigger(.success, intensity: hapticIntensity)
+            hapticManager.trigger(.success)
         case .goodMove, .encouragement:
-            hapticManager.trigger(.lightSuccess, intensity: hapticIntensity)
+            hapticManager.trigger(.success)
         case .badMove, .disappointment:
-            hapticManager.trigger(.warning, intensity: hapticIntensity)
+            hapticManager.trigger(.warning)
         case .defeat:
-            hapticManager.trigger(.error, intensity: hapticIntensity)
+            hapticManager.trigger(.error)
         case .thinking, .wisdom:
-            hapticManager.trigger(.selection, intensity: hapticIntensity)
+            hapticManager.trigger(.selection)
         case .surprise:
-            hapticManager.trigger(.impact, intensity: hapticIntensity)
+            hapticManager.trigger(.lightImpact)
         default:
-            hapticManager.trigger(.gentle, intensity: hapticIntensity)
+            hapticManager.trigger(.lightImpact)
         }
     }
     
@@ -589,7 +589,7 @@ enum AnimationIntensity {
 
 /// Visual character component with animated reactions
 struct RomanianCharacterView: View {
-    @ObservedObject var animator: RomanianCharacterAnimator
+    @Bindable var animator: RomanianCharacterAnimator
     let size: CGSize
     
     var body: some View {
