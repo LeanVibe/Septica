@@ -25,7 +25,14 @@ struct AchievementView: View {
         case .folkloreLearning: return "Folklore"
         case .traditionalMusic: return "Music"
         case .regionalHistory: return "History"
-        case .culturalParticipation: return "Cultural Participation"
+        case .culturalPride: return "Cultural Pride"
+        case .mathematicalThinking: return "Mathematical"
+        case .criticalThinking: return "Critical Thinking"
+        case .patternRecognition: return "Pattern Recognition"
+        case .problemSolving: return "Problem Solving"
+        case .friendlyPlay: return "Friendly Play"
+        case .mentorship: return "Mentorship"
+        case .communityParticipation: return "Community"
         case .culturalSharing: return "Cultural Sharing"
         }
     }
@@ -289,8 +296,22 @@ struct CategoryButton: View {
             return "map.fill"
         case .gameWins:
             return "crown.fill"
-        case .culturalParticipation:
+        case .culturalPride:
+            return "heart.fill"
+        case .mathematicalThinking:
+            return "number.square.fill"
+        case .criticalThinking:
+            return "brain.head.profile.fill"
+        case .patternRecognition:
+            return "eyes.fill"
+        case .problemSolving:
+            return "lightbulb.fill"
+        case .friendlyPlay:
             return "person.3.fill"
+        case .mentorship:
+            return "person.badge.plus.fill"
+        case .communityParticipation:
+            return "person.2.circle.fill"
         case .culturalSharing:
             return "square.and.arrow.up.fill"
         }
