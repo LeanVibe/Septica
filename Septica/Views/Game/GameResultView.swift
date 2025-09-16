@@ -115,19 +115,33 @@ struct GameResultView: View {
     
     private func startCelebrationSequence() {
         Task {
-            let celebrationResult = self.convertToCelebrationGameResult(result)
-            
-            if isPlayerVictory {
-                await celebrationSystem.celebrateVictory(gameResult: celebrationResult, gameState: gameState)
-            } else if isDraw {
-                await celebrationSystem.showDrawFeedback(gameResult: celebrationResult, gameState: gameState)
-            } else {
-                await celebrationSystem.showDefeatFeedback(gameResult: celebrationResult, gameState: gameState)
-            }
-            
-            // Update UI based on celebration data
-            if let celebration = celebrationSystem.currentCelebration {
-                await updateCelebrationUI(celebration: celebration)
+            do {
+                let celebrationResult = self.convertToCelebrationGameResult(result)
+                
+                // Safely call celebration system with error handling
+                if isPlayerVictory {
+                    await celebrationSystem.celebrateVictory(gameResult: celebrationResult, gameState: gameState)
+                } else if isDraw {
+                    await celebrationSystem.showDrawFeedback(gameResult: celebrationResult, gameState: gameState)
+                } else {
+                    await celebrationSystem.showDefeatFeedback(gameResult: celebrationResult, gameState: gameState)
+                }
+                
+                // Update UI based on celebration data - ensure main thread
+                await MainActor.run {
+                    if let celebration = celebrationSystem.currentCelebration {
+                        Task {
+                            await updateCelebrationUI(celebration: celebration)
+                        }
+                    }
+                }
+            } catch {
+                // Handle any celebration errors gracefully
+                print("⚠️ Celebration system error: \(error)")
+                // Fall back to basic celebration phase without crashing
+                await MainActor.run {
+                    celebrationPhase = .celebration
+                }
             }
         }
     }
@@ -511,25 +525,31 @@ struct GameResultView: View {
     
     /// Convert GameResult to CelebrationGameResult for celebration system
     private func convertToCelebrationGameResult(_ gameResult: GameResult) -> CelebrationGameResult {
-        // Get player and opponent scores
-        let playerScore = gameResult.finalScores.values.max() ?? 0
-        let opponentScore = gameResult.finalScores.values.min() ?? 0
+        // Safely get player and opponent scores
+        let scores = Array(gameResult.finalScores.values)
+        let playerScore = scores.max() ?? 0
+        let opponentScore = scores.min() ?? 0
         
-        // Calculate basic stats from game state
-        let tricksWon = self.gameState.trickHistory.filter { trick in
-            self.gameState.players.first(where: { $0.isHuman })?.id == trick.winnerPlayerId
-        }.count
+        // Safely calculate tricks won - use defensive programming
+        let humanPlayerId = self.gameState.players.first(where: { $0.isHuman })?.id
+        let tricksWon = humanPlayerId != nil ? 
+            self.gameState.trickHistory.filter { $0.winnerPlayerId == humanPlayerId }.count : 0
         
-        let pointsCaptured = gameResult.finalScores.values.reduce(0, +)
+        let pointsCaptured = scores.reduce(0, +)
+        
+        // Ensure we have reasonable values
+        let safeTricksWon = max(0, tricksWon)
+        let strategicMoves = max(1, safeTricksWon * 2) // At least 1 to avoid zero
+        let culturalMoments = max(1, safeTricksWon) // At least 1 to avoid zero
         
         return CelebrationGameResult(
-            playerScore: playerScore,
-            opponentScore: opponentScore,
-            tricksWon: tricksWon,
-            pointsCaptured: pointsCaptured,
-            duration: gameResult.gameDuration,
-            strategicMoves: tricksWon * 2, // Estimate based on tricks won
-            culturalMoments: tricksWon // Simple correlation for cultural moments
+            playerScore: max(0, playerScore),
+            opponentScore: max(0, opponentScore),
+            tricksWon: safeTricksWon,
+            pointsCaptured: max(0, pointsCaptured),
+            duration: max(0.0, gameResult.gameDuration),
+            strategicMoves: strategicMoves,
+            culturalMoments: culturalMoments
         )
     }
 }
