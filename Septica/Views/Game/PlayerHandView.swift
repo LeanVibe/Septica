@@ -23,50 +23,63 @@ struct PlayerHandView: View {
     
     var body: some View {
         VStack(spacing: 12) {
-            // Player info header
+            // Player info header with Romanian avatar
             HStack {
-                // Player name with turn indicator
-                HStack(spacing: 8) {
-                    if isCurrentPlayer {
-                        Circle()
-                            .fill(Color.green)
-                            .frame(width: 8, height: 8)
-                            .scaleEffect(1.2)
-                            .animation(.easeInOut(duration: 0.8).repeatForever(autoreverses: true), value: isCurrentPlayer)
+                // Romanian Player Avatar (Shuffle Cats inspired)
+                RomanianPlayerAvatarView(
+                    avatar: player.romanianAvatar,
+                    frame: player.avatarFrame,
+                    level: player.playerLevel,
+                    arena: player.currentArena,
+                    isCurrentPlayer: isCurrentPlayer
+                )
+                .scaleEffect(0.8) // Slightly larger for human player
+                
+                // Player details
+                VStack(alignment: .leading, spacing: 4) {
+                    // Player name with turn indicator
+                    HStack(spacing: 8) {
+                        if isCurrentPlayer {
+                            Circle()
+                                .fill(Color.green)
+                                .frame(width: 8, height: 8)
+                                .scaleEffect(1.2)
+                                .animation(.easeInOut(duration: 0.8).repeatForever(autoreverses: true), value: isCurrentPlayer)
+                        }
+                        
+                        Text(player.name)
+                            .font(.headline)
+                            .foregroundColor(.white)
                     }
                     
-                    Text(player.name)
-                        .font(.headline)
-                        .foregroundColor(.white)
+                    // Romanian cultural hand count
+                    Text("(\(player.hand.count) cărți)")
+                        .font(.caption.weight(.medium))
+                        .foregroundColor(Color(hex: player.currentArena.primaryColor).opacity(0.8))
                 }
                 
                 Spacer()
                 
                 // Romanian cultural score display
-                HStack(spacing: 4) {
+                VStack(alignment: .trailing, spacing: 2) {
                     Text("Puncte:")
                         .font(.caption.weight(.medium))
-                        .foregroundColor(RomanianColors.primaryYellow.opacity(0.9))
+                        .foregroundColor(Color(hex: player.currentArena.primaryColor).opacity(0.9))
                     
                     Text("\(player.score)")
-                        .font(.headline.weight(.bold))
+                        .font(.title2.weight(.bold))
                         .foregroundStyle(
                             LinearGradient(
                                 colors: [
-                                    RomanianColors.goldAccent,
-                                    RomanianColors.primaryYellow
+                                    Color(hex: player.currentArena.accentColor),
+                                    Color(hex: player.currentArena.primaryColor)
                                 ],
                                 startPoint: .top,
                                 endPoint: .bottom
                             )
                         )
-                        .shadow(color: RomanianColors.primaryBlue.opacity(0.4), radius: 1, x: 0, y: 1)
+                        .shadow(color: .black.opacity(0.4), radius: 1, x: 0, y: 1)
                 }
-                
-                // Romanian cultural hand count
-                Text("(\(player.hand.count))")
-                    .font(.caption.weight(.medium))
-                    .foregroundColor(RomanianColors.primaryYellow.opacity(0.8))
             }
             
             // Cards in hand

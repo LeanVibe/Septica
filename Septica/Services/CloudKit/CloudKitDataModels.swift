@@ -221,6 +221,12 @@ struct CloudKitPlayerProfile: Codable, Sendable {
     var folkMusicListened: [String]
     var culturalStoriesRead: [String]
     var traditionalColorsUnlocked: [String]
+    
+    // Romanian Avatar System (Inspired by Shuffle Cats character design)
+    var selectedAvatar: String = RomanianCharacterAvatar.traditionalPlayer.rawValue
+    var selectedAvatarFrame: String = AvatarFrame.woodenFrame.rawValue
+    var unlockedAvatars: [String] = [RomanianCharacterAvatar.traditionalPlayer.rawValue]
+    var unlockedAvatarFrames: [String] = [AvatarFrame.woodenFrame.rawValue]
 }
 
 /// Seasonal progress with Romanian celebrations
@@ -400,6 +406,143 @@ struct CulturalCelebrationProgress: Codable, Sendable {
     func getCurrentActiveCelebration() -> RomanianCulturalCelebration? {
         guard let rawValue = currentActiveCelebration else { return nil }
         return RomanianCulturalCelebration(rawValue: rawValue)
+    }
+}
+
+// MARK: - Romanian Avatar System (Inspired by Shuffle Cats)
+
+/// Romanian character avatars representing different cultural archetypes
+enum RomanianCharacterAvatar: String, CaseIterable, Codable, Sendable {
+    case traditionalPlayer = "traditional_player"
+    case folkMusician = "folk_musician"
+    case villageElder = "village_elder"
+    case transylvanianNoble = "transylvanian_noble"
+    case moldovanScholar = "moldovan_scholar"
+    case wallachianWarrior = "wallachian_warrior"
+    case carpathianShepherd = "carpathian_shepherd"
+    case danubianFisherman = "danubian_fisherman"
+    case bucovinianArtisan = "bucovinian_artisan"
+    case dobrudjanMerchant = "dobrudjan_merchant"
+    
+    var displayName: String {
+        switch self {
+        case .traditionalPlayer: return "Jucător Tradițional"
+        case .folkMusician: return "Muzicant Popular"
+        case .villageElder: return "Bătrânul Satului"
+        case .transylvanianNoble: return "Nobil Ardelean"
+        case .moldovanScholar: return "Cărturar Moldovean"
+        case .wallachianWarrior: return "Vitez Muntenesc"
+        case .carpathianShepherd: return "Cioban Carpatin"
+        case .danubianFisherman: return "Pescar Dunărean"
+        case .bucovinianArtisan: return "Meșter Bucovinian"
+        case .dobrudjanMerchant: return "Negustor Dobrogean"
+        }
+    }
+    
+    var culturalDescription: String {
+        switch self {
+        case .traditionalPlayer: return "Classic Romanian card player from the countryside"
+        case .folkMusician: return "Traditional musician keeping Romanian heritage alive"
+        case .villageElder: return "Wise elder who taught generations Septica strategies"
+        case .transylvanianNoble: return "Aristocrat from the castles of Transylvania"
+        case .moldovanScholar: return "Intellectual from the monasteries of Moldova"
+        case .wallachianWarrior: return "Brave defender from the plains of Wallachia"
+        case .carpathianShepherd: return "Mountain shepherd with ancient wisdom"
+        case .danubianFisherman: return "River dweller from the Danube Delta"
+        case .bucovinianArtisan: return "Master craftsman from Bucovina region"
+        case .dobrudjanMerchant: return "Trader from the Black Sea coast"
+        }
+    }
+    
+    var requiredArena: RomanianArena {
+        switch self {
+        case .traditionalPlayer: return .sateImarica // Always available
+        case .folkMusician: return .satuMihai
+        case .villageElder: return .orasulBrara
+        case .transylvanianNoble: return .orasulBrasov
+        case .moldovanScholar: return .orasulIasi
+        case .wallachianWarrior: return .marealeBucuresti
+        case .carpathianShepherd: return .orasulBacau
+        case .danubianFisherman: return .orasulConstanta
+        case .bucovinianArtisan: return .orasulSibiu
+        case .dobrudjanMerchant: return .orasulTimisoara
+        }
+    }
+    
+    var unLockRequirements: AvatarUnlockRequirements {
+        switch self {
+        case .traditionalPlayer: return AvatarUnlockRequirements(gamesPlayed: 0, trophies: 0, culturalBadges: 0)
+        case .folkMusician: return AvatarUnlockRequirements(gamesPlayed: 10, trophies: 150, culturalBadges: 1)
+        case .villageElder: return AvatarUnlockRequirements(gamesPlayed: 25, trophies: 300, culturalBadges: 3)
+        case .transylvanianNoble: return AvatarUnlockRequirements(gamesPlayed: 50, trophies: 1200, culturalBadges: 5)
+        case .moldovanScholar: return AvatarUnlockRequirements(gamesPlayed: 75, trophies: 900, culturalBadges: 7)
+        case .wallachianWarrior: return AvatarUnlockRequirements(gamesPlayed: 100, trophies: 1500, culturalBadges: 10)
+        case .carpathianShepherd: return AvatarUnlockRequirements(gamesPlayed: 40, trophies: 600, culturalBadges: 4)
+        case .danubianFisherman: return AvatarUnlockRequirements(gamesPlayed: 60, trophies: 750, culturalBadges: 6)
+        case .bucovinianArtisan: return AvatarUnlockRequirements(gamesPlayed: 80, trophies: 1350, culturalBadges: 8)
+        case .dobrudjanMerchant: return AvatarUnlockRequirements(gamesPlayed: 70, trophies: 1050, culturalBadges: 6)
+        }
+    }
+}
+
+/// Avatar frames that unlock with arena progression (Shuffle Cats frame style)
+enum AvatarFrame: String, CaseIterable, Codable, Sendable {
+    case woodenFrame = "wooden_frame"
+    case folkFrame = "folk_art_frame"
+    case silverFrame = "silver_ornate_frame"
+    case goldenFrame = "golden_royal_frame"
+    case traditionFrame = "traditional_carved_frame"
+    case culturalFrame = "cultural_heritage_frame"
+    case legendaryFrame = "legendary_romanian_frame"
+    
+    var displayName: String {
+        switch self {
+        case .woodenFrame: return "Ramă de Lemn"
+        case .folkFrame: return "Ramă Populară"
+        case .silverFrame: return "Ramă de Argint"
+        case .goldenFrame: return "Ramă de Aur"
+        case .traditionFrame: return "Ramă Tradițională"
+        case .culturalFrame: return "Ramă Culturală"
+        case .legendaryFrame: return "Ramă Legendară"
+        }
+    }
+    
+    var requiredArena: RomanianArena {
+        switch self {
+        case .woodenFrame: return .sateImarica
+        case .folkFrame: return .orasulBrara
+        case .silverFrame: return .orasulCluj
+        case .goldenFrame: return .orasulBrasov
+        case .traditionFrame: return .orasulTimisoara
+        case .culturalFrame: return .orasulSibiu
+        case .legendaryFrame: return .marealeBucuresti
+        }
+    }
+    
+    var frameColor: String {
+        switch self {
+        case .woodenFrame: return "#8B4513" // Saddle brown
+        case .folkFrame: return "#DC143C" // Traditional red
+        case .silverFrame: return "#C0C0C0" // Silver
+        case .goldenFrame: return "#FFD700" // Gold
+        case .traditionFrame: return "#4169E1" // Royal blue
+        case .culturalFrame: return "#800080" // Purple
+        case .legendaryFrame: return "#FF6347" // Romanian flag inspired
+        }
+    }
+}
+
+/// Avatar unlock requirements structure
+struct AvatarUnlockRequirements: Codable, Sendable {
+    let gamesPlayed: Int
+    let trophies: Int
+    let culturalBadges: Int
+    
+    /// Check if player meets unlock requirements
+    func isUnlockedBy(profile: CloudKitPlayerProfile) -> Bool {
+        return profile.totalGamesPlayed >= gamesPlayed &&
+               profile.trophies >= trophies &&
+               profile.culturalEducationProgress.culturalBadges.count >= culturalBadges
     }
 }
 

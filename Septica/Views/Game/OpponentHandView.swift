@@ -15,35 +15,47 @@ struct OpponentHandView: View {
     
     var body: some View {
         VStack(spacing: 8) {
-            // Player info header
+            // Player info header with Romanian avatar
             HStack {
+                // Romanian Player Avatar (Shuffle Cats inspired)
+                RomanianPlayerAvatarView(
+                    avatar: player.romanianAvatar,
+                    frame: player.avatarFrame,
+                    level: player.playerLevel,
+                    arena: player.currentArena,
+                    isCurrentPlayer: isCurrentPlayer
+                )
+                .scaleEffect(0.7) // Smaller for opponent view
+                
                 // Player name with turn indicator
-                HStack(spacing: 8) {
-                    if isCurrentPlayer {
-                        Circle()
-                            .fill(Color.red)
-                            .frame(width: 8, height: 8)
-                            .scaleEffect(1.2)
-                            .animation(.easeInOut(duration: 0.8).repeatForever(autoreverses: true), value: isCurrentPlayer)
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack(spacing: 8) {
+                        if isCurrentPlayer {
+                            Circle()
+                                .fill(Color.red)
+                                .frame(width: 8, height: 8)
+                                .scaleEffect(1.2)
+                                .animation(.easeInOut(duration: 0.8).repeatForever(autoreverses: true), value: isCurrentPlayer)
+                        }
+                        
+                        Text(player.name)
+                            .font(.headline)
+                            .foregroundColor(.white)
                     }
                     
-                    Text(player.name)
-                        .font(.headline)
-                        .foregroundColor(.white)
+                    // Score display
+                    HStack(spacing: 4) {
+                        Text("Score:")
+                            .font(.caption)
+                            .foregroundColor(.white.opacity(0.8))
+                        
+                        Text("\(player.score)")
+                            .font(.caption.bold())
+                            .foregroundColor(.white)
+                    }
                 }
                 
                 Spacer()
-                
-                // Score display
-                HStack(spacing: 4) {
-                    Text("Score:")
-                        .font(.caption)
-                        .foregroundColor(.white.opacity(0.8))
-                    
-                    Text("\(player.score)")
-                        .font(.caption.bold())
-                        .foregroundColor(.white)
-                }
             }
             .padding(.horizontal)
             
