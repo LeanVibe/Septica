@@ -259,6 +259,18 @@ struct Particle: Identifiable {
     
     private var age: TimeInterval = 0
     
+    init(id: UUID, type: ParticleType, position: CGPoint, velocity: CGPoint, color: Color, size: Double, life: TimeInterval, opacity: Double) {
+        self.id = id
+        self.type = type
+        self.position = position
+        self.velocity = velocity
+        self.color = color
+        self.size = size
+        self.life = life
+        self.opacity = opacity
+        self.age = 0
+    }
+    
     mutating func update(deltaTime: TimeInterval) {
         age += deltaTime
         

@@ -164,6 +164,7 @@ struct GameBoardView: View {
                 GameResultView(
                     result: gameResult,
                     playerNames: gameViewModel.players.map { $0.name },
+                    gameState: gameViewModel.gameState,
                     onNewGame: {
                         gameViewModel.startNewGame()
                     },
