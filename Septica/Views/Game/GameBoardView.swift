@@ -11,8 +11,8 @@ import SwiftUI
 /// Main game board view that displays the complete Septica game interface
 struct GameBoardView: View {
     @StateObject private var gameViewModel: GameViewModel
-    @StateObject private var dragCoordinator = ShuffleCatsDragCoordinator()
-    @StateObject private var characterAnimator = RomanianCharacterAnimator()
+    @State private var dragCoordinator = ShuffleCatsDragCoordinator()
+    @State private var characterAnimator = RomanianCharacterAnimator()
     @State private var selectedCard: Card?
     @State private var showingGameMenu = false
     @State private var animatingCard: Card?

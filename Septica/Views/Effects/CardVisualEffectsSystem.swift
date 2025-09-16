@@ -8,6 +8,7 @@
 
 import SwiftUI
 import UIKit
+import Combine
 
 // MARK: - Card Visual Effects Manager
 

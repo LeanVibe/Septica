@@ -23,14 +23,14 @@ class GameViewModel: ObservableObject {
     
     // MARK: - Private Properties
     
-    private var cancellables = Set<AnyCancellable>()
+    var cancellables = Set<AnyCancellable>()
     private let aiMoveDelay: TimeInterval = 1.5
     
     // Performance monitoring for 60 FPS targets
     @Published var performanceMonitor = PerformanceMonitor()
     
     // Achievement system integration
-    private let achievementManager = AchievementManager.shared
+    let achievementManager = AchievementManager.shared
     @Published var showingAchievementUnlock = false
     @Published var unlockedAchievement: RomanianAchievement?
     

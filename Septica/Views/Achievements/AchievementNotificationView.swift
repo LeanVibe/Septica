@@ -478,7 +478,7 @@ struct RomanianFolkBadgeBackground: View {
         case .legendary:
             return [RomanianColors.primaryBlue, RomanianColors.primaryRed, RomanianColors.primaryYellow]
         case .cultural:
-            return [RomanianColors.folkloreBlue, RomanianColors.countrysideGreen]
+            return [RomanianColors.primaryBlue, RomanianColors.countrysideGreen]
         case .seasonal:
             return [RomanianColors.primaryYellow, RomanianColors.goldAccent]
         }

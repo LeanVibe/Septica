@@ -15,6 +15,21 @@ struct AchievementView: View {
     @State private var selectedAchievement: RomanianAchievement?
     @State private var showingAchievementDetails = false
     
+    /// Helper method to get display name for achievement category
+    static func getCategoryDisplayName(for category: AchievementCategory) -> String {
+        switch category {
+        case .cardMastery: return "Card Mastery"
+        case .gameWins: return "Game Wins"
+        case .strategicPlay: return "Strategic Play"
+        case .perfectGames: return "Perfect Games"
+        case .folkloreLearning: return "Folklore"
+        case .traditionalMusic: return "Music"
+        case .regionalHistory: return "History"
+        case .culturalParticipation: return "Cultural Participation"
+        case .culturalSharing: return "Cultural Sharing"
+        }
+    }
+    
     private let columns = [
         GridItem(.adaptive(minimum: 160), spacing: 16)
     ]
@@ -35,8 +50,8 @@ struct AchievementView: View {
                         ForEach(filteredAchievements) { achievement in
                             AchievementCardView(
                                 achievement: achievement,
-                                isUnlocked: achievementManager.isUnlocked(achievement.id),
-                                progress: achievementManager.getProgress(for: achievement.id)
+                                isUnlocked: achievementManager.isAchievementUnlocked(achievement.id),
+                                progress: Double(achievementManager.getAchievementProgress(achievement.id))
                             )
                             .onTapGesture {
                                 selectedAchievement = achievement
@@ -65,8 +80,8 @@ struct AchievementView: View {
             if let achievement = selectedAchievement {
                 AchievementDetailView(
                     achievement: achievement,
-                    isUnlocked: achievementManager.isUnlocked(achievement.id),
-                    progress: achievementManager.getProgress(for: achievement.id)
+                    isUnlocked: achievementManager.isAchievementUnlocked(achievement.id),
+                    progress: Double(achievementManager.getAchievementProgress(achievement.id))
                 )
             }
         }
@@ -239,7 +254,7 @@ struct CategoryButton: View {
                     .font(.title3.bold())
                     .foregroundColor(isSelected ? .white : RomanianColors.primaryBlue)
                 
-                Text(category.displayName)
+                Text(AchievementView.getCategoryDisplayName(for: category))
                     .font(.caption.bold())
                     .foregroundColor(isSelected ? .white : RomanianColors.primaryBlue)
                     .multilineTextAlignment(.center)
@@ -264,18 +279,20 @@ struct CategoryButton: View {
             return "suit.spade.fill"
         case .strategicPlay:
             return "brain.head.profile"
-        case .culturalKnowledge:
+        case .folkloreLearning:
             return "book.fill"
-        case .socialConnection:
+        case .perfectGames:
             return "person.2.fill"
-        case .dedication:
+        case .traditionalMusic:
             return "flame.fill"
-        case .exploration:
+        case .regionalHistory:
             return "map.fill"
-        case .mastery:
+        case .gameWins:
             return "crown.fill"
-        default:
-            return "star"
+        case .culturalParticipation:
+            return "person.3.fill"
+        case .culturalSharing:
+            return "square.and.arrow.up.fill"
         }
     }
 }
@@ -311,7 +328,7 @@ struct AchievementDetailView: View {
                 }
                 .padding()
             }
-            .navigationTitle(achievement.name)
+            .navigationTitle(achievement.titleKey)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -389,7 +406,7 @@ struct AchievementDetailView: View {
                 .font(.title2.bold())
                 .foregroundColor(RomanianColors.primaryBlue)
             
-            Text(achievement.culturalStory)
+            Text(achievement.culturalContextKey)
                 .font(.body)
                 .lineSpacing(4)
                 .foregroundColor(.primary)
@@ -428,7 +445,7 @@ struct AchievementDetailView: View {
                 .font(.title2.bold())
                 .foregroundColor(RomanianColors.primaryRed)
             
-            Text(achievement.description)
+            Text(achievement.descriptionKey)
                 .font(.body)
                 .foregroundColor(.primary)
         }
@@ -445,7 +462,7 @@ struct AchievementDetailView: View {
                 .font(.title2.bold())
                 .foregroundColor(RomanianColors.countrysideGreen)
             
-            Text(achievement.historicalContext)
+            Text(achievement.culturalContextKey)
                 .font(.body)
                 .lineSpacing(4)
                 .foregroundColor(.primary)
@@ -473,19 +490,15 @@ struct AchievementDetailView: View {
     }
     
     private var rarityColor: Color {
-        switch achievement.rarity {
-        case .common:
+        switch achievement.difficulty {
+        case .bronze:
             return .gray
-        case .uncommon:
+        case .silver:
             return .green
-        case .rare:
-            return .blue
-        case .epic:
-            return .purple
+        case .gold:
+            return RomanianColors.embroideryRed
         case .legendary:
             return RomanianColors.goldAccent
-        case .mythic:
-            return RomanianColors.embroideryRed
         }
     }
 }
@@ -554,7 +567,7 @@ struct AchievementUnlockedOverlay: View {
                             .frame(width: 120, height: 120)
                             .shadow(color: .black.opacity(0.3), radius: 8, x: 0, y: 4)
                         
-                        Image(systemName: achievement.iconName)
+                        Image(systemName: "star.fill")
                             .font(.system(size: 48, weight: .bold))
                             .foregroundColor(.white)
                     }
@@ -562,13 +575,13 @@ struct AchievementUnlockedOverlay: View {
                     
                     VStack(spacing: 8) {
                         // Achievement name
-                        Text(achievement.name)
+                        Text(achievement.titleKey)
                             .font(.title2.bold())
                             .foregroundColor(.primary)
                             .multilineTextAlignment(.center)
                         
                         // Cultural context
-                        Text(achievement.culturalContext)
+                        Text(achievement.culturalContextKey)
                             .font(.subheadline)
                             .foregroundColor(RomanianColors.primaryBlue)
                             .italic()
@@ -605,19 +618,15 @@ struct AchievementUnlockedOverlay: View {
     }
     
     private var rarityColor: Color {
-        switch achievement.rarity {
-        case .common:
+        switch achievement.difficulty {
+        case .bronze:
             return .gray
-        case .uncommon:
+        case .silver:
             return .green
-        case .rare:
-            return .blue
-        case .epic:
-            return .purple
+        case .gold:
+            return RomanianColors.embroideryRed
         case .legendary:
             return RomanianColors.goldAccent
-        case .mythic:
-            return RomanianColors.embroideryRed
         }
     }
     

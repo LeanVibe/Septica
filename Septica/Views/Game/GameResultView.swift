@@ -17,7 +17,7 @@ struct GameResultView: View {
     let onMainMenu: () -> Void
     
     @StateObject private var celebrationSystem = GameEndCelebrationSystem()
-    @StateObject private var characterAnimator = RomanianCharacterAnimator()
+    @State private var characterAnimator = RomanianCharacterAnimator()
     @State private var celebrationPhase: ResultCelebrationPhase = .initial
     @State private var showParticles = false
     @State private var showExperience = false

@@ -413,15 +413,57 @@ class AchievementManager: ObservableObject {
         playerLevel = UserDefaults.standard.integer(forKey: "playerLevel")
         playerTitle = UserDefaults.standard.string(forKey: "playerTitle") ?? "Începător"
     }
+    
+    // MARK: - Event Tracking API
+    
+    /// Track game events for achievement progress
+    func trackEvent(_ event: AchievementGameEvent) {
+        // Simple implementation to satisfy compiler
+        // This can be expanded later for actual achievement tracking
+        switch event {
+        case .gameCompleted:
+            gameStatistics["gamesCompleted", default: 0] += 1
+        case .gameWon:
+            gameStatistics["gamesWon", default: 0] += 1
+        case .gameStarted:
+            gameStatistics["gamesStarted", default: 0] += 1
+        case .sevenCardPlayed, .playedSevenCard:
+            gameStatistics["sevenCardsPlayed", default: 0] += 1
+        case .playedPointCard:
+            gameStatistics["pointCardsPlayed", default: 0] += 1
+        case .dominantVictory:
+            gameStatistics["dominantVictories", default: 0] += 1
+        case .eightPlayedAtRightTime:
+            gameStatistics["eightCardsPlayedOptimally", default: 0] += 1
+        case .pointCardCaptured:
+            gameStatistics["pointCardsCaptured", default: 0] += 1
+        case .playedCard:
+            gameStatistics["totalCardsPlayed", default: 0] += 1
+        case .culturalInteraction:
+            gameStatistics["culturalInteractions", default: 0] += 1
+        default:
+            break
+        }
+        
+        // Save progress after tracking
+        saveProgress()
+    }
 }
 
 /// Achievement-related game events
 enum AchievementGameEvent {
     case gameCompleted
     case gameWon
+    case gameStarted
     case sevenCardPlayed
+    case playedSevenCard
+    case playedPointCard
     case eightPlayedAtRightTime
     case pointCardCaptured
+    case playedCard
+    case culturalInteraction
+    case dominantVictory
+    case perfectTiming
     case winStreakUpdated
     case culturalFactLearned
     case sportsmanshipShown

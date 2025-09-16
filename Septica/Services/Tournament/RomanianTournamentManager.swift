@@ -286,7 +286,7 @@ class RomanianTournamentManager: ObservableObject {
             createDobrudjaTournament()
         ]
         
-        logger.info("Created \(regionalTournaments.count) regional tournaments")
+        logger.info("Created \(self.regionalTournaments.count) regional tournaments")
     }
     
     private func createTransilvaniaTournament() -> RomanianRegionalTournament {
@@ -490,7 +490,7 @@ class RomanianTournamentManager: ObservableObject {
             opponents: [
                 RegionalOpponent(name: "Pescaru' Gheorghe", personality: .fluidAdaptation, difficulty: .hard),
                 RegionalOpponent(name: "Elena Deltaică", personality: .naturalFlow, difficulty: .expert),
-                RegionalOpponent(name: "Căpitanul Dunării", personality: .riverMaster, difficulty: .master)
+                RegionalOpponent(name: "Căpitanul Dunării", personality: .riverMaster, difficulty: .expert)
             ],
             culturalChallenges: [
                 CulturalChallenge(
@@ -521,7 +521,7 @@ class RomanianTournamentManager: ObservableObject {
         
         // Check unlock requirements
         guard canEnterRegionalTournament(tournament) else {
-            throw TournamentError.requirementsNotMet
+            throw TournamentError.arenaRequirementNotMet
         }
         
         currentRegionalTournament = tournament
@@ -587,7 +587,7 @@ class RomanianTournamentManager: ObservableObject {
     }
     
     private func completeRegionalTournament(_ tournament: RomanianRegionalTournament, with result: RegionalTournamentResult) async {
-        logger.info("Regional tournament completed with result: \(result)")
+        logger.info("Regional tournament completed with result: \(String(describing: result))")
         
         if result == .victory {
             // Award rewards
@@ -619,7 +619,7 @@ class RomanianTournamentManager: ObservableObject {
     }
     
     func unlockRegion(_ region: TournamentRegion) async {
-        logger.info("Unlocking Romanian region: \(region)")
+        logger.info("Unlocking Romanian region: \(String(describing: region))")
         
         unlockedRegions.insert(region)
         
@@ -638,9 +638,15 @@ class RomanianTournamentManager: ObservableObject {
         // Add cultural symbols to collection
         for symbol in rewards.culturalSymbols {
             culturalRewards.append(CulturalReward(
-                type: .symbol,
-                symbol: symbol,
-                earnedAt: Date()
+                id: UUID().uuidString,
+                type: .culturalBadge,
+                title: symbol.rawValue,
+                romanianTitle: symbol.rawValue,
+                description: "Regional symbol for \(symbol.rawValue)",
+                culturalSignificance: "Traditional Romanian symbol",
+                rarity: .common,
+                visualEffects: [],
+                educationalContent: nil
             ))
         }
         
@@ -650,9 +656,15 @@ class RomanianTournamentManager: ObservableObject {
         // Unlock folklore stories
         for storyTitle in rewards.folkloreStories {
             culturalRewards.append(CulturalReward(
-                type: .folkloreStory,
+                id: UUID().uuidString,
+                type: .culturalStory,
                 title: storyTitle,
-                earnedAt: Date()
+                romanianTitle: storyTitle,
+                description: "Traditional Romanian folklore story",
+                culturalSignificance: "Romanian cultural heritage",
+                rarity: .rare,
+                visualEffects: [],
+                educationalContent: storyTitle
             ))
         }
     }

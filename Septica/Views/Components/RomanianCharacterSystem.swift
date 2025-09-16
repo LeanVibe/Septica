@@ -447,13 +447,9 @@ class RomanianCharacterAnimator {
         let audioSettings = expression.voiceTone.audioSettings
         
         // Play Romanian pronunciation if available
-        if let audioFile = getRomanianAudioFile(for: expression) {
-            audioManager.playSound(audioFile, settings: audioSettings)
-        }
-        
-        // Fallback to emotional sound effects
+        // Use emotional sound effects mapped to SoundEffect enum
         let emotionalSound = getEmotionalSound(for: expression.reaction)
-        audioManager.playSound(emotionalSound, settings: audioSettings)
+        audioManager.playSound(emotionalSound, volume: 0.7)
     }
     
     /// Trigger appropriate haptic feedback for character reactions
@@ -473,11 +469,11 @@ class RomanianCharacterAnimator {
         case .defeat:
             hapticManager.trigger(.error)
         case .thinking, .wisdom:
-            hapticManager.trigger(.selection)
+            hapticManager.trigger(.menuSelect)
         case .surprise:
-            hapticManager.trigger(.lightImpact)
+            hapticManager.trigger(.notification)
         default:
-            hapticManager.trigger(.lightImpact)
+            hapticManager.trigger(.menuSelect)
         }
     }
     
@@ -523,22 +519,22 @@ class RomanianCharacterAnimator {
     }
     
     /// Get emotional sound effect for reaction
-    private func getEmotionalSound(for reaction: CharacterReaction) -> String {
+    private func getEmotionalSound(for reaction: CharacterReaction) -> AudioManager.SoundEffect {
         switch reaction {
         case .victory, .celebration:
-            return "romanian_victory_cheer"
+            return .gameVictory
         case .goodMove:
-            return "romanian_approval"
+            return .cardPlace
         case .badMove, .disappointment:
-            return "romanian_gentle_correction"
+            return .cardInvalid
         case .thinking:
-            return "romanian_contemplation"
+            return .cardShuffle
         case .encouragement:
-            return "romanian_encouragement"
+            return .cardPlace
         case .wisdom:
-            return "romanian_wisdom_share"
+            return .cardShuffle
         default:
-            return "romanian_general_positive"
+            return .cardPlace
         }
     }
 }
