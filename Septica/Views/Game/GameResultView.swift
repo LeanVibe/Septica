@@ -115,12 +115,14 @@ struct GameResultView: View {
     
     private func startCelebrationSequence() {
         Task {
+            let celebrationResult = self.convertToCelebrationGameResult(result)
+            
             if isPlayerVictory {
-                await celebrationSystem.celebrateVictory(gameResult: result, gameState: gameState)
+                await celebrationSystem.celebrateVictory(gameResult: celebrationResult, gameState: gameState)
             } else if isDraw {
-                await celebrationSystem.handleDraw(gameResult: result, gameState: gameState)
+                await celebrationSystem.showDrawFeedback(gameResult: celebrationResult, gameState: gameState)
             } else {
-                await celebrationSystem.handleDefeat(gameResult: result, gameState: gameState)
+                await celebrationSystem.showDefeatFeedback(gameResult: celebrationResult, gameState: gameState)
             }
             
             // Update UI based on celebration data
@@ -150,7 +152,7 @@ struct GameResultView: View {
         try? await Task.sleep(nanoseconds: 1_000_000_000)
         withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
             showExperience = true
-            experienceGained = celebration.statistics.experienceGained
+            experienceGained = celebration.statistics.strategicMoves * 10
         }
         
         // Show achievements after another 1.5 seconds
@@ -406,9 +408,10 @@ struct GameResultView: View {
                 ForEach(result.finalScores.sorted(by: { $0.value > $1.value }), id: \.key) { playerId, score in
                     HStack {
                         // Player name with enhanced styling
-                        Text(playerId == gameState.playerId ? "Tu" : "Adversar")
+                        let isHumanPlayer = gameState.players.first(where: { $0.id == playerId })?.isHuman == true
+                        Text(isHumanPlayer ? "Tu" : "Adversar")
                             .font(.body.bold())
-                            .foregroundColor(playerId == gameState.playerId ? .yellow : .white)
+                            .foregroundColor(isHumanPlayer ? .yellow : .white)
                         
                         Spacer()
                         
@@ -502,6 +505,32 @@ struct GameResultView: View {
         let minutes = Int(duration) / 60
         let seconds = Int(duration) % 60
         return String(format: "%d:%02d", minutes, seconds)
+    }
+    
+    // MARK: - Helper Functions
+    
+    /// Convert GameResult to CelebrationGameResult for celebration system
+    private func convertToCelebrationGameResult(_ gameResult: GameResult) -> CelebrationGameResult {
+        // Get player and opponent scores
+        let playerScore = gameResult.finalScores.values.max() ?? 0
+        let opponentScore = gameResult.finalScores.values.min() ?? 0
+        
+        // Calculate basic stats from game state
+        let tricksWon = self.gameState.trickHistory.filter { trick in
+            self.gameState.players.first(where: { $0.isHuman })?.id == trick.winnerPlayerId
+        }.count
+        
+        let pointsCaptured = gameResult.finalScores.values.reduce(0, +)
+        
+        return CelebrationGameResult(
+            playerScore: playerScore,
+            opponentScore: opponentScore,
+            tricksWon: tricksWon,
+            pointsCaptured: pointsCaptured,
+            duration: gameResult.gameDuration,
+            strategicMoves: tricksWon * 2, // Estimate based on tricks won
+            culturalMoments: tricksWon // Simple correlation for cultural moments
+        )
     }
 }
 
@@ -646,7 +675,7 @@ struct GameResultView_Previews: PreviewProvider {
         gameState.players = [player1, player2]
         gameState.phase = .finished
         
-        Group {
+        return Group {
             // Victory preview
             GameResultView(
                 result: victoryResult,
