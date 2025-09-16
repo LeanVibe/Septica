@@ -957,22 +957,28 @@ private extension RomanianStrategyAnalyzer {
     func calculateArenaAuthenticityBonus(arena: RomanianArena) -> Float {
         // Calculate cultural authenticity bonus based on Romanian arena heritage value
         switch arena {
-        case .castelBran:
-            return 1.0 // Maximum authenticity - Bran Castle, iconic Romanian heritage
+        case .marealeBucuresti:
+            return 1.0 // Maximum authenticity - Royal capital, iconic Romanian heritage
+        case .orasulBrasov:
+            return 0.95 // Very high - Transylvanian fortress heritage
+        case .orasulSibiu:
+            return 0.9 // High - European cultural capital
+        case .orasulIasi:
+            return 0.9 // High - Cultural center heritage
+        case .orasulTimisoara:
+            return 0.85 // Good+ - Historic Habsburg city
+        case .orasulConstanta:
+            return 0.8 // Good - Black Sea port heritage
+        case .orasulCluj:
+            return 0.8 // Good - Academic city heritage
         case .satuMihai:
-            return 0.9 // High authenticity - Traditional Romanian village
-        case .bucovinaTraditionala:
-            return 0.95 // Very high - Bukovina traditional culture
-        case .maramuresAutentic:
-            return 0.9 // High - Authentic Maramureș heritage
-        case .deltaDunarii:
-            return 0.8 // Good - Danube Delta natural heritage
-        case .carpatiiMisteriosi:
-            return 0.85 // Good+ - Carpathian mountains heritage
+            return 0.75 // Moderate+ - Traditional village
         case .sateImarica:
-            return 0.7 // Moderate - Small village setting
-        case .orasulVechi:
-            return 0.75 // Moderate+ - Old town atmosphere
+            return 0.7 // Moderate - Starting village setting
+        case .orasulBacau:
+            return 0.7 // Moderate - Regional city
+        case .orasulBrara:
+            return 0.65 // Moderate - Small town setting
         }
     }
     

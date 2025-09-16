@@ -21,10 +21,22 @@ struct GameBoardView: View {
         self._gameViewModel = StateObject(wrappedValue: GameViewModel(gameState: gameState))
     }
     
+    /// Convert GameViewModel.GamePhase to RomanianArenaBackgroundView.GamePhase
+    private func mapToArenaGamePhase(_ phase: GameViewModel.GamePhase) -> RomanianArenaBackgroundView.GamePhase {
+        switch phase {
+        case .setup: return .opening
+        case .playing: return .midGame
+        case .gameOver: return .endGame
+        }
+    }
+    
     var body: some View {
         ZStack {
-            // Background
-            GameTableBackground()
+            // Rich Romanian Arena Background with Cultural Immersion
+            RomanianArenaBackgroundView(
+                arena: gameViewModel.currentArena ?? .sateImarica,
+                gamePhase: mapToArenaGamePhase(gameViewModel.gamePhase)
+            )
             
             VStack(spacing: 20) {
                 // Top player area with character reactions

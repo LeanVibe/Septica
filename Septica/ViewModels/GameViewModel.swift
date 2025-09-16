@@ -34,6 +34,14 @@ class GameViewModel: ObservableObject {
     @Published var showingAchievementUnlock = false
     @Published var unlockedAchievement: RomanianAchievement?
     
+    // Romanian Arena System Integration
+    @Published var currentArena: RomanianArena? = .sateImarica
+    @Published var gamePhase: GamePhase = .setup
+    
+    enum GamePhase {
+        case setup, playing, gameOver
+    }
+    
     // MARK: - Computed Properties
     
     /// Current players in the game
