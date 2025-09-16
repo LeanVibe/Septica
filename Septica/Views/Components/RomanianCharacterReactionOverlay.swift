@@ -7,6 +7,7 @@
 //
 
 import SwiftUI
+import Combine
 
 /// Quick character reaction overlay for immediate gameplay feedback
 struct RomanianCharacterReactionOverlay: View {

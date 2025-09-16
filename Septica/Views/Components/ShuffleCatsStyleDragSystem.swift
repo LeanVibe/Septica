@@ -11,24 +11,24 @@ import Observation
 
 /// Enhanced drag coordinator for Shuffle Cats-style interactions
 @Observable
-class ShuffleCatsDragCoordinator: ObservableObject {
+class ShuffleCatsDragCoordinator {
     
     // MARK: - Drag State
     
-    @Published var isDragActive = false
-    @Published var draggedCard: Card?
-    @Published var dragPosition = CGPoint.zero
-    @Published var ghostCardPosition = CGPoint.zero
-    @Published var isValidDropZone = false
-    @Published var activeDropZone: DropZoneInfo?
-    @Published var dropZones: [DropZoneInfo] = []
+    var isDragActive = false
+    var draggedCard: Card?
+    var dragPosition = CGPoint.zero
+    var ghostCardPosition = CGPoint.zero
+    var isValidDropZone = false
+    var activeDropZone: DropZoneInfo?
+    var dropZones: [DropZoneInfo] = []
     
     // MARK: - Animation State
     
-    @Published var showGhostCard = false
-    @Published var ghostCardOpacity: Double = 0.0
-    @Published var magneticSnappingActive = false
-    @Published var snapTargetPosition = CGPoint.zero
+    var showGhostCard = false
+    var ghostCardOpacity: Double = 0.0
+    var magneticSnappingActive = false
+    var snapTargetPosition = CGPoint.zero
     
     // MARK: - Drag Configuration
     

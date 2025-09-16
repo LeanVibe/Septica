@@ -98,7 +98,7 @@ class RomanianCulturalContentLibrary: ObservableObject {
             updateContentStatistics()
             
             contentAvailability = .available
-            logger.info("Romanian cultural content library initialized with \(contentStats.totalItems) items")
+            logger.info("Romanian cultural content library initialized with \(self.contentStats.totalItems) items")
             
         } catch {
             logger.error("Failed to initialize cultural library: \(error)")
@@ -183,7 +183,7 @@ class RomanianCulturalContentLibrary: ObservableObject {
             createDeltaFishermanStory()
         ]
         
-        logger.info("Loaded \(folkloreStories.count) Romanian folklore stories")
+        logger.info("Loaded \(self.folkloreStories.count) Romanian folklore stories")
     }
     
     // MARK: - Traditional Sayings and Proverbs
@@ -284,7 +284,7 @@ class RomanianCulturalContentLibrary: ObservableObject {
             )
         ]
         
-        logger.info("Loaded \(traditionalSayings.count) Romanian proverbs and sayings")
+        logger.info("Loaded \(self.traditionalSayings.count) Romanian proverbs and sayings")
     }
     
     // MARK: - Historical Context
@@ -336,7 +336,7 @@ class RomanianCulturalContentLibrary: ObservableObject {
             )
         ]
         
-        logger.info("Loaded \(historicalContext.count) historical periods")
+        logger.info("Loaded \(self.historicalContext.count) historical periods")
     }
     
     // MARK: - Regional Traditions
@@ -396,7 +396,7 @@ class RomanianCulturalContentLibrary: ObservableObject {
             )
         ]
         
-        logger.info("Loaded \(regionalTraditions.count) regional traditions")
+        logger.info("Loaded \(self.regionalTraditions.count) regional traditions")
     }
     
     // MARK: - Seasonal Celebrations
@@ -506,7 +506,7 @@ class RomanianCulturalContentLibrary: ObservableObject {
             )
         ]
         
-        logger.info("Loaded \(seasonalCelebrations.count) seasonal celebrations")
+        logger.info("Loaded \(self.seasonalCelebrations.count) seasonal celebrations")
     }
     
     // MARK: - Interactive Cultural Content
@@ -559,7 +559,7 @@ class RomanianCulturalContentLibrary: ObservableObject {
             )
         ]
         
-        logger.info("Created \(culturalQuizzes.count) cultural quizzes")
+        logger.info("Created \(self.culturalQuizzes.count) cultural quizzes")
     }
     
     // MARK: - Helper Methods for Story Creation

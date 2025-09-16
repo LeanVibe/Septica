@@ -361,14 +361,14 @@ enum BodyPosition: String {
 
 /// Main character animation coordinator with Romanian cultural context
 @Observable
-class RomanianCharacterAnimator: ObservableObject {
+class RomanianCharacterAnimator {
     
-    @Published var currentCharacter: RomanianCharacterType = .oldWiseMan
-    @Published var currentExpression: CharacterExpression?
-    @Published var isAnimating = false
-    @Published var animationProgress: Double = 0.0
-    @Published var speechBubbleText: String = ""
-    @Published var showSpeechBubble = false
+    var currentCharacter: RomanianCharacterType = .oldWiseMan
+    var currentExpression: CharacterExpression?
+    var isAnimating = false
+    var animationProgress: Double = 0.0
+    var speechBubbleText: String = ""
+    var showSpeechBubble = false
     
     private var animationTimer: Timer?
     private let hapticManager = HapticManager.shared

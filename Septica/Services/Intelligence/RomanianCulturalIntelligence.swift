@@ -8,8 +8,11 @@
 
 import Foundation
 import Combine
-import FoundationModels
+// import FoundationModels // TODO: Re-enable when targeting iOS 26.0+
 import os.log
+
+// Temporary typealias for iOS 18.0 compatibility
+typealias LanguageModelSession = NSObject
 
 /// Apple Intelligence-powered cultural explanation system for Romanian Septica rules
 @MainActor
@@ -62,52 +65,16 @@ class RomanianCulturalIntelligence: ObservableObject {
     // MARK: - Intelligence System Initialization
     
     private func initializeIntelligenceSystem() async {
-        do {
-            modelAvailability = .checking
-            
-            // Check model availability
-            let availability = await languageModel.availability
-            
-            switch availability {
-            case .installed:
-                modelAvailability = .available
-                await initializeModelSession()
-                
-            case .supported:
-                modelAvailability = .supported
-                logger.info("Apple Intelligence supported but not installed")
-                
-            case .unsupported:
-                modelAvailability = .unsupported
-                logger.warning("Apple Intelligence not supported on this device")
-                
-            @unknown default:
-                modelAvailability = .unknown
-                logger.error("Unknown Apple Intelligence availability status")
-            }
-            
-            logger.info("Romanian Cultural Intelligence initialized with status: \(modelAvailability)")
-            
-        } catch {
-            logger.error("Failed to initialize Romanian Cultural Intelligence: \(error)")
-            modelAvailability = .error
-        }
+        // TODO: Re-enable when targeting iOS 26.0+
+        // Temporarily disable FoundationModels integration for iOS 18.0 compatibility
+        modelAvailability = .unsupported
+        logger.info("Romanian Cultural Intelligence initialized in compatibility mode (FoundationModels disabled)")
     }
     
     private func initializeModelSession() async {
-        do {
-            let sessionConfiguration = LanguageModelSession.Configuration(
-                systemPrompt: createSystemPrompt(),
-                options: LanguageModelSession.Options()
-            )
-            
-            modelSession = try await languageModel.session(configuration: sessionConfiguration)
-            logger.info("Apple Intelligence model session initialized for Romanian cultural explanations")
-            
-        } catch {
-            logger.error("Failed to create Apple Intelligence session: \(error)")
-            modelAvailability = .error
-        }
+        // TODO: Re-enable when targeting iOS 26.0+
+        // Temporarily disabled for iOS 18.0 compatibility
+        logger.info("Model session initialization skipped (compatibility mode)")
     }
     
     // MARK: - Cultural Rule Explanations
@@ -123,14 +90,16 @@ class RomanianCulturalIntelligence: ObservableObject {
         }
         
         // Check if model is available
-        guard modelAvailability == .available,
-              let session = modelSession else {
-            return createFallbackExplanation(for: rule, context: context)
-        }
+        // TODO: Re-enable when targeting iOS 26.0+
+        // For now, always use fallback since FoundationModels is disabled
+        // Always use fallback for iOS 18.0 compatibility
+        return createFallbackExplanation(for: rule, context: context)
         
+        // TODO: Re-enable when targeting iOS 26.0+
+        /*
         do {
             let prompt = createRuleExplanationPrompt(rule: rule, context: context)
-            let response = try await session.generate(prompt: prompt)
+            // let response = try await session.generate(prompt: prompt) // TODO: Re-enable for iOS 26.0+
             
             let explanation = parseRuleExplanationResponse(response, rule: rule, context: context)
             
@@ -145,6 +114,7 @@ class RomanianCulturalIntelligence: ObservableObject {
             logger.error("Failed to generate rule explanation: \(error)")
             return createFallbackExplanation(for: rule, context: context)
         }
+        */
     }
     
     /// Generate folklore narration triggered by gameplay moments
@@ -156,27 +126,12 @@ class RomanianCulturalIntelligence: ObservableObject {
         }
         
         // Check if model is available
-        guard modelAvailability == .available,
-              let session = modelSession else {
-            return folkloreLibrary.getFallbackStory(for: moment)
-        }
+        // TODO: Re-enable when targeting iOS 26.0+
+        // For now, always use fallback since FoundationModels is disabled
+        // Always use fallback for iOS 18.0 compatibility
+        return folkloreLibrary.getFallbackStory(for: moment)
         
-        do {
-            let prompt = createFolklorePrompt(for: moment)
-            let response = try await session.generate(prompt: prompt)
-            
-            let story = parseFolkloreResponse(response, moment: moment)
-            
-            folkloreNarration = story
-            trackEducationalEngagement(story)
-            
-            logger.info("Generated folklore narration for cultural moment: \(moment.type)")
-            return story
-            
-        } catch {
-            logger.error("Failed to generate folklore narration: \(error)")
-            return folkloreLibrary.getFallbackStory(for: moment)
-        }
+        // TODO: Re-enable when targeting iOS 26.0+ (FoundationModels)
     }
     
     /// Generate cultural insight for a specific card move
@@ -188,14 +143,16 @@ class RomanianCulturalIntelligence: ObservableObject {
         }
         
         // Check if model is available
-        guard modelAvailability == .available,
-              let session = modelSession else {
-            return createFallbackInsight(for: move)
-        }
+        // TODO: Re-enable when targeting iOS 26.0+
+        // For now, always use fallback since FoundationModels is disabled
+        // Always use fallback for iOS 18.0 compatibility
+        return createFallbackInsight(for: move)
         
+        // TODO: Re-enable for iOS 26.0+
+        /*
         do {
             let prompt = createCulturalInsightPrompt(for: move)
-            let response = try await session.generate(prompt: prompt)
+            // let response = try await session.generate(prompt: prompt) // TODO: Re-enable for iOS 26.0+
             
             let insight = parseCulturalInsightResponse(response, move: move)
             
@@ -209,6 +166,7 @@ class RomanianCulturalIntelligence: ObservableObject {
             logger.error("Failed to generate cultural insight: \(error)")
             return createFallbackInsight(for: move)
         }
+        */
     }
     
     // MARK: - Interactive Learning
@@ -224,14 +182,16 @@ class RomanianCulturalIntelligence: ObservableObject {
         }
         
         // Check if model is available
-        guard modelAvailability == .available,
-              let session = modelSession else {
-            return createFallbackAnswer(for: question)
-        }
+        // TODO: Re-enable when targeting iOS 26.0+
+        // For now, always use fallback since FoundationModels is disabled
+        // Always use fallback for iOS 18.0 compatibility
+        return createFallbackAnswer(for: question)
         
+        // TODO: Re-enable for iOS 26.0+
+        /*
         do {
             let prompt = createQuestionAnsweringPrompt(question: question)
-            let response = try await session.generate(prompt: prompt)
+            // let response = try await session.generate(prompt: prompt) // TODO: Re-enable for iOS 26.0+
             
             let answer = parseQuestionAnswerResponse(response, originalQuestion: question)
             
@@ -244,6 +204,7 @@ class RomanianCulturalIntelligence: ObservableObject {
             logger.error("Failed to answer cultural question: \(error)")
             return createFallbackAnswer(for: question)
         }
+        */
     }
     
     /// Create child-friendly explanations for different age groups
@@ -255,14 +216,16 @@ class RomanianCulturalIntelligence: ObservableObject {
         }
         
         // Check if model is available
-        guard modelAvailability == .available,
-              let session = modelSession else {
-            return createFallbackChildExplanation(for: rule, ageGroup: ageGroup)
-        }
+        // TODO: Re-enable when targeting iOS 26.0+
+        // For now, always use fallback since FoundationModels is disabled
+        // Always use fallback for iOS 18.0 compatibility
+        return createFallbackChildExplanation(for: rule, ageGroup: ageGroup)
         
+        // TODO: Re-enable for iOS 26.0+
+        /*
         do {
             let prompt = createChildFriendlyPrompt(rule: rule, ageGroup: ageGroup)
-            let response = try await session.generate(prompt: prompt)
+            // let response = try await session.generate(prompt: prompt) // TODO: Re-enable for iOS 26.0+
             
             let explanation = parseChildFriendlyResponse(response, rule: rule, ageGroup: ageGroup)
             
@@ -275,6 +238,7 @@ class RomanianCulturalIntelligence: ObservableObject {
             logger.error("Failed to create child-friendly explanation: \(error)")
             return createFallbackChildExplanation(for: rule, ageGroup: ageGroup)
         }
+        */
     }
     
     // MARK: - Prompt Creation
