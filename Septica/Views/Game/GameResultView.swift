@@ -27,7 +27,8 @@ struct GameResultView: View {
     @State private var celebrationData: GameEndCelebration?
     
     private var isPlayerVictory: Bool {
-        result.winnerId == gameState.playerId
+        guard let winnerId = result.winnerId else { return false }
+        return gameState.players.first(where: { $0.id == winnerId })?.isHuman == true
     }
     
     private var isDraw: Bool {
@@ -36,7 +37,7 @@ struct GameResultView: View {
     
     private var winnerName: String? {
         guard let winnerId = result.winnerId else { return nil }
-        if winnerId == gameState.playerId {
+        if gameState.players.first(where: { $0.id == winnerId })?.isHuman == true {
             return "You"
         } else {
             return playerNames.first { _ in true } ?? "Opponent"
@@ -149,7 +150,7 @@ struct GameResultView: View {
         try? await Task.sleep(nanoseconds: 1_000_000_000)
         withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
             showExperience = true
-            experienceGained = celebration.statistics?.experienceGained ?? 0
+            experienceGained = celebration.statistics.experienceGained
         }
         
         // Show achievements after another 1.5 seconds
@@ -232,8 +233,8 @@ struct GameResultView: View {
         VStack(spacing: 16) {
             if let celebration = celebrationData {
                 // Cultural greeting
-                if let greeting = celebration.culturalElements.greeting {
-                    Text(greeting)
+                if let victoryPhrase = celebration.culturalElements.victoryPhrase {
+                    Text(victoryPhrase.text)
                         .font(.title2.bold())
                         .foregroundColor(.yellow)
                         .multilineTextAlignment(.center)
@@ -365,7 +366,8 @@ struct GameResultView: View {
     
     @ViewBuilder
     private func culturalWisdomView(celebration: GameEndCelebration) -> some View {
-        if let wisdom = celebration.culturalElements.wisdom {
+        if !celebration.culturalElements.culturalWisdom.isEmpty {
+            let wisdom = celebration.culturalElements.culturalWisdom
             VStack(spacing: 8) {
                 Image(systemName: "quote.bubble.fill")
                     .font(.title2)
@@ -638,18 +640,11 @@ struct GameResultView_Previews: PreviewProvider {
             gameDuration: 300.0
         )
         
-        let gameState = GameState(
-            playerId: playerId,
-            opponentId: opponentId,
-            currentTurn: playerId,
-            phase: .gameOver,
-            playerHand: [],
-            opponentHand: [],
-            tableCards: [],
-            playerScore: 7,
-            opponentScore: 4,
-            lastTrickWinner: playerId
-        )
+        let gameState = GameState()
+        let player1 = Player(name: "Player")
+        let player2 = Player(name: "Opponent")
+        gameState.players = [player1, player2]
+        gameState.phase = .finished
         
         Group {
             // Victory preview
