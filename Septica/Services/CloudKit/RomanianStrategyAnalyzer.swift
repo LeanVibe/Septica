@@ -494,23 +494,210 @@ struct StrategicRecommendation {
 private extension RomanianStrategyAnalyzer {
     
     func analyzeSevenWildCardStrategy(in games: [CloudKitGameRecord]) -> Float {
-        // Implementation would analyze seven usage patterns
-        return 0.7
+        // Track traditional Romanian playing patterns: Seven as wild card mastery
+        guard !games.isEmpty else { return 0.0 }
+        
+        var sevenUsageData: [Float] = []
+        
+        for game in games {
+            // Analyze seven usage patterns in each game
+            let gameData = game.gameplayData
+            let totalSevenCards = gameData.filter { $0.cardValue == 7 }.count
+            let strategicSevenUses = gameData.filter { 
+                $0.cardValue == 7 && $0.wasStrategicPlay == true 
+            }.count
+            
+            if totalSevenCards > 0 {
+                let sevenEfficiency = Float(strategicSevenUses) / Float(totalSevenCards)
+                sevenUsageData.append(sevenEfficiency)
+            }
+        }
+        
+        guard !sevenUsageData.isEmpty else { return 0.0 }
+        
+        // Calculate average seven mastery with Romanian traditional bonus
+        let baseSevenMastery = sevenUsageData.reduce(0, +) / Float(sevenUsageData.count)
+        
+        // Romanian traditional enhancement: Bonus for consistent seven usage
+        let consistencyBonus = sevenUsageData.filter { $0 > 0.6 }.count >= sevenUsageData.count / 2 ? 0.1 : 0.0
+        
+        return min(1.0, baseSevenMastery + consistencyBonus)
     }
     
     func analyzeEightSpecialTiming(in games: [CloudKitGameRecord]) -> Float {
-        // Implementation would analyze eight special rule usage
-        return 0.6
+        // Analyze traditional Romanian eight special rule mastery (when table cards % 3 == 0)
+        guard !games.isEmpty else { return 0.0 }
+        
+        var eightTimingData: [Float] = []
+        
+        for game in games {
+            let gameData = game.gameplayData
+            let eightMoves = gameData.filter { $0.cardValue == 8 }
+            
+            guard !eightMoves.isEmpty else { continue }
+            
+            var correctTimingUses = 0
+            var totalEightUses = 0
+            
+            for move in eightMoves {
+                totalEightUses += 1
+                
+                // Check if eight was played at optimal timing (table cards % 3 == 0)
+                if move.tableCardCount % 3 == 0 {
+                    correctTimingUses += 1
+                    
+                    // Bonus for playing eight when it clears table optimally
+                    if move.tableCardCount >= 6 && move.wasStrategicPlay {
+                        correctTimingUses += 1 // Double count for excellent timing
+                    }
+                }
+            }
+            
+            if totalEightUses > 0 {
+                let timingEfficiency = Float(correctTimingUses) / Float(totalEightUses)
+                eightTimingData.append(min(1.0, timingEfficiency))
+            }
+        }
+        
+        guard !eightTimingData.isEmpty else { return 0.0 }
+        
+        // Romanian traditional enhancement: Bonus for consistent eight timing mastery
+        let baseEightMastery = eightTimingData.reduce(0, +) / Float(eightTimingData.count)
+        let masterTimingBonus = eightTimingData.filter { $0 > 0.8 }.count >= eightTimingData.count / 3 ? 0.15 : 0.0
+        
+        return min(1.0, baseEightMastery + masterTimingBonus)
     }
     
     func analyzeConservativePlay(in games: [CloudKitGameRecord]) -> Float {
-        // Implementation would analyze conservative patterns
-        return 0.5
+        // Analyze Romanian traditional conservative playing patterns
+        guard !games.isEmpty else { return 0.0 }
+        
+        var conservativeScores: [Float] = []
+        
+        for game in games {
+            let gameData = game.gameplayData
+            var conservativeIndicators: [Float] = []
+            
+            guard !gameData.isEmpty else { continue }
+            
+            // 1. Point card protection - holding high-value cards until necessary
+            let pointCardMoves = gameData.filter { $0.cardValue >= 10 }
+            let protectedPointCards = pointCardMoves.filter { $0.turnPosition > Float(gameData.count) * 0.6 }
+            let pointProtectionScore = Float(protectedPointCards.count) / max(1, Float(pointCardMoves.count))
+            conservativeIndicators.append(pointProtectionScore)
+            
+            // 2. Seven usage restraint - not playing sevens aggressively early
+            let sevenMoves = gameData.filter { $0.cardValue == 7 }
+            let conservativeSevenUse = sevenMoves.filter { $0.turnPosition > Float(gameData.count) * 0.4 }.count
+            let sevenRestraintScore = Float(conservativeSevenUse) / max(1, Float(sevenMoves.count))
+            conservativeIndicators.append(sevenRestraintScore)
+            
+            // 3. Turn timing analysis - deliberate, thoughtful play
+            let averageTurnTime = gameData.map { $0.thinkingTime }.reduce(0, +) / Float(gameData.count)
+            let deliberateScore = min(1.0, averageTurnTime / 8.0) // 8 seconds as thoughtful baseline
+            conservativeIndicators.append(deliberateScore)
+            
+            // 4. Risk avoidance - preferring safe plays over risky ones
+            let riskyMoves = gameData.filter { $0.riskLevel > 0.7 }.count
+            let safetyScore = 1.0 - (Float(riskyMoves) / Float(gameData.count))
+            conservativeIndicators.append(max(0.0, safetyScore))
+            
+            // 5. Defensive positioning - playing to protect rather than attack
+            let defensiveMoves = gameData.filter { $0.isDefensivePlay }.count
+            let defensiveScore = Float(defensiveMoves) / Float(gameData.count)
+            conservativeIndicators.append(defensiveScore)
+            
+            // Calculate weighted conservative score
+            let gameConservativeness = conservativeIndicators.reduce(0, +) / Float(conservativeIndicators.count)
+            
+            // Romanian traditional bonus for consistent conservative approach
+            let consistencyBonus = conservativeIndicators.filter { $0 > 0.6 }.count >= 3 ? 0.1 : 0.0
+            
+            conservativeScores.append(min(1.0, gameConservativeness + consistencyBonus))
+        }
+        
+        guard !conservativeScores.isEmpty else { return 0.0 }
+        
+        return conservativeScores.reduce(0, +) / Float(conservativeScores.count)
     }
     
     func analyzeCulturalAuthenticity(in games: [CloudKitGameRecord]) -> (averageScore: Float, moments: [StrategyCulturalMoment]) {
-        // Implementation would analyze cultural moments
-        return (0.8, [])
+        // Create Romanian cultural moment detection and analyze cultural gameplay preferences
+        guard !games.isEmpty else { return (0.0, []) }
+        
+        var culturalMoments: [StrategyCulturalMoment] = []
+        var authenticityScores: [Float] = []
+        
+        for game in games {
+            var gameAuthenticityScore: Float = 0.0
+            let gameData = game.gameplayData
+            
+            // Detect Romanian traditional patterns
+            
+            // 1. Traditional Seven Usage (Romanian Septica heritage)
+            let sevenMoves = gameData.filter { $0.cardValue == 7 }
+            if !sevenMoves.isEmpty {
+                let strategicSevenUses = sevenMoves.filter { $0.wasStrategicPlay }.count
+                let sevenMastery = Float(strategicSevenUses) / Float(sevenMoves.count)
+                gameAuthenticityScore += sevenMastery * 0.3 // 30% weight
+                
+                if sevenMastery > 0.7 {
+                    culturalMoments.append(StrategyCulturalMoment(
+                        timestamp: game.timestamp,
+                        momentType: .sevenWildCardLegend,
+                        description: "Maestrie tradițională cu Șeptarul - utilizare strategică autentică",
+                        educationalContent: "Șeptarul reprezintă înțelepciunea și adaptabilitatea în tradițiile românești de cărți."
+                    ))
+                }
+            }
+            
+            // 2. Eight Special Rule Mastery (Romanian Septica tradition)
+            let eightMoves = gameData.filter { $0.cardValue == 8 }
+            let correctEightUses = eightMoves.filter { $0.tableCardCount % 3 == 0 }.count
+            if !eightMoves.isEmpty {
+                let eightMastery = Float(correctEightUses) / Float(eightMoves.count)
+                gameAuthenticityScore += eightMastery * 0.25 // 25% weight
+                
+                if eightMastery > 0.6 {
+                    culturalMoments.append(StrategyCulturalMoment(
+                        timestamp: game.timestamp,
+                        momentType: .heritageEducation,
+                        description: "Înțelegere tradițională a regulii de 8 - timing perfect",
+                        educationalContent: "Regula de 8 în Septica este o tradiție română care necesită înțelegere profundă a momentului potrivit."
+                    ))
+                }
+            }
+            
+            // 3. Conservative Romanian Play Style
+            let conservativePlayScore = analyzeConservativePattern(gameData: gameData)
+            gameAuthenticityScore += conservativePlayScore * 0.2 // 20% weight
+            
+            // 4. Cultural Arena Preference
+            let arenaBonus = calculateArenaAuthenticityBonus(arena: game.arenaAtTimeOfPlay)
+            gameAuthenticityScore += arenaBonus * 0.15 // 15% weight
+            
+            // 5. Traditional Victory Patterns
+            if game.gameResult.contains("victory") {
+                let victoryPattern = analyzeVictoryPattern(gameData: gameData)
+                gameAuthenticityScore += victoryPattern * 0.1 // 10% weight
+                
+                if victoryPattern > 0.8 {
+                    culturalMoments.append(StrategyCulturalMoment(
+                        timestamp: game.timestamp,
+                        momentType: .culturalCelebration,
+                        description: "Victorie în stil tradițional românesc - strategii de patrimoniu",
+                        educationalContent: "Victoriile obținute prin strategii tradiționale românești reflectă înțelepciunea generațiilor trecute."
+                    ))
+                }
+            }
+            
+            authenticityScores.append(min(1.0, gameAuthenticityScore))
+        }
+        
+        let averageScore = authenticityScores.isEmpty ? 0.0 : 
+            authenticityScores.reduce(0, +) / Float(authenticityScores.count)
+        
+        return (averageScore, culturalMoments)
     }
     
     func identifyTraditionalStrategy(sevenPattern: Float, eightPattern: Float, conservativePattern: Float, culturalScore: Float) -> TraditionalStrategy {
@@ -532,13 +719,174 @@ private extension RomanianStrategyAnalyzer {
     }
     
     func generateCulturalRecommendations(strategy: TraditionalStrategy, engagement: Float) -> [CulturalRecommendation] {
-        // Implementation would generate cultural recommendations
-        return []
+        // Generate cultural authenticity metrics with personalized Romanian heritage guidance
+        var recommendations: [CulturalRecommendation] = []
+        
+        // Base recommendations based on playing style
+        switch strategy {
+        case .wiseSage:
+            recommendations.append(CulturalRecommendation(
+                recommendation: "Continuați să dezvoltați maestria tradițională. Încercați să îmbunătățiți utilizarea cărții de 8 când numărul de cărți de pe masă este divizibil cu 3.",
+                culturalBenefit: "Înțelepciunea tradițională românească în jocul de Septica",
+                implementationSteps: [
+                    "Practicați timing-ul perfect pentru cartea de 8",
+                    "Studiați momentele culturale tradiționale",
+                    "Explorati arenele cu patrimoniu cultural ridicat"
+                ],
+                expectedImprovement: 0.8,
+                timeToMastery: 3600 * 24 * 30, // 30 days
+                relatedAchievements: []
+            ))
+            
+        case .boldMountaineer:
+            recommendations.append(CulturalRecommendation(
+                recommendation: "Spiritul aventuros este valoros, dar echilibrarea cu tradițiile românești va îmbunătăți autenticitatea jocului.",
+                culturalBenefit: "Îmbinarea spiritului modern cu tradițiile vechi românești",
+                implementationSteps: [
+                    "Încercați stiluri de joc mai conservatoare ocazional",
+                    "Învățați momentele tradiționale de utilizare a șeptarului",
+                    "Explorați arenele cu valoare culturală"
+                ],
+                expectedImprovement: 0.6,
+                timeToMastery: 3600 * 24 * 21, // 21 days
+                relatedAchievements: []
+            ))
+            
+        case .conservativeGuardian:
+            recommendations.append(CulturalRecommendation(
+                recommendation: "Stilul dvs. planificat se aliniază perfect cu tradițiile românești. Dezvoltați maestria tactică avansată.",
+                culturalBenefit: "Planificarea strategică în tradițiile de cărți românești",
+                implementationSteps: [
+                    "Perfecționați strategiile de apărare tradițională",
+                    "Studiați patternurile de victorie ale strămoșilor",
+                    "Creați propriul stil autentic românesc"
+                ],
+                expectedImprovement: 0.9,
+                timeToMastery: 3600 * 24 * 14, // 14 days
+                relatedAchievements: []
+            ))
+            
+        case .youthfulSpirit:
+            recommendations.append(CulturalRecommendation(
+                recommendation: "Energia și creativitatea pot fi canalizate prin învățarea tradițiilor românești pentru o experiență mai autentică.",
+                culturalBenefit: "Transformarea energiei tinereții în strategie tradițională românească",
+                implementationSteps: [
+                    "Practicați momentele de răbdare tradițională",
+                    "Învățați să folosiți șeptarul strategic, nu doar creativ",
+                    "Studiați cum marii jucători români equilibrează inovația cu tradiția"
+                ],
+                expectedImprovement: 0.7,
+                timeToMastery: 3600 * 24 * 28, // 28 days
+                relatedAchievements: []
+            ))
+            
+        case .balancedHarmonist:
+            recommendations.append(CulturalRecommendation(
+                recommendation: "Echilibrul dvs. natural reflectă armonia tradițională românească. Aprofundați înțelegerea culturală.",
+                culturalBenefit: "Perfecționarea armoniei tradiționale românești",
+                implementationSteps: [
+                    "Explorați subtilitățile fiecărei strategii tradiționale",
+                    "Învățați să adaptați stilul la diferite arene culturale",
+                    "Dezvoltați intuiția pentru momentele culturale"
+                ],
+                expectedImprovement: 0.8,
+                timeToMastery: 3600 * 24 * 20, // 20 days
+                relatedAchievements: []
+            ))
+        }
+        
+        // Engagement-based recommendations
+        if engagement < 0.4 {
+            recommendations.append(CulturalRecommendation(
+                recommendation: "Explorați mai profund patrimoniul cultural românesc prin jocul de Septica pentru o experiență mai autentică.",
+                culturalBenefit: "Descoperirea patrimoniului cultural românesc prin joc",
+                implementationSteps: [
+                    "Jucați în arene cu valoare culturală ridicată",
+                    "Încercați să identificați momentele culturale",
+                    "Studiați istoria jocului de Septica în România"
+                ],
+                expectedImprovement: 0.6,
+                timeToMastery: 3600 * 24 * 45, // 45 days
+                relatedAchievements: []
+            ))
+        } else if engagement > 0.8 {
+            recommendations.append(CulturalRecommendation(
+                recommendation: "Excelentă angajare culturală! Deveniți un maestru al tradițiilor și un model pentru alți jucători.",
+                culturalBenefit: "Maestria culturală avansată și împărtășirea tradițiilor",
+                implementationSteps: [
+                    "Explorați variante regionale ale Septicii",
+                    "Învățați despre tradițiile de cărți din diferite zone românești",
+                    "Dezvoltați propriul stil autentic personal"
+                ],
+                expectedImprovement: 0.9,
+                timeToMastery: 3600 * 24 * 60, // 60 days
+                relatedAchievements: []
+            ))
+        }
+        
+        // Arena-specific recommendations
+        recommendations.append(CulturalRecommendation(
+            recommendation: "Fiecare arenă românească oferă o experiență culturală unică. Explorați pentru a descoperi preferințele dvs.",
+            culturalBenefit: "Diversitatea culturală a regiunilor românești",
+            implementationSteps: [
+                "Încercați arene din regiuni diferite ale României",
+                "Observați cum stilul de joc se adaptează la fiecare arenă",
+                "Descoperiți arenele care rezonează cu personalitatea dvs."
+            ],
+            expectedImprovement: 0.5,
+            timeToMastery: 3600 * 24 * 7, // 7 days
+            relatedAchievements: []
+        ))
+        
+        return recommendations
     }
     
     func calculateAuthenticityScore(from games: [CloudKitGameRecord]) -> Float {
-        // Implementation would calculate authenticity score
-        return 0.75
+        // Generate cultural authenticity metrics with Romanian heritage analysis
+        guard !games.isEmpty else { return 0.0 }
+        
+        var authenticityFactors: [Float] = []
+        
+        for game in games {
+            var gameAuthenticity: Float = 0.0
+            let gameData = game.gameplayData
+            
+            // Factor 1: Traditional Rule Mastery (40% weight)
+            let sevenMastery = analyzeSevenWildCardStrategy(in: [game])
+            let eightMastery = analyzeEightSpecialTiming(in: [game])
+            let ruleMastery = (sevenMastery + eightMastery) / 2.0
+            gameAuthenticity += ruleMastery * 0.4
+            
+            // Factor 2: Cultural Play Patterns (30% weight)
+            let conservativeScore = analyzeConservativePlay(in: [game])
+            let traditionalPatterns = min(1.0, conservativeScore * 1.2) // Boost traditional patterns
+            gameAuthenticity += traditionalPatterns * 0.3
+            
+            // Factor 3: Arena Cultural Connection (20% weight)
+            let arenaBonus = calculateArenaAuthenticityBonus(arena: game.arenaAtTimeOfPlay)
+            gameAuthenticity += arenaBonus * 0.2
+            
+            // Factor 4: Romanian Heritage Moments (10% weight)
+            let culturalMoments = analyzeCulturalAuthenticity(in: [game]).moments.count
+            let heritageScore = min(1.0, Float(culturalMoments) / 3.0) // Max 3 moments per game
+            gameAuthenticity += heritageScore * 0.1
+            
+            authenticityFactors.append(min(1.0, gameAuthenticity))
+        }
+        
+        // Calculate weighted average with recent games emphasis
+        let recentGames = min(10, authenticityFactors.count)
+        let recentWeight: Float = 0.7
+        let historicalWeight: Float = 0.3
+        
+        if authenticityFactors.count <= recentGames {
+            return authenticityFactors.reduce(0, +) / Float(authenticityFactors.count)
+        } else {
+            let recentScore = authenticityFactors.suffix(recentGames).reduce(0, +) / Float(recentGames)
+            let historicalScore = authenticityFactors.prefix(authenticityFactors.count - recentGames).reduce(0, +) / 
+                Float(authenticityFactors.count - recentGames)
+            return recentScore * recentWeight + historicalScore * historicalWeight
+        }
     }
     
     func calculateTraditionalistLevel(culturalScore: Float) -> Int {
@@ -574,6 +922,91 @@ private extension RomanianStrategyAnalyzer {
     func recordCulturalMoment(_ moment: CulturalMoment) {
         // Stub implementation for recording cultural moments
         logger.info("Recorded cultural moment: \(moment.type.rawValue)")
+    }
+    
+    // MARK: - Helper Analysis Methods
+    
+    func analyzeConservativePattern(gameData: [GameplayDataPoint]) -> Float {
+        // Analyze conservative Romanian traditional patterns within a single game
+        guard !gameData.isEmpty else { return 0.0 }
+        
+        var conservativeIndicators: [Float] = []
+        
+        // 1. Late-game point card usage (Romanian patience tradition)
+        let pointCards = gameData.filter { $0.cardValue >= 10 }
+        if !pointCards.isEmpty {
+            let latePointCardUse = pointCards.filter { $0.turnPosition > Float(gameData.count) * 0.7 }.count
+            conservativeIndicators.append(Float(latePointCardUse) / Float(pointCards.count))
+        }
+        
+        // 2. Defensive moves frequency
+        let defensiveMoves = gameData.filter { $0.isDefensivePlay }.count
+        conservativeIndicators.append(Float(defensiveMoves) / Float(gameData.count))
+        
+        // 3. Average thinking time (traditional deliberation)
+        let avgThinkTime = gameData.map { $0.thinkingTime }.reduce(0, +) / Float(gameData.count)
+        conservativeIndicators.append(min(1.0, avgThinkTime / 10.0)) // 10 seconds as traditional pace
+        
+        // 4. Risk avoidance
+        let lowRiskMoves = gameData.filter { $0.riskLevel <= 0.3 }.count
+        conservativeIndicators.append(Float(lowRiskMoves) / Float(gameData.count))
+        
+        return conservativeIndicators.reduce(0, +) / Float(conservativeIndicators.count)
+    }
+    
+    func calculateArenaAuthenticityBonus(arena: RomanianArena) -> Float {
+        // Calculate cultural authenticity bonus based on Romanian arena heritage value
+        switch arena {
+        case .castelBran:
+            return 1.0 // Maximum authenticity - Bran Castle, iconic Romanian heritage
+        case .satuMihai:
+            return 0.9 // High authenticity - Traditional Romanian village
+        case .bucovinaTraditionala:
+            return 0.95 // Very high - Bukovina traditional culture
+        case .maramuresAutentic:
+            return 0.9 // High - Authentic Maramureș heritage
+        case .deltaDunarii:
+            return 0.8 // Good - Danube Delta natural heritage
+        case .carpatiiMisteriosi:
+            return 0.85 // Good+ - Carpathian mountains heritage
+        case .sateImarica:
+            return 0.7 // Moderate - Small village setting
+        case .orasulVechi:
+            return 0.75 // Moderate+ - Old town atmosphere
+        }
+    }
+    
+    func analyzeVictoryPattern(gameData: [GameplayDataPoint]) -> Float {
+        // Analyze traditional Romanian victory patterns - how victory was achieved
+        guard !gameData.isEmpty else { return 0.0 }
+        
+        var traditionalPatterns: [Float] = []
+        
+        // 1. Strategic seven usage in endgame (traditional wild card mastery)
+        let endgameMoves = gameData.filter { $0.turnPosition > Float(gameData.count) * 0.8 }
+        let endgameSevenUse = endgameMoves.filter { $0.cardValue == 7 && $0.wasStrategicPlay }.count
+        if !endgameMoves.isEmpty {
+            traditionalPatterns.append(Float(endgameSevenUse) / Float(endgameMoves.count))
+        }
+        
+        // 2. Patient point accumulation rather than aggressive play
+        let pointCardMoves = gameData.filter { $0.cardValue >= 10 }
+        let patientPointPlay = pointCardMoves.filter { $0.turnPosition > Float(gameData.count) * 0.5 }.count
+        if !pointCardMoves.isEmpty {
+            traditionalPatterns.append(Float(patientPointPlay) / Float(pointCardMoves.count))
+        }
+        
+        // 3. Traditional rhythm maintenance (not rushing to victory)
+        let avgMoveTime = gameData.map { $0.thinkingTime }.reduce(0, +) / Float(gameData.count)
+        let rhythmScore = min(1.0, avgMoveTime / 7.0) // 7 seconds as traditional rhythm
+        traditionalPatterns.append(rhythmScore)
+        
+        // 4. Respectful play style - minimal high-risk aggressive moves
+        let aggressiveMoves = gameData.filter { $0.riskLevel > 0.8 }.count
+        let respectfulScore = 1.0 - (Float(aggressiveMoves) / Float(gameData.count))
+        traditionalPatterns.append(max(0.0, respectfulScore))
+        
+        return traditionalPatterns.reduce(0, +) / Float(traditionalPatterns.count)
     }
 }
 
