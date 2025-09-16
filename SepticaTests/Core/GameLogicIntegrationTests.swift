@@ -421,7 +421,7 @@ final class GameLogicIntegrationTests: XCTestCase {
 
 // MARK: - Test Result Enumeration Extension
 
-extension PlayResult: Equatable {
+extension PlayResult: @retroactive Equatable {
     public static func == (lhs: PlayResult, rhs: PlayResult) -> Bool {
         switch (lhs, rhs) {
         case (.success, .success):

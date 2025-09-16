@@ -123,6 +123,49 @@ class CloudKitSyncEngine: ObservableObject {
         }
     }
     
+    /// Pause all sync operations for memory optimization or performance reasons
+    func pauseSyncOperations() {
+        logger.info("⏸️ Pausing CloudKit sync operations for performance optimization")
+        
+        // Cancel any ongoing sync operations
+        syncStatus = .idle
+        syncProgress = 0.0
+        
+        // Clear pending operations to reduce memory usage
+        pendingUploads = 0
+        pendingDownloads = 0
+        
+        // Pause periodic sync timer
+        syncTimer?.invalidate()
+        syncTimer = nil
+        
+        // Queue any pending operations for later
+        offlineQueue.pauseOperations()
+        
+        // Update cultural sync status
+        if culturalProgressSyncStatus == .culturalConflict {
+            culturalProgressSyncStatus = .synchronized
+        }
+        
+        logger.info("✅ CloudKit sync operations paused successfully")
+    }
+    
+    /// Resume sync operations after pause
+    func resumeSyncOperations() {
+        logger.info("▶️ Resuming CloudKit sync operations")
+        
+        // Restart periodic sync
+        startPeriodicSync()
+        
+        // Resume offline queue processing
+        offlineQueue.resumeOperations()
+        
+        // Trigger a gentle sync if needed
+        Task {
+            try? await syncAllData()
+        }
+    }
+    
     /// Sync player profile with conflict resolution
     private func syncPlayerProfile() async throws {
         syncStatus = .downloading

@@ -103,6 +103,24 @@ class OfflineSyncQueue: ObservableObject {
         self.logger.info("🗑️ Offline sync queue cleared")
     }
     
+    /// Pause queue operations for performance optimization
+    func pauseOperations() {
+        logger.info("⏸️ Offline sync queue operations paused")
+        // Stop processing but keep queued items for when resumed
+        isProcessing = false
+    }
+    
+    /// Resume queue operations after pause
+    func resumeOperations() {
+        logger.info("▶️ Offline sync queue operations resumed")
+        // Resume processing queued items
+        if !queuedUpdates.isEmpty {
+            Task {
+                try? await processAll()
+            }
+        }
+    }
+    
     // MARK: - Private Methods
     
     private func processOperation(_ operation: QueuedSyncOperation) async throws {

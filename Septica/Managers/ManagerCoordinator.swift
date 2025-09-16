@@ -8,6 +8,7 @@
 
 import SwiftUI
 import Combine
+import CloudKit
 
 /// Central coordinator for all application managers
 /// Ensures proper initialization order and cross-manager communication
@@ -22,6 +23,15 @@ class ManagerCoordinator: ObservableObject {
     @Published private(set) var hapticManager: HapticManager
     @Published private(set) var animationManager: AnimationManager
     @Published private(set) var accessibilityManager: AccessibilityManager
+    
+    // MARK: - CloudKit Manager Instances
+    
+    @Published private(set) var cloudKitManager: SepticaCloudKitManager?
+    @Published private(set) var cloudKitSyncEngine: CloudKitSyncEngine?
+    @Published private(set) var culturalAchievementSystem: CulturalAchievementSystem?
+    @Published private(set) var playerProfileService: PlayerProfileService?
+    @Published private(set) var rewardChestService: RewardChestService?
+    @Published private(set) var romanianStrategyAnalyzer: RomanianStrategyAnalyzer?
     
     // MARK: - Coordinator State
     
@@ -42,12 +52,24 @@ class ManagerCoordinator: ObservableObject {
     
     init() {
         // Initialize managers in proper dependency order
+        
+        // Phase 1: Core Infrastructure
         self.errorManager = ErrorManager()
         self.performanceMonitor = PerformanceMonitor()
+        
+        // Phase 2: Audio/Haptic/UI
         self.audioManager = AudioManager()
         self.hapticManager = HapticManager()
         self.animationManager = AnimationManager()
         self.accessibilityManager = AccessibilityManager()
+        
+        // Phase 3: CloudKit Services (initialized after basic setup)
+        self.cloudKitManager = nil
+        self.cloudKitSyncEngine = nil
+        self.culturalAchievementSystem = nil
+        self.playerProfileService = nil
+        self.rewardChestService = nil
+        self.romanianStrategyAnalyzer = nil
         
         Task {
             await initializeManagers()
@@ -58,6 +80,9 @@ class ManagerCoordinator: ObservableObject {
         systemStatus = .initializing
         
         do {
+            // Initialize CloudKit services with proper dependencies
+            await initializeCloudKitServices()
+            
             // Setup cross-manager communication
             setupManagerIntegration()
             
@@ -84,6 +109,43 @@ class ManagerCoordinator: ObservableObject {
             errorManager.reportError(.criticalSystemError(error: "Manager initialization failed: \(error)"), 
                                    context: "System startup")
         }
+    }
+    
+    // MARK: - CloudKit Services Initialization
+    
+    private func initializeCloudKitServices() async {
+        // Initialize CloudKit services with proper dependency injection
+        
+        // Phase 1: Core CloudKit Manager
+        self.cloudKitManager = SepticaCloudKitManager()
+        
+        guard let cloudKitManager = self.cloudKitManager else { return }
+        
+        // Phase 2: CloudKit-dependent services
+        self.playerProfileService = PlayerProfileService(
+            cloudKitManager: cloudKitManager,
+            errorManager: errorManager
+        )
+        
+        guard let playerProfileService = self.playerProfileService else { return }
+        
+        // Phase 3: Services that depend on other CloudKit services
+        self.culturalAchievementSystem = CulturalAchievementSystem(
+            playerProfileService: playerProfileService,
+            audioManager: audioManager,
+            hapticManager: hapticManager
+        )
+        
+        guard let culturalAchievementSystem = self.culturalAchievementSystem else { return }
+        
+        self.rewardChestService = RewardChestService(
+            cloudKitManager: cloudKitManager,
+            culturalSystem: culturalAchievementSystem
+        )
+        
+        self.romanianStrategyAnalyzer = RomanianStrategyAnalyzer()
+        
+        self.cloudKitSyncEngine = CloudKitSyncEngine(cloudKitManager: cloudKitManager)
     }
     
     // MARK: - Manager Integration
@@ -127,6 +189,49 @@ class ManagerCoordinator: ObservableObject {
         NotificationCenter.default.publisher(for: .performanceMemoryWarning)
             .sink { [weak self] _ in
                 self?.handleMemoryWarning()
+            }
+            .store(in: &cancellables)
+            
+        // MARK: - CloudKit Manager Integration (Optional Services)
+        
+        // CloudKit Manager Integration
+        cloudKitManager?.objectWillChange
+            .sink { [weak self] _ in
+                self?.handleCloudKitManagerUpdate()
+            }
+            .store(in: &cancellables)
+        
+        // CloudKit Sync Engine Integration
+        cloudKitSyncEngine?.objectWillChange
+            .sink { [weak self] _ in
+                self?.handleCloudKitSyncUpdate()
+            }
+            .store(in: &cancellables)
+            
+        // Cultural Achievement System Integration
+        culturalAchievementSystem?.objectWillChange
+            .sink { [weak self] _ in
+                self?.handleCulturalAchievementUpdate()
+            }
+            .store(in: &cancellables)
+            
+        // Performance monitoring integration with CloudKit
+        cloudKitManager?.$syncStatus
+            .sink { [weak self] status in
+                // Monitor CloudKit sync performance impact
+                self?.performanceMonitor.reportCloudKitSyncStatus(status)
+            }
+            .store(in: &cancellables)
+            
+        // Error handling integration with CloudKit
+        cloudKitManager?.$conflictsRequiringAttention
+            .sink { [weak self] conflicts in
+                if !conflicts.isEmpty {
+                    self?.errorManager.reportError(
+                        .gameStateCorruption(details: "CloudKit sync conflicts detected"),
+                        context: "CloudKit synchronization"
+                    )
+                }
             }
             .store(in: &cancellables)
     }
@@ -212,9 +317,63 @@ class ManagerCoordinator: ObservableObject {
         audioManager.pauseAllAudio()
         animationManager.stopAllAnimations()
         
+        // CloudKit memory cleanup
+        cloudKitSyncEngine?.pauseSyncOperations()
+        
         // Report memory warning
         hapticManager.trigger(.warning)
         accessibilityManager.announceGameState("Memory optimization applied")
+    }
+    
+    // MARK: - CloudKit Update Handlers
+    
+    private func handleCloudKitManagerUpdate() {
+        guard let cloudKitManager = self.cloudKitManager else { return }
+        
+        // Update system status based on CloudKit availability
+        if !cloudKitManager.isAvailable {
+            systemStatus = .degraded
+        } else if systemStatus == .degraded && cloudKitManager.isAvailable {
+            systemStatus = .ready
+        }
+        
+        // Provide haptic feedback for sync events
+        switch cloudKitManager.syncStatus {
+        case .syncing(_):
+            hapticManager.trigger(.cardSelect)
+        case .success:
+            hapticManager.trigger(.success)
+        default:
+            break
+        }
+    }
+    
+    private func handleCloudKitSyncUpdate() {
+        guard let cloudKitSyncEngine = self.cloudKitSyncEngine else { return }
+        
+        // Monitor sync performance impact
+        let syncProgress = cloudKitSyncEngine.syncProgress
+        performanceMonitor.reportCloudKitPerformanceImpact(syncProgress: syncProgress)
+        
+        // Report significant sync milestones
+        if syncProgress >= 1.0 {
+            accessibilityManager.announceGameState("Romanian cultural data synchronized")
+        }
+    }
+    
+    private func handleCulturalAchievementUpdate() {
+        guard let culturalAchievementSystem = self.culturalAchievementSystem else { return }
+        
+        // Handle Romanian cultural achievement unlocks
+        if let latestAchievement = culturalAchievementSystem.unlockedAchievements.last {
+            audioManager.playSepticaGameAudio(for: .gameComplete(won: true))
+            hapticManager.trigger(.success)
+            accessibilityManager.announceGameState("Achievement unlocked: \(latestAchievement.title)")
+        } else {
+            // General cultural progress update
+            hapticManager.trigger(.success)
+            accessibilityManager.announceGameState("Romanian cultural progress updated")
+        }
     }
     
     // MARK: - Configuration
