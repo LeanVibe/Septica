@@ -60,6 +60,74 @@ enum RomanianArena: Int, CaseIterable, Codable, Sendable {
     var requiredTrophies: Int {
         return rawValue * 150 // Each arena requires 150 more trophies
     }
+    
+    /// Regional Romanian folk music associated with each arena
+    var traditionalMusic: [String] {
+        switch self {
+        case .sateImarica: return ["hora_satului", "joc_de_doi"]
+        case .satuMihai: return ["brau_muntean", "de_la_mihai_voda"]
+        case .orasulBrara: return ["sarba_din_brara", "hora_mare"]
+        case .orasulBacau: return ["joc_moldovenesc", "hora_din_moldova"]
+        case .orasulCluj: return ["hora_din_ardeal", "batuta_clujana"]
+        case .orasulConstanta: return ["joc_dobrogean", "cantec_de_port"]
+        case .orasulIasi: return ["hora_academiei", "joc_moldav"]
+        case .orasulTimisoara: return ["sarba_banateana", "joc_de_nunta"]
+        case .orasulBrasov: return ["joc_brasovean", "hora_din_tara_barsei"]
+        case .orasulSibiu: return ["hora_sibiana", "joc_sasesc"]
+        case .marealeBucuresti: return ["hora_bucurestiului", "joc_de_capitala"]
+        }
+    }
+    
+    /// Traditional folk tales and stories from each region
+    var regionalFolkTales: [String] {
+        switch self {
+        case .sateImarica: return ["Legenda Primul Joc de Septica", "Povestea Satelor de Munte"]
+        case .satuMihai: return ["Mihai Viteazul și Cărțile", "Legenda Regelui Cărților"]
+        case .orasulBrara: return ["Festivalul Primăverii", "Dansul Celor Șapte Cărți"]
+        case .orasulBacau: return ["Meșterii din Bacău", "Povestea Celor Trei Brazi"]
+        case .orasulCluj: return ["Castelul din Ardeal", "Legenda Voievodului"]
+        case .orasulConstanta: return ["Povestea Mării Negre", "Pescarul și Cărțile"]
+        case .orasulIasi: return ["Universitatea și Înțelepciunea", "Cronicile Moldovei"]
+        case .orasulTimisoara: return ["Revoluția Libertății", "Eroii Banatului"]
+        case .orasulBrasov: return ["Poarta Transilvaniei", "Legenda Tampei"]
+        case .orasulSibiu: return ["Kapitala Culturală", "Ochii Orașului"]
+        case .marealeBucuresti: return ["Inima României", "Legenda Marele București"]
+        }
+    }
+    
+    /// Traditional cultural symbols and patterns for each region
+    var culturalSymbols: [String] {
+        switch self {
+        case .sateImarica: return ["ie_traditionala", "casa_de_lemn", "gard_impletit"]
+        case .satuMihai: return ["coif_dacic", "steag_voievodal", "scut_medieval"]
+        case .orasulBrara: return ["fluier_pastoral", "coroana_florii", "dansul_rotund"]
+        case .orasulBacau: return ["olarit_traditional", "tesatura_moldoveneasca", "sculptura_lemn"]
+        case .orasulCluj: return ["castelul_corvinilor", "heraldica_ardeal", "stemele_nobiliare"]
+        case .orasulConstanta: return ["ancora_dacica", "delfin_pontic", "mosaicul_roman"]
+        case .orasulIasi: return ["universitatea_1860", "palatul_culturii", "trei_ierarhi"]
+        case .orasulTimisoara: return ["trandafirul_revolutiei", "catedrala_mitropolitana", "piata_victoriei"]
+        case .orasulBrasov: return ["poarta_schei", "vulturul_negru", "cetatea_rasnov"]
+        case .orasulSibiu: return ["ochii_caselor", "turnul_sfatului", "podul_minciunilor"]
+        case .marealeBucuresti: return ["arcul_triumf", "ateneul_roman", "coroana_regala"]
+        }
+    }
+    
+    /// Specific cultural achievement unlocks for reaching this arena
+    var culturalUnlocks: [String] {
+        switch self {
+        case .sateImarica: return ["basic_romanian_greetings", "simple_card_terms"]
+        case .satuMihai: return ["historical_rulers", "medieval_traditions"]
+        case .orasulBrara: return ["festival_customs", "folk_dance_basics"]
+        case .orasulBacau: return ["artisan_crafts", "moldovan_culture"]
+        case .orasulCluj: return ["transylvanian_history", "university_traditions"]
+        case .orasulConstanta: return ["maritime_heritage", "ancient_tomis"]
+        case .orasulIasi: return ["cultural_institutions", "moldovan_chronicles"]
+        case .orasulTimisoara: return ["revolution_history", "banat_traditions"]
+        case .orasulBrasov: return ["saxon_heritage", "mountain_folklore"]
+        case .orasulSibiu: return ["european_capital_culture", "saxon_architecture"]
+        case .marealeBucuresti: return ["national_symbols", "royal_heritage", "complete_cultural_mastery"]
+        }
+    }
 }
 
 // MARK: - Card Mastery System
@@ -178,6 +246,161 @@ struct CulturalEducationProgress: Codable, Sendable {
     var cardHistoryKnowledge: Int
     var quizScores: [String: Int]
     var culturalBadges: [String]
+}
+
+// MARK: - Romanian Cultural Celebrations System
+
+/// Comprehensive Romanian cultural celebrations and festivals
+enum RomanianCulturalCelebration: String, CaseIterable, Codable, Sendable {
+    case martisor = "martisor"                    // March 1st - Spring celebration
+    case dragobete = "dragobete"                  // February 24th - Romanian love day
+    case pasteOrtodox = "paste_ortodox"           // Orthodox Easter
+    case mucenici = "mucenici"                    // March 9th - Saints celebration
+    case sambataLazarului = "sambata_lazarului"   // Saturday before Palm Sunday
+    case ziuaRomaniei = "ziua_romaniei"           // December 1st - National Day
+    case sfantuNicolae = "sfantu_nicolae"         // December 6th - St. Nicholas
+    case craciun = "craciun"                      // December 25th - Christmas
+    case anuNou = "anu_nou"                       // January 1st - New Year
+    case boboteaza = "boboteaza"                  // January 6th - Epiphany
+    case zileMoscilor = "zile_moscilor"           // Days of the ancestors
+    case sanzienele = "sanzienele"                // June 24th - Midsummer night
+    
+    var displayName: String {
+        switch self {
+        case .martisor: return "Mărțișor"
+        case .dragobete: return "Dragobete"
+        case .pasteOrtodox: return "Paștele Ortodox"
+        case .mucenici: return "Mucenicii"
+        case .sambataLazarului: return "Sâmbăta Lazarului"
+        case .ziuaRomaniei: return "Ziua României"
+        case .sfantuNicolae: return "Sfântul Nicolae"
+        case .craciun: return "Crăciunul"
+        case .anuNou: return "Anul Nou"
+        case .boboteaza: return "Boboteaza"
+        case .zileMoscilor: return "Zilele Moșilor"
+        case .sanzienele: return "Sânzienele"
+        }
+    }
+    
+    var culturalDescription: String {
+        switch self {
+        case .martisor: return "Celebration of spring with red and white trinkets, bringing luck and joy"
+        case .dragobete: return "Romanian day of love, celebrating romance and traditional courtship"
+        case .pasteOrtodox: return "Orthodox Easter with painted eggs, traditional foods, and family gatherings"
+        case .mucenici: return "Honoring the saints with traditional pastries shaped like infinity"
+        case .sambataLazarului: return "Young women's celebration with flowers and traditional songs"
+        case .ziuaRomaniei: return "Romania's National Day celebrating unity and independence"
+        case .sfantuNicolae: return "St. Nicholas bringing gifts to children, patron of sailors"
+        case .craciun: return "Christmas celebration with carols, traditional foods, and family"
+        case .anuNou: return "New Year with wishes for prosperity and good fortune"
+        case .boboteaza: return "Epiphany with holy water blessing and diving for the cross"
+        case .zileMoscilor: return "Honoring ancestors and visiting graves with flowers and food"
+        case .sanzienele: return "Midsummer night with healing herbs and protection rituals"
+        }
+    }
+    
+    var traditionalActivities: [String] {
+        switch self {
+        case .martisor: return ["gifting_martisor", "spring_cleaning", "wearing_red_white"]
+        case .dragobete: return ["courtship_games", "love_songs", "flower_picking"]
+        case .pasteOrtodox: return ["egg_painting", "church_service", "family_feast"]
+        case .mucenici: return ["baking_pastries", "saint_stories", "infinity_symbols"]
+        case .sambataLazarului: return ["flower_crowns", "traditional_songs", "village_procession"]
+        case .ziuaRomaniei: return ["flag_ceremonies", "national_anthem", "unity_celebrations"]
+        case .sfantuNicolae: return ["gift_giving", "carol_singing", "shoe_traditions"]
+        case .craciun: return ["christmas_carols", "traditional_feast", "midnight_service"]
+        case .anuNou: return ["fireworks", "new_year_wishes", "prosperity_rituals"]
+        case .boboteaza: return ["water_blessing", "cross_diving", "holy_water_sprinkling"]
+        case .zileMoscilor: return ["grave_visiting", "ancestor_honoring", "memorial_foods"]
+        case .sanzienele: return ["herb_gathering", "protective_wreaths", "night_rituals"]
+        }
+    }
+    
+    var specialCardEffects: [String] {
+        switch self {
+        case .martisor: return ["spring_bloom_effect", "red_white_sparkles"]
+        case .dragobete: return ["heart_particle_effect", "love_glow"]
+        case .pasteOrtodox: return ["painted_egg_patterns", "golden_church_bells"]
+        case .mucenici: return ["infinity_symbol_trail", "saint_blessing_glow"]
+        case .sambataLazarului: return ["flower_petal_shower", "meadow_breeze"]
+        case .ziuaRomaniei: return ["tricolor_flag_wave", "national_anthem_notes"]
+        case .sfantuNicolae: return ["gift_box_sparkles", "winter_snowflakes"]
+        case .craciun: return ["christmas_star_trail", "warm_candle_glow"]
+        case .anuNou: return ["firework_explosions", "golden_confetti"]
+        case .boboteaza: return ["holy_water_droplets", "blessed_cross_shine"]
+        case .zileMoscilor: return ["ancestral_wisdom_aura", "memorial_candle_flicker"]
+        case .sanzienele: return ["healing_herb_swirl", "moonlight_mystique"]
+        }
+    }
+    
+    var celebrationRewards: [String] {
+        switch self {
+        case .martisor: return ["martisor_card_back", "spring_avatar_frame", "luck_bonus"]
+        case .dragobete: return ["love_themed_cards", "romantic_music_track", "heart_symbols"]
+        case .pasteOrtodox: return ["painted_egg_collection", "easter_table_theme", "resurrection_music"]
+        case .mucenici: return ["saint_blessing_effect", "infinity_pattern_unlock", "spiritual_bonus"]
+        case .sambataLazarului: return ["flower_crown_avatar", "meadow_table_theme", "youth_celebration"]
+        case .ziuaRomaniei: return ["national_symbols_unlock", "patriotic_music", "unity_achievement"]
+        case .sfantuNicolae: return ["winter_gift_collection", "santa_helper_avatar", "generosity_bonus"]
+        case .craciun: return ["christmas_card_collection", "carol_music_unlock", "family_blessing"]
+        case .anuNou: return ["firework_effects", "prosperity_symbols", "new_beginning_bonus"]
+        case .boboteaza: return ["holy_water_blessing", "divine_protection_aura", "spiritual_cleansing"]
+        case .zileMoscilor: return ["ancestral_wisdom_unlock", "memorial_candle_effect", "heritage_bonus"]
+        case .sanzienele: return ["healing_herb_collection", "mystical_powers", "protection_charm"]
+        }
+    }
+}
+
+/// Cultural celebration tracking and rewards
+struct CulturalCelebrationProgress: Codable, Sendable {
+    var participatedCelebrations: [String] = [] // Store as raw values
+    var celebrationStreaks: [String: Int] = [:] // celebration -> consecutive years
+    var culturalEducationUnlocks: [String] = []
+    var seasonalRewards: [String] = []
+    var currentActiveCelebration: String? // Store as raw value
+    var celebrationStartDate: Date?
+    var celebrationEndDate: Date?
+    
+    /// Check if a celebration is currently active based on date
+    func isActiveCelebration(_ celebrationRawValue: String, on date: Date = Date()) -> Bool {
+        guard let celebration = RomanianCulturalCelebration(rawValue: celebrationRawValue) else { return false }
+        
+        let calendar = Calendar.current
+        let components = calendar.dateComponents([.month, .day], from: date)
+        
+        switch celebration {
+        case .martisor: return components.month == 3 && components.day == 1
+        case .dragobete: return components.month == 2 && components.day == 24
+        case .mucenici: return components.month == 3 && components.day == 9
+        case .ziuaRomaniei: return components.month == 12 && components.day == 1
+        case .sfantuNicolae: return components.month == 12 && components.day == 6
+        case .craciun: return components.month == 12 && (25...31).contains(components.day ?? 0)
+        case .anuNou: return components.month == 1 && components.day == 1
+        case .boboteaza: return components.month == 1 && components.day == 6
+        case .sanzienele: return components.month == 6 && components.day == 24
+        case .pasteOrtodox, .sambataLazarului, .zileMoscilor: 
+            // These require complex Orthodox calendar calculations - for now, return false
+            return false
+        }
+    }
+    
+    /// Helper to add a celebration by enum
+    mutating func addCelebration(_ celebration: RomanianCulturalCelebration) {
+        if !participatedCelebrations.contains(celebration.rawValue) {
+            participatedCelebrations.append(celebration.rawValue)
+        }
+    }
+    
+    /// Helper to set current active celebration
+    mutating func setActiveCelebration(_ celebration: RomanianCulturalCelebration?) {
+        currentActiveCelebration = celebration?.rawValue
+    }
+    
+    /// Helper to get current active celebration as enum
+    func getCurrentActiveCelebration() -> RomanianCulturalCelebration? {
+        guard let rawValue = currentActiveCelebration else { return nil }
+        return RomanianCulturalCelebration(rawValue: rawValue)
+    }
 }
 
 /// Game preferences with cultural customization
