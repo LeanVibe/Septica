@@ -245,6 +245,7 @@ class PlayerProfileService: ObservableObject {
             if let cloudProfile = try await cloudKitManager.loadPlayerProfile(playerID: getCurrentPlayerID()) {
                 currentProfile = cloudProfile
                 updateLocalState(from: cloudProfile)
+                saveLocalProfile() // Persist loaded profile locally
                 syncStatus = .idle
             } else {
                 // Create new profile for first-time player
@@ -301,6 +302,7 @@ class PlayerProfileService: ObservableObject {
         
         currentProfile = newProfile
         updateLocalState(from: newProfile)
+        saveLocalProfile() // Persist game completion locally
         
         // Save to CloudKit
         do {
@@ -346,6 +348,7 @@ class PlayerProfileService: ObservableObject {
         profile.lastPlayedDate = Date()
         currentProfile = profile
         updateLocalState(from: profile)
+        saveLocalProfile() // Persist card mastery updates locally
         
         // Sync to CloudKit
         do {
@@ -477,6 +480,7 @@ class PlayerProfileService: ObservableObject {
         
         currentProfile = profile
         updateLocalState(from: profile)
+        saveLocalProfile() // Persist achievement unlock locally
         
         // Save to CloudKit
         do {
@@ -592,6 +596,7 @@ class PlayerProfileService: ObservableObject {
         profile.heritageEngagementLevel = min(1.0, profile.heritageEngagementLevel + 0.05)
         
         currentProfile = profile
+        saveLocalProfile() // Persist quest completion locally
     }
     
     // MARK: - Celebration Events
@@ -623,6 +628,89 @@ class PlayerProfileService: ObservableObject {
     private func loadLocalProfile() {
         // Fallback to local storage when CloudKit is unavailable
         print("⚠️ Loading local profile fallback")
+        
+        guard let data = UserDefaults.standard.data(forKey: "septica_local_player_profile") else {
+            print("📱 No local profile found - creating default")
+            createDefaultProfile()
+            return
+        }
+        
+        do {
+            let decoder = JSONDecoder()
+            let profile = try decoder.decode(CloudKitPlayerProfile.self, from: data)
+            
+            // Update published properties from local profile
+            currentProfile = profile
+            currentArena = profile.currentArena
+            cardMasteries = profile.cardMasteries
+            achievements = profile.achievements
+            culturalEducationProgress = profile.heritageEngagementLevel
+            folkMusicCollection = profile.folkMusicListened
+            traditionalUnlocks = profile.traditionalColorsUnlocked
+            
+            syncStatus = .offline
+            print("✅ Local profile loaded: \(profile.displayName)")
+            
+        } catch {
+            print("❌ Failed to decode local profile: \(error.localizedDescription)")
+            createDefaultProfile()
+        }
+    }
+    
+    private func saveLocalProfile() {
+        guard let profile = currentProfile else { return }
+        
+        do {
+            let encoder = JSONEncoder()
+            let data = try encoder.encode(profile)
+            UserDefaults.standard.set(data, forKey: "septica_local_player_profile")
+            print("💾 Saved local profile: \(profile.displayName)")
+        } catch {
+            print("❌ Failed to save local profile: \(error.localizedDescription)")
+        }
+    }
+    
+    private func createDefaultProfile() {
+        let defaultProfile = CloudKitPlayerProfile(
+            playerID: UUID().uuidString,
+            displayName: "Romanian Player",
+            currentArena: .sateImarica,
+            trophies: 0,
+            totalGamesPlayed: 0,
+            totalWins: 0,
+            currentStreak: 0,
+            longestStreak: 0,
+            favoriteAIDifficulty: "medium",
+            cardMasteries: [:],
+            achievements: [],
+            seasonalProgress: SeasonalProgress(
+                seasonID: "2025_spring",
+                seasonTrophies: 0,
+                seasonWins: 0,
+                seasonChestsOpened: 0,
+                seasonAchievements: [],
+                celebrationParticipation: [:]
+            ),
+            preferences: GamePreferences(),
+            culturalEducationProgress: CulturalEducationProgress(
+                gameRulesLearned: [],
+                folkTalesRead: 0,
+                traditionalMusicKnowledge: 0,
+                cardHistoryKnowledge: 0,
+                quizScores: [:],
+                culturalBadges: []
+            ),
+            lastPlayedDate: Date(),
+            createdDate: Date(),
+            heritageEngagementLevel: 0.0,
+            folkMusicListened: [],
+            culturalStoriesRead: [],
+            traditionalColorsUnlocked: ["classic_romanian"]
+        )
+        
+        currentProfile = defaultProfile
+        saveLocalProfile()
+        print("📱 Created default Romanian player profile")
     }
     
     private func initializeCardMasteries() -> [String: CardMastery] {
