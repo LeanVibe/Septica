@@ -61,13 +61,13 @@ struct RomanianCharacterSelectionView: View {
                 .scaleEffect(1.8) // Large preview like Shuffle Cats
                 .shadow(color: .black.opacity(0.4), radius: 8, x: 0, y: 4)
                 
-                // Character name and description
+                // Character name
                 VStack(spacing: 4) {
                     Text(selectedAvatar.displayName)
                         .font(.title2.bold())
                         .foregroundColor(.white)
                     
-                    Text(selectedAvatar.description)
+                    Text("Personaj cultural românesc")
                         .font(.caption)
                         .foregroundColor(.white.opacity(0.7))
                         .multilineTextAlignment(.center)
@@ -291,12 +291,10 @@ struct RomanianFrameSelectorView: View {
                             FrameSelectionButton(
                                 frame: frame,
                                 isSelected: selectedFrame == frame,
-                                isUnlocked: frame.requiredLevel <= playerLevel,
+                                isUnlocked: true, // All frames available for now
                                 onTap: {
-                                    if frame.requiredLevel <= playerLevel {
-                                        selectedFrame = frame
-                                        onDismiss()
-                                    }
+                                    selectedFrame = frame
+                                    onDismiss()
                                 }
                             )
                         }
@@ -336,12 +334,10 @@ struct RomanianArenaSelectorView: View {
                             ArenaSelectionButton(
                                 arena: arena,
                                 isSelected: selectedArena == arena,
-                                isUnlocked: arena.requiredLevel <= playerLevel,
+                                isUnlocked: true, // All arenas available for now
                                 onTap: {
-                                    if arena.requiredLevel <= playerLevel {
-                                        selectedArena = arena
-                                        onDismiss()
-                                    }
+                                    selectedArena = arena
+                                    onDismiss()
                                 }
                             )
                         }
@@ -394,7 +390,7 @@ struct FrameSelectionButton: View {
                     .multilineTextAlignment(.center)
                 
                 if !isUnlocked {
-                    Text("Nivel \(frame.requiredLevel)")
+                    Text("Nivel 1") // Placeholder level requirement
                         .font(.caption2)
                         .foregroundColor(.gray)
                 }
@@ -442,7 +438,7 @@ struct ArenaSelectionButton: View {
                     .multilineTextAlignment(.center)
                 
                 if !isUnlocked {
-                    Text("Nivel \(arena.requiredLevel)")
+                    Text("Nivel 1") // Placeholder level requirement
                         .font(.caption2)
                         .foregroundColor(.gray)
                 }
@@ -453,113 +449,8 @@ struct ArenaSelectionButton: View {
     }
 }
 
-// MARK: - Character Avatar Extensions
-
-extension RomanianCharacterAvatar {
-    /// Human-readable display name for each character
-    var displayName: String {
-        switch self {
-        case .traditionalPlayer:
-            return "Jucător Tradițional"
-        case .folkMusician:
-            return "Muzician Popular"
-        case .villageElder:
-            return "Bătrânul Satului"
-        case .transylvanianNoble:
-            return "Nobil Ardelean"
-        case .moldovanScholar:
-            return "Cărturar Moldovean"
-        case .wallachianWarrior:
-            return "Războinic Valah"
-        case .carpathianShepherd:
-            return "Cioban Carpatin"
-        case .danubianFisherman:
-            return "Pescar Danubian"
-        case .bucovinianArtisan:
-            return "Meșter Bucovina"
-        case .dobrudjanMerchant:
-            return "Negustor Dobrogean"
-        }
-    }
-    
-    /// Cultural description for each character
-    var description: String {
-        switch self {
-        case .traditionalPlayer:
-            return "Un jucător clasic care respectă tradițiile"
-        case .folkMusician:
-            return "Artist popular cu înțelepciune veche"
-        case .villageElder:
-            return "Bătrân cu experiență vastă la cărți"
-        case .transylvanianNoble:
-            return "Aristocrat ardelean cu stil rafinat"
-        case .moldovanScholar:
-            return "Învățat moldovean cu tactici subtile"
-        case .wallachianWarrior:
-            return "Războinic valah cu spirit de luptă"
-        case .carpathianShepherd:
-            return "Cioban înțelept de pe culmile Carpaților"
-        case .danubianFisherman:
-            return "Pescar iscusit de pe malurile Dunării"
-        case .bucovinianArtisan:
-            return "Meșter priceput din Bucovina"
-        case .dobrudjanMerchant:
-            return "Negustor știutor din Dobrogea"
-        }
-    }
-}
-
-extension AvatarFrame {
-    /// Human-readable display name for frames
-    var displayName: String {
-        switch self {
-        case .woodenFrame:
-            return "Lemn"
-        case .bronzeFrame:
-            return "Bronz"
-        case .silverFrame:
-            return "Argint"
-        case .goldenFrame:
-            return "Aur"
-        case .culturalFrame:
-            return "Cultural"
-        case .royalFrame:
-            return "Regal"
-        case .legendaryFrame:
-            return "Legendar"
-        }
-    }
-}
-
-extension RomanianArena {
-    /// Human-readable display name for arenas
-    var displayName: String {
-        switch self {
-        case .sateImarica:
-            return "Satul Imarica"
-        case .satuMihai:
-            return "Satul Mihai"
-        case .orasulBrara:
-            return "Orașul Brara"
-        case .orasulBacau:
-            return "Orașul Bacău"
-        case .orasulCluj:
-            return "Orașul Cluj"
-        case .orasulConstanta:
-            return "Orașul Constanța"
-        case .orasulIasi:
-            return "Orașul Iași"
-        case .orasulTimisoara:
-            return "Orașul Timișoara"
-        case .orasulBrasov:
-            return "Orașul Brașov"
-        case .orasulSibiu:
-            return "Orașul Sibiu"
-        case .marealeBucuresti:
-            return "Marele Oraș București"
-        }
-    }
-}
+// MARK: - Extensions Note
+// Romanian cultural extensions (displayName, description) are defined in CloudKitDataModels.swift
 
 // MARK: - Preview Support
 

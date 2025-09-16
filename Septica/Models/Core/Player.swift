@@ -132,7 +132,7 @@ class AIPlayer: Player {
     
     override var isHuman: Bool { return false }
     
-    init(name: String, difficulty: AIDifficulty = .medium, id: UUID = UUID(), romanianAvatar: RomanianCharacterAvatar = .villageElder, avatarFrame: AvatarFrame = .bronzeFrame, playerLevel: Int = 5, currentArena: RomanianArena = .satuMihai) {
+    init(name: String, difficulty: AIDifficulty = .medium, id: UUID = UUID(), romanianAvatar: RomanianCharacterAvatar = .villageElder, avatarFrame: AvatarFrame = .folkFrame, playerLevel: Int = 5, currentArena: RomanianArena = .satuMihai) {
         self.difficulty = difficulty
         self.strategy = AIStrategy(difficulty: difficulty)
         super.init(name: name, id: id, romanianAvatar: romanianAvatar, avatarFrame: avatarFrame, playerLevel: playerLevel, currentArena: currentArena)
