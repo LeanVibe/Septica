@@ -355,6 +355,20 @@ class ManagerCoordinator: ObservableObject {
         let syncProgress = cloudKitSyncEngine.syncProgress
         performanceMonitor.reportCloudKitPerformanceImpact(syncProgress: syncProgress)
         
+        // SOFT LAUNCH CRITICAL: Validate CloudKit performance
+        let validation = performanceMonitor.validateCloudKitPerformance()
+        if !validation.isPerformanceAcceptable {
+            print("⚠️ SOFT LAUNCH ALERT: CloudKit performance below threshold")
+            print(validation.detailedReport)
+            
+            // Automatically optimize for soft launch stability
+            cloudKitSyncEngine.pauseSyncOperations()
+            
+            // Report performance optimization to user
+            errorManager.reportError(.performanceWarning(metric: "CloudKit Sync", value: validation.overallScore), 
+                                    context: "ManagerCoordinator.optimizeForPerformance")
+        }
+        
         // Report significant sync milestones
         if syncProgress >= 1.0 {
             accessibilityManager.announceGameState("Romanian cultural data synchronized")
@@ -611,6 +625,94 @@ extension ManagerCoordinator {
     /// Convenience accessor for accessibility announcements
     func announceToUser(_ message: String) {
         accessibilityManager.announceGameState(message)
+    }
+    
+    // MARK: - Soft Launch Performance Validation
+    
+    /// SOFT LAUNCH CRITICAL: Validate performance for essential gameplay
+    func validateSoftLaunchPerformance() -> SoftLaunchPerformanceReport {
+        let basePerformance = performanceMonitor.getPerformanceReport()
+        let cloudKitValidation = performanceMonitor.validateCloudKitPerformance()
+        
+        // Critical soft launch thresholds (more conservative)
+        let isFPSAcceptable = basePerformance.currentFPS >= 55.0 // Allow 5 FPS drop from 60
+        let isMemoryAcceptable = basePerformance.memoryUsageMB < 80.0 // 80MB limit for soft launch
+        let isSystemResponsive = basePerformance.averageAIDecisionTime < 2.0 // 2s max AI thinking
+        let isCloudKitPerformant = cloudKitValidation.isPerformanceAcceptable
+        
+        let overallReadiness = isFPSAcceptable && isMemoryAcceptable && isSystemResponsive && isCloudKitPerformant
+        
+        return SoftLaunchPerformanceReport(
+            isReadyForSoftLaunch: overallReadiness,
+            fps: basePerformance.currentFPS,
+            memoryMB: basePerformance.memoryUsageMB,
+            aiResponseTime: basePerformance.averageAIDecisionTime,
+            cloudKitScore: cloudKitValidation.overallScore,
+            criticalIssues: generateSoftLaunchIssues(
+                fps: isFPSAcceptable,
+                memory: isMemoryAcceptable,
+                ai: isSystemResponsive,
+                cloudKit: isCloudKitPerformant
+            )
+        )
+    }
+    
+    private func generateSoftLaunchIssues(fps: Bool, memory: Bool, ai: Bool, cloudKit: Bool) -> [String] {
+        var issues: [String] = []
+        
+        if !fps { issues.append("❌ FPS below 55 - CRITICAL for soft launch") }
+        if !memory { issues.append("❌ Memory above 80MB - May cause crashes") }
+        if !ai { issues.append("❌ AI too slow - Poor user experience") }
+        if !cloudKit { issues.append("❌ CloudKit performance - Sync issues") }
+        
+        if issues.isEmpty {
+            issues.append("✅ All systems ready for Romanian soft launch")
+        }
+        
+        return issues
+    }
+}
+
+// MARK: - Soft Launch Performance Data Models
+
+/// Performance report specifically for soft launch readiness validation
+struct SoftLaunchPerformanceReport {
+    let isReadyForSoftLaunch: Bool
+    let fps: Double
+    let memoryMB: Double
+    let aiResponseTime: Double
+    let cloudKitScore: Double
+    let criticalIssues: [String]
+    
+    /// Get formatted report for logging
+    var detailedReport: String {
+        let status = isReadyForSoftLaunch ? "✅ READY FOR SOFT LAUNCH" : "⚠️ NOT READY - NEEDS OPTIMIZATION"
+        
+        return """
+        🇷🇴 ROMANIAN SOFT LAUNCH READINESS REPORT
+        Status: \(status)
+        
+        📊 Performance Metrics:
+        • FPS: \(String(format: "%.1f", fps))/60.0 (Target: ≥55.0)
+        • Memory: \(String(format: "%.1f", memoryMB))MB/80MB (Target: <80MB)
+        • AI Response: \(String(format: "%.2f", aiResponseTime))s (Target: <2.0s)
+        • CloudKit Score: \(String(format: "%.1f", cloudKitScore * 100))% (Target: ≥80%)
+        
+        🚨 Critical Issues:
+        \(criticalIssues.joined(separator: "\n"))
+        
+        💡 Romanian Soft Launch Requirements: 60% retention, stable gameplay, authentic cultural experience
+        """
+    }
+    
+    /// Get simple pass/fail for automated systems
+    var readinessGrade: String {
+        if isReadyForSoftLaunch {
+            let overallScore = (fps/60.0 + (80.0-memoryMB)/80.0 + (2.0-aiResponseTime)/2.0 + cloudKitScore) / 4.0
+            return overallScore >= 0.9 ? "A" : "B"
+        } else {
+            return "F"
+        }
     }
 }
 
