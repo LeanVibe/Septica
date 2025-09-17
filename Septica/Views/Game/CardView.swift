@@ -766,12 +766,14 @@ struct CardView: View {
 /// Different sizes for cards in various contexts
 enum CardSize {
     case small      // For opponent hands, trick history
+    case compact    // For organized columns like Shuffle Cats
     case normal     // Standard game cards
     case large      // For detailed view, tutorials
     
     var width: CGFloat {
         switch self {
         case .small: return 45    // Compact for opponent hands and overlapping layouts
+        case .compact: return 55  // Organized columns with clear spacing
         case .normal: return 65   // Optimized mobile proportions for main game cards
         case .large: return 100    // For detailed views and play area
         }
@@ -788,6 +790,7 @@ enum CardSize {
     var borderWidth: CGFloat {
         switch self {
         case .small: return 1
+        case .compact: return 1.2
         case .normal: return 1.5
         case .large: return 2
         }
@@ -804,6 +807,7 @@ enum CardSize {
     var valueFont: Font {
         switch self {
         case .small: return .caption     // Increased from caption2
+        case .compact: return .caption   // Compact size for organized columns
         case .normal: return .body       // Increased from caption  
         case .large: return .title3      // Increased from body
         }
@@ -812,6 +816,7 @@ enum CardSize {
     var suitFont: Font {
         switch self {
         case .small: return .caption     // Increased from caption2
+        case .compact: return .caption   // Compact size for organized columns
         case .normal: return .body       // Increased from caption
         case .large: return .title3      // Increased from body
         }
@@ -820,6 +825,7 @@ enum CardSize {
     var centerSuitFont: Font {
         switch self {
         case .small: return .title2      // Increased from title3
+        case .compact: return .title3    // Compact size for organized columns
         case .normal: return .largeTitle // Increased from title2  
         case .large: return .largeTitle  // Increased from title
         }

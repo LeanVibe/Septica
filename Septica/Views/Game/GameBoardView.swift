@@ -85,7 +85,7 @@ struct GameBoardView: View {
                 
                 // Game table (center area) with enhanced Shuffle Cats-style drop zones
                 ZStack {
-                    GameTableView(
+                    OrganizedGameTableView(
                         tableCards: gameViewModel.tableCards,
                         validMoves: gameViewModel.validMoves,
                         onCardTapped: playCard,

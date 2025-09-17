@@ -122,6 +122,51 @@ Themes/
 
 ---
 
+### 🚀 Phase 2.5: Soft Launch Preparation (Sprint Focus)
+**Goal:** Polish core gameplay experience for successful soft launch in Romanian market
+
+#### Shuffle Cats-Inspired UI Polish
+**Week 1-2: Card Layout Organization**
+```swift
+Views/Game/OrganizedGameTableView.swift
+├── Clean card column system - Replace scattered cards with organized columns
+├── Suit-based grouping - Hearts, Diamonds, Clubs, Spades in columns  
+├── Visual zone separation - Clear borders between hand/table/deck areas
+├── Active column highlighting - Gold Romanian ornate patterns
+└── Smooth column animations - Staggered card entrance effects
+
+CardView.swift enhancements:
+├── Add .compact size option - 55x77 for organized columns
+├── Improved card spacing - 8px vertical spacing in columns
+├── Professional rendering - Match Shuffle Cats card quality
+└── Romanian cultural styling - Traditional folk art integration
+```
+
+**Week 3-4: Character Integration & Visual Hierarchy**
+```swift
+Character System Polish:
+├── Prominent dialogue bubbles - More visible speech during gameplay
+├── Enhanced character reactions - Romanian cultural expressions
+├── Better positioning - Character placement that doesn't obstruct gameplay
+└── Cultural authenticity - Traditional Romanian character personalities
+
+Visual Zone Separation:
+├── Distinct area borders - Clear visual boundaries for game zones
+├── Romanian ornate frames - Traditional pattern borders
+├── Improved contrast - Better separation between UI elements  
+└── Consistent spacing - Professional margin and padding system
+```
+
+**Deliverables:**
+- ✅ Shuffle Cats-quality card layout organization
+- ✅ Professional visual hierarchy and zone separation
+- ✅ Enhanced character dialogue prominence
+- ✅ Romanian cultural authenticity maintained
+- ✅ Stable 60 FPS performance with new UI
+- ✅ Build quality suitable for Romanian soft launch
+
+---
+
 ### 🔧 Code Health Milestones (Cross‑cutting)
 
 - Single canonical data model per domain
