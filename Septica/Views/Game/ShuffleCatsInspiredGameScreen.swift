@@ -24,6 +24,11 @@ struct ShuffleCatsInspiredGameScreen: View {
     @State private var backgroundPulse = false
     @State private var cardAnimationOffset: CGFloat = 0
     
+    // Trick completion states
+    @State private var isTrickComplete = false
+    @State private var trickWinner: Player?
+    @State private var showingTrickResult = false
+    
     init(gameState: GameState) {
         self._gameViewModel = StateObject(wrappedValue: GameViewModel(gameState: gameState))
     }
@@ -71,6 +76,11 @@ struct ShuffleCatsInspiredGameScreen: View {
                 // Game menu overlay
                 if showingGameMenu {
                     gameMenuOverlay
+                }
+                
+                // Trick completion overlay
+                if showingTrickResult {
+                    trickCompletionOverlay
                 }
             }
         }
@@ -296,63 +306,69 @@ struct ShuffleCatsInspiredGameScreen: View {
     // MARK: - Player Avatar Area
     
     private var playerAvatarArea: some View {
-        VStack(spacing: 8) {
-            // Player cards with Shuffle Cats-inspired fanning
-            if let humanPlayer = gameViewModel.humanPlayer {
-                ElegantPlayerHandView(
-                    cards: humanPlayer.hand,
-                    selectedCard: selectedCard,
-                    validMoves: gameViewModel.validMoves,
-                    onCardTapped: { card in
-                        if gameViewModel.validMoves.contains(card) {
-                            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                                if selectedCard?.id == card.id {
-                                    playCard(card)
-                                } else {
-                                    selectedCard = card
+        GeometryReader { geometry in
+            VStack(spacing: 0) {
+                // Player cards with enhanced visibility for 4-card hands
+                if let humanPlayer = gameViewModel.humanPlayer {
+                    ElegantPlayerHandView(
+                        cards: humanPlayer.hand,
+                        selectedCard: selectedCard,
+                        validMoves: gameViewModel.validMoves,
+                        onCardTapped: { card in
+                            if gameViewModel.validMoves.contains(card) {
+                                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                    if selectedCard?.id == card.id {
+                                        playCard(card)
+                                    } else {
+                                        selectedCard = card
+                                    }
                                 }
                             }
                         }
-                    }
-                )
-                .frame(height: 160)
-            }
-            
-            // Player info and avatar row (Shuffle Cats style)
-            HStack(spacing: 16) {
-                // Player name and score
-                VStack(spacing: 4) {
-                    Text(gameViewModel.humanPlayer?.name ?? "Jucător")
-                        .font(.headline.weight(.bold))
-                        .foregroundColor(.white)
-                    
-                    Text("\(gameViewModel.playerScores.values.first(where: { _ in true }) ?? 0) puncte")
-                        .font(.caption)
-                        .foregroundColor(RomanianColors.goldAccent)
-                }
-                
-                Spacer()
-                
-                // Player avatar with flags (Shuffle Cats style)
-                HStack(spacing: 12) {
-                    RomanianFlagView(size: .small)
-                        .shadow(color: .black.opacity(0.3), radius: 3, x: 0, y: 2)
-                    
-                    RomanianCharacterAvatarView(
-                        character: .traditionalPlayer,
-                        size: .medium,
-                        showBorder: true,
-                        glowColor: RomanianColors.primaryBlue
                     )
-                    
-                    RomanianFlagView(size: .small)
-                        .shadow(color: .black.opacity(0.3), radius: 3, x: 0, y: 2)
+                    // Dynamically allocate 70% of available space for cards
+                    .frame(height: geometry.size.height * 0.70)
                 }
                 
                 Spacer()
+                
+                // Player info and avatar row (Shuffle Cats style)
+                HStack(spacing: 16) {
+                    // Player name and score
+                    VStack(spacing: 4) {
+                        Text(gameViewModel.humanPlayer?.name ?? "Jucător")
+                            .font(.headline.weight(.bold))
+                            .foregroundColor(.white)
+                        
+                        Text("\(gameViewModel.playerScores.values.first(where: { _ in true }) ?? 0) puncte")
+                            .font(.caption)
+                            .foregroundColor(RomanianColors.goldAccent)
+                    }
+                    
+                    Spacer()
+                    
+                    // Player avatar with flags (Shuffle Cats style)
+                    HStack(spacing: 12) {
+                        RomanianFlagView(size: .small)
+                            .shadow(color: .black.opacity(0.3), radius: 3, x: 0, y: 2)
+                        
+                        RomanianCharacterAvatarView(
+                            character: .traditionalPlayer,
+                            size: .medium,
+                            showBorder: true,
+                            glowColor: RomanianColors.primaryBlue
+                        )
+                        
+                        RomanianFlagView(size: .small)
+                            .shadow(color: .black.opacity(0.3), radius: 3, x: 0, y: 2)
+                    }
+                    
+                    Spacer()
+                }
+                .frame(height: geometry.size.height * 0.25)  // 25% for player info
+                .padding(.horizontal)
+                .padding(.bottom, 8)
             }
-            .padding(.horizontal)
-            .padding(.bottom, 8)
         }
     }
     
@@ -415,6 +431,60 @@ struct ShuffleCatsInspiredGameScreen: View {
         .transition(.scale.combined(with: .opacity))
     }
     
+    private var trickCompletionOverlay: some View {
+        ZStack {
+            Color.black.opacity(0.6)
+                .ignoresSafeArea()
+            
+            VStack(spacing: 20) {
+                // Trick winner announcement
+                Text("Mâna câștigată!")
+                    .font(.title.weight(.bold))
+                    .foregroundColor(.white)
+                
+                if let winner = trickWinner {
+                    Text("\(winner.name) câștigă mâna")
+                        .font(.title2.weight(.semibold))
+                        .foregroundColor(RomanianColors.goldAccent)
+                }
+                
+                // Cards played in this trick
+                HStack(spacing: 12) {
+                    ForEach(gameViewModel.gameState.tableCards.suffix(4), id: \.id) { card in
+                        CardView(
+                            card: card,
+                            isSelected: false,
+                            isPlayable: false,
+                            isAnimating: false,
+                            cardSize: .compact
+                        )
+                        .scaleEffect(0.8)
+                        .shadow(
+                            color: .black.opacity(0.3),
+                            radius: 4,
+                            x: 0,
+                            y: 2
+                        )
+                    }
+                }
+                
+                Text("Se continuă...")
+                    .font(.caption)
+                    .foregroundColor(.white.opacity(0.7))
+            }
+            .padding(30)
+            .background(
+                RoundedRectangle(cornerRadius: 20)
+                    .fill(Color.black.opacity(0.8))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 20)
+                            .stroke(RomanianColors.goldAccent.opacity(0.6), lineWidth: 2)
+                    )
+            )
+        }
+        .transition(.scale.combined(with: .opacity))
+    }
+    
     // MARK: - Helper Methods
     
     private func setupGame() {
@@ -448,7 +518,51 @@ struct ShuffleCatsInspiredGameScreen: View {
             dialogueSystem.triggerDialogue(for: .goodPlay, character: gameViewModel.currentOpponentAvatar)
         }
         
-        gameViewModel.playCard(card)
+        // Play the card with animation
+        withAnimation(.easeInOut(duration: 0.4)) {
+            gameViewModel.playCard(card)
+        }
+        
+        // Check if trick is complete after card is played
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            checkTrickCompletion()
+        }
+    }
+    
+    private func checkTrickCompletion() {
+        // Check if all players have played a card (4 cards on table for trick completion)
+        if gameViewModel.gameState.tableCards.count >= gameViewModel.gameState.players.count {
+            isTrickComplete = true
+            
+            // Determine trick winner using GameRules
+            let winnerIndex = GameRules.determineTrickWinner(tableCards: gameViewModel.gameState.tableCards)
+            if winnerIndex < gameViewModel.gameState.players.count {
+                trickWinner = gameViewModel.gameState.players[winnerIndex]
+            }
+            
+            // Show trick result with animation
+            withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
+                showingTrickResult = true
+            }
+            
+            // Wait for user to see the result, then clear the trick
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                clearTrickWithAnimation()
+            }
+        }
+    }
+    
+    private func clearTrickWithAnimation() {
+        withAnimation(.easeInOut(duration: 0.8)) {
+            showingTrickResult = false
+            isTrickComplete = false
+        }
+        
+        // Clear the table cards after animation
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+            gameViewModel.gameState.tableCards.removeAll()
+            trickWinner = nil
+        }
     }
     
     // MARK: - Computed Properties
@@ -698,11 +812,11 @@ struct ElegantPlayerHandView: View {
     let validMoves: [Card]
     let onCardTapped: (Card) -> Void
     
-    // Enhanced fan parameters for Shuffle Cats quality
-    private let maxFanAngle: Double = 18.0  // More dramatic fan (was 8.0)
-    private let cardSpacing: CGFloat = -65.0  // Better spacing for readability (was -80.0)
+    // Enhanced fan parameters for full 4-card visibility
+    private let maxFanAngle: Double = 15.0  // Optimized for 4-card visibility
+    private let cardSpacing: CGFloat = -50.0  // Improved spacing for full card visibility
     private let fanRadius: CGFloat = 120.0   // Arc radius for curved layout
-    private let maxVerticalOffset: CGFloat = 25.0  // More pronounced curve (was 8.0)
+    private let maxVerticalOffset: CGFloat = 20.0  // Balanced curve for visibility
     
     var body: some View {
         GeometryReader { geometry in
