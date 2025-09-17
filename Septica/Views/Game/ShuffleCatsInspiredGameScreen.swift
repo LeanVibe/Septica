@@ -800,8 +800,54 @@ struct EmptyTablePlaceholder: View {
 
 // MARK: - Preview
 
-// MARK: - Preview Disabled Due to Complex Dependencies
-// Use QuickGameScreenPreview below for rapid iteration
+struct ShuffleCatsInspiredGameScreen_Previews: PreviewProvider {
+    static var previews: some View {
+        let gameState = GameState()
+        gameState.players = [
+            Player(name: "Jucător"),
+            AIPlayer(name: "Computer")
+        ]
+        gameState.setupNewGame()
+        
+        // Add some cards to make the preview more interesting
+        if !gameState.players.isEmpty {
+            gameState.players[0].hand = [
+                Card(suit: .hearts, value: 7),
+                Card(suit: .clubs, value: 11),
+                Card(suit: .diamonds, value: 10),
+                Card(suit: .spades, value: 1),
+                Card(suit: .hearts, value: 11)
+            ]
+        }
+        
+        // Add table cards
+        gameState.tableCards = [
+            Card(suit: .clubs, value: 7),
+            Card(suit: .hearts, value: 10),
+            Card(suit: .diamonds, value: 1)
+        ]
+        
+        return Group {
+            // Main preview with full functionality 
+            ShuffleCatsInspiredGameScreen(gameState: gameState)
+                .environmentObject(NavigationManager())
+                .environmentObject(AccessibilityManager())
+                .environmentObject(HapticManager()) 
+                .environmentObject(AudioManager())
+                .environmentObject(AnimationManager())
+                .previewDisplayName("iPad - Full Game Screen")
+            
+            // iPhone preview
+            ShuffleCatsInspiredGameScreen(gameState: gameState)
+                .environmentObject(NavigationManager())
+                .environmentObject(AccessibilityManager())
+                .environmentObject(HapticManager()) 
+                .environmentObject(AudioManager())
+                .environmentObject(AnimationManager())
+                .previewDisplayName("iPhone - Portrait")
+        }
+    }
+}
 
 #if DEBUG
 // MARK: - Quick Iteration Previews 
