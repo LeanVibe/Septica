@@ -27,12 +27,20 @@ struct CardView: View {
     @EnvironmentObject private var audioManager: AudioManager
     @EnvironmentObject private var animationManager: AnimationManager
     
+    // Visual effects system
+    @StateObject private var visualEffectsManager = CardVisualEffectsManager()
+    
     @State private var isPressed = false
     @State private var rotationAngle: Double = 0
     @State private var isFocused = false
     @State private var playAnimationTrigger = false
     @State private var dragOffset = CGSize.zero
     @State private var isDragging = false
+    
+    // Enhanced visual effects state
+    @State private var showPremiumAnimation = false
+    @State private var currentAnimationSequence: AnimationSequenceType = .sevenPlaySpecial
+    @State private var particleEffectActive = false
     
     // Metal rendering computed properties
     private var rotationAxis: (x: CGFloat, y: CGFloat, z: CGFloat) {
@@ -352,11 +360,43 @@ struct CardView: View {
             // Trigger play animation
             playAnimationTrigger = true
             
+            // Trigger enhanced visual effects
+            triggerPlayVisualEffects()
+            
             onTap?()
         } else {
             // Invalid move feedback
             hapticManager.trigger(.cardInvalid)
             audioManager.playSound(.cardInvalid)
+            
+            // Trigger invalid move visual effects
+            visualEffectsManager.triggerEffect(.invalidCardShake, for: card)
+        }
+    }
+    
+    /// Trigger visual effects when card is played
+    private func triggerPlayVisualEffects() {
+        // Determine the type of play and trigger appropriate effects
+        if card.value == 7 {
+            // Special seven play effects
+            visualEffectsManager.triggerEffect(.goldenGlow, for: card)
+            currentAnimationSequence = .sevenPlaySpecial
+            showPremiumAnimation = true
+        } else if card.isPointCard {
+            // Point card effects
+            visualEffectsManager.triggerEffect(.pointCardShimmer, for: card)
+            currentAnimationSequence = .pointCardCapture
+            showPremiumAnimation = true
+        } else {
+            // Standard play effects
+            visualEffectsManager.triggerEffect(.sparklePlay, for: card)
+        }
+        
+        // Add Romanian cultural flourish for authentic cultural moments
+        if card.suit == .hearts && card.value == 10 {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                self.visualEffectsManager.triggerEffect(.romanianFlourish, for: self.card)
+            }
         }
     }
     
@@ -389,6 +429,15 @@ struct CardView: View {
                     .opacity(0.8)
                     .animation(.easeInOut(duration: 1.5).repeatForever(autoreverses: true), value: UUID())
             }
+            
+            // Premium animation overlay
+            if showPremiumAnimation {
+                PremiumCardAnimationSequence(
+                    card: card,
+                    sequenceType: currentAnimationSequence,
+                    isActive: $showPremiumAnimation
+                )
+            }
         }
         .frame(width: cardSize.width, height: cardSize.height) // CRITICAL: Enforce proper card dimensions to prevent stretching
         .romanianPatternOverlay() // Subtle Romanian cultural pattern
@@ -398,6 +447,12 @@ struct CardView: View {
             isSpecialCard: card.value == 7 || card.isPointCard // 7s and point cards get special treatment
         )
         .premiumDepth(isLifted: isSelected, isPressed: isPressed)
+        .cardVisualEffects(
+            card: card,
+            isSelected: isSelected,
+            isPlayable: isPlayable,
+            effectsManager: visualEffectsManager
+        )
         .scaleEffect(scaleEffect)
         .rotationEffect(.degrees(rotationAngle))
         .opacity(opacity)
@@ -407,36 +462,46 @@ struct CardView: View {
         .animation(.spring(response: 0.5, dampingFraction: 0.8, blendDuration: 0.2), value: isDragging)
         .cardPlayAnimation(isActive: playAnimationTrigger, manager: animationManager)
         .gesture(
-            // Combine drag and tap gestures for Shuffle Cats-style interaction
-            DragGesture(minimumDistance: 10, coordinateSpace: .global)
+            // Enhanced Shuffle Cats-style drag gestures with magnetic snapping
+            DragGesture(minimumDistance: 8, coordinateSpace: .global)
                 .onChanged { value in
                     guard isPlayable else { 
                         // Enhanced invalid move feedback with shake
                         hapticManager.trigger(.cardInvalid)
-                        withAnimation(.easeInOut(duration: 0.1).repeatCount(2, autoreverses: true)) {
-                            dragOffset = CGSize(width: 5, height: 0)
+                        withAnimation(.easeInOut(duration: 0.1).repeatCount(3, autoreverses: true)) {
+                            dragOffset = CGSize(width: 8, height: 0)
                         }
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                            withAnimation(.spring()) {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                            withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
                                 dragOffset = .zero
                             }
                         }
                         return
                     }
                     
-                    // Update drag state and visual feedback
+                    // Start drag with enhanced visual feedback
                     if !isDragging {
                         isDragging = true
-                        hapticManager.trigger(.cardSelect) // Light haptic when drag starts
+                        hapticManager.trigger(.cardSelect)
                         audioManager.playSound(.cardSelect)
+                        
+                        // Trigger magnetic attraction effect
+                        visualEffectsManager.triggerEffect(.magneticAttraction, for: card)
+                        
+                        // Enhanced lift effect for drag start
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                            rotationAngle = Double.random(in: -3...3) // Subtle rotation for natural feel
+                        }
                     }
                     
+                    // Smooth drag following with enhanced physics
+                    let dampingFactor: CGFloat = 0.8
                     dragOffset = CGSize(
-                        width: value.translation.width,
-                        height: value.translation.height
+                        width: value.translation.width * dampingFactor,
+                        height: value.translation.height * dampingFactor
                     )
                     
-                    // Call external drag handler for drop zone feedback
+                    // Call external drag handler for Shuffle Cats-style drop zone feedback
                     onDragChanged?(value)
                 }
                 .onEnded { value in
@@ -444,55 +509,87 @@ struct CardView: View {
                     
                     isDragging = false
                     
-                    // Determine if this was a successful drop or should return to position
+                    // Enhanced drag distance calculation with directional bias
                     let dragDistance = sqrt(pow(value.translation.width, 2) + pow(value.translation.height, 2))
+                    let dragVelocity = sqrt(pow(value.velocity.width, 2) + pow(value.velocity.height, 2))
                     
-                    if dragDistance > 50 { // Minimum drag distance for a valid drop
-                        // This looks like a intentional drop - call the drag end handler
+                    // Shuffle Cats-style drop detection (distance + velocity + direction)
+                    let isIntentionalDrop = dragDistance > 40 || dragVelocity > 500
+                    let isUpwardDrag = value.translation.height < -25 // Dragging toward play area
+                    
+                    if isIntentionalDrop && isUpwardDrag {
+                        // Successful drop - enhanced feedback
                         onDragEnded?(value)
                         
-                        // Play card placement sound and haptic
                         hapticManager.trigger(.cardPlay)
                         audioManager.playSound(.cardPlace)
-                        
-                        // Trigger play animation
                         playAnimationTrigger = true
+                        
+                        // Trigger card trail effect and play effects
+                        visualEffectsManager.triggerEffect(.cardTrail, for: card)
+                        triggerPlayVisualEffects()
+                        
+                        // Celebrate successful drag
+                        withAnimation(.spring(response: 0.4, dampingFraction: 0.6)) {
+                            rotationAngle = 0
+                            dragOffset = .zero
+                        }
                     } else {
-                        // Short drag - treat as tap or return to original position
-                        withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
+                        // Return to hand with natural animation
+                        withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
+                            rotationAngle = 0
                             dragOffset = .zero
                         }
                         
-                        // If drag was very short, treat as tap
-                        if dragDistance < 20 {
+                        // Short drag - treat as selection/tap
+                        if dragDistance < 25 {
                             onTap?()
-                            hapticManager.trigger(.cardPlay)
-                            audioManager.playSound(.cardPlace)
-                            playAnimationTrigger = true
+                            hapticManager.trigger(.cardSelect)
+                            audioManager.playSound(.cardSelect)
                         }
-                    }
-                    
-                    // Always reset drag state
-                    withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
-                        dragOffset = .zero
                     }
                 }
                 .simultaneously(with: 
-                    // Keep tap gesture for accessibility and quick play
+                    // Enhanced tap gesture for accessibility and quick play
                     TapGesture()
                         .onEnded {
                             guard isPlayable && !isDragging else {
                                 if !isPlayable {
                                     hapticManager.trigger(.cardInvalid)
                                     audioManager.playSound(.cardInvalid)
+                                    
+                                    // Enhanced visual feedback for invalid tap
+                                    withAnimation(.easeInOut(duration: 0.15).repeatCount(2, autoreverses: true)) {
+                                        dragOffset = CGSize(width: 0, height: -5)
+                                    }
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                        withAnimation(.spring()) {
+                                            dragOffset = .zero
+                                        }
+                                    }
                                 }
                                 return
                             }
                             
-                            // Quick tap action
+                            // Enhanced tap feedback
                             hapticManager.trigger(.cardPlay)
                             audioManager.playSound(.cardPlace)
                             playAnimationTrigger = true
+                            
+                            // Trigger visual effects for tap
+                            triggerPlayVisualEffects()
+                            
+                            // Quick tap animation
+                            withAnimation(.spring(response: 0.2, dampingFraction: 0.6)) {
+                                rotationAngle = Double.random(in: -2...2)
+                            }
+                            
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                                    rotationAngle = 0
+                                }
+                            }
+                            
                             onTap?()
                         }
                 )

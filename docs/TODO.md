@@ -2,52 +2,95 @@
 
 ## 📋 Project Status Overview
 
-**Project:** Septica iOS Card Game with Go Backend  
+**Project:** Septica iOS Card Game - Romanian Cultural Heritage Preservation  
 **Start Date:** January 2025  
 **Target Launch:** Q4 2025  
-**Current Phase:** Planning & Architecture Complete ✅  
+**Current Phase:** Phase 3 Sprint 2 - CloudKit Integration ⚡  
+**Last Updated:** September 16, 2025  
 
 ## 🎯 High-Level Milestones
 
-- [ ] **Phase 1:** Core Game Implementation (Months 1-2)
-- [ ] **Phase 2:** Metal Rendering & UI Polish (Months 3-4)
-- [ ] **Phase 3:** Backend & Multiplayer (Months 5-6)
+- [x] **Phase 1:** Core Game Implementation (Months 1-2) ✅ **COMPLETED**
+- [x] **Phase 2:** Metal Rendering & UI Polish (Months 3-4) ✅ **COMPLETED**
+- [x] **Phase 3 Sprint 1:** Metal Rendering Infrastructure ✅ **COMPLETED**
+- [ ] **Phase 3 Sprint 2:** CloudKit Integration & Data Sync 🎯 **IN PROGRESS**
+- [ ] **Phase 3 Sprint 3:** Tournament System & Apple Intelligence (Months 5-6)
 - [ ] **Phase 4:** Social Features & Progression (Months 7-8)
 - [ ] **Phase 5:** Testing & Launch Preparation (Month 9)
 
 ---
 
-## 📚 Phase 1: Core Game Implementation (Months 1-2)
+## 🎯 CURRENT FOCUS: Phase 3 Sprint 2 - CloudKit Integration (September 2025)
 
-### 🎮 Game Logic Core
-- [ ] **Card Model Implementation**
-  - [ ] Create `Card.swift` with suit, value, point calculation
-  - [ ] Implement `isPointCard` for 10s and Aces (1 point each)
-  - [ ] Add card comparison logic for beating rules
-  - [ ] Unit tests for card logic (100% coverage)
+### ☁️ CloudKit Architecture & Schema Design
+- [ ] **CloudKit Data Models**
+  - [ ] Design CloudKit record types for game data
+  - [ ] Create `CKGameRecord` for game state synchronization
+  - [ ] Create `CKPlayerProfileRecord` for cross-device profiles
+  - [ ] Create `CKAchievementRecord` for achievement tracking
+  - [ ] Create `CKStatisticsRecord` for gameplay analytics
+  - [ ] Design efficient CloudKit schema for Romanian cultural elements
 
-- [ ] **Deck Management**
-  - [ ] Create `Deck.swift` for 32-card Romanian deck
-  - [ ] Implement shuffle algorithm with reproducible seeding
-  - [ ] Add deal/draw functionality
-  - [ ] Unit tests for deck operations
+- [ ] **CloudKit Infrastructure**
+  - [ ] Set up CloudKit container configuration
+  - [ ] Configure CloudKit database zones (public/private)
+  - [ ] Implement CloudKit authentication flow
+  - [ ] Create CloudKit manager service (`SepticaCloudKitManager`)
+  - [ ] Add error handling and retry logic for CloudKit operations
+  - [ ] Implement CloudKit subscription for real-time updates
 
-- [ ] **Player System**
-  - [ ] Create `Player.swift` base class
-  - [ ] Implement `HumanPlayer.swift` with input handling
-  - [ ] Create `AIPlayer.swift` with decision algorithms
-  - [ ] Port AI logic from Unity implementation
-  - [ ] Add difficulty levels (Easy, Medium, Hard)
-  - [ ] Unit tests for player behaviors
+- [ ] **Data Synchronization Engine**
+  - [ ] Implement offline-first architecture with local Core Data
+  - [ ] Create bidirectional sync between Core Data ↔ CloudKit
+  - [ ] Handle conflict resolution for concurrent game updates
+  - [ ] Implement incremental sync for large datasets
+  - [ ] Add data migration strategies for schema changes
+  - [ ] Create sync status indicators for user feedback
 
-- [ ] **Game Rules Engine**
-  - [ ] Create `GameRules.swift` with Septica rules
-  - [ ] Implement card beating logic:
-    - [ ] Same value beats previous card
-    - [ ] 7 always beats (wild card)
-    - [ ] 8 beats when `tableCards.count % 3 == 0`
-  - [ ] Add trick management system
-  - [ ] Implement scoring system (10s and Aces = 1 point)
+### 📊 Enhanced Statistics & Analytics
+- [ ] **Romanian Strategy Analytics**
+  - [ ] Track traditional Romanian playing patterns
+  - [ ] Analyze cultural gameplay preferences
+  - [ ] Create Romanian cultural moment detection
+  - [ ] Implement traditional strategy scoring
+  - [ ] Generate cultural authenticity metrics
+
+- [ ] **Cross-Device Game Analytics**
+  - [ ] Sync gameplay statistics across devices
+  - [ ] Track multi-device usage patterns
+  - [ ] Implement game continuation across devices
+  - [ ] Create unified player performance analytics
+  - [ ] Generate cultural engagement reports
+
+### 👤 Player Profile System
+- [ ] **Cultural Achievement System**
+  - [ ] Romanian cultural achievement definitions
+  - [ ] Traditional gameplay milestone tracking
+  - [ ] Cross-device achievement synchronization
+  - [ ] Cultural authenticity achievement rewards
+  - [ ] Regional Romanian achievement variants
+
+- [ ] **Profile Synchronization**
+  - [ ] Player preferences sync across devices
+  - [ ] Game progress continuation system
+  - [ ] Cross-device settings synchronization
+  - [ ] Cultural personalization sync
+  - [ ] Achievement showcase sync
+
+### 🔄 Offline-First Architecture
+- [ ] **Robust Offline Support**
+  - [ ] Complete gameplay without internet connection
+  - [ ] Local game state persistence with Core Data
+  - [ ] Offline achievement tracking and queuing
+  - [ ] Background sync when connection restored
+  - [ ] Conflict resolution for offline changes
+
+- [ ] **Sync Conflict Resolution**
+  - [ ] Implement last-writer-wins for preferences
+  - [ ] Merge strategy for achievement progress
+  - [ ] Handle concurrent game state conflicts
+  - [ ] User-guided resolution for complex conflicts
+  - [ ] Audit trail for sync operations
   - [ ] Add win condition detection
   - [ ] Comprehensive unit tests for all rules
 
@@ -90,6 +133,22 @@
   - [ ] Full game simulation tests
   - [ ] AI vs AI automated testing
   - [ ] Edge case scenario testing
+
+---
+
+## 🧭 Architecture & Data Hygiene (Ongoing)
+
+- [x] Consolidate duplicate achievement models into a single canonical `RomanianAchievement` (data models)
+- [x] Unify achievement events under `AchievementGameEvent`
+- [x] Avoid mixing `@Observable` and `@Published` in the same class; for managers referenced via KeyPaths, use `ObservableObject` with plain stored properties
+- [ ] Migrate remaining UI to canonical achievement model (replace legacy types)
+- [ ] Add unit tests for `AchievementRegistry` and `AchievementProgress`
+
+## ☁️ CloudKit Integration (Sprints 2–3)
+
+- [x] Modernize modify operation (`perRecordSaveBlock`) and await completion
+- [x] Add minimal stubs in `SepticaCloudKitManager` for compile‑time compatibility
+- [ ] Replace stubs with real implementations and add tests
 
 ---
 

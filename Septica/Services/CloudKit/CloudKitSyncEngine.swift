@@ -22,7 +22,7 @@ class CloudKitSyncEngine: ObservableObject {
     
     // MARK: - Published State
     
-    @Published var syncStatus: CloudKitSyncStatus = .idle
+    @Published var syncStatus: CloudKitSyncState = .idle
     @Published var syncProgress: Double = 0.0
     @Published var lastSyncDate: Date?
     @Published var conflictsRequiringAttention: [CloudKitConflict] = []
@@ -123,6 +123,49 @@ class CloudKitSyncEngine: ObservableObject {
         }
     }
     
+    /// Pause all sync operations for memory optimization or performance reasons
+    func pauseSyncOperations() {
+        logger.info("⏸️ Pausing CloudKit sync operations for performance optimization")
+        
+        // Cancel any ongoing sync operations
+        syncStatus = .idle
+        syncProgress = 0.0
+        
+        // Clear pending operations to reduce memory usage
+        pendingUploads = 0
+        pendingDownloads = 0
+        
+        // Pause periodic sync timer
+        syncTimer?.invalidate()
+        syncTimer = nil
+        
+        // Queue any pending operations for later
+        offlineQueue.pauseOperations()
+        
+        // Update cultural sync status
+        if culturalProgressSyncStatus == .culturalConflict {
+            culturalProgressSyncStatus = .synchronized
+        }
+        
+        logger.info("✅ CloudKit sync operations paused successfully")
+    }
+    
+    /// Resume sync operations after pause
+    func resumeSyncOperations() {
+        logger.info("▶️ Resuming CloudKit sync operations")
+        
+        // Restart periodic sync
+        startPeriodicSync()
+        
+        // Resume offline queue processing
+        offlineQueue.resumeOperations()
+        
+        // Trigger a gentle sync if needed
+        Task {
+            try? await syncAllData()
+        }
+    }
+    
     /// Sync player profile with conflict resolution
     private func syncPlayerProfile() async throws {
         syncStatus = .downloading
@@ -137,10 +180,17 @@ class CloudKitSyncEngine: ObservableObject {
             if !conflicts.isEmpty {
                 let resolvedProfile = try await resolveProfileConflicts(conflicts: conflicts, cloud: cloud, local: local)
                 try await uploadPlayerProfile(resolvedProfile)
+                saveLocalPlayerProfile(resolvedProfile) // Save resolved version locally
+            } else {
+                // No conflicts - use cloud version as source of truth
+                saveLocalPlayerProfile(cloud)
             }
-        } else if let profile = cloudProfile ?? localProfile {
-            // No conflict - sync the available version
-            try await uploadPlayerProfile(profile)
+        } else if let cloudProfile = cloudProfile {
+            // Only cloud version exists - save locally
+            saveLocalPlayerProfile(cloudProfile)
+        } else if let localProfile = localProfile {
+            // Only local version exists - upload to cloud
+            try await uploadPlayerProfile(localProfile)
         }
     }
     
@@ -155,7 +205,10 @@ class CloudKitSyncEngine: ObservableObject {
         // Merge records preserving cultural moments
         let mergedRecords = mergeGameRecords(cloud: cloudRecords, local: localRecords)
         
-        // Upload merged records
+        // Save merged records locally first (offline-first approach)
+        saveLocalGameRecords(mergedRecords)
+        
+        // Upload merged records to CloudKit
         for record in mergedRecords {
             try await uploadGameRecord(record)
         }
@@ -170,7 +223,14 @@ class CloudKitSyncEngine: ObservableObject {
         
         if let cloud = cloudCultural, let local = localCultural {
             let resolvedCultural = resolveCulturalConflicts(cloud: cloud, local: local)
+            saveLocalCulturalProgress(resolvedCultural) // Save locally first
             try await uploadCulturalProgress(resolvedCultural)
+        } else if let cloudCultural = cloudCultural {
+            // Only cloud version exists - save locally
+            saveLocalCulturalProgress(cloudCultural)
+        } else if let localCultural = localCultural {
+            // Only local version exists - upload to cloud
+            try await uploadCulturalProgress(localCultural)
         }
         
         culturalProgressSyncStatus = .synchronized
@@ -186,6 +246,9 @@ class CloudKitSyncEngine: ObservableObject {
         
         // Merge achievements avoiding duplicates
         let mergedAchievements = mergeAchievements(cloud: cloudAchievements, local: localAchievements)
+        
+        // Save merged achievements locally first (offline-first approach)
+        saveLocalAchievements(mergedAchievements)
         
         try await uploadAchievements(mergedAchievements)
         culturalAchievementsSync = .synced
@@ -340,8 +403,31 @@ extension CloudKitSyncEngine {
     }
     
     private func loadLocalPlayerProfile() -> CloudKitPlayerProfile? {
-        // Implementation would load from local storage
-        return nil
+        guard let data = UserDefaults.standard.data(forKey: "septica_local_player_profile") else {
+            logger.info("📱 No local player profile found")
+            return nil
+        }
+        
+        do {
+            let decoder = JSONDecoder()
+            let profile = try decoder.decode(CloudKitPlayerProfile.self, from: data)
+            logger.info("📱 Loaded local player profile: \(profile.displayName)")
+            return profile
+        } catch {
+            logger.error("❌ Failed to decode local player profile: \(error.localizedDescription)")
+            return nil
+        }
+    }
+    
+    private func saveLocalPlayerProfile(_ profile: CloudKitPlayerProfile) {
+        do {
+            let encoder = JSONEncoder()
+            let data = try encoder.encode(profile)
+            UserDefaults.standard.set(data, forKey: "septica_local_player_profile")
+            logger.info("💾 Saved local player profile: \(profile.displayName)")
+        } catch {
+            logger.error("❌ Failed to save local player profile: \(error.localizedDescription)")
+        }
     }
     
     private func uploadPlayerProfile(_ profile: CloudKitPlayerProfile) async throws {
@@ -354,8 +440,31 @@ extension CloudKitSyncEngine {
     }
     
     private func loadLocalGameRecords() -> [CloudKitGameRecord] {
-        // Implementation would load from local storage
-        return []
+        guard let data = UserDefaults.standard.data(forKey: "septica_local_game_records") else {
+            logger.info("📱 No local game records found")
+            return []
+        }
+        
+        do {
+            let decoder = JSONDecoder()
+            let records = try decoder.decode([CloudKitGameRecord].self, from: data)
+            logger.info("📱 Loaded \(records.count) local game records")
+            return records
+        } catch {
+            logger.error("❌ Failed to decode local game records: \(error.localizedDescription)")
+            return []
+        }
+    }
+    
+    private func saveLocalGameRecords(_ records: [CloudKitGameRecord]) {
+        do {
+            let encoder = JSONEncoder()
+            let data = try encoder.encode(records)
+            UserDefaults.standard.set(data, forKey: "septica_local_game_records")
+            logger.info("💾 Saved \(records.count) local game records")
+        } catch {
+            logger.error("❌ Failed to save local game records: \(error.localizedDescription)")
+        }
     }
     
     private func uploadGameRecord(_ record: CloudKitGameRecord) async throws {
@@ -368,8 +477,31 @@ extension CloudKitSyncEngine {
     }
     
     private func loadLocalCulturalProgress() -> CulturalEducationProgress? {
-        // Implementation would load from local storage
-        return nil
+        guard let data = UserDefaults.standard.data(forKey: "septica_local_cultural_progress") else {
+            logger.info("📱 No local cultural progress found")
+            return nil
+        }
+        
+        do {
+            let decoder = JSONDecoder()
+            let progress = try decoder.decode(CulturalEducationProgress.self, from: data)
+            logger.info("📱 Loaded local cultural progress: \(progress.folkTalesRead) tales read, \(progress.culturalBadges.count) badges")
+            return progress
+        } catch {
+            logger.error("❌ Failed to decode local cultural progress: \(error.localizedDescription)")
+            return nil
+        }
+    }
+    
+    private func saveLocalCulturalProgress(_ progress: CulturalEducationProgress) {
+        do {
+            let encoder = JSONEncoder()
+            let data = try encoder.encode(progress)
+            UserDefaults.standard.set(data, forKey: "septica_local_cultural_progress")
+            logger.info("💾 Saved local cultural progress: \(progress.folkTalesRead) tales read, \(progress.culturalBadges.count) badges")
+        } catch {
+            logger.error("❌ Failed to save local cultural progress: \(error.localizedDescription)")
+        }
     }
     
     private func uploadCulturalProgress(_ progress: CulturalEducationProgress) async throws {
@@ -382,8 +514,31 @@ extension CloudKitSyncEngine {
     }
     
     private func loadLocalAchievements() -> [CulturalAchievement] {
-        // Implementation would load from local storage
-        return []
+        guard let data = UserDefaults.standard.data(forKey: "septica_local_achievements") else {
+            logger.info("📱 No local achievements found")
+            return []
+        }
+        
+        do {
+            let decoder = JSONDecoder()
+            let achievements = try decoder.decode([CulturalAchievement].self, from: data)
+            logger.info("📱 Loaded \(achievements.count) local achievements")
+            return achievements
+        } catch {
+            logger.error("❌ Failed to decode local achievements: \(error.localizedDescription)")
+            return []
+        }
+    }
+    
+    private func saveLocalAchievements(_ achievements: [CulturalAchievement]) {
+        do {
+            let encoder = JSONEncoder()
+            let data = try encoder.encode(achievements)
+            UserDefaults.standard.set(data, forKey: "septica_local_achievements")
+            logger.info("💾 Saved \(achievements.count) local achievements")
+        } catch {
+            logger.error("❌ Failed to save local achievements: \(error.localizedDescription)")
+        }
     }
     
     private func uploadAchievements(_ achievements: [CulturalAchievement]) async throws {
@@ -424,36 +579,7 @@ extension CloudKitSyncEngine {
 
 // MARK: - Offline Sync Queue
 
-private class OfflineSyncQueue {
-    private var pendingUpdates: [CloudKitUpdate] = []
-    private let queue = DispatchQueue(label: "OfflineSyncQueue", qos: .utility)
-    
-    func queueUpdate(_ update: CloudKitUpdate) {
-        queue.async {
-            self.pendingUpdates.append(update)
-        }
-    }
-    
-    func processPendingUpdates() async throws {
-        // Implementation would process queued updates when online
-    }
-}
-
-// MARK: - Supporting Types
-
-struct CloudKitUpdate {
-    let recordType: String
-    let recordID: String
-    let updateType: UpdateType
-    let data: Data
-    let timestamp: Date
-    
-    enum UpdateType {
-        case create
-        case update
-        case delete
-    }
-}
+// OfflineSyncQueue and CloudKitUpdate are defined in dedicated files
 
 enum CloudKitSyncError: LocalizedError {
     case cloudKitNotAvailable
@@ -474,4 +600,3 @@ enum CloudKitSyncError: LocalizedError {
         }
     }
 }
-

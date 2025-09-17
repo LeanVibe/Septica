@@ -85,6 +85,14 @@ class GameViewModel: ObservableObject {
 }
 ```
 
+#### State Management Guidelines
+
+- Use a single observation mechanism per type to avoid KeyPath/type drift.
+  - For managers that are consumed via `ReferenceWritableKeyPath<Manager, T>`, prefer `ObservableObject` with plain stored properties (no `@Published`). This keeps key paths typed as `T`, not `Published<T>`.
+  - Avoid mixing `@Observable` (Observation framework) with `@Published` in the same class; pick one strategy per type.
+- Scope event enums to their domains (e.g., `AchievementGameEvent`, `CharacterReactionEvent`, `AccessibilityGameEvent`) to prevent cross‑module collisions.
+- Keep a single canonical data model per domain (e.g., achievements), and build thin facades on top when needed for UI.
+
 #### Services Layer (`/Services/`)
 ```swift
 protocol GameService {

@@ -365,6 +365,34 @@ class HapticManager: ObservableObject {
             trigger(won ? .gameVictory : .gameDefeat)
         }
     }
+    
+    // MARK: - Game End Celebration Haptics
+    
+    /// Play victory pattern for game end celebration
+    func playVictoryPattern() async {
+        guard isHapticsEnabled && UIDevice.current.userInterfaceIdiom == .phone else { return }
+        triggerVictorySequence()
+    }
+    
+    /// Play gentle haptic for defeat acknowledgment
+    func playGentle() async {
+        guard isHapticsEnabled && UIDevice.current.userInterfaceIdiom == .phone else { return }
+        triggerLightImpact()
+    }
+    
+    /// Play achievement unlock haptic
+    func playAchievementUnlock() async {
+        guard isHapticsEnabled && UIDevice.current.userInterfaceIdiom == .phone else { return }
+        triggerSuccessNotification()
+        try? await Task.sleep(nanoseconds: 100_000_000) // 0.1s
+        triggerMediumImpact()
+    }
+    
+    /// Play completion haptic for end of celebration
+    func playCompletionHaptic() async {
+        guard isHapticsEnabled && UIDevice.current.userInterfaceIdiom == .phone else { return }
+        triggerLightImpact()
+    }
 }
 
 // MARK: - Septica Game Events

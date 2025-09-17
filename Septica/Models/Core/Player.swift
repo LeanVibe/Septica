@@ -37,12 +37,22 @@ class Player: SepticaPlayer, ObservableObject {
     @Published var score: Int = 0
     @Published var statistics: PlayerStatistics
     
+    // MARK: - Romanian Avatar System (Shuffle Cats inspired)
+    @Published var romanianAvatar: RomanianCharacterAvatar
+    @Published var avatarFrame: AvatarFrame
+    @Published var playerLevel: Int
+    @Published var currentArena: RomanianArena
+    
     /// Whether this is a human player
     var isHuman: Bool { return true }
     
-    init(name: String, id: UUID = UUID()) {
+    init(name: String, id: UUID = UUID(), romanianAvatar: RomanianCharacterAvatar = .traditionalPlayer, avatarFrame: AvatarFrame = .woodenFrame, playerLevel: Int = 1, currentArena: RomanianArena = .sateImarica) {
         self.id = id
         self.name = name
+        self.romanianAvatar = romanianAvatar
+        self.avatarFrame = avatarFrame
+        self.playerLevel = playerLevel
+        self.currentArena = currentArena
         self.statistics = PlayerStatistics()
     }
     
@@ -122,10 +132,10 @@ class AIPlayer: Player {
     
     override var isHuman: Bool { return false }
     
-    init(name: String, difficulty: AIDifficulty = .medium, id: UUID = UUID()) {
+    init(name: String, difficulty: AIDifficulty = .medium, id: UUID = UUID(), romanianAvatar: RomanianCharacterAvatar = .villageElder, avatarFrame: AvatarFrame = .folkFrame, playerLevel: Int = 5, currentArena: RomanianArena = .satuMihai) {
         self.difficulty = difficulty
         self.strategy = AIStrategy(difficulty: difficulty)
-        super.init(name: name, id: id)
+        super.init(name: name, id: id, romanianAvatar: romanianAvatar, avatarFrame: avatarFrame, playerLevel: playerLevel, currentArena: currentArena)
     }
     
     /// AI chooses the best card to play based on strategy

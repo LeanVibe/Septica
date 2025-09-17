@@ -1,0 +1,432 @@
+//
+//  RomanianDialogueSystem.swift
+//  Septica
+//
+//  Romanian character dialogue system inspired by Shuffle Cats personality
+//  Provides authentic cultural expressions and reactions during gameplay
+//
+
+import Foundation
+import SwiftUI
+
+/// Romanian dialogue system that adds cultural personality to character interactions
+/// Characters react with authentic Romanian expressions based on game events
+@MainActor
+class RomanianDialogueSystem: ObservableObject {
+    
+    // MARK: - Published State
+    
+    @Published var currentDialogue: RomanianDialogue?
+    @Published var isShowingDialogue: Bool = false
+    @Published var dialogueHistory: [RomanianDialogue] = []
+    
+    // MARK: - Configuration
+    
+    private let maxDialogueHistory = 10
+    private let dialogueDuration: TimeInterval = 3.0
+    private var dialogueTimer: Timer?
+    
+    // MARK: - Romanian Dialogue Database
+    
+    private let gameStartDialogues = [
+        RomanianDialogue(
+            romanian: "Să începem jocul!",
+            english: "Let's start the game!",
+            pronunciation: "Sah in-che-pem jo-cool",
+            culturalContext: "Traditional Romanian game opening"
+        ),
+        RomanianDialogue(
+            romanian: "Noroc bun la joc!",
+            english: "Good luck with the game!",
+            pronunciation: "No-rock boon la zhock",
+            culturalContext: "Romanian good luck wish"
+        ),
+        RomanianDialogue(
+            romanian: "Să vedem cine e maestrul!",
+            english: "Let's see who's the master!",
+            pronunciation: "Sah ve-dem chi-ne e ma-es-trool",
+            culturalContext: "Playful challenge in Romanian tradition"
+        )
+    ]
+    
+    private let goodPlayDialogues = [
+        RomanianDialogue(
+            romanian: "Bravo, măiestre!",
+            english: "Bravo, master!",
+            pronunciation: "Bra-vo, mah-yes-tre",
+            culturalContext: "Traditional Romanian praise for skilled play"
+        ),
+        RomanianDialogue(
+            romanian: "Excelent joc!",
+            english: "Excellent game!",
+            pronunciation: "Ek-che-lent zhock",
+            culturalContext: "Romanian appreciation for good strategy"
+        ),
+        RomanianDialogue(
+            romanian: "Ai dat lovitura!",
+            english: "You struck gold!",
+            pronunciation: "Ah-ee dat lo-vi-too-ra",
+            culturalContext: "Romanian expression for a great move"
+        ),
+        RomanianDialogue(
+            romanian: "Joci ca un adevărat român!",
+            english: "You play like a true Romanian!",
+            pronunciation: "Zhock-ee ka oon a-de-vah-rat ro-mahn",
+            culturalContext: "Ultimate compliment in Romanian card games"
+        ),
+        RomanianDialogue(
+            romanian: "Ție îți merge mâna!",
+            english: "Your hand is working well!",
+            pronunciation: "Tee-ye eet-ee mer-ge mah-na",
+            culturalContext: "Romanian expression for being lucky/skilled"
+        )
+    ]
+    
+    private let sevenCardDialogues = [
+        RomanianDialogue(
+            romanian: "Șeptarul magic!",
+            english: "The magic seven!",
+            pronunciation: "Shep-ta-rool ma-zhick",
+            culturalContext: "Seven is special in Romanian card traditions"
+        ),
+        RomanianDialogue(
+            romanian: "Ai găsit cartea câștigătoare!",
+            english: "You found the winning card!",
+            pronunciation: "Ah-ee gah-sit kar-tea cahsh-ti-gah-toa-re",
+            culturalContext: "Romanian expression for finding the right card"
+        ),
+        RomanianDialogue(
+            romanian: "Înțelepciunea bătrânilor!",
+            english: "The wisdom of the elders!",
+            pronunciation: "In-tse-lep-choo-nea bah-trah-ni-lor",
+            culturalContext: "Referencing traditional Romanian wisdom"
+        )
+    ]
+    
+    private let victoryDialogues = [
+        RomanianDialogue(
+            romanian: "Felicitări, campione!",
+            english: "Congratulations, champion!",
+            pronunciation: "Fe-li-chi-tah-ree, kam-pee-oh-ne",
+            culturalContext: "Romanian victory celebration"
+        ),
+        RomanianDialogue(
+            romanian: "Ai câștigat cu onoare!",
+            english: "You won with honor!",
+            pronunciation: "Ah-ee cahsh-ti-gat koo o-noa-re",
+            culturalContext: "Romanian emphasis on honorable victory"
+        ),
+        RomanianDialogue(
+            romanian: "Victorie pe măsura ta!",
+            english: "A victory worthy of you!",
+            pronunciation: "Vik-to-ree-e pe mah-su-ra ta",
+            culturalContext: "Romanian praise for deserved victory"
+        ),
+        RomanianDialogue(
+            romanian: "Să trăiești, măiestre!",
+            english: "Long live the master!",
+            pronunciation: "Sah trah-eesh-tee, mah-yes-tre",
+            culturalContext: "Traditional Romanian toast for winners"
+        )
+    ]
+    
+    private let encouragementDialogues = [
+        RomanianDialogue(
+            romanian: "Nu te descuraja!",
+            english: "Don't get discouraged!",
+            pronunciation: "Noo te des-koo-ra-zha",
+            culturalContext: "Romanian encouragement during difficult times"
+        ),
+        RomanianDialogue(
+            romanian: "Încă nu s-a terminat!",
+            english: "It's not over yet!",
+            pronunciation: "In-kah noo sa ter-mi-nat",
+            culturalContext: "Romanian fighting spirit"
+        ),
+        RomanianDialogue(
+            romanian: "Gândește-te bine!",
+            english: "Think it through!",
+            pronunciation: "Gahn-deesh-te te bee-ne",
+            culturalContext: "Romanian advice for strategic thinking"
+        ),
+        RomanianDialogue(
+            romanian: "Răbdarea e o virtute!",
+            english: "Patience is a virtue!",
+            pronunciation: "Rahb-da-rea e o vir-too-te",
+            culturalContext: "Traditional Romanian wisdom"
+        )
+    ]
+    
+    private let traditionalPhrases = [
+        RomanianDialogue(
+            romanian: "Cum îi zice la carte, așa îi zice la om!",
+            english: "As the card is called, so is the person!",
+            pronunciation: "Koom ee-ee zee-che la kar-te, a-sha ee-ee zee-che la om",
+            culturalContext: "Romanian saying about character and cards"
+        ),
+        RomanianDialogue(
+            romanian: "Cartea nu minte niciodată!",
+            english: "The card never lies!",
+            pronunciation: "Kar-tea noo min-te ni-cho-da-tah",
+            culturalContext: "Romanian belief in card truth"
+        ),
+        RomanianDialogue(
+            romanian: "Cu mâna de aur!",
+            english: "With a golden hand!",
+            pronunciation: "Koo mah-na de a-oor",
+            culturalContext: "Romanian expression for skilled card play"
+        )
+    ]
+    
+    // MARK: - Public Interface
+    
+    /// Trigger dialogue based on game event
+    func triggerDialogue(for event: GameEvent, character: RomanianCharacterAvatar) {
+        let dialogue = selectDialogue(for: event, character: character)
+        showDialogue(dialogue)
+    }
+    
+    /// Show specific dialogue with timing
+    func showDialogue(_ dialogue: RomanianDialogue) {
+        // Cancel any existing dialogue timer
+        dialogueTimer?.invalidate()
+        
+        // Show new dialogue
+        currentDialogue = dialogue
+        isShowingDialogue = true
+        
+        // Add to history
+        dialogueHistory.append(dialogue)
+        if dialogueHistory.count > maxDialogueHistory {
+            dialogueHistory.removeFirst()
+        }
+        
+        // Auto-hide after duration
+        dialogueTimer = Timer.scheduledTimer(withTimeInterval: dialogueDuration, repeats: false) { [weak self] _ in
+            self?.hideDialogue()
+        }
+    }
+    
+    /// Hide current dialogue
+    func hideDialogue() {
+        currentDialogue = nil
+        isShowingDialogue = false
+        dialogueTimer?.invalidate()
+        dialogueTimer = nil
+    }
+    
+    /// Get random traditional phrase for ambient dialogue
+    func getRandomTraditionalPhrase() -> RomanianDialogue {
+        return traditionalPhrases.randomElement() ?? traditionalPhrases[0]
+    }
+    
+    // MARK: - Private Methods
+    
+    private func selectDialogue(for event: GameEvent, character: RomanianCharacterAvatar) -> RomanianDialogue {
+        let dialoguePool: [RomanianDialogue]
+        
+        switch event {
+        case .gameStart:
+            dialoguePool = gameStartDialogues
+        case .goodPlay, .strategicMove:
+            dialoguePool = goodPlayDialogues
+        case .sevenPlayed:
+            dialoguePool = sevenCardDialogues
+        case .victory:
+            dialoguePool = victoryDialogues
+        case .encouragement, .badLuck:
+            dialoguePool = encouragementDialogues
+        case .traditional:
+            dialoguePool = traditionalPhrases
+        }
+        
+        // Select random dialogue, ensuring variety
+        var availableDialogues = dialoguePool
+        
+        // Avoid repeating the last dialogue if possible
+        if let lastDialogue = dialogueHistory.last,
+           availableDialogues.count > 1 {
+            availableDialogues.removeAll { $0.romanian == lastDialogue.romanian }
+        }
+        
+        return availableDialogues.randomElement() ?? dialoguePool[0]
+    }
+}
+
+// MARK: - Supporting Data Models
+
+/// Romanian dialogue entry with cultural context
+struct RomanianDialogue: Identifiable, Equatable {
+    let id = UUID()
+    let romanian: String
+    let english: String
+    let pronunciation: String
+    let culturalContext: String
+    
+    var displayText: String {
+        return romanian
+    }
+    
+    var tooltipText: String {
+        return "\(english)\n\nPronunciation: \(pronunciation)\n\nCultural Context: \(culturalContext)"
+    }
+    
+    static func == (lhs: RomanianDialogue, rhs: RomanianDialogue) -> Bool {
+        return lhs.romanian == rhs.romanian
+    }
+}
+
+/// Game events that trigger dialogue
+enum GameEvent {
+    case gameStart
+    case goodPlay
+    case strategicMove
+    case sevenPlayed
+    case victory
+    case encouragement
+    case badLuck
+    case traditional
+}
+
+// MARK: - SwiftUI Integration
+
+/// Dialogue bubble view that displays Romanian expressions
+struct RomanianDialogueBubbleView: View {
+    let dialogue: RomanianDialogue
+    let character: RomanianCharacterAvatar
+    @State private var isVisible = false
+    @State private var showTooltip = false
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            // Speech bubble with Romanian text
+            HStack {
+                Text(dialogue.displayText)
+                    .font(.system(size: 16, weight: .medium, design: .rounded))
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 10)
+                    .background(
+                        RoundedRectangle(cornerRadius: 20)
+                            .fill(Color(hex: character.primaryColor))
+                            .shadow(color: .black.opacity(0.2), radius: 4, x: 0, y: 2)
+                    )
+                    .overlay(
+                        // Speech bubble tail
+                        Triangle()
+                            .fill(Color(hex: character.primaryColor))
+                            .frame(width: 12, height: 8)
+                            .offset(x: -8, y: 20)
+                    )
+                
+                Spacer()
+            }
+            
+            // Tap for translation hint
+            if showTooltip {
+                Text(dialogue.english)
+                    .font(.caption)
+                    .foregroundColor(.gray)
+                    .italic()
+                    .padding(.horizontal, 8)
+                    .transition(.opacity.combined(with: .move(edge: .top)))
+            }
+        }
+        .scaleEffect(isVisible ? 1.0 : 0.6)
+        .opacity(isVisible ? 1.0 : 0.0)
+        .onAppear {
+            withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
+                isVisible = true
+            }
+            
+            // Show tooltip after delay
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                withAnimation(.easeInOut(duration: 0.3)) {
+                    showTooltip = true
+                }
+            }
+        }
+        .onTapGesture {
+            withAnimation(.easeInOut(duration: 0.2)) {
+                showTooltip.toggle()
+            }
+        }
+    }
+}
+
+/// Triangle shape for speech bubble tail
+struct Triangle: Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        path.move(to: CGPoint(x: rect.midX, y: rect.minY))
+        path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
+        path.addLine(to: CGPoint(x: rect.minX, y: rect.maxY))
+        path.closeSubpath()
+        return path
+    }
+}
+
+// MARK: - Character Extensions
+
+extension RomanianCharacterAvatar {
+    /// Primary color for dialogue bubbles
+    var primaryColor: String {
+        switch self {
+        case .traditionalPlayer: return "#8B4513" // Brown
+        case .villageElder: return "#228B22" // Forest green
+        case .wiseGrandmother: return "#4169E1" // Royal blue
+        case .youthfulStudent: return "#FF6347" // Tomato red
+        case .mountainShepherd: return "#2F4F4F" // Dark slate gray
+        case .cityMerchant: return "#FFD700" // Gold
+        }
+    }
+    
+    /// Preferred dialogue style for character
+    var dialoguePersonality: DialoguePersonality {
+        switch self {
+        case .traditionalPlayer: return .traditional
+        case .villageElder: return .wise
+        case .wiseGrandmother: return .nurturing
+        case .youthfulStudent: return .enthusiastic
+        case .mountainShepherd: return .straightforward
+        case .cityMerchant: return .clever
+        }
+    }
+}
+
+enum DialoguePersonality {
+    case traditional, wise, nurturing, enthusiastic, straightforward, clever
+}
+
+// MARK: - Preview Support
+
+#if DEBUG
+struct RomanianDialogueSystem_Previews: PreviewProvider {
+    static var previews: some View {
+        VStack(spacing: 20) {
+            RomanianDialogueBubbleView(
+                dialogue: RomanianDialogue(
+                    romanian: "Bravo, măiestre!",
+                    english: "Bravo, master!",
+                    pronunciation: "Bra-vo, mah-yes-tre",
+                    culturalContext: "Traditional Romanian praise"
+                ),
+                character: .traditionalPlayer
+            )
+            
+            RomanianDialogueBubbleView(
+                dialogue: RomanianDialogue(
+                    romanian: "Șeptarul magic!",
+                    english: "The magic seven!",
+                    pronunciation: "Shep-ta-rool ma-zhick",
+                    culturalContext: "Seven is special in Romanian traditions"
+                ),
+                character: .villageElder
+            )
+        }
+        .padding()
+        .background(Color.gray.opacity(0.1))
+        .previewDevice("iPhone 14 Pro")
+    }
+}
+#endif

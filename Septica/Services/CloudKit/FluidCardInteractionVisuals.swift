@@ -32,7 +32,7 @@ class FluidCardInteractionVisuals: ObservableObject {
     // MARK: - Romanian Cultural Visuals
     
     @Published var culturalGlowEffect: CulturalGlowEffect?
-    @Published var folkPatternOverlay: FolkPatternOverlay?
+    @Published var folkPatternOverlay: FluidFolkPatternOverlay?
     @Published var romanianCelebration: RomanianCelebration?
     
     // MARK: - Dependencies
@@ -355,7 +355,7 @@ class FluidCardInteractionVisuals: ObservableObject {
     
     private func triggerEightCardEffect(cardID: String) {
         // Romanian geometric pattern effect for "8" cards
-        folkPatternOverlay = FolkPatternOverlay(
+        folkPatternOverlay = FluidFolkPatternOverlay(
             cardID: cardID,
             patternType: .geometricRomanian,
             startTime: Date(),
@@ -375,7 +375,7 @@ class FluidCardInteractionVisuals: ObservableObject {
         )
     }
     
-    private func selectFolkPattern(for achievement: CulturalAchievement) -> FolkPattern {
+    private func selectFolkPattern(for achievement: CulturalAchievement) -> FluidFolkPattern {
         switch achievement {
         case .septicaMaster:
             return .traditionalCross
@@ -549,11 +549,11 @@ struct CulturalGlowEffect {
     let achievementType: CulturalAchievement
     let intensity: Float
     let startTime: Date
-    let pattern: FolkPattern
+    let pattern: FluidFolkPattern
     let colors: [RomanianColor]
 }
 
-struct FolkPatternOverlay {
+struct FluidFolkPatternOverlay {
     let cardID: String
     let patternType: PatternType
     let startTime: Date
@@ -588,7 +588,7 @@ enum RomanianColor {
     case romanianRed, romanianYellow, romanianBlue, romanianGold, romanianGreen
 }
 
-enum FolkPattern {
+enum FluidFolkPattern {
     case traditionalCross, spiralDesign, floralBorder, geometricMotif
 }
 

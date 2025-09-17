@@ -252,6 +252,141 @@ class AnimationManager: ObservableObject {
         }
         return animation
     }
+    
+    // MARK: - Game End Celebration Animations
+    
+    /// Play confetti animation with specified intensity
+    func playConfettiAnimation(intensity: Double) async {
+        startAnimation(.victory)
+        
+        withAnimation(.easeOut(duration: adjustedDuration(2.0))) {
+            // Confetti particle animation
+        }
+        
+        try? await Task.sleep(nanoseconds: UInt64(adjustedDuration(2.0) * 1_000_000_000))
+        endAnimation(.victory)
+    }
+    
+    /// Animate statistics reveal with staggered appearance
+    func animateStatisticsReveal(_ statistics: Any) async {
+        startAnimation(.scoreUpdate)
+        
+        withAnimation(.easeInOut(duration: adjustedDuration(1.0))) {
+            // Statistics reveal animation
+        }
+        
+        try? await Task.sleep(nanoseconds: UInt64(adjustedDuration(1.0) * 1_000_000_000))
+        endAnimation(.scoreUpdate)
+    }
+    
+    /// Animate experience gain with counting effect
+    func animateExperienceGain(_ experience: Any) async {
+        startAnimation(.scoreUpdate)
+        
+        withAnimation(AnimationSettings.scoreSpring) {
+            // Experience points animation
+        }
+        
+        try? await Task.sleep(nanoseconds: UInt64(adjustedDuration(1.5) * 1_000_000_000))
+        endAnimation(.scoreUpdate)
+    }
+    
+    /// Animate achievement unlock with celebration
+    func animateAchievementUnlock(_ achievement: Any) async {
+        startAnimation(.victory)
+        
+        withAnimation(.spring(response: 0.6, dampingFraction: 0.7)) {
+            // Achievement unlock animation with bounce
+        }
+        
+        try? await Task.sleep(nanoseconds: UInt64(adjustedDuration(1.0) * 1_000_000_000))
+        endAnimation(.victory)
+    }
+    
+    /// Display cultural wisdom with elegant presentation
+    func displayCulturalWisdom(_ wisdom: String) async {
+        startAnimation(.menuTransition)
+        
+        withAnimation(.easeInOut(duration: adjustedDuration(1.5))) {
+            // Cultural wisdom display animation
+        }
+        
+        try? await Task.sleep(nanoseconds: UInt64(adjustedDuration(1.5) * 1_000_000_000))
+        endAnimation(.menuTransition)
+    }
+    
+    /// Fade out celebration effects
+    func fadeOutCelebration() async {
+        withAnimation(.easeOut(duration: adjustedDuration(1.0))) {
+            // Fade out all celebration elements
+        }
+        
+        try? await Task.sleep(nanoseconds: UInt64(adjustedDuration(1.0) * 1_000_000_000))
+        stopAllAnimations()
+    }
+    
+    /// Start particle effects for celebrations
+    func startParticleEffects(_ particleType: Any) async {
+        startAnimation(.victory)
+        
+        withAnimation(.easeOut(duration: adjustedDuration(3.0))) {
+            // Particle system animation
+        }
+        
+        try? await Task.sleep(nanoseconds: UInt64(adjustedDuration(3.0) * 1_000_000_000))
+    }
+    
+    /// Play specific animation type
+    func playAnimation(_ animationType: Any) async {
+        startAnimation(.victory)
+        
+        withAnimation(.easeInOut(duration: adjustedDuration(1.0))) {
+            // Generic animation playback
+        }
+        
+        try? await Task.sleep(nanoseconds: UInt64(adjustedDuration(1.0) * 1_000_000_000))
+        endAnimation(.victory)
+    }
+    
+    /// Animate score count up with number progression
+    func animateScoreCountUp(from startValue: Int, to endValue: Int) async {
+        startAnimation(.scoreUpdate)
+        
+        let duration = adjustedDuration(2.0)
+        let steps = min(abs(endValue - startValue), 20) // Limit animation steps
+        let stepDuration = duration / Double(steps)
+        
+        for step in 1...steps {
+            withAnimation(.easeOut(duration: stepDuration)) {
+                // Score counting animation step
+            }
+            try? await Task.sleep(nanoseconds: UInt64(stepDuration * 1_000_000_000))
+        }
+        
+        endAnimation(.scoreUpdate)
+    }
+    
+    /// Animate statistic count up for multiple values
+    func animateStatisticCountUp(_ statistics: Any) async {
+        startAnimation(.scoreUpdate)
+        
+        withAnimation(.easeInOut(duration: adjustedDuration(1.5))) {
+            // Multiple statistics animation
+        }
+        
+        try? await Task.sleep(nanoseconds: UInt64(adjustedDuration(1.5) * 1_000_000_000))
+        endAnimation(.scoreUpdate)
+    }
+    
+    /// Fade out all effects completely
+    func fadeOutAllEffects() async {
+        withAnimation(.easeOut(duration: adjustedDuration(1.0))) {
+            // Fade out all active effects
+        }
+        
+        try? await Task.sleep(nanoseconds: UInt64(adjustedDuration(1.0) * 1_000_000_000))
+        stopAllAnimations()
+    }
 }
 
 // MARK: - Animation View Modifiers

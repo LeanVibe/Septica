@@ -93,7 +93,7 @@ class MockAIPlayer: Player {
         try super.init(from: decoder)
     }
     
-    func chooseCard(gameState: GameState, validMoves: [Card]) async -> Card? {
+    override func chooseCard(gameState: GameState, validMoves: [Card]) async -> Card? {
         // Record decision for testing
         defer {
             if let choice = forcedChoice ?? validMoves.first {

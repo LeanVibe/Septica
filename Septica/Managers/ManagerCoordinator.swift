@@ -8,6 +8,7 @@
 
 import SwiftUI
 import Combine
+import CloudKit
 
 /// Central coordinator for all application managers
 /// Ensures proper initialization order and cross-manager communication
@@ -22,6 +23,15 @@ class ManagerCoordinator: ObservableObject {
     @Published private(set) var hapticManager: HapticManager
     @Published private(set) var animationManager: AnimationManager
     @Published private(set) var accessibilityManager: AccessibilityManager
+    
+    // MARK: - CloudKit Manager Instances
+    
+    @Published private(set) var cloudKitManager: SepticaCloudKitManager?
+    @Published private(set) var cloudKitSyncEngine: CloudKitSyncEngine?
+    @Published private(set) var culturalAchievementSystem: CulturalAchievementSystem?
+    @Published private(set) var playerProfileService: PlayerProfileService?
+    @Published private(set) var rewardChestService: RewardChestService?
+    @Published private(set) var romanianStrategyAnalyzer: RomanianStrategyAnalyzer?
     
     // MARK: - Coordinator State
     
@@ -42,12 +52,24 @@ class ManagerCoordinator: ObservableObject {
     
     init() {
         // Initialize managers in proper dependency order
+        
+        // Phase 1: Core Infrastructure
         self.errorManager = ErrorManager()
         self.performanceMonitor = PerformanceMonitor()
+        
+        // Phase 2: Audio/Haptic/UI
         self.audioManager = AudioManager()
         self.hapticManager = HapticManager()
         self.animationManager = AnimationManager()
         self.accessibilityManager = AccessibilityManager()
+        
+        // Phase 3: CloudKit Services (initialized after basic setup)
+        self.cloudKitManager = nil
+        self.cloudKitSyncEngine = nil
+        self.culturalAchievementSystem = nil
+        self.playerProfileService = nil
+        self.rewardChestService = nil
+        self.romanianStrategyAnalyzer = nil
         
         Task {
             await initializeManagers()
@@ -58,6 +80,9 @@ class ManagerCoordinator: ObservableObject {
         systemStatus = .initializing
         
         do {
+            // Initialize CloudKit services with proper dependencies
+            await initializeCloudKitServices()
+            
             // Setup cross-manager communication
             setupManagerIntegration()
             
@@ -84,6 +109,43 @@ class ManagerCoordinator: ObservableObject {
             errorManager.reportError(.criticalSystemError(error: "Manager initialization failed: \(error)"), 
                                    context: "System startup")
         }
+    }
+    
+    // MARK: - CloudKit Services Initialization
+    
+    private func initializeCloudKitServices() async {
+        // Initialize CloudKit services with proper dependency injection
+        
+        // Phase 1: Core CloudKit Manager
+        self.cloudKitManager = SepticaCloudKitManager()
+        
+        guard let cloudKitManager = self.cloudKitManager else { return }
+        
+        // Phase 2: CloudKit-dependent services
+        self.playerProfileService = PlayerProfileService(
+            cloudKitManager: cloudKitManager,
+            errorManager: errorManager
+        )
+        
+        guard let playerProfileService = self.playerProfileService else { return }
+        
+        // Phase 3: Services that depend on other CloudKit services
+        self.culturalAchievementSystem = CulturalAchievementSystem(
+            playerProfileService: playerProfileService,
+            audioManager: audioManager,
+            hapticManager: hapticManager
+        )
+        
+        guard let culturalAchievementSystem = self.culturalAchievementSystem else { return }
+        
+        self.rewardChestService = RewardChestService(
+            cloudKitManager: cloudKitManager,
+            culturalSystem: culturalAchievementSystem
+        )
+        
+        self.romanianStrategyAnalyzer = RomanianStrategyAnalyzer()
+        
+        self.cloudKitSyncEngine = CloudKitSyncEngine(cloudKitManager: cloudKitManager)
     }
     
     // MARK: - Manager Integration
@@ -127,6 +189,49 @@ class ManagerCoordinator: ObservableObject {
         NotificationCenter.default.publisher(for: .performanceMemoryWarning)
             .sink { [weak self] _ in
                 self?.handleMemoryWarning()
+            }
+            .store(in: &cancellables)
+            
+        // MARK: - CloudKit Manager Integration (Optional Services)
+        
+        // CloudKit Manager Integration
+        cloudKitManager?.objectWillChange
+            .sink { [weak self] _ in
+                self?.handleCloudKitManagerUpdate()
+            }
+            .store(in: &cancellables)
+        
+        // CloudKit Sync Engine Integration
+        cloudKitSyncEngine?.objectWillChange
+            .sink { [weak self] _ in
+                self?.handleCloudKitSyncUpdate()
+            }
+            .store(in: &cancellables)
+            
+        // Cultural Achievement System Integration
+        culturalAchievementSystem?.objectWillChange
+            .sink { [weak self] _ in
+                self?.handleCulturalAchievementUpdate()
+            }
+            .store(in: &cancellables)
+            
+        // Performance monitoring integration with CloudKit
+        cloudKitManager?.$syncStatus
+            .sink { [weak self] status in
+                // Monitor CloudKit sync performance impact
+                self?.performanceMonitor.reportCloudKitSyncStatus(status)
+            }
+            .store(in: &cancellables)
+            
+        // Error handling integration with CloudKit
+        cloudKitManager?.$conflictsRequiringAttention
+            .sink { [weak self] conflicts in
+                if !conflicts.isEmpty {
+                    self?.errorManager.reportError(
+                        .gameStateCorruption(details: "CloudKit sync conflicts detected"),
+                        context: "CloudKit synchronization"
+                    )
+                }
             }
             .store(in: &cancellables)
     }
@@ -212,9 +317,77 @@ class ManagerCoordinator: ObservableObject {
         audioManager.pauseAllAudio()
         animationManager.stopAllAnimations()
         
+        // CloudKit memory cleanup
+        cloudKitSyncEngine?.pauseSyncOperations()
+        
         // Report memory warning
         hapticManager.trigger(.warning)
         accessibilityManager.announceGameState("Memory optimization applied")
+    }
+    
+    // MARK: - CloudKit Update Handlers
+    
+    private func handleCloudKitManagerUpdate() {
+        guard let cloudKitManager = self.cloudKitManager else { return }
+        
+        // Update system status based on CloudKit availability
+        if !cloudKitManager.isAvailable {
+            systemStatus = .degraded
+        } else if systemStatus == .degraded && cloudKitManager.isAvailable {
+            systemStatus = .ready
+        }
+        
+        // Provide haptic feedback for sync events
+        switch cloudKitManager.syncStatus {
+        case .syncing(_):
+            hapticManager.trigger(.cardSelect)
+        case .success:
+            hapticManager.trigger(.success)
+        default:
+            break
+        }
+    }
+    
+    private func handleCloudKitSyncUpdate() {
+        guard let cloudKitSyncEngine = self.cloudKitSyncEngine else { return }
+        
+        // Monitor sync performance impact
+        let syncProgress = cloudKitSyncEngine.syncProgress
+        performanceMonitor.reportCloudKitPerformanceImpact(syncProgress: syncProgress)
+        
+        // SOFT LAUNCH CRITICAL: Validate CloudKit performance
+        let validation = performanceMonitor.validateCloudKitPerformance()
+        if !validation.isPerformanceAcceptable {
+            print("⚠️ SOFT LAUNCH ALERT: CloudKit performance below threshold")
+            print(validation.detailedReport)
+            
+            // Automatically optimize for soft launch stability
+            cloudKitSyncEngine.pauseSyncOperations()
+            
+            // Report performance optimization to user
+            errorManager.reportError(.performanceWarning(metric: "CloudKit Sync", value: validation.overallScore), 
+                                    context: "ManagerCoordinator.optimizeForPerformance")
+        }
+        
+        // Report significant sync milestones
+        if syncProgress >= 1.0 {
+            accessibilityManager.announceGameState("Romanian cultural data synchronized")
+        }
+    }
+    
+    private func handleCulturalAchievementUpdate() {
+        guard let culturalAchievementSystem = self.culturalAchievementSystem else { return }
+        
+        // Handle Romanian cultural achievement unlocks
+        if let latestAchievement = culturalAchievementSystem.unlockedAchievements.last {
+            audioManager.playSepticaGameAudio(for: .gameComplete(won: true))
+            hapticManager.trigger(.success)
+            accessibilityManager.announceGameState("Achievement unlocked: \(latestAchievement.title)")
+        } else {
+            // General cultural progress update
+            hapticManager.trigger(.success)
+            accessibilityManager.announceGameState("Romanian cultural progress updated")
+        }
     }
     
     // MARK: - Configuration
@@ -452,6 +625,94 @@ extension ManagerCoordinator {
     /// Convenience accessor for accessibility announcements
     func announceToUser(_ message: String) {
         accessibilityManager.announceGameState(message)
+    }
+    
+    // MARK: - Soft Launch Performance Validation
+    
+    /// SOFT LAUNCH CRITICAL: Validate performance for essential gameplay
+    func validateSoftLaunchPerformance() -> SoftLaunchPerformanceReport {
+        let basePerformance = performanceMonitor.getPerformanceReport()
+        let cloudKitValidation = performanceMonitor.validateCloudKitPerformance()
+        
+        // Critical soft launch thresholds (more conservative)
+        let isFPSAcceptable = basePerformance.currentFPS >= 55.0 // Allow 5 FPS drop from 60
+        let isMemoryAcceptable = basePerformance.memoryUsageMB < 80.0 // 80MB limit for soft launch
+        let isSystemResponsive = basePerformance.averageAIDecisionTime < 2.0 // 2s max AI thinking
+        let isCloudKitPerformant = cloudKitValidation.isPerformanceAcceptable
+        
+        let overallReadiness = isFPSAcceptable && isMemoryAcceptable && isSystemResponsive && isCloudKitPerformant
+        
+        return SoftLaunchPerformanceReport(
+            isReadyForSoftLaunch: overallReadiness,
+            fps: basePerformance.currentFPS,
+            memoryMB: basePerformance.memoryUsageMB,
+            aiResponseTime: basePerformance.averageAIDecisionTime,
+            cloudKitScore: cloudKitValidation.overallScore,
+            criticalIssues: generateSoftLaunchIssues(
+                fps: isFPSAcceptable,
+                memory: isMemoryAcceptable,
+                ai: isSystemResponsive,
+                cloudKit: isCloudKitPerformant
+            )
+        )
+    }
+    
+    private func generateSoftLaunchIssues(fps: Bool, memory: Bool, ai: Bool, cloudKit: Bool) -> [String] {
+        var issues: [String] = []
+        
+        if !fps { issues.append("❌ FPS below 55 - CRITICAL for soft launch") }
+        if !memory { issues.append("❌ Memory above 80MB - May cause crashes") }
+        if !ai { issues.append("❌ AI too slow - Poor user experience") }
+        if !cloudKit { issues.append("❌ CloudKit performance - Sync issues") }
+        
+        if issues.isEmpty {
+            issues.append("✅ All systems ready for Romanian soft launch")
+        }
+        
+        return issues
+    }
+}
+
+// MARK: - Soft Launch Performance Data Models
+
+/// Performance report specifically for soft launch readiness validation
+struct SoftLaunchPerformanceReport {
+    let isReadyForSoftLaunch: Bool
+    let fps: Double
+    let memoryMB: Double
+    let aiResponseTime: Double
+    let cloudKitScore: Double
+    let criticalIssues: [String]
+    
+    /// Get formatted report for logging
+    var detailedReport: String {
+        let status = isReadyForSoftLaunch ? "✅ READY FOR SOFT LAUNCH" : "⚠️ NOT READY - NEEDS OPTIMIZATION"
+        
+        return """
+        🇷🇴 ROMANIAN SOFT LAUNCH READINESS REPORT
+        Status: \(status)
+        
+        📊 Performance Metrics:
+        • FPS: \(String(format: "%.1f", fps))/60.0 (Target: ≥55.0)
+        • Memory: \(String(format: "%.1f", memoryMB))MB/80MB (Target: <80MB)
+        • AI Response: \(String(format: "%.2f", aiResponseTime))s (Target: <2.0s)
+        • CloudKit Score: \(String(format: "%.1f", cloudKitScore * 100))% (Target: ≥80%)
+        
+        🚨 Critical Issues:
+        \(criticalIssues.joined(separator: "\n"))
+        
+        💡 Romanian Soft Launch Requirements: 60% retention, stable gameplay, authentic cultural experience
+        """
+    }
+    
+    /// Get simple pass/fail for automated systems
+    var readinessGrade: String {
+        if isReadyForSoftLaunch {
+            let overallScore = (fps/60.0 + (80.0-memoryMB)/80.0 + (2.0-aiResponseTime)/2.0 + cloudKitScore) / 4.0
+            return overallScore >= 0.9 ? "A" : "B"
+        } else {
+            return "F"
+        }
     }
 }
 

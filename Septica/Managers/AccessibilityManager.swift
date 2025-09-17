@@ -176,7 +176,7 @@ class AccessibilityManager: ObservableObject {
     }
     
     /// Announce important game events
-    func announceGameEvent(_ event: GameEvent) {
+    func announceGameEvent(_ event: AccessibilityGameEvent) {
         guard announceGameState else { return }
         
         let message: String
@@ -203,7 +203,7 @@ class AccessibilityManager: ObservableObject {
     
     // MARK: - Game Events for Accessibility
     
-    enum GameEvent {
+    enum AccessibilityGameEvent {
         case gameStarted
         case turnChanged(isPlayerTurn: Bool)
         case cardPlayed(card: Card, player: String)
