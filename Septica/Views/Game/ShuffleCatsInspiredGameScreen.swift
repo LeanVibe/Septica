@@ -800,17 +800,74 @@ struct EmptyTablePlaceholder: View {
 
 // MARK: - Preview
 
-struct ShuffleCatsInspiredGameScreen_Previews: PreviewProvider {
-    static var previews: some View {
-        let gameState = GameState()
-        gameState.players = [
-            Player(name: "Jucător"),
-            AIPlayer(name: "Computer")
+// MARK: - Preview Disabled Due to Complex Dependencies
+// Use QuickGameScreenPreview below for rapid iteration
+
+#if DEBUG
+// MARK: - Quick Iteration Previews 
+
+/// Lightweight preview for rapid UI iteration without complex dependencies
+struct QuickGameScreenPreview: View {
+    var body: some View {
+        // Mock card data for quick preview
+        let mockCards = [
+            Card(suit: .hearts, value: 7),
+            Card(suit: .clubs, value: 11),
+            Card(suit: .diamonds, value: 10)
         ]
-        gameState.setupNewGame()
         
-        return ShuffleCatsInspiredGameScreen(gameState: gameState)
-            .previewDevice("iPhone 14 Pro")
-            .preferredColorScheme(.dark)
+        ZStack {
+            // Romanian theme background
+            LinearGradient(
+                colors: [
+                    RomanianColors.primaryRed.opacity(0.3),
+                    RomanianColors.primaryBlue.opacity(0.2),
+                    RomanianColors.countrysideGreen.opacity(0.1)
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .ignoresSafeArea()
+            
+            VStack {
+                // Quick table cards preview
+                HStack(spacing: -12) {
+                    ForEach(mockCards, id: \.id) { card in
+                        CardView(card: card, cardSize: .compact)
+                            .scaleEffect(0.85)
+                    }
+                }
+                .padding()
+                
+                Spacer()
+                
+                // Quick player hand preview  
+                HStack(spacing: -80) {
+                    ForEach(mockCards, id: \.id) { card in
+                        CardView(card: card, cardSize: .normal)
+                            .scaleEffect(0.90)
+                    }
+                }
+                .padding()
+            }
+        }
+        .previewDisplayName("Quick Layout Preview")
     }
 }
+
+struct QuickGameScreenPreview_Previews: PreviewProvider {
+    static var previews: some View {
+        Group {
+            QuickGameScreenPreview()
+                .previewDevice("iPad Pro (11-inch)")
+                .preferredColorScheme(.dark)
+                .previewDisplayName("iPad - Quick Preview")
+            
+            QuickGameScreenPreview()
+                .previewDevice("iPhone 15 Pro")
+                .preferredColorScheme(.dark)
+                .previewDisplayName("iPhone - Quick Preview")
+        }
+    }
+}
+#endif
