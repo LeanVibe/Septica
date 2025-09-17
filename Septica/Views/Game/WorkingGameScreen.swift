@@ -253,27 +253,16 @@ struct WorkingGameScreen: View {
                 OrnateRomanianTableSurface(size: CGSize(width: 350, height: 180))
                 
                 if !gameViewModel.tableCards.isEmpty {
-                    // Organized card display
-                    HStack(spacing: 16) {
-                        ForEach(Array(organizedCardColumns.enumerated()), id: \.offset) { columnIndex, column in
-                            VStack(spacing: 6) {
-                                ForEach(column, id: \.id) { card in
-                                    CardView(
-                                        card: card,
-                                        isSelected: false,
-                                        isPlayable: gameViewModel.validMoves.contains(card),
-                                        isAnimating: false,
-                                        cardSize: .compact
-                                    )
-                                    .onTapGesture {
-                                        if gameViewModel.validMoves.contains(card) {
-                                            playCard(card)
-                                        }
-                                    }
-                                }
+                    // Fanned table card display
+                    FannedTableCardsView(
+                        cards: gameViewModel.tableCards,
+                        validMoves: gameViewModel.validMoves,
+                        onCardTapped: { card in
+                            if gameViewModel.validMoves.contains(card) {
+                                playCard(card)
                             }
                         }
-                    }
+                    )
                 } else {
                     // Empty table placeholder
                     VStack(spacing: 8) {
@@ -359,39 +348,41 @@ struct WorkingGameScreen: View {
                 .frame(height: 140)
             }
             
-            // Pass button for skipping turn
-            HStack {
-                Spacer()
-                
-                Button(action: {
-                    // Handle pass action - skip turn in Romanian Septica
-                    gameViewModel.gameState.skipCurrentPlayer()
-                }) {
-                    HStack(spacing: 8) {
-                        Image(systemName: "hand.raised.fill")
-                        Text("Treci")
-                            .font(.headline.weight(.semibold))
-                    }
-                    .foregroundColor(.white)
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 12)
-                    .background(
-                        LinearGradient(
-                            colors: [
-                                RomanianColors.primaryRed.opacity(0.8),
-                                RomanianColors.primaryRed
-                            ],
-                            startPoint: .top,
-                            endPoint: .bottom
+            // Pass button for skipping turn - only when no playable moves or specific game conditions
+            if shouldShowPassButton {
+                HStack {
+                    Spacer()
+                    
+                    Button(action: {
+                        // Handle pass action - skip turn in Romanian Septica
+                        gameViewModel.gameState.skipCurrentPlayer()
+                    }) {
+                        HStack(spacing: 8) {
+                            Image(systemName: "hand.raised.fill")
+                            Text("Treci")
+                                .font(.headline.weight(.semibold))
+                        }
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 12)
+                        .background(
+                            LinearGradient(
+                                colors: [
+                                    RomanianColors.primaryRed.opacity(0.8),
+                                    RomanianColors.primaryRed
+                                ],
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
                         )
-                    )
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
-                    .shadow(color: RomanianColors.primaryRed.opacity(0.4), radius: 6, x: 0, y: 3)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .shadow(color: RomanianColors.primaryRed.opacity(0.4), radius: 6, x: 0, y: 3)
+                    }
+                    
+                    Spacer()
                 }
-                
-                Spacer()
+                .padding(.horizontal)
             }
-            .padding(.horizontal)
         }
     }
     
@@ -503,6 +494,29 @@ struct WorkingGameScreen: View {
         
         return columns
     }
+    
+    // MARK: - Pass Button Logic
+    
+    /// Determines when the Pass button should be visible in Romanian Septica
+    private var shouldShowPassButton: Bool {
+        // Show pass button when:
+        // 1. It's the human player's turn
+        // 2. No valid moves available, OR
+        // 3. Specific Romanian Septica rule conditions (e.g., when objecting to cuts)
+        
+        guard gameViewModel.isHumanPlayerTurn else { return false }
+        
+        // If no valid moves, pass is the only option
+        if gameViewModel.validMoves.isEmpty {
+            return true
+        }
+        
+        // In Romanian Septica, passing can be strategic when:
+        // - There are table cards but player chooses not to take them
+        // - Player wants to let opponent collect low-value cards
+        // For now, show it when there are table cards (cards have been played)
+        return !gameViewModel.tableCards.isEmpty
+    }
 }
 
 // MARK: - Simple Card View Component
@@ -595,6 +609,56 @@ struct RomanianMenuButtonStyle: ButtonStyle {
     }
 }
 
+// MARK: - Fanned Table Cards View
+
+struct FannedTableCardsView: View {
+    let cards: [Card]
+    let validMoves: [Card]
+    let onCardTapped: (Card) -> Void
+    
+    private let maxFanAngle: Double = 25.0 // Wider fan for table cards
+    private let cardSpacing: CGFloat = -60.0 // More overlap for table
+    
+    var body: some View {
+        GeometryReader { geometry in
+            HStack(spacing: 0) {
+                ForEach(Array(cards.enumerated()), id: \.element.id) { index, card in
+                    let cardCount = cards.count
+                    let isPlayable = validMoves.contains(card)
+                    
+                    // Calculate fan rotation (center cards straight, edge cards angled)
+                    let normalizedPosition = cardCount > 1 ? 
+                        Double(index) / Double(cardCount - 1) : 0.5 // 0.0 to 1.0
+                    let fanAngle = (normalizedPosition - 0.5) * 2 * maxFanAngle // -25° to +25°
+                    
+                    // Calculate slight vertical offset for natural spread
+                    let verticalOffset = abs(normalizedPosition - 0.5) * 12.0
+                    
+                    CardView(
+                        card: card,
+                        isSelected: false,
+                        isPlayable: isPlayable,
+                        isAnimating: false,
+                        cardSize: .compact,
+                        onTap: { onCardTapped(card) },
+                        onDragChanged: nil,
+                        onDragEnded: nil
+                    )
+                    .rotationEffect(.degrees(fanAngle))
+                    .offset(
+                        x: CGFloat(index) * cardSpacing,
+                        y: verticalOffset
+                    )
+                    .zIndex(Double(index))
+                }
+            }
+            .frame(maxWidth: .infinity)
+            .position(x: geometry.size.width / 2, y: geometry.size.height / 2)
+        }
+        .clipped()
+    }
+}
+
 // MARK: - Fanned Card Hand View
 
 struct FannedCardHandView: View {
@@ -604,7 +668,7 @@ struct FannedCardHandView: View {
     let onCardTapped: (Card) -> Void
     
     private let maxFanAngle: Double = 15.0 // Maximum rotation for edge cards
-    private let cardSpacing: CGFloat = -30.0 // Negative spacing for overlap
+    private let cardSpacing: CGFloat = -70.0 // Negative spacing for overlap with wider cards
     
     var body: some View {
         GeometryReader { geometry in
