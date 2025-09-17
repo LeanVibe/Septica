@@ -43,15 +43,15 @@ struct ShuffleCatsInspiredGameScreen: View {
                     VStack(spacing: 0) {
                         // Top opponent area with avatar
                         opponentAvatarArea
-                            .frame(height: geometry.size.height * 0.25)
+                            .frame(height: geometry.size.height * 0.20)
                         
                         // Game table area
                         gameTableArea
-                            .frame(height: geometry.size.height * 0.4)
+                            .frame(height: geometry.size.height * 0.50)
                         
                         // Player area with avatar and fanned cards
                         playerAvatarArea
-                            .frame(height: geometry.size.height * 0.35)
+                            .frame(height: geometry.size.height * 0.30)
                     }
                     
                     // Right progress bar
@@ -59,8 +59,8 @@ struct ShuffleCatsInspiredGameScreen: View {
                         .frame(width: 40)
                 }
                 
-                // Romanian flag indicators (top corners)
-                romanianFlagIndicators
+                // Game status and menu (simplified top bar)
+                gameStatusAndMenu
                 
                 // Romanian dialogue overlay
                 if dialogueSystem.isShowingDialogue,
@@ -146,18 +146,14 @@ struct ShuffleCatsInspiredGameScreen: View {
         .padding(.vertical)
     }
     
-    // MARK: - Romanian Flag Indicators
+    // MARK: - Game Status and Menu
     
-    private var romanianFlagIndicators: some View {
+    private var gameStatusAndMenu: some View {
         VStack {
             HStack {
-                // Top left Romanian flag
-                RomanianFlagView(size: .small)
-                    .shadow(color: .black.opacity(0.3), radius: 4, x: 0, y: 2)
-                
                 Spacer()
                 
-                // Game status indicator
+                // Game status indicator (centered)
                 VStack(spacing: 4) {
                     Text("Rundă \(gameViewModel.gameState.roundNumber)")
                         .font(.caption.weight(.bold))
@@ -207,15 +203,23 @@ struct ShuffleCatsInspiredGameScreen: View {
     
     private var opponentAvatarArea: some View {
         VStack(spacing: 12) {
-            // Opponent avatar with Romanian character
-            RomanianCharacterAvatarView(
-                character: gameViewModel.currentOpponentAvatar,
-                size: .medium,
-                showBorder: true,
-                glowColor: RomanianColors.primaryRed
-            )
-            .scaleEffect(dialogueSystem.isShowingDialogue ? 1.1 : 1.0)
-            .animation(.easeInOut(duration: 0.3), value: dialogueSystem.isShowingDialogue)
+            // Opponent avatar with flag (Shuffle Cats style)
+            HStack(spacing: 12) {
+                RomanianFlagView(size: .small)
+                    .shadow(color: .black.opacity(0.3), radius: 3, x: 0, y: 2)
+                
+                RomanianCharacterAvatarView(
+                    character: gameViewModel.currentOpponentAvatar,
+                    size: .medium,
+                    showBorder: true,
+                    glowColor: RomanianColors.primaryRed
+                )
+                .scaleEffect(dialogueSystem.isShowingDialogue ? 1.1 : 1.0)
+                .animation(.easeInOut(duration: 0.3), value: dialogueSystem.isShowingDialogue)
+                
+                RomanianFlagView(size: .small)
+                    .shadow(color: .black.opacity(0.3), radius: 3, x: 0, y: 2)
+            }
             
             // Opponent name and score
             VStack(spacing: 4) {
@@ -314,18 +318,8 @@ struct ShuffleCatsInspiredGameScreen: View {
                 .frame(height: 160)
             }
             
-            // Player info and avatar row
-            HStack {
-                // Player avatar
-                RomanianCharacterAvatarView(
-                    character: .traditionalPlayer,
-                    size: .medium,
-                    showBorder: true,
-                    glowColor: RomanianColors.primaryBlue
-                )
-                
-                Spacer()
-                
+            // Player info and avatar row (Shuffle Cats style)
+            HStack(spacing: 16) {
                 // Player name and score
                 VStack(spacing: 4) {
                     Text(gameViewModel.humanPlayer?.name ?? "Jucător")
@@ -339,8 +333,23 @@ struct ShuffleCatsInspiredGameScreen: View {
                 
                 Spacer()
                 
-                // Romanian flag for player
-                RomanianFlagView(size: .small)
+                // Player avatar with flags (Shuffle Cats style)
+                HStack(spacing: 12) {
+                    RomanianFlagView(size: .small)
+                        .shadow(color: .black.opacity(0.3), radius: 3, x: 0, y: 2)
+                    
+                    RomanianCharacterAvatarView(
+                        character: .traditionalPlayer,
+                        size: .medium,
+                        showBorder: true,
+                        glowColor: RomanianColors.primaryBlue
+                    )
+                    
+                    RomanianFlagView(size: .small)
+                        .shadow(color: .black.opacity(0.3), radius: 3, x: 0, y: 2)
+                }
+                
+                Spacer()
             }
             .padding(.horizontal)
             .padding(.bottom, 8)
@@ -626,7 +635,7 @@ struct ElegantTableCardsView: View {
     let onCardTapped: (Card) -> Void
     
     var body: some View {
-        HStack(spacing: -30) {
+        HStack(spacing: -12) {
             ForEach(Array(cards.enumerated()), id: \.element.id) { index, card in
                 let isLastPlayed = index == cards.count - 1
                 let isPlayable = validMoves.contains(card)
@@ -641,15 +650,28 @@ struct ElegantTableCardsView: View {
                     onDragChanged: nil,
                     onDragEnded: nil
                 )
-                .scaleEffect(isLastPlayed ? 1.1 : 1.0)
+                .scaleEffect(isLastPlayed ? 0.95 : 0.70)
                 .shadow(
-                    color: isLastPlayed ? RomanianColors.goldAccent.opacity(0.6) : Color.black.opacity(0.3),
-                    radius: isLastPlayed ? 8 : 4,
+                    color: isLastPlayed ? RomanianColors.goldAccent.opacity(0.4) : Color.black.opacity(0.15),
+                    radius: isLastPlayed ? 4 : 2,
                     x: 0,
-                    y: isLastPlayed ? 6 : 2
+                    y: isLastPlayed ? 2 : 1
+                )
+                .overlay(
+                    // Elegant highlight for last played card
+                    RoundedRectangle(cornerRadius: 6)
+                        .stroke(
+                            isLastPlayed ? RomanianColors.goldAccent.opacity(0.6) : Color.clear,
+                            lineWidth: isLastPlayed ? 2 : 0
+                        )
+                        .background(
+                            RoundedRectangle(cornerRadius: 6)
+                                .fill(isLastPlayed ? RomanianColors.goldAccent.opacity(0.08) : Color.clear)
+                        )
+                        .animation(.spring(response: 0.4, dampingFraction: 0.8), value: isLastPlayed)
                 )
                 .zIndex(Double(index) + (isLastPlayed ? 100 : 0))
-                .animation(.spring(response: 0.4, dampingFraction: 0.8), value: isLastPlayed)
+                .animation(.spring(response: 0.3, dampingFraction: 0.9), value: isLastPlayed)
             }
         }
     }
@@ -662,8 +684,8 @@ struct ElegantPlayerHandView: View {
     let validMoves: [Card]
     let onCardTapped: (Card) -> Void
     
-    private let maxFanAngle: Double = 20.0
-    private let cardSpacing: CGFloat = -60.0
+    private let maxFanAngle: Double = 10.0
+    private let cardSpacing: CGFloat = -35.0
     
     var body: some View {
         GeometryReader { geometry in
@@ -676,26 +698,47 @@ struct ElegantPlayerHandView: View {
                     let normalizedPosition = cardCount > 1 ? 
                         Double(index) / Double(cardCount - 1) : 0.5
                     let fanAngle = (normalizedPosition - 0.5) * 2 * maxFanAngle
-                    let verticalOffset = abs(normalizedPosition - 0.5) * 15.0
+                    let verticalOffset = abs(normalizedPosition - 0.5) * 8.0
                     
                     CardView(
                         card: card,
                         isSelected: isSelected,
                         isPlayable: isPlayable,
                         isAnimating: false,
-                        cardSize: .normal,
+                        cardSize: .compact,
                         onTap: { onCardTapped(card) },
                         onDragChanged: nil,
                         onDragEnded: nil
                     )
+                    .scaleEffect(isSelected ? 1.05 : 0.85)
                     .rotationEffect(.degrees(fanAngle))
                     .offset(
                         x: CGFloat(index) * cardSpacing,
-                        y: isSelected ? -30 : verticalOffset
+                        y: isSelected ? -25 : verticalOffset
                     )
-                    .scaleEffect(isSelected ? 1.2 : 1.0)
+                    .shadow(
+                        color: isSelected ? RomanianColors.goldAccent.opacity(0.4) : Color.black.opacity(0.1),
+                        radius: isSelected ? 6 : 2,
+                        x: 0,
+                        y: isSelected ? 4 : 1
+                    )
+                    .overlay(
+                        // Elegant selection and playable highlighting
+                        RoundedRectangle(cornerRadius: 6)
+                            .stroke(
+                                isSelected ? RomanianColors.goldAccent.opacity(0.7) : 
+                                (isPlayable ? RomanianColors.goldAccent.opacity(0.3) : Color.clear),
+                                lineWidth: isSelected ? 2 : (isPlayable ? 1 : 0)
+                            )
+                            .background(
+                                RoundedRectangle(cornerRadius: 6)
+                                    .fill(isSelected ? RomanianColors.goldAccent.opacity(0.1) : Color.clear)
+                            )
+                            .animation(.easeInOut(duration: 0.25), value: isPlayable)
+                            .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isSelected)
+                    )
                     .zIndex(isSelected ? 100 : Double(index))
-                    .animation(.spring(response: 0.4, dampingFraction: 0.8), value: isSelected)
+                    .animation(.spring(response: 0.3, dampingFraction: 0.9), value: isSelected)
                 }
             }
             .frame(maxWidth: .infinity)
