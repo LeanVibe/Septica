@@ -812,11 +812,11 @@ struct ElegantPlayerHandView: View {
     let validMoves: [Card]
     let onCardTapped: (Card) -> Void
     
-    // Enhanced fan parameters for full 4-card visibility
-    private let maxFanAngle: Double = 15.0  // Optimized for 4-card visibility
-    private let cardSpacing: CGFloat = -50.0  // Improved spacing for full card visibility
+    // Enhanced fan parameters for Shuffle Cats-quality full card visibility
+    private let maxFanAngle: Double = 12.0  // Perfect angle for readability
+    private let cardSpacing: CGFloat = 85.0  // Positive spacing for full card visibility (was -50.0)
     private let fanRadius: CGFloat = 120.0   // Arc radius for curved layout
-    private let maxVerticalOffset: CGFloat = 20.0  // Balanced curve for visibility
+    private let maxVerticalOffset: CGFloat = 15.0  // Subtle curve for elegance
     
     var body: some View {
         GeometryReader { geometry in
@@ -848,7 +848,7 @@ struct ElegantPlayerHandView: View {
                     .scaleEffect(isSelected ? 1.15 : 0.92)  // More dramatic selection scaling
                     .rotationEffect(.degrees(fanAngle))
                     .offset(
-                        x: CGFloat(index) * cardSpacing,
+                        x: (CGFloat(index) * cardSpacing) - (CGFloat(cardCount - 1) * cardSpacing * 0.5),
                         y: isSelected ? -35 : CGFloat(verticalOffset)  // Enhanced selection lift
                     )
                     // Professional multi-layer shadows for Shuffle Cats depth
