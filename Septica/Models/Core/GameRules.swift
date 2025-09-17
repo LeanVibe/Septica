@@ -16,8 +16,8 @@ struct GameRules {
     /// Total number of cards dealt to each player at game start
     static let initialHandSize = 4
     
-    /// Maximum number of players in a Septica game
-    static let maxPlayers = 2
+    /// Maximum number of players in a Romanian Septica game
+    static let maxPlayers = 4
     
     /// Total number of point cards in the deck (8 cards: 4 tens + 4 aces)
     static let totalPointCards = 8
@@ -25,27 +25,92 @@ struct GameRules {
     /// Total points available in a game (each point card = 1 point)
     static let totalPoints = 8
     
+    // MARK: - Romanian Septica Deck Rules
+    
+    /// Returns the appropriate deck for the number of players
+    /// - Parameter playerCount: Number of players (2-4)
+    /// - Returns: Array of cards for Romanian Septica
+    static func createDeck(for playerCount: Int) -> [Card] {
+        var deck: [Card] = []
+        
+        // Romanian Septica uses cards 7-A (32 cards total)
+        let values = [7, 8, 9, 10, 11, 12, 13, 14] // J=11, Q=12, K=13, A=14
+        let suits: [Suit] = [.hearts, .diamonds, .clubs, .spades]
+        
+        for suit in suits {
+            for value in values {
+                deck.append(Card(suit: suit, value: value))
+            }
+        }
+        
+        // Romanian Rule: For 3 players, remove two 8s (leaving 30 cards)
+        if playerCount == 3 {
+            let eightsToRemove = deck.filter { $0.value == 8 }.prefix(2)
+            for card in eightsToRemove {
+                if let index = deck.firstIndex(of: card) {
+                    deck.remove(at: index)
+                }
+            }
+        }
+        
+        return deck.shuffled()
+    }
+    
+    /// Determines if a card is a "taietura" (cutting card) based on player count
+    /// - Parameters:
+    ///   - card: The card to check
+    ///   - playerCount: Number of players in the game
+    /// - Returns: true if the card can cut (beat any card)
+    static func isCuttingCard(_ card: Card, playerCount: Int) -> Bool {
+        // 7s are always cutting cards in Romanian Septica
+        if card.value == 7 {
+            return true
+        }
+        
+        // In 3-player games, the remaining two 8s also become cutting cards
+        if playerCount == 3 && card.value == 8 {
+            return true
+        }
+        
+        return false
+    }
+    
+    /// Determines team partnerships for 4-player Romanian Septica
+    /// - Parameter players: Array of 4 players
+    /// - Returns: Array of team pairs [(team1_player1, team1_player2), (team2_player1, team2_player2)]
+    static func createTeams(from players: [Player]) -> [(Player, Player)] {
+        guard players.count == 4 else { return [] }
+        
+        // Romanian Septica team formation: Player 1 & 3 vs Player 2 & 4
+        let team1 = (players[0], players[2])
+        let team2 = (players[1], players[3])
+        
+        return [team1, team2]
+    }
+    
     // MARK: - Card Beating Logic
     
-    /// Determines if a card can beat another card according to Septica rules
+    /// Determines if a card can beat another card according to Romanian Septica rules
     /// - Parameters:
     ///   - attackingCard: The card attempting to beat
     ///   - targetCard: The card being beaten
     ///   - tableCardsCount: Current number of cards on the table
+    ///   - playerCount: Number of players (affects cutting card rules)
     /// - Returns: true if attacking card can beat the target card
-    static func canBeat(attackingCard: Card, targetCard: Card, tableCardsCount: Int) -> Bool {
-        // Rule 1: 7 always beats (wild card)
-        if attackingCard.value == 7 {
+    static func canBeat(attackingCard: Card, targetCard: Card, tableCardsCount: Int, playerCount: Int = 2) -> Bool {
+        // Rule 1: Taieturi (cutting cards) always beat - 7s always, 8s in 3-player games
+        if isCuttingCard(attackingCard, playerCount: playerCount) {
             return true
         }
         
-        // Rule 2: 8 beats when table cards count is divisible by 3
-        if attackingCard.value == 8 && tableCardsCount % 3 == 0 {
-            return true
-        }
-        
-        // Rule 3: Same value beats
+        // Rule 2: Same value beats (including figure cards)
         if attackingCard.value == targetCard.value {
+            return true
+        }
+        
+        // Rule 3: Classic 8 special rule - beats when table cards count is divisible by 3
+        // (This applies even in 2/4 player games where 8s aren't cutting cards)
+        if attackingCard.value == 8 && tableCardsCount % 3 == 0 {
             return true
         }
         
