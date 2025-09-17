@@ -812,11 +812,11 @@ struct ElegantPlayerHandView: View {
     let validMoves: [Card]
     let onCardTapped: (Card) -> Void
     
-    // Optimized fan parameters for mobile 4-card visibility (Shuffle Cats style)
-    private let maxFanAngle: Double = 8.0   // Gentle angle for mobile screens
-    private let cardSpacing: CGFloat = 60.0  // Compact spacing for 4 cards on mobile
-    private let fanRadius: CGFloat = 100.0   // Smaller radius for mobile
-    private let maxVerticalOffset: CGFloat = 12.0  // Subtle curve for mobile
+    // Mobile 4-card visibility parameters (ultra-compact for iPhone)
+    private let maxFanAngle: Double = 6.0   // Very gentle angle for mobile
+    private let cardSpacing: CGFloat = 45.0  // Ultra-compact spacing for 4-card visibility
+    private let fanRadius: CGFloat = 80.0   // Very small radius for mobile
+    private let maxVerticalOffset: CGFloat = 8.0  // Minimal curve for mobile
     
     var body: some View {
         GeometryReader { geometry in
@@ -840,12 +840,12 @@ struct ElegantPlayerHandView: View {
                         isSelected: isSelected,
                         isPlayable: isPlayable,
                         isAnimating: false,
-                        cardSize: .compact,
+                        cardSize: .small,
                         onTap: { onCardTapped(card) },
                         onDragChanged: nil,
                         onDragEnded: nil
                     )
-                    .scaleEffect(isSelected ? 1.1 : 0.95)  // Appropriate scaling for mobile
+                    .scaleEffect(isSelected ? 1.0 : 0.85)  // Ultra-compact scaling for 4-card mobile display
                     .rotationEffect(.degrees(fanAngle))
                     .offset(
                         x: (CGFloat(index) * cardSpacing) - (CGFloat(cardCount - 1) * cardSpacing * 0.5),
@@ -895,7 +895,7 @@ struct ElegantPlayerHandView: View {
                     .animation(.spring(response: 0.5, dampingFraction: 0.9), value: isPlayable)
                 }
             }
-            .frame(maxWidth: .infinity)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
             .position(x: geometry.size.width / 2, y: geometry.size.height / 2)
         }
         .clipped()
