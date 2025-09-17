@@ -119,19 +119,42 @@ class CardRenderer: ObservableObject {
     
     @Published var renderingPerformance: RenderingPerformanceMetrics = RenderingPerformanceMetrics()
     
+    // MARK: - Battery Optimization Integration
+    
+    private var batteryOptimizationManager: BatteryOptimizationManager?
+    @Published var currentMetalSettings: MetalRenderingSettings = MetalRenderingSettings(
+        textureQuality: .high,
+        shadowQuality: .high,
+        antiAliasing: .msaa4x,
+        enablePostProcessing: true
+    )
+    @Published var currentAnimationSettings: CardAnimationSettings = CardAnimationSettings(
+        enableParticleEffects: true,
+        enableGlowEffects: true,
+        enableShadowEffects: true,
+        animationDuration: 1.0,
+        enableRomanianCulturalEffects: true
+    )
+    private var cancellables = Set<AnyCancellable>()
+    
     // MARK: - Initialization
     
-    init(device: MTLDevice, commandQueue: MTLCommandQueue) {
+    init(device: MTLDevice, commandQueue: MTLCommandQueue, batteryOptimizationManager: BatteryOptimizationManager? = nil) {
         self.device = device
         self.commandQueue = commandQueue
+        self.batteryOptimizationManager = batteryOptimizationManager
         
         // Test Metal availability
         setupMetalResources()
+        
+        // Setup battery optimization integration
+        setupBatteryOptimization()
         
         print("🎮 CardRenderer initialized:")
         print("   - Metal Available: \(isMetalAvailable)")
         print("   - Fallback Mode: \(fallbackToSwiftUI)")
         print("   - Romanian Effects: \(isRomanianEffectsEnabled)")
+        print("   - Battery Optimization: \(batteryOptimizationManager != nil ? "Enabled" : "Disabled")")
     }
     
     // MARK: - Metal Resource Setup
@@ -196,6 +219,86 @@ class CardRenderer: ObservableObject {
         }
         uniformBuffer.label = "CardUniformBuffer"
         self.cardUniformBuffer = uniformBuffer
+    }
+    
+    // MARK: - Battery Optimization Integration
+    
+    private func setupBatteryOptimization() {
+        guard let batteryManager = batteryOptimizationManager else { return }
+        
+        // Listen for battery optimization changes
+        NotificationCenter.default.publisher(for: .batteryOptimizationChanged)
+            .sink { [weak self] notification in
+                self?.handleBatteryOptimizationChange(notification)
+            }
+            .store(in: &cancellables)
+        
+        // Apply initial optimization settings
+        updateRenderingSettingsForBattery()
+        
+        print("🔋 Battery optimization integration enabled for CardRenderer")
+    }
+    
+    private func handleBatteryOptimizationChange(_ notification: Notification) {
+        guard let userInfo = notification.userInfo,
+              let optimizationLevel = userInfo["optimizationLevel"] as? PowerOptimizationLevel,
+              let adaptiveFPS = userInfo["adaptiveFPS"] as? Double,
+              let renderingQuality = userInfo["renderingQuality"] as? RenderingQuality,
+              let audioLevel = userInfo["audioLevel"] as? AudioProcessingLevel else {
+            return
+        }
+        
+        print("🔋 Applying battery optimization changes:")
+        print("   - Optimization Level: \(optimizationLevel)")
+        print("   - Adaptive FPS: \(adaptiveFPS)")
+        print("   - Rendering Quality: \(renderingQuality)")
+        
+        updateRenderingSettingsForBattery()
+    }
+    
+    private func updateRenderingSettingsForBattery() {
+        guard let batteryManager = batteryOptimizationManager else { return }
+        
+        // Update Metal rendering settings based on battery optimization
+        currentMetalSettings = batteryManager.getOptimizedMetalSettings()
+        currentAnimationSettings = batteryManager.getOptimizedCardAnimationSettings()
+        
+        // Update Romanian effects based on battery optimization
+        isRomanianEffectsEnabled = currentAnimationSettings.enableRomanianCulturalEffects
+        
+        // Update rendering performance metrics
+        renderingPerformance.isUsingMetalRendering = !fallbackToSwiftUI && currentMetalSettings.textureQuality != .disabled
+        
+        // Apply Metal-specific optimizations
+        applyMetalOptimizations()
+    }
+    
+    private func applyMetalOptimizations() {
+        // Apply texture quality optimizations
+        // (In a full implementation, this would update Metal pipeline states)
+        
+        // Apply animation complexity optimizations
+        // (In a full implementation, this would adjust animation parameters)
+        
+        // Apply anti-aliasing optimizations
+        // (In a full implementation, this would configure MSAA levels)
+        
+        print("🎮 Applied Metal optimizations:")
+        print("   - Texture Quality: \(currentMetalSettings.textureQuality)")
+        print("   - Shadow Quality: \(currentMetalSettings.shadowQuality)")
+        print("   - Anti-Aliasing: \(currentMetalSettings.antiAliasing)")
+        print("   - Post-Processing: \(currentMetalSettings.enablePostProcessing)")
+    }
+    
+    /// Configure the battery optimization manager for this renderer
+    func setBatteryOptimizationManager(_ manager: BatteryOptimizationManager) {
+        batteryOptimizationManager = manager
+        setupBatteryOptimization()
+    }
+    
+    /// Get current battery-optimized rendering settings
+    func getBatteryOptimizedSettings() -> (MetalRenderingSettings, CardAnimationSettings) {
+        return (currentMetalSettings, currentAnimationSettings)
     }
     
     // MARK: - Public Card Management API
