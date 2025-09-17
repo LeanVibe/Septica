@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import SwiftUI
 
 /// Represents the four suits in a Romanian card deck
 enum Suit: String, CaseIterable, Codable {
@@ -21,6 +22,13 @@ enum Suit: String, CaseIterable, Codable {
         case .diamonds: return "♦"
         case .clubs: return "♣"
         case .spades: return "♠"
+        }
+    }
+    
+    var color: Color {
+        switch self {
+        case .hearts, .diamonds: return .red
+        case .clubs, .spades: return .black
         }
     }
 }
