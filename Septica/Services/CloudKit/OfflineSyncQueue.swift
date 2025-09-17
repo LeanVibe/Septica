@@ -124,29 +124,34 @@ class OfflineSyncQueue: ObservableObject {
     // MARK: - Private Methods
     
     private func processOperation(_ operation: QueuedSyncOperation) async throws {
-        // This would integrate with the main CloudKit manager
-        // For now, we'll simulate the processing
+        // Get shared CloudKit manager instance
+        let cloudKitManager = SepticaCloudKitManager.shared
+        
+        guard cloudKitManager.isAvailable else {
+            throw OfflineSyncError.cloudKitNotAvailable
+        }
         
         switch operation.update {
         case .playerProfile(let profile):
             logger.info("🔄 Processing player profile sync for \(profile.displayName)")
-            // Would call CloudKitManager.syncPlayerProfile(profile)
+            try await cloudKitManager.savePlayerProfile(profile)
             
         case .gameHistory(let games):
             logger.info("🔄 Processing game history sync for \(games.count) games")
-            // Would call CloudKitManager.syncGameHistory(games)
+            for game in games {
+                try await cloudKitManager.saveGameRecord(game)
+            }
             
         case .culturalProgress(let progress):
             logger.info("🔄 Processing cultural progress sync")
-            // Would call CloudKitManager.syncCulturalProgress(progress)
+            try await cloudKitManager.saveCulturalProgress(progress)
             
         case .achievements(let achievements):
             logger.info("🔄 Processing achievements sync for \(achievements.count) items")
-            // Would call CloudKitManager.syncAchievements(achievements)
+            try await cloudKitManager.saveAchievements(achievements)
         }
         
-        // Simulate network delay
-        try await Task.sleep(nanoseconds: 1_000_000_000) // 1 second
+        logger.info("✅ Successfully processed offline sync operation")
     }
     
     private func persistQueue() {
@@ -183,6 +188,24 @@ class OfflineSyncQueue: ObservableObject {
 }
 
 // MARK: - Supporting Types
+
+/// Offline sync specific errors
+enum OfflineSyncError: LocalizedError {
+    case cloudKitNotAvailable
+    case operationFailed(Error)
+    case networkTimeout
+    
+    var errorDescription: String? {
+        switch self {
+        case .cloudKitNotAvailable:
+            return "CloudKit is not available for offline sync processing"
+        case .operationFailed(let error):
+            return "Offline sync operation failed: \(error.localizedDescription)"
+        case .networkTimeout:
+            return "Network timeout during offline sync operation"
+        }
+    }
+}
 
 /// Represents a queued sync operation
 struct QueuedSyncOperation: Codable, Identifiable {
