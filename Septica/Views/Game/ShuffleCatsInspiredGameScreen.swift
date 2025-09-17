@@ -47,11 +47,11 @@ struct ShuffleCatsInspiredGameScreen: View {
                         
                         // Game table area
                         gameTableArea
-                            .frame(height: geometry.size.height * 0.50)
+                            .frame(height: geometry.size.height * 0.30)
                         
                         // Player area with avatar and fanned cards
                         playerAvatarArea
-                            .frame(height: geometry.size.height * 0.30)
+                            .frame(height: geometry.size.height * 0.50)
                     }
                     
                     // Right progress bar
@@ -691,15 +691,18 @@ struct ElegantTableCardsView: View {
     }
 }
 
-/// Elegant player hand view with Shuffle Cats-inspired fanning
+/// Elegant player hand view with Shuffle Cats-quality professional fanning
 struct ElegantPlayerHandView: View {
     let cards: [Card]
     let selectedCard: Card?
     let validMoves: [Card]
     let onCardTapped: (Card) -> Void
     
-    private let maxFanAngle: Double = 8.0
-    private let cardSpacing: CGFloat = -80.0
+    // Enhanced fan parameters for Shuffle Cats quality
+    private let maxFanAngle: Double = 18.0  // More dramatic fan (was 8.0)
+    private let cardSpacing: CGFloat = -65.0  // Better spacing for readability (was -80.0)
+    private let fanRadius: CGFloat = 120.0   // Arc radius for curved layout
+    private let maxVerticalOffset: CGFloat = 25.0  // More pronounced curve (was 8.0)
     
     var body: some View {
         GeometryReader { geometry in
@@ -709,10 +712,14 @@ struct ElegantPlayerHandView: View {
                     let isSelected = selectedCard?.id == card.id
                     let isPlayable = validMoves.contains(card)
                     
+                    // Enhanced fan calculations for Shuffle Cats-style arc
                     let normalizedPosition = cardCount > 1 ? 
                         Double(index) / Double(cardCount - 1) : 0.5
                     let fanAngle = (normalizedPosition - 0.5) * 2 * maxFanAngle
-                    let verticalOffset = abs(normalizedPosition - 0.5) * 8.0
+                    
+                    // Curved arc calculation for natural hand appearance
+                    let curveProgress = abs(normalizedPosition - 0.5) * 2.0 // 0 to 1
+                    let verticalOffset = sin(curveProgress * .pi * 0.5) * maxVerticalOffset
                     
                     CardView(
                         card: card,
@@ -724,35 +731,54 @@ struct ElegantPlayerHandView: View {
                         onDragChanged: nil,
                         onDragEnded: nil
                     )
-                    .scaleEffect(isSelected ? 1.1 : 0.90)
+                    .scaleEffect(isSelected ? 1.15 : 0.92)  // More dramatic selection scaling
                     .rotationEffect(.degrees(fanAngle))
                     .offset(
                         x: CGFloat(index) * cardSpacing,
-                        y: isSelected ? -25 : verticalOffset
+                        y: isSelected ? -35 : CGFloat(verticalOffset)  // Enhanced selection lift
+                    )
+                    // Professional multi-layer shadows for Shuffle Cats depth
+                    .shadow(
+                        color: .black.opacity(0.25),
+                        radius: 4,
+                        x: 0,
+                        y: 2
                     )
                     .shadow(
-                        color: isSelected ? RomanianColors.goldAccent.opacity(0.4) : Color.black.opacity(0.1),
-                        radius: isSelected ? 6 : 2,
+                        color: .black.opacity(0.15),
+                        radius: 8,
                         x: 0,
-                        y: isSelected ? 4 : 1
+                        y: 4
+                    )
+                    .shadow(
+                        color: isSelected ? RomanianColors.goldAccent.opacity(0.5) : .clear,
+                        radius: isSelected ? 12 : 0,
+                        x: 0,
+                        y: isSelected ? 8 : 0
                     )
                     .overlay(
-                        // Elegant selection and playable highlighting
-                        RoundedRectangle(cornerRadius: 6)
+                        // Professional selection and playable highlighting (Shuffle Cats style)
+                        RoundedRectangle(cornerRadius: 8)
                             .stroke(
-                                isSelected ? RomanianColors.goldAccent.opacity(0.7) : 
-                                (isPlayable ? RomanianColors.goldAccent.opacity(0.3) : Color.clear),
-                                lineWidth: isSelected ? 2 : (isPlayable ? 1 : 0)
+                                isSelected ? RomanianColors.goldAccent.opacity(0.8) : 
+                                (isPlayable ? RomanianColors.goldAccent.opacity(0.4) : Color.clear),
+                                lineWidth: isSelected ? 3 : (isPlayable ? 1.5 : 0)
                             )
                             .background(
-                                RoundedRectangle(cornerRadius: 6)
-                                    .fill(isSelected ? RomanianColors.goldAccent.opacity(0.1) : Color.clear)
+                                RoundedRectangle(cornerRadius: 8)
+                                    .fill(
+                                        isSelected ? 
+                                        RomanianColors.goldAccent.opacity(0.15) : 
+                                        (isPlayable ? RomanianColors.goldAccent.opacity(0.05) : Color.clear)
+                                    )
                             )
-                            .animation(.easeInOut(duration: 0.25), value: isPlayable)
-                            .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isSelected)
+                            .animation(.easeInOut(duration: 0.2), value: isPlayable)
+                            .animation(.spring(response: 0.25, dampingFraction: 0.8), value: isSelected)
                     )
-                    .zIndex(isSelected ? 100 : Double(index))
-                    .animation(.spring(response: 0.3, dampingFraction: 0.9), value: isSelected)
+                    .zIndex(isSelected ? 100 : Double(cardCount - index))  // Proper layering
+                    // Smooth professional animations
+                    .animation(.spring(response: 0.4, dampingFraction: 0.85), value: isSelected)
+                    .animation(.spring(response: 0.5, dampingFraction: 0.9), value: isPlayable)
                 }
             }
             .frame(maxWidth: .infinity)

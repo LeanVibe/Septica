@@ -74,7 +74,10 @@ struct CardView: View {
                 .frame(width: cardSize.width, height: cardSize.height)
                 .scaleEffect(scaleEffect)
                 .rotation3DEffect(.degrees(rotationAngle), axis: rotationAxis)
-                .shadow(color: shadowColor, radius: shadowRadius, x: shadowOffset, y: shadowOffset)
+                // Professional multi-layer shadows for Shuffle Cats depth
+                .shadow(color: .black.opacity(0.12), radius: 2, x: 0, y: 1)
+                .shadow(color: .black.opacity(0.08), radius: 4, x: 0, y: 2)
+                .shadow(color: shadowColor, radius: shadowRadius, x: 0, y: shadowOffset)
                 .animation(.spring(response: 0.6, dampingFraction: 0.7, blendDuration: 0.3), value: isSelected)
                 .animation(.spring(response: 0.4, dampingFraction: 0.8, blendDuration: 0.2), value: isAnimating)
                 .onTapGesture {
@@ -788,30 +791,30 @@ struct CardView: View {
         }
     }
     
-    /// Shadow color
+    /// Professional shadow color (Shuffle Cats quality)
     private var shadowColor: Color {
         if isSelected {
-            return Color.blue.opacity(0.5)
+            return RomanianColors.goldAccent.opacity(0.4)  // Romanian gold glow for selection
         } else {
-            return Color.black.opacity(0.3)
+            return Color.black.opacity(0.20)  // Deeper base shadow
         }
     }
     
-    /// Shadow radius
+    /// Enhanced shadow radius for professional depth
     private var shadowRadius: CGFloat {
         if isSelected {
-            return 12  // More prominent shadow for selected cards
+            return 16  // More dramatic glow for selected cards
         } else {
-            return 6   // Enhanced default shadow
+            return 8   // Enhanced default depth
         }
     }
     
-    /// Shadow offset
+    /// Professional shadow offset for Shuffle Cats depth
     private var shadowOffset: CGFloat {
         if isSelected {
-            return 6   // Deeper shadow offset for selected cards
+            return 8   // Enhanced lift effect for selected cards
         } else {
-            return 3   // Enhanced default offset
+            return 4   // Professional default depth
         }
     }
 }
@@ -827,10 +830,10 @@ enum CardSize {
     
     var width: CGFloat {
         switch self {
-        case .small: return 180    // Enhanced visibility - significantly wider
-        case .compact: return 220  // Table cards - wider for better recognition
-        case .normal: return 260   // Standard cards - doubled width for clear visibility
-        case .large: return 400   // Large detailed view - doubled width
+        case .small: return 90    // Enhanced visibility - significantly wider
+        case .compact: return 110  // Table cards - wider for better recognition
+        case .normal: return 130   // Standard cards - doubled width for clear visibility
+        case .large: return 200   // Large detailed view - doubled width
         }
     }
     
