@@ -26,7 +26,7 @@ class RomanianDialogueSystem: ObservableObject {
     // MARK: - Configuration
     
     private let maxDialogueHistory = 10
-    private let dialogueDuration: TimeInterval = 3.0
+    private let dialogueDuration: TimeInterval = 5.0  // Increased for better visibility
     private var dialogueTimer: Timer?
     
     // MARK: - Romanian Dialogue Database
@@ -303,37 +303,39 @@ struct RomanianDialogueBubbleView: View {
     @State private var showTooltip = false
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            // Speech bubble with Romanian text
+        VStack(alignment: .leading, spacing: 12) {
+            // Prominent speech bubble with Romanian text - Shuffle Cats style
             HStack {
                 speechBubbleContent
                 Spacer()
             }
             
-            // Tap for translation hint
+            // Enhanced translation hint with better visibility
             if showTooltip {
                 tooltipContent
             }
         }
-        .scaleEffect(isVisible ? 1.0 : 0.6)
+        .scaleEffect(isVisible ? 1.0 : 0.3)  // More dramatic entrance effect
         .opacity(isVisible ? 1.0 : 0.0)
         .onAppear {
-            withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
+            // Dramatic bounce animation like Shuffle Cats characters
+            withAnimation(.spring(response: 0.6, dampingFraction: 0.6, blendDuration: 0.3)) {
                 isVisible = true
             }
             
-            // Show tooltip after delay
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                withAnimation(.easeInOut(duration: 0.3)) {
+            // Show tooltip after appropriate delay for reading
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                withAnimation(.easeInOut(duration: 0.4)) {
                     showTooltip = true
                 }
             }
         }
         .onTapGesture {
-            withAnimation(.easeInOut(duration: 0.2)) {
+            withAnimation(.easeInOut(duration: 0.3)) {
                 showTooltip.toggle()
             }
         }
+        .shadow(color: .black.opacity(0.3), radius: 8, x: 0, y: 4)  // Enhanced shadow for prominence
     }
     
     // MARK: - Helper Views
@@ -342,49 +344,83 @@ struct RomanianDialogueBubbleView: View {
         let bubbleColor = getBubbleColor(for: character)
         
         return Text(dialogue.displayText)
-            .font(Font.system(size: 16, weight: .medium, design: .rounded))
+            .font(Font.system(size: 22, weight: .bold, design: .rounded))  // Much larger and bolder
             .foregroundColor(.white)
-            .padding(.horizontal, 16)
-            .padding(.vertical, 10)
+            .multilineTextAlignment(.center)
+            .padding(.horizontal, 24)  // Increased padding for prominence
+            .padding(.vertical, 16)    // Increased vertical padding
+            .frame(minWidth: 160)      // Minimum width for better presence
             .background(speechBubbleBackground(color: bubbleColor))
             .overlay(speechBubbleTail(color: bubbleColor))
     }
     
     private func speechBubbleBackground(color: Color) -> some View {
-        RoundedRectangle(cornerRadius: 20)
-            .fill(color)
-            .shadow(color: .black.opacity(0.2), radius: 4, x: 0, y: 2)
+        RoundedRectangle(cornerRadius: 24)  // Larger corner radius for prominent bubbles
+            .fill(
+                LinearGradient(
+                    colors: [color, color.opacity(0.8)],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 24)
+                    .stroke(Color.white.opacity(0.3), lineWidth: 2)  // Subtle border for definition
+            )
+            .shadow(color: .black.opacity(0.4), radius: 8, x: 0, y: 4)  // Enhanced shadow
     }
     
     private func speechBubbleTail(color: Color) -> some View {
         Triangle()
-            .fill(color)
-            .frame(width: 12, height: 8)
-            .offset(x: -8, y: 20)
+            .fill(
+                LinearGradient(
+                    colors: [color, color.opacity(0.8)],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            )
+            .frame(width: 16, height: 12)  // Larger tail for prominent bubbles
+            .offset(x: -12, y: 24)         // Adjusted positioning
     }
     
     private func getBubbleColor(for character: RomanianCharacterAvatar) -> Color {
+        // Enhanced colors for better visibility and prominence
         switch character {
-        case .traditionalPlayer: return Color.brown
-        case .villageElder: return Color.green.opacity(0.8)
-        case .folkMusician: return Color.blue
-        case .transylvanianNoble: return Color.red.opacity(0.8)
-        case .moldovanScholar: return Color.gray
-        case .wallachianWarrior: return Color.yellow.opacity(0.8)
-        case .carpathianShepherd: return Color.green.opacity(0.7)
-        case .danubianFisherman: return Color.blue.opacity(0.7)
-        case .bucovinianArtisan: return Color.orange
-        case .dobrudjanMerchant: return Color.yellow.opacity(0.9)
+        case .traditionalPlayer: return Color(red: 0.6, green: 0.4, blue: 0.2)  // Rich brown
+        case .villageElder: return Color(red: 0.2, green: 0.6, blue: 0.3)      // Forest green
+        case .folkMusician: return Color(red: 0.2, green: 0.4, blue: 0.8)      // Royal blue
+        case .transylvanianNoble: return Color(red: 0.7, green: 0.2, blue: 0.2) // Deep red
+        case .moldovanScholar: return Color(red: 0.3, green: 0.3, blue: 0.5)    // Slate blue
+        case .wallachianWarrior: return Color(red: 0.8, green: 0.6, blue: 0.1)  // Golden
+        case .carpathianShepherd: return Color(red: 0.3, green: 0.6, blue: 0.3) // Mountain green
+        case .danubianFisherman: return Color(red: 0.2, green: 0.5, blue: 0.7)  // River blue
+        case .bucovinianArtisan: return Color(red: 0.8, green: 0.4, blue: 0.2)  // Artisan orange
+        case .dobrudjanMerchant: return Color(red: 0.7, green: 0.5, blue: 0.1)  // Merchant gold
         }
     }
     
     private var tooltipContent: some View {
-        Text(dialogue.english)
-            .font(.caption)
-            .foregroundColor(.gray)
-            .italic()
-            .padding(.horizontal, 8)
-            .transition(.opacity.combined(with: .move(edge: .top)))
+        VStack(alignment: .leading, spacing: 4) {
+            Text(dialogue.english)
+                .font(.system(size: 16, weight: .medium))  // Larger, more readable font
+                .foregroundColor(.white)
+                .italic()
+            
+            Text("Tap to learn more")
+                .font(.system(size: 12, weight: .regular))
+                .foregroundColor(.white.opacity(0.7))
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 8)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color.black.opacity(0.8))
+                .shadow(color: .black.opacity(0.3), radius: 4, x: 0, y: 2)
+        )
+        .transition(.asymmetric(
+            insertion: .scale.combined(with: .opacity),
+            removal: .opacity.combined(with: .move(edge: .top))
+        ))
     }
 }
 

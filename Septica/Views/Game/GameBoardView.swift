@@ -58,22 +58,24 @@ struct GameBoardView: View {
                         
                         Spacer()
                         
-                        // Romanian character with dialogue system
-                        VStack(alignment: .trailing, spacing: 8) {
-                            // Dialogue bubble above character
+                        // Romanian character with enhanced dialogue system - Shuffle Cats prominence
+                        VStack(alignment: .trailing, spacing: 12) {
+                            // Enhanced dialogue bubble with maximum visibility
                             if dialogueSystem.isShowingDialogue,
                                let dialogue = dialogueSystem.currentDialogue {
                                 RomanianDialogueBubbleView(
                                     dialogue: dialogue,
                                     character: gameViewModel.currentOpponentAvatar
                                 )
+                                .frame(maxWidth: 280)  // Ensure adequate width for larger bubbles
+                                .zIndex(100)           // High z-index for visibility over other elements
                                 .transition(.asymmetric(
-                                    insertion: .scale.combined(with: .opacity),
-                                    removal: .opacity
+                                    insertion: .scale.combined(with: .opacity).combined(with: .move(edge: .top)),
+                                    removal: .opacity.combined(with: .move(edge: .top))
                                 ))
                             }
                             
-                            // Character avatar
+                            // Character avatar with proper spacing
                             RomanianCharacterView(
                                 animator: characterAnimator,
                                 size: CGSize(width: 80, height: 100)
