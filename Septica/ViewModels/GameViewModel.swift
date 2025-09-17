@@ -38,6 +38,10 @@ class GameViewModel: ObservableObject {
     @Published var currentArena: RomanianArena? = .sateImarica
     @Published var gamePhase: GamePhase = .setup
     
+    // Romanian Character System Integration
+    @Published var currentOpponentAvatar: RomanianCharacterAvatar = .villageElder
+    @Published var currentPlayerAvatar: RomanianCharacterAvatar = .traditionalPlayer
+    
     enum GamePhase {
         case setup, playing, gameOver
     }

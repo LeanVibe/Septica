@@ -17,9 +17,14 @@ struct GameBoardView: View {
     @State private var showingGameMenu = false
     @State private var animatingCard: Card?
     
+    // Romanian Dialogue System Integration
+    @StateObject private var dialogueSystem = RomanianDialogueSystem()
+    
     init(gameState: GameState) {
         self._gameViewModel = StateObject(wrappedValue: GameViewModel(gameState: gameState))
     }
+    
+    // MARK: - Romanian Dialogue Integration
     
     /// Convert GameViewModel.GamePhase to RomanianArenaBackgroundView.GamePhase
     private func mapToArenaGamePhase(_ phase: GameViewModel.GamePhase) -> RomanianArenaBackgroundView.GamePhase {
@@ -52,12 +57,28 @@ struct GameBoardView: View {
                     
                     Spacer()
                     
-                    // Romanian character for opponent reactions
-                    RomanianCharacterView(
-                        animator: characterAnimator,
-                        size: CGSize(width: 80, height: 100)
-                    )
-                    .scaleEffect(0.8)
+                    // Romanian character with dialogue system
+                    VStack(alignment: .trailing, spacing: 8) {
+                        // Dialogue bubble above character
+                        if dialogueSystem.isShowingDialogue,
+                           let dialogue = dialogueSystem.currentDialogue {
+                            RomanianDialogueBubbleView(
+                                dialogue: dialogue,
+                                character: gameViewModel.currentOpponentAvatar
+                            )
+                            .transition(.asymmetric(
+                                insertion: .scale.combined(with: .opacity),
+                                removal: .opacity
+                            ))
+                        }
+                        
+                        // Character avatar
+                        RomanianCharacterView(
+                            animator: characterAnimator,
+                            size: CGSize(width: 80, height: 100)
+                        )
+                        .scaleEffect(0.8)
+                    }
                 }
                 
                 Spacer()
@@ -215,6 +236,23 @@ struct GameBoardView: View {
         .onAppear {
             gameViewModel.startGame()
             setupDropZones()
+            
+            // Initialize Romanian dialogue system with welcome message
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                dialogueSystem.triggerDialogue(for: .gameStart, character: gameViewModel.currentOpponentAvatar)
+            }
+        }
+        .onChange(of: gameViewModel.gamePhase) { newPhase in
+            // React to game phase changes with appropriate dialogue
+            switch newPhase {
+            case .playing:
+                // Game has started - no additional dialogue needed (handled in onAppear)
+                break
+            case .gameOver:
+                dialogueSystem.triggerDialogue(for: .victory, character: gameViewModel.currentOpponentAvatar)
+            default:
+                break
+            }
         }
     }
     
@@ -277,6 +315,7 @@ struct GameBoardView: View {
     private func triggerMoveReaction(_ quality: MoveQuality, card: Card) {
         let context: GameContext = determineGameContext()
         
+        // Trigger both character animation AND Romanian dialogue
         switch quality {
         case .excellent:
             characterAnimator.triggerReaction(
@@ -284,30 +323,47 @@ struct GameBoardView: View {
                 context: context,
                 intensity: .dramatic
             )
+            // Trigger Romanian dialogue for excellent moves
+            if card.value == 7 {
+                dialogueSystem.triggerDialogue(for: .sevenPlayed, character: gameViewModel.currentOpponentAvatar)
+            } else {
+                dialogueSystem.triggerDialogue(for: .goodPlay, character: gameViewModel.currentOpponentAvatar)
+            }
+            
         case .good:
             characterAnimator.triggerReaction(
                 .goodMove,
                 context: context,
                 intensity: .normal
             )
+            dialogueSystem.triggerDialogue(for: .goodPlay, character: gameViewModel.currentOpponentAvatar)
+            
         case .strategic:
             characterAnimator.triggerReaction(
                 .wisdom,
                 context: .strategic_thinking,
                 intensity: .normal
             )
+            dialogueSystem.triggerDialogue(for: .strategicMove, character: gameViewModel.currentOpponentAvatar)
+            
         case .average:
             characterAnimator.triggerReaction(
                 .encouragement,
                 context: context,
                 intensity: .subtle
             )
+            // Occasionally show traditional phrases for average moves
+            if Int.random(in: 1...3) == 1 {
+                dialogueSystem.triggerDialogue(for: .traditional, character: gameViewModel.currentOpponentAvatar)
+            }
+            
         case .poor:
             characterAnimator.triggerReaction(
                 .badMove,
                 context: .encouragement,
                 intensity: .subtle
             )
+            dialogueSystem.triggerDialogue(for: .encouragement, character: gameViewModel.currentOpponentAvatar)
         }
     }
     
