@@ -456,8 +456,8 @@ enum MoveQuality {
     case poor       // Suboptimal but legal moves
 }
 
-/// Background view for the game table
-struct GameTableBackground: View {
+/// Simple background view for the game table
+struct SimpleGameTableBackground: View {
     var body: some View {
         Rectangle()
             .fill(
