@@ -635,44 +635,58 @@ struct ElegantTableCardsView: View {
     let onCardTapped: (Card) -> Void
     
     var body: some View {
-        HStack(spacing: -12) {
-            ForEach(Array(cards.enumerated()), id: \.element.id) { index, card in
-                let isLastPlayed = index == cards.count - 1
-                let isPlayable = validMoves.contains(card)
-                
-                CardView(
-                    card: card,
-                    isSelected: false,
-                    isPlayable: isPlayable,
-                    isAnimating: false,
-                    cardSize: .compact,
-                    onTap: { onCardTapped(card) },
-                    onDragChanged: nil,
-                    onDragEnded: nil
-                )
-                .scaleEffect(isLastPlayed ? 0.95 : 0.70)
-                .shadow(
-                    color: isLastPlayed ? RomanianColors.goldAccent.opacity(0.4) : Color.black.opacity(0.15),
-                    radius: isLastPlayed ? 4 : 2,
-                    x: 0,
-                    y: isLastPlayed ? 2 : 1
-                )
-                .overlay(
-                    // Elegant highlight for last played card
-                    RoundedRectangle(cornerRadius: 6)
-                        .stroke(
-                            isLastPlayed ? RomanianColors.goldAccent.opacity(0.6) : Color.clear,
-                            lineWidth: isLastPlayed ? 2 : 0
-                        )
-                        .background(
-                            RoundedRectangle(cornerRadius: 6)
-                                .fill(isLastPlayed ? RomanianColors.goldAccent.opacity(0.08) : Color.clear)
-                        )
-                        .animation(.spring(response: 0.4, dampingFraction: 0.8), value: isLastPlayed)
-                )
-                .zIndex(Double(index) + (isLastPlayed ? 100 : 0))
-                .animation(.spring(response: 0.3, dampingFraction: 0.9), value: isLastPlayed)
+        GeometryReader { geometry in
+            ZStack {
+                ForEach(Array(cards.enumerated()), id: \.element.id) { index, card in
+                    let isLastPlayed = index == cards.count - 1
+                    let isPlayable = validMoves.contains(card)
+                    let cardCount = cards.count
+                    
+                    // Fan layout calculation
+                    let normalizedPosition = cardCount > 1 ? 
+                        Double(index) / Double(cardCount - 1) : 0.5
+                    let fanAngle = (normalizedPosition - 0.5) * 40.0 // Spread cards in 40° fan
+                    let fanRadius: CGFloat = 80 // Radius of the fan
+                    let xOffset = fanRadius * sin(fanAngle * .pi / 180)
+                    let yOffset = fanRadius * cos(fanAngle * .pi / 180) * 0.3 // Slight vertical curve
+                    
+                    CardView(
+                        card: card,
+                        isSelected: false,
+                        isPlayable: isPlayable,
+                        isAnimating: false,
+                        cardSize: .compact,
+                        onTap: { onCardTapped(card) },
+                        onDragChanged: nil,
+                        onDragEnded: nil
+                    )
+                    .scaleEffect(isLastPlayed ? 0.95 : 0.85)
+                    .rotationEffect(.degrees(fanAngle))
+                    .offset(x: xOffset, y: yOffset)
+                    .shadow(
+                        color: isLastPlayed ? RomanianColors.goldAccent.opacity(0.4) : Color.black.opacity(0.15),
+                        radius: isLastPlayed ? 4 : 2,
+                        x: 0,
+                        y: isLastPlayed ? 2 : 1
+                    )
+                    .overlay(
+                        // Elegant highlight for last played card
+                        RoundedRectangle(cornerRadius: 6)
+                            .stroke(
+                                isLastPlayed ? RomanianColors.goldAccent.opacity(0.6) : Color.clear,
+                                lineWidth: isLastPlayed ? 2 : 0
+                            )
+                            .background(
+                                RoundedRectangle(cornerRadius: 6)
+                                    .fill(isLastPlayed ? RomanianColors.goldAccent.opacity(0.08) : Color.clear)
+                            )
+                            .animation(.spring(response: 0.4, dampingFraction: 0.8), value: isLastPlayed)
+                    )
+                    .zIndex(Double(index) + (isLastPlayed ? 100 : 0))
+                    .animation(.spring(response: 0.3, dampingFraction: 0.9), value: isLastPlayed)
+                }
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
     }
 }
@@ -684,8 +698,8 @@ struct ElegantPlayerHandView: View {
     let validMoves: [Card]
     let onCardTapped: (Card) -> Void
     
-    private let maxFanAngle: Double = 10.0
-    private let cardSpacing: CGFloat = -35.0
+    private let maxFanAngle: Double = 8.0
+    private let cardSpacing: CGFloat = -80.0
     
     var body: some View {
         GeometryReader { geometry in
@@ -705,12 +719,12 @@ struct ElegantPlayerHandView: View {
                         isSelected: isSelected,
                         isPlayable: isPlayable,
                         isAnimating: false,
-                        cardSize: .compact,
+                        cardSize: .normal,
                         onTap: { onCardTapped(card) },
                         onDragChanged: nil,
                         onDragEnded: nil
                     )
-                    .scaleEffect(isSelected ? 1.05 : 0.85)
+                    .scaleEffect(isSelected ? 1.1 : 0.90)
                     .rotationEffect(.degrees(fanAngle))
                     .offset(
                         x: CGFloat(index) * cardSpacing,

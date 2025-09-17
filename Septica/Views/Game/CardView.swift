@@ -827,10 +827,10 @@ enum CardSize {
     
     var width: CGFloat {
         switch self {
-        case .small: return 90    // Enhanced for better visibility - doubled width
-        case .compact: return 110  // Optimized for table cards - doubled width
-        case .normal: return 130   // Professional mobile game card size - doubled width
-        case .large: return 200   // Premium detailed view size - doubled width
+        case .small: return 180    // Enhanced visibility - significantly wider
+        case .compact: return 220  // Table cards - wider for better recognition
+        case .normal: return 260   // Standard cards - doubled width for clear visibility
+        case .large: return 400   // Large detailed view - doubled width
         }
     }
     
