@@ -812,11 +812,11 @@ struct ElegantPlayerHandView: View {
     let validMoves: [Card]
     let onCardTapped: (Card) -> Void
     
-    // Enhanced fan parameters for Shuffle Cats-quality full card visibility
-    private let maxFanAngle: Double = 12.0  // Perfect angle for readability
-    private let cardSpacing: CGFloat = 85.0  // Positive spacing for full card visibility (was -50.0)
-    private let fanRadius: CGFloat = 120.0   // Arc radius for curved layout
-    private let maxVerticalOffset: CGFloat = 15.0  // Subtle curve for elegance
+    // Optimized fan parameters for mobile 4-card visibility (Shuffle Cats style)
+    private let maxFanAngle: Double = 8.0   // Gentle angle for mobile screens
+    private let cardSpacing: CGFloat = 60.0  // Compact spacing for 4 cards on mobile
+    private let fanRadius: CGFloat = 100.0   // Smaller radius for mobile
+    private let maxVerticalOffset: CGFloat = 12.0  // Subtle curve for mobile
     
     var body: some View {
         GeometryReader { geometry in
@@ -840,12 +840,12 @@ struct ElegantPlayerHandView: View {
                         isSelected: isSelected,
                         isPlayable: isPlayable,
                         isAnimating: false,
-                        cardSize: .normal,
+                        cardSize: .compact,
                         onTap: { onCardTapped(card) },
                         onDragChanged: nil,
                         onDragEnded: nil
                     )
-                    .scaleEffect(isSelected ? 1.15 : 0.92)  // More dramatic selection scaling
+                    .scaleEffect(isSelected ? 1.1 : 0.95)  // Appropriate scaling for mobile
                     .rotationEffect(.degrees(fanAngle))
                     .offset(
                         x: (CGFloat(index) * cardSpacing) - (CGFloat(cardCount - 1) * cardSpacing * 0.5),
