@@ -109,7 +109,7 @@ struct RomanianCharacterReactionOverlay: View {
         )
         .overlay(
             // Speech bubble pointer
-            Triangle()
+            CharacterReactionTriangle()
                 .fill(Color.white)
                 .frame(width: 16, height: 12)
                 .rotationEffect(.degrees(180))
@@ -228,7 +228,7 @@ struct RomanianCharacterReactionOverlay: View {
 }
 
 /// Triangle shape for speech bubble pointer
-struct Triangle: Shape {
+private struct CharacterReactionTriangle: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         

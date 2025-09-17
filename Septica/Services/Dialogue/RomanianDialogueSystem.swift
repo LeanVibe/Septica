@@ -8,6 +8,9 @@
 
 import Foundation
 import SwiftUI
+import Combine
+
+// Note: Color(hex:) extension and Triangle shape are defined in other files
 
 /// Romanian dialogue system that adds cultural personality to character interactions
 /// Characters react with authentic Romanian expressions based on game events
@@ -181,7 +184,7 @@ class RomanianDialogueSystem: ObservableObject {
     // MARK: - Public Interface
     
     /// Trigger dialogue based on game event
-    func triggerDialogue(for event: GameEvent, character: RomanianCharacterAvatar) {
+    func triggerDialogue(for event: DialogueEvent, character: RomanianCharacterAvatar) {
         let dialogue = selectDialogue(for: event, character: character)
         showDialogue(dialogue)
     }
@@ -203,7 +206,9 @@ class RomanianDialogueSystem: ObservableObject {
         
         // Auto-hide after duration
         dialogueTimer = Timer.scheduledTimer(withTimeInterval: dialogueDuration, repeats: false) { [weak self] _ in
-            self?.hideDialogue()
+            Task { @MainActor in
+                self?.hideDialogue()
+            }
         }
     }
     
@@ -222,7 +227,7 @@ class RomanianDialogueSystem: ObservableObject {
     
     // MARK: - Private Methods
     
-    private func selectDialogue(for event: GameEvent, character: RomanianCharacterAvatar) -> RomanianDialogue {
+    private func selectDialogue(for event: DialogueEvent, character: RomanianCharacterAvatar) -> RomanianDialogue {
         let dialoguePool: [RomanianDialogue]
         
         switch event {
@@ -276,8 +281,8 @@ struct RomanianDialogue: Identifiable, Equatable {
     }
 }
 
-/// Game events that trigger dialogue
-enum GameEvent {
+/// Dialogue-specific events that trigger Romanian character reactions
+enum DialogueEvent {
     case gameStart
     case goodPlay
     case strategicMove
@@ -301,35 +306,13 @@ struct RomanianDialogueBubbleView: View {
         VStack(alignment: .leading, spacing: 8) {
             // Speech bubble with Romanian text
             HStack {
-                Text(dialogue.displayText)
-                    .font(.system(size: 16, weight: .medium, design: .rounded))
-                    .foregroundColor(.white)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 10)
-                    .background(
-                        RoundedRectangle(cornerRadius: 20)
-                            .fill(Color(hex: character.primaryColor))
-                            .shadow(color: .black.opacity(0.2), radius: 4, x: 0, y: 2)
-                    )
-                    .overlay(
-                        // Speech bubble tail
-                        Triangle()
-                            .fill(Color(hex: character.primaryColor))
-                            .frame(width: 12, height: 8)
-                            .offset(x: -8, y: 20)
-                    )
-                
+                speechBubbleContent
                 Spacer()
             }
             
             // Tap for translation hint
             if showTooltip {
-                Text(dialogue.english)
-                    .font(.caption)
-                    .foregroundColor(.gray)
-                    .italic()
-                    .padding(.horizontal, 8)
-                    .transition(.opacity.combined(with: .move(edge: .top)))
+                tooltipContent
             }
         }
         .scaleEffect(isVisible ? 1.0 : 0.6)
@@ -352,19 +335,59 @@ struct RomanianDialogueBubbleView: View {
             }
         }
     }
-}
-
-/// Triangle shape for speech bubble tail
-struct Triangle: Shape {
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        path.move(to: CGPoint(x: rect.midX, y: rect.minY))
-        path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
-        path.addLine(to: CGPoint(x: rect.minX, y: rect.maxY))
-        path.closeSubpath()
-        return path
+    
+    // MARK: - Helper Views
+    
+    private var speechBubbleContent: some View {
+        let bubbleColor = getBubbleColor(for: character)
+        
+        return Text(dialogue.displayText)
+            .font(Font.system(size: 16, weight: .medium, design: .rounded))
+            .foregroundColor(.white)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 10)
+            .background(speechBubbleBackground(color: bubbleColor))
+            .overlay(speechBubbleTail(color: bubbleColor))
+    }
+    
+    private func speechBubbleBackground(color: Color) -> some View {
+        RoundedRectangle(cornerRadius: 20)
+            .fill(color)
+            .shadow(color: .black.opacity(0.2), radius: 4, x: 0, y: 2)
+    }
+    
+    private func speechBubbleTail(color: Color) -> some View {
+        Triangle()
+            .fill(color)
+            .frame(width: 12, height: 8)
+            .offset(x: -8, y: 20)
+    }
+    
+    private func getBubbleColor(for character: RomanianCharacterAvatar) -> Color {
+        switch character {
+        case .traditionalPlayer: return Color.brown
+        case .villageElder: return Color.green.opacity(0.8)
+        case .folkMusician: return Color.blue
+        case .transylvanianNoble: return Color.red.opacity(0.8)
+        case .moldovanScholar: return Color.gray
+        case .wallachianWarrior: return Color.yellow.opacity(0.8)
+        case .carpathianShepherd: return Color.green.opacity(0.7)
+        case .danubianFisherman: return Color.blue.opacity(0.7)
+        case .bucovinianArtisan: return Color.orange
+        case .dobrudjanMerchant: return Color.yellow.opacity(0.9)
+        }
+    }
+    
+    private var tooltipContent: some View {
+        Text(dialogue.english)
+            .font(.caption)
+            .foregroundColor(.gray)
+            .italic()
+            .padding(.horizontal, 8)
+            .transition(.opacity.combined(with: .move(edge: .top)))
     }
 }
+
 
 // MARK: - Character Extensions
 
@@ -374,10 +397,14 @@ extension RomanianCharacterAvatar {
         switch self {
         case .traditionalPlayer: return "#8B4513" // Brown
         case .villageElder: return "#228B22" // Forest green
-        case .wiseGrandmother: return "#4169E1" // Royal blue
-        case .youthfulStudent: return "#FF6347" // Tomato red
-        case .mountainShepherd: return "#2F4F4F" // Dark slate gray
-        case .cityMerchant: return "#FFD700" // Gold
+        case .folkMusician: return "#4169E1" // Royal blue
+        case .transylvanianNoble: return "#8B0000" // Dark red
+        case .moldovanScholar: return "#2F4F4F" // Dark slate gray
+        case .wallachianWarrior: return "#FFD700" // Gold
+        case .carpathianShepherd: return "#006400" // Dark green
+        case .danubianFisherman: return "#4682B4" // Steel blue
+        case .bucovinianArtisan: return "#FF6347" // Tomato red
+        case .dobrudjanMerchant: return "#DAA520" // Goldenrod
         }
     }
     
@@ -386,10 +413,14 @@ extension RomanianCharacterAvatar {
         switch self {
         case .traditionalPlayer: return .traditional
         case .villageElder: return .wise
-        case .wiseGrandmother: return .nurturing
-        case .youthfulStudent: return .enthusiastic
-        case .mountainShepherd: return .straightforward
-        case .cityMerchant: return .clever
+        case .folkMusician: return .enthusiastic
+        case .transylvanianNoble: return .clever
+        case .moldovanScholar: return .wise
+        case .wallachianWarrior: return .straightforward
+        case .carpathianShepherd: return .traditional
+        case .danubianFisherman: return .straightforward
+        case .bucovinianArtisan: return .nurturing
+        case .dobrudjanMerchant: return .clever
         }
     }
 }
