@@ -44,116 +44,124 @@ struct GameBoardView: View {
             )
             
             VStack(spacing: 20) {
-                // Top player area with character reactions
-                HStack {
-                    // Opponent hand
-                    if gameViewModel.players.count > 1 {
-                        OpponentHandView(
-                            player: gameViewModel.players[1],
-                            isCurrentPlayer: gameViewModel.currentPlayerIndex == 1
-                        )
-                        .rotationEffect(.degrees(180))
+                // Top player area with character reactions - Romanian ornate frame
+                RomanianGameZoneFrames.OpponentAreaFrame {
+                    HStack {
+                        // Opponent hand
+                        if gameViewModel.players.count > 1 {
+                            OpponentHandView(
+                                player: gameViewModel.players[1],
+                                isCurrentPlayer: gameViewModel.currentPlayerIndex == 1
+                            )
+                            .rotationEffect(.degrees(180))
+                        }
+                        
+                        Spacer()
+                        
+                        // Romanian character with dialogue system
+                        VStack(alignment: .trailing, spacing: 8) {
+                            // Dialogue bubble above character
+                            if dialogueSystem.isShowingDialogue,
+                               let dialogue = dialogueSystem.currentDialogue {
+                                RomanianDialogueBubbleView(
+                                    dialogue: dialogue,
+                                    character: gameViewModel.currentOpponentAvatar
+                                )
+                                .transition(.asymmetric(
+                                    insertion: .scale.combined(with: .opacity),
+                                    removal: .opacity
+                                ))
+                            }
+                            
+                            // Character avatar
+                            RomanianCharacterView(
+                                animator: characterAnimator,
+                                size: CGSize(width: 80, height: 100)
+                            )
+                            .scaleEffect(0.8)
+                        }
                     }
-                    
-                    Spacer()
-                    
-                    // Romanian character with dialogue system
-                    VStack(alignment: .trailing, spacing: 8) {
-                        // Dialogue bubble above character
-                        if dialogueSystem.isShowingDialogue,
-                           let dialogue = dialogueSystem.currentDialogue {
-                            RomanianDialogueBubbleView(
-                                dialogue: dialogue,
-                                character: gameViewModel.currentOpponentAvatar
+                }
+                
+                Spacer()
+                
+                // Game table (center area) with enhanced Shuffle Cats-style drop zones - Romanian ornate frame
+                RomanianGameZoneFrames.GameTableFrame(
+                    isActive: gameViewModel.isHumanPlayerTurn
+                ) {
+                    ZStack {
+                        OrganizedGameTableView(
+                            tableCards: gameViewModel.tableCards,
+                            validMoves: gameViewModel.validMoves,
+                            onCardTapped: playCard,
+                            animatingCard: animatingCard
+                        )
+                        
+                        // Enhanced drop zones with magnetic snapping
+                        ForEach(dragCoordinator.dropZones) { zone in
+                            EnhancedDropZoneView(
+                                zone: zone,
+                                coordinator: dragCoordinator
+                            )
+                            .transition(.scale.combined(with: .opacity))
+                        }
+                        
+                        // Ghost card for Shuffle Cats-style drag preview
+                        if dragCoordinator.showGhostCard,
+                           let draggedCard = dragCoordinator.draggedCard {
+                            GhostCardView(
+                                card: draggedCard,
+                                position: dragCoordinator.ghostCardPosition,
+                                opacity: dragCoordinator.ghostCardOpacity,
+                                isSnapping: dragCoordinator.magneticSnappingActive
                             )
                             .transition(.asymmetric(
                                 insertion: .scale.combined(with: .opacity),
-                                removal: .opacity
+                                removal: .scale.combined(with: .opacity)
                             ))
+                            .zIndex(1000) // Always on top
                         }
-                        
-                        // Character avatar
-                        RomanianCharacterView(
-                            animator: characterAnimator,
-                            size: CGSize(width: 80, height: 100)
-                        )
-                        .scaleEffect(0.8)
                     }
                 }
                 
                 Spacer()
                 
-                // Game table (center area) with enhanced Shuffle Cats-style drop zones
-                ZStack {
-                    OrganizedGameTableView(
-                        tableCards: gameViewModel.tableCards,
-                        validMoves: gameViewModel.validMoves,
-                        onCardTapped: playCard,
-                        animatingCard: animatingCard
-                    )
-                    
-                    // Enhanced drop zones with magnetic snapping
-                    ForEach(dragCoordinator.dropZones) { zone in
-                        EnhancedDropZoneView(
-                            zone: zone,
-                            coordinator: dragCoordinator
-                        )
-                        .transition(.scale.combined(with: .opacity))
-                    }
-                    
-                    // Ghost card for Shuffle Cats-style drag preview
-                    if dragCoordinator.showGhostCard,
-                       let draggedCard = dragCoordinator.draggedCard {
-                        GhostCardView(
-                            card: draggedCard,
-                            position: dragCoordinator.ghostCardPosition,
-                            opacity: dragCoordinator.ghostCardOpacity,
-                            isSnapping: dragCoordinator.magneticSnappingActive
-                        )
-                        .transition(.asymmetric(
-                            insertion: .scale.combined(with: .opacity),
-                            removal: .scale.combined(with: .opacity)
-                        ))
-                        .zIndex(1000) // Always on top
-                    }
-                }
-                
-                Spacer()
-                
-                // Bottom player area (human player) with enhanced Shuffle Cats-style interactions
+                // Bottom player area (human player) with enhanced Shuffle Cats-style interactions - Romanian ornate frame
                 if let currentPlayer = gameViewModel.humanPlayer {
-                    PlayerHandView(
-                        player: currentPlayer,
-                        selectedCard: selectedCard,
-                        validMoves: gameViewModel.validMoves,
-                        onCardSelected: { card in
-                            selectedCard = card
-                            updateDropZones(for: card)
-                        },
-                        onCardPlayed: playCard,
-                        isCurrentPlayer: gameViewModel.isHumanPlayerTurn,
-                        isInteractionEnabled: gameViewModel.canHumanPlayerMove,
-                        onDragStateChanged: { isActive, position, isValid in
-                            // Use enhanced drag coordinator for Shuffle Cats-style interactions
-                            if isActive, let pos = position, let selected = selectedCard {
-                                if !dragCoordinator.isDragActive {
-                                    // Start drag with ghost card
-                                    dragCoordinator.startDrag(card: selected, at: pos)
-                                } else {
-                                    // Update drag position with magnetic snapping
-                                    dragCoordinator.updateDrag(position: pos)
-                                }
-                            } else if !isActive && dragCoordinator.isDragActive {
-                                // End drag and check for successful drop
-                                if let dropZone = dragCoordinator.endDrag(at: dragCoordinator.dragPosition) {
-                                    // Successful drop in valid zone
-                                    if dropZone.isValid {
-                                        playCard(dragCoordinator.draggedCard ?? selectedCard!)
+                    RomanianGameZoneFrames.PlayerHandFrame {
+                        PlayerHandView(
+                            player: currentPlayer,
+                            selectedCard: selectedCard,
+                            validMoves: gameViewModel.validMoves,
+                            onCardSelected: { card in
+                                selectedCard = card
+                                updateDropZones(for: card)
+                            },
+                            onCardPlayed: playCard,
+                            isCurrentPlayer: gameViewModel.isHumanPlayerTurn,
+                            isInteractionEnabled: gameViewModel.canHumanPlayerMove,
+                            onDragStateChanged: { isActive, position, isValid in
+                                // Use enhanced drag coordinator for Shuffle Cats-style interactions
+                                if isActive, let pos = position, let selected = selectedCard {
+                                    if !dragCoordinator.isDragActive {
+                                        // Start drag with ghost card
+                                        dragCoordinator.startDrag(card: selected, at: pos)
+                                    } else {
+                                        // Update drag position with magnetic snapping
+                                        dragCoordinator.updateDrag(position: pos)
+                                    }
+                                } else if !isActive && dragCoordinator.isDragActive {
+                                    // End drag and check for successful drop
+                                    if let dropZone = dragCoordinator.endDrag(at: dragCoordinator.dragPosition) {
+                                        // Successful drop in valid zone
+                                        if dropZone.isValid {
+                                            playCard(dragCoordinator.draggedCard ?? selectedCard!)
+                                        }
                                     }
                                 }
                             }
-                        }
-                    )
+                        )
+                    }
                 }
             }
             .padding()
@@ -161,13 +169,15 @@ struct GameBoardView: View {
             // Game controls overlay
             VStack {
                 HStack {
-                    // Game info
-                    GameInfoView(
-                        currentPlayer: gameViewModel.currentPlayer?.name ?? "",
-                        scores: gameViewModel.playerScores,
-                        trickNumber: gameViewModel.gameState.trickNumber,
-                        roundNumber: gameViewModel.gameState.roundNumber
-                    )
+                    // Game info with Romanian ornate frame
+                    RomanianGameZoneFrames.SidePanelFrame(title: "Informații Joc") {
+                        GameInfoView(
+                            currentPlayer: gameViewModel.currentPlayer?.name ?? "",
+                            scores: gameViewModel.playerScores,
+                            trickNumber: gameViewModel.gameState.trickNumber,
+                            roundNumber: gameViewModel.gameState.roundNumber
+                        )
+                    }
                     
                     Spacer()
                     
