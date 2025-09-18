@@ -551,48 +551,94 @@ struct CardView: View {
         .animation(Animation.spring(response: 0.35, dampingFraction: 0.75, blendDuration: 0.15), value: isSelected)
         .animation(Animation.spring(response: 0.25, dampingFraction: 0.8, blendDuration: 0.1), value: isPressed)
         .animation(Animation.spring(response: 0.4, dampingFraction: 0.85, blendDuration: 0.15), value: isDragging)
-        .cardPlayAnimation(isActive: playAnimationTrigger, manager: animationManager)
+        .cardPlayAnimation(
+            isActive: playAnimationTrigger,
+            manager: animationManager,
+            from: .zero,
+            to: .zero,
+            velocity: getCurrentVelocity(),
+            cardId: card.id.uuidString
+        )
         .gesture(
             // Enhanced Shuffle Cats-style drag gestures with magnetic snapping
             DragGesture(minimumDistance: 8, coordinateSpace: .global)
                 .onChanged { value in
                     guard isPlayable else { 
-                        // Enhanced invalid move feedback with shake
+                        // Enhanced invalid move feedback with physics-based shake
                         hapticManager.trigger(.cardInvalid)
-                        withAnimation(.easeInOut(duration: 0.1).repeatCount(3, autoreverses: true)) {
+                        
+                        // Physics-based rejection animation
+                        let rejectionAnimation = animationManager.createCollisionAwareAnimation(
+                            collisionForce: CGPoint(x: 10, y: 0),
+                            elasticity: 0.3,
+                            cardId: card.id.uuidString
+                        )
+                        
+                        withAnimation(rejectionAnimation) {
                             dragOffset = CGSize(width: 8, height: 0)
                         }
+                        
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                            withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                            let returnAnimation = animationManager.createMomentumPreservingAnimation(
+                                initialMomentum: CGPoint(x: -8, y: 0),
+                                targetPosition: .zero,
+                                cardId: card.id.uuidString
+                            )
+                            withAnimation(returnAnimation) {
                                 dragOffset = .zero
                             }
                         }
                         return
                     }
                     
-                    // Start drag with enhanced visual feedback
+                    // Start drag with enhanced physics feedback
                     if !isDragging {
                         isDragging = true
                         hapticManager.trigger(.cardSelect)
                         audioManager.playSound(.cardSelect)
                         
+                        // Register card for physics simulation
+                        animationManager.registerCardForCollision(
+                            cardId: card.id.uuidString,
+                            position: CGPoint(x: 0, y: 0),
+                            velocity: CGPoint(x: value.velocity.width, y: value.velocity.height)
+                        )
+                        
                         // Trigger magnetic attraction effect
                         visualEffectsManager.triggerEffect(.magneticAttraction, for: card)
                         
-                        // Enhanced lift effect for drag start
-                        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                            rotationAngle = Double.random(in: -3...3) // Subtle rotation for natural feel
+                        // Physics-aware lift effect for drag start
+                        let liftAnimation = animationManager.createGesturePhysicsAnimation(
+                            velocity: CGPoint(x: value.velocity.width, y: value.velocity.height),
+                            position: CGPoint(x: 0, y: 0),
+                            cardId: card.id.uuidString
+                        )
+                        
+                        withAnimation(liftAnimation) {
+                            rotationAngle = Double.random(in: -3...3) // Natural physics rotation
                         }
                     }
                     
-                    // Smooth drag following with enhanced physics
-                    let dampingFactor: CGFloat = 0.8
+                    // Physics-enhanced drag following with momentum preservation
+                    let velocity = CGPoint(x: value.velocity.width, y: value.velocity.height)
+                    let velocityMagnitude = sqrt(pow(velocity.x, 2) + pow(velocity.y, 2))
+                    
+                    // Adaptive damping based on velocity (high velocity = less damping for natural feel)
+                    let adaptiveDamping = max(0.6, 0.9 - velocityMagnitude / 2000.0)
+                    
                     dragOffset = CGSize(
-                        width: value.translation.width * dampingFactor,
-                        height: value.translation.height * dampingFactor
+                        width: value.translation.width * adaptiveDamping,
+                        height: value.translation.height * adaptiveDamping
                     )
                     
-                    // Call external drag handler for Shuffle Cats-style drop zone feedback
+                    // Update physics simulation
+                    animationManager.updateCardCollision(
+                        cardId: card.id.uuidString,
+                        position: CGPoint(x: dragOffset.width, y: dragOffset.height),
+                        velocity: velocity
+                    )
+                    
+                    // Call external drag handler for drop zone feedback
                     onDragChanged?(value)
                 }
                 .onEnded { value in
@@ -600,34 +646,56 @@ struct CardView: View {
                     
                     isDragging = false
                     
-                    // Enhanced drag distance calculation with directional bias
+                    // Physics-enhanced drag analysis with energy conservation
                     let dragDistance = sqrt(pow(value.translation.width, 2) + pow(value.translation.height, 2))
-                    let dragVelocity = sqrt(pow(value.velocity.width, 2) + pow(value.velocity.height, 2))
+                    let velocity = CGPoint(x: value.velocity.width, y: value.velocity.height)
+                    let dragVelocity = sqrt(pow(velocity.x, 2) + pow(velocity.y, 2))
                     
-                    // Shuffle Cats-style drop detection (distance + velocity + direction)
-                    let isIntentionalDrop = dragDistance > 40 || dragVelocity > 500
+                    // Calculate kinetic energy for physics-based decision making
+                    let kineticEnergy = 0.5 * 1.0 * pow(dragVelocity, 2)  // mass = 1.0 for cards
+                    
+                    // Enhanced drop detection with physics consideration
+                    let isIntentionalDrop = dragDistance > 40 || dragVelocity > 500 || kineticEnergy > 1000
                     let isUpwardDrag = value.translation.height < -25 // Dragging toward play area
                     
                     if isIntentionalDrop && isUpwardDrag {
-                        // Successful drop - enhanced feedback
+                        // Successful drop with momentum preservation
                         onDragEnded?(value)
                         
                         hapticManager.trigger(.cardPlay)
                         audioManager.playSound(.cardPlace)
                         playAnimationTrigger = true
                         
+                        // Physics-based card throw animation
+                        let throwAnimation = animationManager.createMomentumPreservingAnimation(
+                            initialMomentum: velocity,
+                            targetPosition: CGPoint(x: value.translation.width, y: value.translation.height),
+                            cardId: card.id.uuidString
+                        )
+                        
                         // Trigger card trail effect and play effects
                         visualEffectsManager.triggerEffect(.cardTrail, for: card)
                         triggerPlayVisualEffects()
                         
-                        // Celebrate successful drag
-                        withAnimation(.spring(response: 0.4, dampingFraction: 0.6)) {
+                        // Celebrate successful physics-based drag
+                        withAnimation(throwAnimation) {
                             rotationAngle = 0
                             dragOffset = .zero
                         }
+                        
+                        // Clean up physics simulation after successful play
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                            animationManager.unregisterCardFromCollision(cardId: card.id.uuidString)
+                        }
                     } else {
-                        // Return to hand with natural animation
-                        withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
+                        // Return to hand with physics-based snap back
+                        let snapBackAnimation = animationManager.createMomentumPreservingAnimation(
+                            initialMomentum: CGPoint(x: -velocity.x * 0.3, y: -velocity.y * 0.3),
+                            targetPosition: .zero,
+                            cardId: card.id.uuidString
+                        )
+                        
+                        withAnimation(snapBackAnimation) {
                             rotationAngle = 0
                             dragOffset = .zero
                         }
@@ -637,6 +705,11 @@ struct CardView: View {
                             onTap?()
                             hapticManager.trigger(.cardSelect)
                             audioManager.playSound(.cardSelect)
+                        }
+                        
+                        // Clean up physics simulation after return
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                            animationManager.unregisterCardFromCollision(cardId: card.id.uuidString)
                         }
                     }
                 }
@@ -722,6 +795,12 @@ struct CardView: View {
         .onReceive(NotificationCenter.default.publisher(for: UIAccessibility.voiceOverStatusDidChangeNotification)) { _ in
             // Respond to VoiceOver state changes
         }
+    }
+    
+    /// Get current velocity for physics calculations
+    private func getCurrentVelocity() -> CGPoint {
+        // Return stored velocity from animation manager if available
+        return animationManager.getCurrentVelocity(.cardPlay)
     }
     
     // MARK: - Computed Properties
