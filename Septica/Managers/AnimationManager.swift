@@ -98,8 +98,8 @@ class AnimationManager: ObservableObject {
         
         // Enhanced trajectory calculation with drag momentum integration
         let distance = sqrt(pow(endPosition.x - startPosition.x, 2) + pow(endPosition.y - startPosition.y, 2))
-        let initialVelocityMagnitude = sqrt(pow(initialVelocity.x, 2) + pow(initialVelocity.y, 2))
-        let dragVelocityMagnitude = sqrt(pow(dragVelocity.x, 2) + pow(dragVelocity.y, 2))
+        let _ = sqrt(pow(initialVelocity.x, 2) + pow(initialVelocity.y, 2))
+        let _ = sqrt(pow(dragVelocity.x, 2) + pow(dragVelocity.y, 2))
         
         // Combine initial and drag velocities for total momentum
         let combinedVelocity = CGPoint(
@@ -529,6 +529,123 @@ class AnimationManager: ObservableObject {
         case high = 3
         case critical = 4
     }
+    
+    // MARK: - Game End Celebration Animations
+    
+    /// Play confetti animation with specified intensity
+    func playConfettiAnimation(intensity: Double) async {
+        startAnimation(.victory)
+        
+        withAnimation(.easeOut(duration: getAdjustedDuration(2.0))) {
+            // Confetti particle animation
+        }
+        
+        try? await Task.sleep(nanoseconds: UInt64(getAdjustedDuration(2.0) * 1_000_000_000))
+        endAnimation(.victory)
+    }
+    
+    /// Animate experience gain with counting effect
+    func animateExperienceGain(_ experience: Any) async {
+        startAnimation(.scoreUpdate)
+        
+        withAnimation(AnimationSettings.scoreSpring) {
+            // Experience points animation
+        }
+        
+        try? await Task.sleep(nanoseconds: UInt64(getAdjustedDuration(1.5) * 1_000_000_000))
+        endAnimation(.scoreUpdate)
+    }
+    
+    /// Display cultural wisdom with elegant Romanian presentation
+    func displayCulturalWisdom(_ wisdom: String) async {
+        startAnimation(.menuTransition)
+        
+        withAnimation(.romanianBlessing) {
+            // Cultural wisdom display animation with traditional Romanian reverence
+        }
+        
+        try? await Task.sleep(nanoseconds: UInt64(getAdjustedDuration(2.0) * 1_000_000_000))
+        endAnimation(.menuTransition)
+    }
+    
+    /// Fade out celebration effects
+    func fadeOutCelebration() async {
+        withAnimation(.easeOut(duration: getAdjustedDuration(1.0))) {
+            // Fade out all celebration elements
+        }
+        
+        try? await Task.sleep(nanoseconds: UInt64(getAdjustedDuration(1.0) * 1_000_000_000))
+        stopAllAnimations()
+    }
+    
+    /// Play specific animation type
+    func playAnimation(_ animationType: Any) async {
+        startAnimation(.victory)
+        
+        withAnimation(.easeInOut(duration: getAdjustedDuration(1.0))) {
+            // Generic animation playback
+        }
+        
+        try? await Task.sleep(nanoseconds: UInt64(getAdjustedDuration(1.0) * 1_000_000_000))
+        endAnimation(.victory)
+    }
+    
+    /// Animate statistic count up for multiple values
+    func animateStatisticCountUp(_ statistics: Any) async {
+        startAnimation(.scoreUpdate)
+        
+        withAnimation(.easeInOut(duration: getAdjustedDuration(1.5))) {
+            // Multiple statistics animation
+        }
+        
+        try? await Task.sleep(nanoseconds: UInt64(getAdjustedDuration(1.5) * 1_000_000_000))
+        endAnimation(.scoreUpdate)
+    }
+    
+    // MARK: - Helper methods
+    
+    /// Get duration adjusted for accessibility preferences
+    func getAdjustedDuration(_ baseDuration: Double) -> Double {
+        let isReducedMotionEnabled = UIAccessibility.isReduceMotionEnabled
+        return isReducedMotionEnabled ? baseDuration * 0.3 : baseDuration
+    }
+    
+    /// Get animation with enhanced accessibility considerations
+    func accessibleAnimation(_ animation: Animation) -> Animation {
+        let isReducedMotionEnabled = UIAccessibility.isReduceMotionEnabled
+        if isReducedMotionEnabled {
+            // Maintain physics feel but reduce intensity
+            return Animation.interpolatingSpring(
+                mass: 0.5,      // Lighter for gentler motion
+                stiffness: 200, // Higher stiffness for quicker settling
+                damping: 30,    // High damping to minimize oscillation
+                initialVelocity: 0 // No initial velocity for reduced motion
+            )
+        }
+        return animation
+    }
+    
+    /// Create momentum-preserving animation based on gesture velocity
+    func createVelocityBasedAnimation(
+        velocity: CGPoint,
+        baseAnimation: Animation = Animation.interpolatingSpring(mass: 1.0, stiffness: 130, damping: 11, initialVelocity: 8)
+    ) -> Animation {
+        let velocityMagnitude = sqrt(pow(velocity.x, 2) + pow(velocity.y, 2))
+        
+        if velocityMagnitude < AnimationSettings.velocityThreshold {
+            return accessibleAnimation(baseAnimation)
+        }
+        
+        // Create momentum-preserving physics
+        let dynamicSpring = Animation.interpolatingSpring(
+            mass: 0.8 + min(velocityMagnitude / 1000.0, 1.5),
+            stiffness: max(100, 180 - velocityMagnitude / 20.0),
+            damping: 12 + velocityMagnitude / 100.0,
+            initialVelocity: min(velocityMagnitude / 100.0, 20.0)
+        )
+        
+        return accessibleAnimation(dynamicSpring)
+    }
 }
 
 // MARK: - Frame Rate Monitor
@@ -658,251 +775,11 @@ struct AnimationTask {
         return baseAnimation
     }
     
-    /// Create momentum-preserving animation based on gesture velocity
-    func createVelocityBasedAnimation(
-        velocity: CGPoint,
-        baseAnimation: Animation = AnimationSettings.cardSpring
-    ) -> Animation {
-        let velocityMagnitude = sqrt(pow(velocity.x, 2) + pow(velocity.y, 2))
-        
-        if velocityMagnitude < AnimationSettings.velocityThreshold {
-            return accessibleAnimation(baseAnimation)
-        }
-        
-        // Create momentum-preserving physics
-        let dynamicSpring = Animation.interpolatingSpring(
-            mass: 0.8 + min(velocityMagnitude / 1000.0, 1.5),
-            stiffness: max(100, 180 - velocityMagnitude / 20.0),
-            damping: 12 + velocityMagnitude / 100.0,
-            initialVelocity: min(velocityMagnitude / 100.0, 20.0)
-        )
-        
-        return accessibleAnimation(dynamicSpring)
-    }
     
-    // MARK: - Game End Celebration Animations
-    
-    /// Play confetti animation with specified intensity
-    func playConfettiAnimation(intensity: Double) async {
-        startAnimation(.victory)
-        
-        withAnimation(.easeOut(duration: adjustedDuration(2.0))) {
-            // Confetti particle animation
-        }
-        
-        try? await Task.sleep(nanoseconds: UInt64(adjustedDuration(2.0) * 1_000_000_000))
-        endAnimation(.victory)
-    }
-    
-    /// Animate statistics reveal with staggered appearance
-    func animateStatisticsReveal(_ statistics: Any) async {
-        startAnimation(.scoreUpdate)
-        
-        withAnimation(.easeInOut(duration: adjustedDuration(1.0))) {
-            // Statistics reveal animation
-        }
-        
-        try? await Task.sleep(nanoseconds: UInt64(adjustedDuration(1.0) * 1_000_000_000))
-        endAnimation(.scoreUpdate)
-    }
-    
-    /// Animate experience gain with counting effect
-    func animateExperienceGain(_ experience: Any) async {
-        startAnimation(.scoreUpdate)
-        
-        withAnimation(AnimationSettings.scoreSpring) {
-            // Experience points animation
-        }
-        
-        try? await Task.sleep(nanoseconds: UInt64(adjustedDuration(1.5) * 1_000_000_000))
-        endAnimation(.scoreUpdate)
-    }
-    
-    /// Animate achievement unlock with celebration
-    func animateAchievementUnlock(_ achievement: Any) async {
-        startAnimation(.victory)
-        
-        withAnimation(.spring(response: 0.6, dampingFraction: 0.7)) {
-            // Achievement unlock animation with bounce
-        }
-        
-        try? await Task.sleep(nanoseconds: UInt64(adjustedDuration(1.0) * 1_000_000_000))
-        endAnimation(.victory)
-    }
-    
-    /// Display cultural wisdom with elegant Romanian presentation
-    func displayCulturalWisdom(_ wisdom: String) async {
-        startAnimation(.menuTransition)
-        
-        withAnimation(.romanianBlessing) {
-            // Cultural wisdom display animation with traditional Romanian reverence
-        }
-        
-        try? await Task.sleep(nanoseconds: UInt64(adjustedDuration(2.0) * 1_000_000_000))
-        endAnimation(.menuTransition)
-    }
     
     // MARK: - Enhanced Romanian Cultural Animation Methods
     
-    /// Animate Romanian seven card play with cultural authenticity
-    func animateRomanianSevenPlay(
-        card: Card,
-        completion: @escaping () -> Void = {}
-    ) async {
-        startAnimation(.cardPlay)
-        
-        // Phase 1: Ceremonial recognition of the seven's power
-        withAnimation(.romanianBlessing) {
-            // Reverent acknowledgment of the seven's cultural significance
-        }
-        
-        try? await Task.sleep(nanoseconds: UInt64(adjustedDuration(0.8) * 1_000_000_000))
-        
-        // Phase 2: Traditional folk rhythm for the play
-        withAnimation(.romanianFolkRhythm) {
-            // Lively, spirited movement reflecting Romanian folk traditions
-        }
-        
-        try? await Task.sleep(nanoseconds: UInt64(adjustedDuration(1.0) * 1_000_000_000))
-        
-        // Phase 3: Final ceremonial settling
-        withAnimation(.romanianSevenPhysics) {
-            // Dignified final motion respecting cultural importance
-        }
-        
-        try? await Task.sleep(nanoseconds: UInt64(adjustedDuration(1.2) * 1_000_000_000))
-        endAnimation(.cardPlay)
-        completion()
-    }
     
-    /// Animate point card capture with Romanian celebration
-    func animateRomanianPointCapture(
-        capturedCards: [Card],
-        completion: @escaping () -> Void = {}
-    ) async {
-        startAnimation(.scoreUpdate)
-        
-        // Traditional Romanian gathering motion
-        withAnimation(.romanianGathering) {
-            // Cards come together in traditional village game style
-        }
-        
-        try? await Task.sleep(nanoseconds: UInt64(adjustedDuration(0.6) * 1_000_000_000))
-        
-        // Victory dance for successful capture
-        withAnimation(.romanianVictoryDance) {
-            // Joyful bouncing celebration with folk dance energy
-        }
-        
-        try? await Task.sleep(nanoseconds: UInt64(adjustedDuration(1.5) * 1_000_000_000))
-        endAnimation(.scoreUpdate)
-        completion()
-    }
-    
-    /// Animate trick completion with Romanian community spirit
-    func animateRomanianTrickCompletion(
-        trickCards: [Card],
-        winner: String,
-        completion: @escaping () -> Void = {}
-    ) async {
-        startAnimation(.turnTransition)
-        
-        // Cards gather with community spirit
-        withAnimation(.romanianGathering) {
-            // Traditional gathering motion as cards come together
-        }
-        
-        try? await Task.sleep(nanoseconds: UInt64(adjustedDuration(1.0) * 1_000_000_000))
-        
-        // Recognition of the trick winner
-        withAnimation(.romanianBlessing) {
-            // Respectful acknowledgment of the winner
-        }
-        
-        try? await Task.sleep(nanoseconds: UInt64(adjustedDuration(0.8) * 1_000_000_000))
-        
-        // Light celebration for the winning card
-        withAnimation(.romanianFolkRhythm) {
-            // Brief celebratory motion
-        }
-        
-        try? await Task.sleep(nanoseconds: UInt64(adjustedDuration(0.6) * 1_000_000_000))
-        endAnimation(.turnTransition)
-        completion()
-    }
-    
-    /// Fade out celebration effects
-    func fadeOutCelebration() async {
-        withAnimation(.easeOut(duration: adjustedDuration(1.0))) {
-            // Fade out all celebration elements
-        }
-        
-        try? await Task.sleep(nanoseconds: UInt64(adjustedDuration(1.0) * 1_000_000_000))
-        stopAllAnimations()
-    }
-    
-    /// Start particle effects for celebrations
-    func startParticleEffects(_ particleType: Any) async {
-        startAnimation(.victory)
-        
-        withAnimation(.easeOut(duration: adjustedDuration(3.0))) {
-            // Particle system animation
-        }
-        
-        try? await Task.sleep(nanoseconds: UInt64(adjustedDuration(3.0) * 1_000_000_000))
-    }
-    
-    /// Play specific animation type
-    func playAnimation(_ animationType: Any) async {
-        startAnimation(.victory)
-        
-        withAnimation(.easeInOut(duration: adjustedDuration(1.0))) {
-            // Generic animation playback
-        }
-        
-        try? await Task.sleep(nanoseconds: UInt64(adjustedDuration(1.0) * 1_000_000_000))
-        endAnimation(.victory)
-    }
-    
-    /// Animate score count up with number progression
-    func animateScoreCountUp(from startValue: Int, to endValue: Int) async {
-        startAnimation(.scoreUpdate)
-        
-        let duration = adjustedDuration(2.0)
-        let steps = min(abs(endValue - startValue), 20) // Limit animation steps
-        let stepDuration = duration / Double(steps)
-        
-        for step in 1...steps {
-            withAnimation(.easeOut(duration: stepDuration)) {
-                // Score counting animation step
-            }
-            try? await Task.sleep(nanoseconds: UInt64(stepDuration * 1_000_000_000))
-        }
-        
-        endAnimation(.scoreUpdate)
-    }
-    
-    /// Animate statistic count up for multiple values
-    func animateStatisticCountUp(_ statistics: Any) async {
-        startAnimation(.scoreUpdate)
-        
-        withAnimation(.easeInOut(duration: adjustedDuration(1.5))) {
-            // Multiple statistics animation
-        }
-        
-        try? await Task.sleep(nanoseconds: UInt64(adjustedDuration(1.5) * 1_000_000_000))
-        endAnimation(.scoreUpdate)
-    }
-    
-    /// Fade out all effects completely
-    func fadeOutAllEffects() async {
-        withAnimation(.easeOut(duration: adjustedDuration(1.0))) {
-            // Fade out all active effects
-        }
-        
-        try? await Task.sleep(nanoseconds: UInt64(adjustedDuration(1.0) * 1_000_000_000))
-        stopAllAnimations()
-    }
 }
 
 // MARK: - Animation View Modifiers
@@ -940,7 +817,7 @@ extension View {
             .opacity(isActive ? 0.7 : 1.0)
             .animation(
                 manager.accessibleAnimation(
-                    .easeInOut(duration: manager.adjustedDuration(1.0))
+                    .easeInOut(duration: manager.getAdjustedDuration(1.0))
                     .repeatForever(autoreverses: true)
                 ),
                 value: isActive
