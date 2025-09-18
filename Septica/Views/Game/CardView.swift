@@ -42,6 +42,11 @@ struct CardView: View {
     @State private var currentAnimationSequence: AnimationSequenceType = .sevenPlaySpecial
     @State private var particleEffectActive = false
     
+    // Dynamic shadow and special card properties
+    private var isSpecialCard: Bool {
+        card.value == 7 || card.isPointCard
+    }
+    
     // Metal rendering computed properties
     private var rotationAxis: (x: CGFloat, y: CGFloat, z: CGFloat) {
         return (x: 0, y: 1, z: 0)
@@ -518,12 +523,12 @@ struct CardView: View {
             effectsManager: visualEffectsManager
         )
         .scaleEffect(scaleEffect)
-        .rotationEffect(.degrees(rotationAngle))
+        .rotationEffect(Angle.degrees(rotationAngle))
         .opacity(opacity)
         .offset(dragOffset)
-        .animation(.spring(response: 0.35, dampingFraction: 0.75, blendDuration: 0.15), value: isSelected)
-        .animation(.spring(response: 0.25, dampingFraction: 0.8, blendDuration: 0.1), value: isPressed)
-        .animation(.spring(response: 0.4, dampingFraction: 0.85, blendDuration: 0.15), value: isDragging)
+        .animation(Animation.spring(response: 0.35, dampingFraction: 0.75, blendDuration: 0.15), value: isSelected)
+        .animation(Animation.spring(response: 0.25, dampingFraction: 0.8, blendDuration: 0.1), value: isPressed)
+        .animation(Animation.spring(response: 0.4, dampingFraction: 0.85, blendDuration: 0.15), value: isDragging)
         .cardPlayAnimation(isActive: playAnimationTrigger, manager: animationManager)
         .gesture(
             // Enhanced Shuffle Cats-style drag gestures with magnetic snapping

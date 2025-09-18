@@ -481,7 +481,7 @@ class RewardChestService: ObservableObject {
         case dailyChestNotAvailable
         case insufficientGems
         
-        var errorDescription: String? {
+        nonisolated var errorDescription: String? {
             switch self {
             case .invalidSlot:
                 return "Invalid chest slot."

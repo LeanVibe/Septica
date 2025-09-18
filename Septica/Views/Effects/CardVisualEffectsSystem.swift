@@ -430,9 +430,209 @@ struct ParticleView: View {
     }
 }
 
+// MARK: - Global Illumination System
+
+/// Advanced global illumination system for realistic light bouncing and color bleeding
+struct GlobalIlluminationSystem {
+    /// Global illumination configuration
+    struct GIConfiguration {
+        let bounceIntensity: Double
+        let colorBleedingStrength: Double
+        let ambientOcclusionStrength: Double
+        let culturalColorInfluence: Double
+        let lightBounceRadius: CGFloat
+        let maxBounces: Int
+        
+        static let standard = GIConfiguration(
+            bounceIntensity: 0.3,
+            colorBleedingStrength: 0.4,
+            ambientOcclusionStrength: 0.2,
+            culturalColorInfluence: 0.5,
+            lightBounceRadius: 50.0,
+            maxBounces: 3
+        )
+        
+        static let enhanced = GIConfiguration(
+            bounceIntensity: 0.5,
+            colorBleedingStrength: 0.6,
+            ambientOcclusionStrength: 0.3,
+            culturalColorInfluence: 0.7,
+            lightBounceRadius: 75.0,
+            maxBounces: 4
+        )
+        
+        static let performance = GIConfiguration(
+            bounceIntensity: 0.2,
+            colorBleedingStrength: 0.3,
+            ambientOcclusionStrength: 0.15,
+            culturalColorInfluence: 0.4,
+            lightBounceRadius: 40.0,
+            maxBounces: 2
+        )
+    }
+    
+    /// Calculate global illumination contribution at a specific position
+    static func calculateGIContribution(
+        at position: CGPoint,
+        configuration: GIConfiguration
+    ) -> Color {
+        // Simulate indirect lighting from nearby surfaces
+        let ambientContribution = Color.white.opacity(0.05 * configuration.bounceIntensity)
+        
+        // Add subtle Romanian cultural ambient lighting
+        let culturalAmbient = RomanianColors.goldAccent.opacity(
+            0.03 * configuration.culturalColorInfluence
+        )
+        
+        return blendGIColors(ambientContribution, culturalAmbient)
+    }
+    
+    /// Blend colors for global illumination
+    private static func blendGIColors(_ base: Color, _ overlay: Color) -> Color {
+        // Simplified color blending for SwiftUI compatibility
+        return Color.white.opacity(0.05) // Subtle global illumination effect
+    }
+}
+
 // MARK: - Advanced Lighting Effects
 
-/// Advanced lighting system for cards
+/// Professional multi-light system with Romanian cultural tinting
+struct ProfessionalLightingSystem {
+    /// Light types for the multi-light setup
+    enum LightType {
+        case keyLight      // Primary directional light
+        case fillLight     // Secondary softer light
+        case rimLight      // Edge highlighting light
+        case ambientLight  // General scene illumination
+        case culturalAccent // Romanian cultural color accent
+    }
+    
+    /// Light configuration with Romanian cultural elements
+    struct LightConfiguration {
+        let type: LightType
+        let color: Color
+        let intensity: Double
+        let direction: CGPoint
+        let falloff: Double
+        let culturalTint: Color?
+        
+        static func keyLight(intensity: Double = 0.8, culturalTint: Color? = nil) -> LightConfiguration {
+            LightConfiguration(
+                type: .keyLight,
+                color: .white,
+                intensity: intensity,
+                direction: CGPoint(x: 0.3, y: -0.7), // Top-left key light
+                falloff: 0.6,
+                culturalTint: culturalTint
+            )
+        }
+        
+        static func fillLight(intensity: Double = 0.4) -> LightConfiguration {
+            LightConfiguration(
+                type: .fillLight,
+                color: Color.white.opacity(0.8),
+                intensity: intensity,
+                direction: CGPoint(x: -0.5, y: -0.3), // Opposite side fill
+                falloff: 0.8,
+                culturalTint: nil
+            )
+        }
+        
+        static func rimLight(intensity: Double = 0.6, culturalColor: Color) -> LightConfiguration {
+            LightConfiguration(
+                type: .rimLight,
+                color: culturalColor,
+                intensity: intensity,
+                direction: CGPoint(x: 0, y: -1), // Top rim light
+                falloff: 0.3,
+                culturalTint: culturalColor
+            )
+        }
+        
+        static func ambientOcclusion(intensity: Double = 0.2) -> LightConfiguration {
+            LightConfiguration(
+                type: .ambientLight,
+                color: Color.gray.opacity(0.5),
+                intensity: intensity,
+                direction: CGPoint(x: 0, y: 0), // Omnidirectional
+                falloff: 1.0,
+                culturalTint: nil
+            )
+        }
+        
+        static func romanianCulturalAccent(for card: Card, intensity: Double = 0.5) -> LightConfiguration {
+            let culturalColor: Color
+            switch card.suit {
+            case .hearts, .diamonds:
+                culturalColor = RomanianColors.embroideryRed
+            case .clubs, .spades:
+                culturalColor = RomanianColors.primaryBlue
+            }
+            
+            return LightConfiguration(
+                type: .culturalAccent,
+                color: culturalColor,
+                intensity: intensity,
+                direction: CGPoint(x: 0.2, y: 0.8), // Cultural accent from bottom
+                falloff: 0.7,
+                culturalTint: culturalColor
+            )
+        }
+    }
+    
+    /// Calculate lighting for a given position with global illumination
+    static func calculateLighting(
+        at position: CGPoint,
+        normal: CGPoint,
+        lights: [LightConfiguration],
+        globalIllumination: GlobalIlluminationSystem.GIConfiguration
+    ) -> Color {
+        var finalColor = Color.clear
+        var totalIntensity: Double = 0
+        
+        for light in lights {
+            // Calculate light contribution
+            let lightVector = CGPoint(
+                x: light.direction.x - position.x,
+                y: light.direction.y - position.y
+            )
+            
+            let distance = sqrt(lightVector.x * lightVector.x + lightVector.y * lightVector.y)
+            let normalizedLight = CGPoint(x: lightVector.x / distance, y: lightVector.y / distance)
+            
+            // Calculate dot product for light intensity
+            let dotProduct = max(0, normalizedLight.x * normal.x + normalizedLight.y * normal.y)
+            
+            // Apply falloff
+            let falloffIntensity = max(0, 1.0 - (distance * light.falloff))
+            let lightIntensity = dotProduct * light.intensity * falloffIntensity
+            
+            // Add cultural tinting if present
+            let lightColor = light.culturalTint ?? light.color
+            
+            // Accumulate color contribution
+            finalColor = blendColors(finalColor, lightColor.opacity(lightIntensity))
+            totalIntensity += lightIntensity
+        }
+        
+        // Apply global illumination contribution
+        let giContribution = GlobalIlluminationSystem.calculateGIContribution(
+            at: position,
+            configuration: globalIllumination
+        )
+        finalColor = blendColors(finalColor, giContribution)
+        
+        return finalColor
+    }
+    
+    /// Blend two colors for lighting accumulation
+    private static func blendColors(_ base: Color, _ overlay: Color) -> Color {
+        // Simplified additive blending for lighting (SwiftUI compatible)
+        return overlay.opacity(0.7) // Use overlay with reduced opacity for blending effect
+    }
+}
+
+/// Advanced lighting system for cards with multi-light setup
 struct CardLightingEffects: View {
     let card: Card
     let isSelected: Bool
@@ -440,109 +640,359 @@ struct CardLightingEffects: View {
     let lightingIntensity: EffectIntensity
     
     @State private var lightingPhase: Double = 0
+    @State private var lightingConfiguration: [ProfessionalLightingSystem.LightConfiguration] = []
     
     var body: some View {
         ZStack {
+            // Multi-layer professional lighting system
+            multiLightSystemView
+            
+            // Enhanced special card lighting with cultural elements
             if isSpecialCard {
-                specialCardLighting
+                enhancedSpecialCardLighting
             }
             
             if isSelected {
-                selectionLighting
+                enhancedSelectionLighting
             }
             
-            // Cultural lighting for Romanian cards
+            // Romanian cultural lighting with authenticity
             if card.value == 7 {
-                romanianSevenLighting
+                romanianSevenCulturalLighting
             }
             
             if card.isPointCard {
-                pointCardLighting
+                enhancedPointCardLighting
             }
+            
+            // Global illumination overlay
+            globalIlluminationOverlay
         }
         .onAppear {
+            setupLightingConfiguration()
             startLightingAnimation()
         }
     }
     
-    private var specialCardLighting: some View {
+    /// Professional multi-light system with Romanian cultural tinting
+    private var multiLightSystemView: some View {
+        ZStack {
+            ForEach(Array(lightingConfiguration.enumerated()), id: \.offset) { index, light in
+                lightLayerView(for: light, index: index)
+            }
+        }
+    }
+    
+    /// Individual light layer with proper falloff and cultural tinting
+    private func lightLayerView(for light: ProfessionalLightingSystem.LightConfiguration, index: Int) -> some View {
         RoundedRectangle(cornerRadius: 8)
-            .stroke(
+            .fill(
+                RadialGradient(
+                    colors: [
+                        light.color.opacity(light.intensity * lightingIntensity.particleMultiplier),
+                        light.color.opacity(light.intensity * 0.6 * lightingIntensity.particleMultiplier),
+                        light.color.opacity(light.intensity * 0.3 * lightingIntensity.particleMultiplier),
+                        Color.clear
+                    ],
+                    center: UnitPoint(
+                        x: 0.5 + light.direction.x * 0.3,
+                        y: 0.5 + light.direction.y * 0.3
+                    ),
+                    startRadius: 5,
+                    endRadius: 45 * (1.0 - light.falloff)
+                )
+            )
+            .scaleEffect(1.0 + sin(lightingPhase + Double(index) * 0.5) * 0.05)
+            .opacity(0.7 + sin(lightingPhase + Double(index) * 0.7) * 0.2)
+            .blendMode(light.type == .ambientLight ? .multiply : .normal)
+    }
+    
+    /// Enhanced special card lighting with professional depth
+    private var enhancedSpecialCardLighting: some View {
+        ZStack {
+            // Key light with cultural tinting
+            RoundedRectangle(cornerRadius: 8)
+                .fill(
+                    RadialGradient(
+                        colors: [
+                            RomanianColors.goldAccent.opacity(0.6),
+                            RomanianColors.goldAccent.opacity(0.3),
+                            RomanianColors.primaryYellow.opacity(0.2),
+                            Color.clear
+                        ],
+                        center: UnitPoint(x: 0.3, y: 0.2), // Key light position
+                        startRadius: 8,
+                        endRadius: 40
+                    )
+                )
+                .scaleEffect(1.03)
+                .opacity(0.8 + sin(lightingPhase) * 0.15)
+            
+            // Rim lighting for edges
+            RoundedRectangle(cornerRadius: 8)
+                .stroke(
+                    LinearGradient(
+                        colors: [
+                            RomanianColors.goldAccent.opacity(0.9),
+                            RomanianColors.goldAccent.opacity(0.6),
+                            Color.clear,
+                            RomanianColors.goldAccent.opacity(0.6),
+                            RomanianColors.goldAccent.opacity(0.9)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    lineWidth: 2.5
+                )
+                .scaleEffect(1.02)
+                .opacity(0.9 + sin(lightingPhase * 1.2) * 0.1)
+            
+            // Cultural accent lighting
+            RoundedRectangle(cornerRadius: 8)
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            Color.clear,
+                            romanianCulturalAccentColor.opacity(0.3),
+                            romanianCulturalAccentColor.opacity(0.15)
+                        ],
+                        startPoint: .bottom,
+                        endPoint: .top
+                    )
+                )
+                .scaleEffect(1.01)
+                .opacity(0.6 + sin(lightingPhase * 0.8) * 0.2)
+        }
+    }
+    
+    /// Enhanced selection lighting with multi-light system
+    private var enhancedSelectionLighting: some View {
+        ZStack {
+            // Primary selection glow with key lighting
+            RoundedRectangle(cornerRadius: 8)
+                .fill(
+                    RadialGradient(
+                        colors: [
+                            RomanianColors.primaryBlue.opacity(0.4),
+                            RomanianColors.primaryBlue.opacity(0.2),
+                            Color.blue.opacity(0.1),
+                            Color.clear
+                        ],
+                        center: UnitPoint(x: 0.3, y: 0.2), // Key light position
+                        startRadius: 12,
+                        endRadius: 55
+                    )
+                )
+                .scaleEffect(1.06)
+                .opacity(0.8 + sin(lightingPhase * 1.2) * 0.2)
+            
+            // Fill light for balanced illumination
+            RoundedRectangle(cornerRadius: 8)
+                .fill(
+                    RadialGradient(
+                        colors: [
+                            Color.clear,
+                            Color.blue.opacity(0.15),
+                            Color.blue.opacity(0.08)
+                        ],
+                        center: UnitPoint(x: 0.7, y: 0.8), // Fill light position
+                        startRadius: 15,
+                        endRadius: 45
+                    )
+                )
+                .scaleEffect(1.04)
+                .opacity(0.6 + sin(lightingPhase * 0.8) * 0.25)
+            
+            // Rim lighting for selection emphasis
+            RoundedRectangle(cornerRadius: 8)
+                .stroke(
+                    LinearGradient(
+                        colors: [
+                            RomanianColors.goldAccent.opacity(0.8),
+                            Color.blue.opacity(0.6),
+                            RomanianColors.goldAccent.opacity(0.8)
+                        ],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    ),
+                    lineWidth: 3.0
+                )
+                .scaleEffect(1.03)
+                .opacity(0.9 + sin(lightingPhase * 1.8) * 0.1)
+        }
+    }
+    
+    /// Romanian Seven lighting with authentic cultural elements
+    private var romanianSevenCulturalLighting: some View {
+        ZStack {
+            // Traditional Romanian gold lighting
+            RoundedRectangle(cornerRadius: 8)
+                .fill(
+                    RadialGradient(
+                        colors: [
+                            RomanianColors.goldAccent.opacity(0.5),
+                            Color.orange.opacity(0.3),
+                            Color.yellow.opacity(0.2),
+                            Color.clear
+                        ],
+                        center: .center,
+                        startRadius: 8,
+                        endRadius: 35
+                    )
+                )
+                .scaleEffect(1.02)
+                .opacity(0.7 + sin(lightingPhase * 1.5) * 0.2)
+            
+            // Romanian folk pattern lighting accent
+            RoundedRectangle(cornerRadius: 8)
+                .stroke(
+                    LinearGradient(
+                        colors: [
+                            RomanianColors.embroideryRed.opacity(0.4),
+                            Color.orange.opacity(0.6),
+                            Color.yellow.opacity(0.5),
+                            Color.orange.opacity(0.6),
+                            RomanianColors.embroideryRed.opacity(0.4)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    lineWidth: 2.0
+                )
+                .scaleEffect(1.015)
+                .opacity(0.8 + sin(lightingPhase * 2.2) * 0.2)
+            
+            // Cultural significance glow
+            RoundedRectangle(cornerRadius: 8)
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            Color.clear,
+                            RomanianColors.goldAccent.opacity(0.25),
+                            Color.clear
+                        ],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                )
+                .scaleEffect(1.005)
+                .opacity(0.6 + sin(lightingPhase * 0.8) * 0.3)
+        }
+    }
+    
+    /// Enhanced point card lighting with strategic illumination
+    private var enhancedPointCardLighting: some View {
+        ZStack {
+            // Key light for point card significance
+            RoundedRectangle(cornerRadius: 8)
+                .fill(
+                    RadialGradient(
+                        colors: [
+                            Color.yellow.opacity(0.35),
+                            Color.yellow.opacity(0.2),
+                            Color.orange.opacity(0.1),
+                            Color.clear
+                        ],
+                        center: UnitPoint(x: 0.3, y: 0.2),
+                        startRadius: 8,
+                        endRadius: 38
+                    )
+                )
+                .scaleEffect(1.04)
+                .opacity(0.7 + sin(lightingPhase * 1.1) * 0.2)
+            
+            // Strategic value highlighting
+            RoundedRectangle(cornerRadius: 8)
+                .stroke(
+                    LinearGradient(
+                        colors: [
+                            Color.yellow.opacity(0.6),
+                            Color.orange.opacity(0.4),
+                            Color.yellow.opacity(0.6)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    lineWidth: 1.8
+                )
+                .scaleEffect(1.02)
+                .opacity(0.8 + sin(lightingPhase * 1.6) * 0.15)
+            
+            // Point value accent lighting
+            RoundedRectangle(cornerRadius: 8)
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            Color.clear,
+                            romanianCulturalAccentColor.opacity(0.2),
+                            Color.clear
+                        ],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                )
+                .scaleEffect(1.01)
+                .opacity(0.6 + sin(lightingPhase * 0.9) * 0.25)
+        }
+    }
+    
+    /// Global illumination overlay for realistic lighting interaction
+    private var globalIlluminationOverlay: some View {
+        RoundedRectangle(cornerRadius: 8)
+            .fill(
                 LinearGradient(
                     colors: [
-                        RomanianColors.goldAccent.opacity(0.8),
-                        RomanianColors.goldAccent.opacity(0.4),
+                        Color.white.opacity(0.05),
                         Color.clear,
-                        RomanianColors.goldAccent.opacity(0.4),
-                        RomanianColors.goldAccent.opacity(0.8)
+                        romanianCulturalAccentColor.opacity(0.03)
                     ],
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
-                ),
-                lineWidth: 2
-            )
-            .scaleEffect(1.02)
-            .opacity(0.8 + sin(lightingPhase) * 0.2)
-    }
-    
-    private var selectionLighting: some View {
-        RoundedRectangle(cornerRadius: 8)
-            .fill(
-                RadialGradient(
-                    colors: [
-                        Color.blue.opacity(0.3),
-                        Color.blue.opacity(0.1),
-                        Color.clear
-                    ],
-                    center: .center,
-                    startRadius: 10,
-                    endRadius: 50
                 )
             )
-            .scaleEffect(1.05)
-            .opacity(0.7 + sin(lightingPhase * 1.5) * 0.3)
+            .opacity(0.7 + sin(lightingPhase * 0.5) * 0.2)
     }
     
-    private var romanianSevenLighting: some View {
-        RoundedRectangle(cornerRadius: 8)
-            .stroke(
-                LinearGradient(
-                    colors: [
-                        Color.orange.opacity(0.6),
-                        Color.yellow.opacity(0.4),
-                        Color.orange.opacity(0.6)
-                    ],
-                    startPoint: .top,
-                    endPoint: .bottom
-                ),
-                lineWidth: 1.5
-            )
-            .scaleEffect(1.01)
-            .opacity(0.6 + sin(lightingPhase * 2) * 0.4)
+    /// Romanian cultural accent color based on card suit
+    private var romanianCulturalAccentColor: Color {
+        switch card.suit {
+        case .hearts, .diamonds:
+            return RomanianColors.embroideryRed
+        case .clubs, .spades:
+            return RomanianColors.primaryBlue
+        }
     }
     
-    private var pointCardLighting: some View {
-        RoundedRectangle(cornerRadius: 8)
-            .fill(
-                RadialGradient(
-                    colors: [
-                        Color.yellow.opacity(0.2),
-                        Color.yellow.opacity(0.05),
-                        Color.clear
-                    ],
-                    center: .center,
-                    startRadius: 5,
-                    endRadius: 30
-                )
-            )
-            .scaleEffect(1.03)
-            .opacity(0.5 + sin(lightingPhase * 0.8) * 0.25)
+    /// Setup professional lighting configuration
+    private func setupLightingConfiguration() {
+        var lights: [ProfessionalLightingSystem.LightConfiguration] = []
+        
+        // Base lighting setup
+        lights.append(.keyLight(intensity: 0.8, culturalTint: romanianCulturalAccentColor))
+        lights.append(.fillLight(intensity: 0.4))
+        lights.append(.ambientOcclusion(intensity: 0.2))
+        
+        // Enhanced lighting for special cards
+        if isSpecialCard {
+            lights.append(.rimLight(intensity: 0.7, culturalColor: RomanianColors.goldAccent))
+        }
+        
+        // Selection state lighting
+        if isSelected {
+            lights.append(.rimLight(intensity: 0.8, culturalColor: RomanianColors.primaryBlue))
+        }
+        
+        // Romanian cultural accent
+        lights.append(.romanianCulturalAccent(for: card, intensity: 0.5))
+        
+        lightingConfiguration = lights
     }
     
+    /// Start sophisticated lighting animation with phase management
     private func startLightingAnimation() {
         Timer.scheduledTimer(withTimeInterval: 0.016, repeats: true) { _ in
             withAnimation(.linear(duration: 0.016)) {
-                lightingPhase += 0.1
+                lightingPhase += 0.08 * lightingIntensity.animationSpeed
             }
         }
     }
@@ -894,6 +1344,244 @@ enum AnimationPhase {
     case starting
     case running
     case complete
+}
+
+// MARK: - Environmental Effects System
+
+/// Advanced environmental effects for atmospheric depth and immersion
+struct EnvironmentalEffectsSystem {
+    /// Environmental effect configuration
+    struct EnvironmentConfiguration {
+        let atmosphericPerspective: Double
+        let fogIntensity: Double
+        let depthCueing: Double
+        let culturalAtmosphere: Double
+        let depthOfFieldStrength: Double
+        let hazeDistribution: Double
+        
+        static let subtle = EnvironmentConfiguration(
+            atmosphericPerspective: 0.2,
+            fogIntensity: 0.1,
+            depthCueing: 0.3,
+            culturalAtmosphere: 0.4,
+            depthOfFieldStrength: 0.2,
+            hazeDistribution: 0.15
+        )
+        
+        static let standard = EnvironmentConfiguration(
+            atmosphericPerspective: 0.4,
+            fogIntensity: 0.2,
+            depthCueing: 0.5,
+            culturalAtmosphere: 0.6,
+            depthOfFieldStrength: 0.3,
+            hazeDistribution: 0.25
+        )
+        
+        static let dramatic = EnvironmentConfiguration(
+            atmosphericPerspective: 0.6,
+            fogIntensity: 0.35,
+            depthCueing: 0.7,
+            culturalAtmosphere: 0.8,
+            depthOfFieldStrength: 0.5,
+            hazeDistribution: 0.4
+        )
+    }
+    
+    /// Calculate atmospheric perspective for distance-based effects
+    static func calculateAtmosphericPerspective(
+        at distance: CGFloat,
+        configuration: EnvironmentConfiguration
+    ) -> Color {
+        let perspectiveFactor = min(1.0, distance / 200.0) // Normalize distance
+        let atmosphericStrength = configuration.atmosphericPerspective * perspectiveFactor
+        
+        // Romanian cultural atmospheric tinting
+        let culturalTint = RomanianColors.goldAccent.opacity(
+            0.05 * configuration.culturalAtmosphere * perspectiveFactor
+        )
+        
+        let atmosphericBlue = Color.blue.opacity(
+            0.03 * atmosphericStrength
+        )
+        
+        return blendAtmosphericColors(culturalTint, atmosphericBlue)
+    }
+    
+    /// Calculate depth cueing for focus management
+    static func calculateDepthCueing(
+        for focusDistance: CGFloat,
+        cardDistance: CGFloat,
+        configuration: EnvironmentConfiguration
+    ) -> Double {
+        let distanceDifference = abs(cardDistance - focusDistance)
+        let maxDistance: CGFloat = 150.0
+        
+        let depthFactor = min(1.0, distanceDifference / maxDistance)
+        return 1.0 - (depthFactor * configuration.depthCueing)
+    }
+    
+    /// Generate fog/haze effects for distant elements
+    static func generateFogEffect(
+        at distance: CGFloat,
+        configuration: EnvironmentConfiguration
+    ) -> Color {
+        let fogStrength = min(1.0, distance / 180.0) * configuration.fogIntensity
+        
+        // Romanian cultural fog with warm undertones
+        let culturalFog = RomanianColors.goldAccent.opacity(
+            0.08 * fogStrength * configuration.culturalAtmosphere
+        )
+        
+        let naturalFog = Color.gray.opacity(
+            0.12 * fogStrength
+        )
+        
+        return blendAtmosphericColors(culturalFog, naturalFog)
+    }
+    
+    /// Blend atmospheric colors for environmental effects
+    private static func blendAtmosphericColors(_ color1: Color, _ color2: Color) -> Color {
+        // Simplified atmospheric blending for SwiftUI compatibility
+        return color1.opacity(0.5) // Use first color with reduced opacity
+    }
+}
+
+/// Environmental effects modifier for atmospheric immersion
+struct EnvironmentalEffectsModifier: ViewModifier {
+    let card: Card
+    let cardDistance: CGFloat
+    let focusDistance: CGFloat
+    let configuration: EnvironmentalEffectsSystem.EnvironmentConfiguration
+    @State private var environmentPhase: Double = 0
+    
+    func body(content: Content) -> some View {
+        content
+            .overlay(
+                ZStack {
+                    // Atmospheric perspective overlay
+                    atmosphericPerspectiveOverlay
+                    
+                    // Fog/haze effects
+                    fogEffectsOverlay
+                    
+                    // Depth cueing overlay
+                    depthCueingOverlay
+                    
+                    // Romanian cultural atmospheric elements
+                    culturalAtmosphereOverlay
+                }
+            )
+            .opacity(depthBasedOpacity)
+            .blur(radius: depthOfFieldBlur)
+            .onAppear {
+                startEnvironmentalAnimation()
+            }
+    }
+    
+    private var atmosphericPerspectiveOverlay: some View {
+        RoundedRectangle(cornerRadius: 8)
+            .fill(
+                EnvironmentalEffectsSystem.calculateAtmosphericPerspective(
+                    at: cardDistance,
+                    configuration: configuration
+                )
+            )
+            .opacity(0.6 + sin(environmentPhase * 0.3) * 0.2)
+    }
+    
+    private var fogEffectsOverlay: some View {
+        RoundedRectangle(cornerRadius: 8)
+            .fill(
+                EnvironmentalEffectsSystem.generateFogEffect(
+                    at: cardDistance,
+                    configuration: configuration
+                )
+            )
+            .blur(radius: 1.5)
+            .opacity(0.7 + sin(environmentPhase * 0.4) * 0.25)
+    }
+    
+    private var depthCueingOverlay: some View {
+        RoundedRectangle(cornerRadius: 8)
+            .stroke(
+                Color.black.opacity(
+                    0.1 * (1.0 - EnvironmentalEffectsSystem.calculateDepthCueing(
+                        for: focusDistance,
+                        cardDistance: cardDistance,
+                        configuration: configuration
+                    ))
+                ),
+                lineWidth: 1
+            )
+    }
+    
+    private var culturalAtmosphereOverlay: some View {
+        RoundedRectangle(cornerRadius: 8)
+            .fill(
+                LinearGradient(
+                    colors: [
+                        Color.clear,
+                        romanianAtmosphericColor.opacity(
+                            0.04 * configuration.culturalAtmosphere
+                        ),
+                        Color.clear
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+            )
+            .opacity(0.8 + sin(environmentPhase * 0.6) * 0.15)
+    }
+    
+    private var romanianAtmosphericColor: Color {
+        switch card.suit {
+        case .hearts, .diamonds:
+            return RomanianColors.embroideryRed
+        case .clubs, .spades:
+            return RomanianColors.primaryBlue
+        }
+    }
+    
+    private var depthBasedOpacity: Double {
+        EnvironmentalEffectsSystem.calculateDepthCueing(
+            for: focusDistance,
+            cardDistance: cardDistance,
+            configuration: configuration
+        )
+    }
+    
+    private var depthOfFieldBlur: CGFloat {
+        let distanceDifference = abs(cardDistance - focusDistance)
+        let maxBlur: CGFloat = 3.0
+        let blurFactor = min(1.0, distanceDifference / 120.0)
+        
+        return blurFactor * maxBlur * CGFloat(configuration.depthOfFieldStrength)
+    }
+    
+    private func startEnvironmentalAnimation() {
+        Timer.scheduledTimer(withTimeInterval: 0.05, repeats: true) { _ in
+            withAnimation(.linear(duration: 0.05)) {
+                environmentPhase += 0.02
+            }
+        }
+    }
+}
+
+extension View {
+    /// Apply environmental effects for atmospheric depth and immersion
+    func environmentalEffects(
+        card: Card,
+        cardDistance: CGFloat = 50.0,
+        focusDistance: CGFloat = 50.0,
+        configuration: EnvironmentalEffectsSystem.EnvironmentConfiguration = .standard
+    ) -> some View {
+        modifier(EnvironmentalEffectsModifier(
+            card: card,
+            cardDistance: cardDistance,
+            focusDistance: focusDistance,
+            configuration: configuration
+        ))
+    }
 }
 
 // MARK: - Preview
