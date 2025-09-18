@@ -483,16 +483,17 @@ class AnimationManager: ObservableObject {
         case .high:
             return animation
         case .medium:
-            // Slightly reduce complexity
-            if case .interpolatingSpring(let mass, let stiffness, let damping, let initialVelocity) = animation {
+            // Slightly reduce complexity by using a generic lighter spring for medium quality
+            if animation == AnimationSettings.cardSpring {
                 return Animation.interpolatingSpring(
-                    mass: mass * 0.9,
-                    stiffness: stiffness * 1.1,
-                    damping: damping * 1.2,
-                    initialVelocity: initialVelocity * 0.8
+                    mass: 0.8,
+                    stiffness: 130.0,
+                    damping: 14.0,
+                    initialVelocity: 0.0
                 )
+            } else {
+                return animation
             }
-            return animation
         case .low:
             // Simplified linear animations for low performance
             return .linear(duration: 0.2)
