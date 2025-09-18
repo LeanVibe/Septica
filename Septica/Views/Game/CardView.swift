@@ -522,6 +522,28 @@ struct CardView: View {
             isPlayable: isPlayable,
             effectsManager: visualEffectsManager
         )
+        // Phase 2 Enhancement: Advanced professional rendering systems
+        .professionalShadows(
+            card: card,
+            isSelected: isSelected,
+            isSpecialCard: isSpecialCard,
+            isLifted: isSelected || isDragging
+        )
+        .materialPhysics(
+            card: card,
+            isSelected: isSelected,
+            isSpecialCard: isSpecialCard
+        )
+        .professionalColorGrading(
+            card: card,
+            configuration: isSpecialCard ? .cinematic : .standard
+        )
+        .environmentalEffects(
+            card: card,
+            cardDistance: isDragging ? 80.0 : 50.0,
+            focusDistance: isSelected ? 30.0 : 50.0,
+            configuration: .standard
+        )
         .scaleEffect(scaleEffect)
         .rotationEffect(Angle.degrees(rotationAngle))
         .opacity(opacity)
