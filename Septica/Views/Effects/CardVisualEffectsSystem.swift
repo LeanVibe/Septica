@@ -10,9 +10,9 @@ import SwiftUI
 import UIKit
 import Combine
 
-// MARK: - Card Visual Effects Manager
+// MARK: - Enhanced Card Visual Effects Manager with Coordinated Animation Sequences
 
-/// Manages advanced visual effects for cards including particles, lighting, and special animations
+/// Manages advanced visual effects for cards including particles, lighting, and coordinated multi-card animations
 @MainActor
 class CardVisualEffectsManager: ObservableObject {
     @Published var activeEffects: [CardEffect] = []
@@ -20,10 +20,29 @@ class CardVisualEffectsManager: ObservableObject {
     @Published var isAdvancedLightingEnabled = true
     @Published var effectIntensity: EffectIntensity = .medium
     
-    private var effectTimer: Timer?
+    // Coordinated animation sequences
+    @Published var activeSequences: [CoordinatedSequence] = []
+    @Published var sequenceCoordinator = SequenceCoordinator()
     
-    /// Trigger a visual effect for a specific card action
-    func triggerEffect(_ effectType: CardEffectType, for card: Card, at position: CGPoint = .zero) {
+    private var effectTimer: Timer?
+    private var sequenceUpdateTimer: Timer?
+    
+    init() {
+        startSequenceCoordination()
+    }
+    
+    deinit {
+        effectTimer?.invalidate()
+        sequenceUpdateTimer?.invalidate()
+    }
+    
+    /// Trigger a visual effect for a specific card action with coordinated sequence support
+    func triggerEffect(
+        _ effectType: CardEffectType, 
+        for card: Card, 
+        at position: CGPoint = .zero,
+        coordinatedWith sequence: CoordinatedSequenceType? = nil
+    ) {
         let effect = CardEffect(
             id: UUID(),
             type: effectType,
@@ -31,10 +50,16 @@ class CardVisualEffectsManager: ObservableObject {
             position: position,
             startTime: Date(),
             duration: effectType.duration,
-            intensity: effectIntensity
+            intensity: effectIntensity,
+            sequenceId: sequence?.rawValue
         )
         
         activeEffects.append(effect)
+        
+        // Register with sequence coordinator if part of a coordinated sequence
+        if let sequenceType = sequence {
+            sequenceCoordinator.registerEffect(effect, for: sequenceType)
+        }
         
         // Auto-cleanup effect after duration
         DispatchQueue.main.asyncAfter(deadline: .now() + effectType.duration) {
@@ -47,9 +72,174 @@ class CardVisualEffectsManager: ObservableObject {
         activeEffects.removeAll { $0.id == id }
     }
     
-    /// Clear all active effects
+    /// Clear all active effects and sequences
     func clearAllEffects() {
         activeEffects.removeAll()
+        activeSequences.removeAll()
+        sequenceCoordinator.clearAll()
+    }
+    
+    /// Start a coordinated animation sequence for multiple cards
+    func startCoordinatedSequence(
+        _ sequenceType: CoordinatedSequenceType,
+        cards: [Card],
+        positions: [CGPoint] = [],
+        completion: @escaping () -> Void = {}
+    ) {
+        let sequence = CoordinatedSequence(
+            id: UUID(),
+            type: sequenceType,
+            cards: cards,
+            positions: positions.isEmpty ? Array(repeating: .zero, count: cards.count) : positions,
+            startTime: Date(),
+            completion: completion
+        )
+        
+        activeSequences.append(sequence)
+        sequenceCoordinator.startSequence(sequence)
+        
+        // Execute the coordinated sequence based on type
+        executeCoordinatedSequence(sequence)
+    }
+    
+    /// Execute a specific coordinated sequence
+    private func executeCoordinatedSequence(_ sequence: CoordinatedSequence) {
+        switch sequence.type {
+        case .romanianSevenPlay:
+            executeRomanianSevenSequence(sequence)
+        case .multiCardCapture:
+            executeMultiCardCaptureSequence(sequence)
+        case .gameEndingCelebration:
+            executeGameEndingCelebrationSequence(sequence)
+        case .trickCompletionAnimation:
+            executeTrickCompletionSequence(sequence)
+        }
+    }
+    
+    /// Execute Romanian seven play sequence with cultural authenticity
+    private func executeRomanianSevenSequence(_ sequence: CoordinatedSequence) {
+        let staggerDelay = sequence.type.staggerDelay
+        
+        for (index, card) in sequence.cards.enumerated() {
+            let delay = Double(index) * staggerDelay
+            let position = sequence.positions[index]
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+                // Golden ceremonial glow for the seven
+                self.triggerEffect(.goldenGlow, for: card, at: position, coordinatedWith: .romanianSevenPlay)
+                
+                // Traditional Romanian flourish
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    self.triggerEffect(.romanianFlourish, for: card, at: position, coordinatedWith: .romanianSevenPlay)
+                }
+                
+                // Sparkle cascade for dramatic effect
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                    self.triggerEffect(.sparklePlay, for: card, at: position, coordinatedWith: .romanianSevenPlay)
+                }
+            }
+        }
+    }
+    
+    /// Execute multi-card capture sequence with momentum
+    private func executeMultiCardCaptureSequence(_ sequence: CoordinatedSequence) {
+        let staggerDelay = sequence.type.staggerDelay
+        
+        for (index, card) in sequence.cards.enumerated() {
+            let delay = Double(index) * staggerDelay
+            let position = sequence.positions[index]
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+                // Magnetic attraction effect
+                self.triggerEffect(.magneticAttraction, for: card, at: position, coordinatedWith: .multiCardCapture)
+                
+                // Quick shimmer for point cards
+                if card.isPointCard {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                        self.triggerEffect(.pointCardShimmer, for: card, at: position, coordinatedWith: .multiCardCapture)
+                    }
+                }
+                
+                // Trail effect as cards move
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+                    self.triggerEffect(.cardTrail, for: card, at: position, coordinatedWith: .multiCardCapture)
+                }
+            }
+        }
+    }
+    
+    /// Execute game ending celebration sequence with joy
+    private func executeGameEndingCelebrationSequence(_ sequence: CoordinatedSequence) {
+        let staggerDelay = sequence.type.staggerDelay
+        
+        for (index, card) in sequence.cards.enumerated() {
+            let delay = Double(index) * staggerDelay
+            let position = sequence.positions[index]
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+                // Victory celebration with sparkles
+                self.triggerEffect(.victoryCelebration, for: card, at: position, coordinatedWith: .gameEndingCelebration)
+                
+                // Layered celebration effects
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    self.triggerEffect(.sparklePlay, for: card, at: position, coordinatedWith: .gameEndingCelebration)
+                }
+                
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                    self.triggerEffect(.goldenGlow, for: card, at: position, coordinatedWith: .gameEndingCelebration)
+                }
+                
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                    self.triggerEffect(.romanianFlourish, for: card, at: position, coordinatedWith: .gameEndingCelebration)
+                }
+            }
+        }
+    }
+    
+    /// Execute trick completion sequence with smooth professional flow
+    private func executeTrickCompletionSequence(_ sequence: CoordinatedSequence) {
+        let staggerDelay = sequence.type.staggerDelay
+        
+        for (index, card) in sequence.cards.enumerated() {
+            let delay = Double(index) * staggerDelay
+            let position = sequence.positions[index]
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+                // Smooth collection effect
+                self.triggerEffect(.magneticAttraction, for: card, at: position, coordinatedWith: .trickCompletionAnimation)
+                
+                // Gentle trail as cards gather
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                    self.triggerEffect(.cardTrail, for: card, at: position, coordinatedWith: .trickCompletionAnimation)
+                }
+                
+                // Final settling sparkle
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+                    self.triggerEffect(.sparklePlay, for: card, at: position, coordinatedWith: .trickCompletionAnimation)
+                }
+            }
+        }
+    }
+    
+    /// Start sequence coordination timer
+    private func startSequenceCoordination() {
+        sequenceUpdateTimer = Timer.scheduledTimer(withTimeInterval: 0.016, repeats: true) { _ in
+            self.updateActiveSequences()
+        }
+    }
+    
+    /// Update all active coordinated sequences
+    private func updateActiveSequences() {
+        let currentTime = Date()
+        
+        // Remove completed sequences
+        activeSequences.removeAll { sequence in
+            let elapsed = currentTime.timeIntervalSince(sequence.startTime)
+            return elapsed > sequence.type.duration
+        }
+        
+        // Update sequence coordinator
+        sequenceCoordinator.update(deltaTime: 0.016)
     }
 }
 
@@ -118,7 +308,7 @@ enum EffectIntensity: CaseIterable {
 
 // MARK: - Card Effect Model
 
-/// Represents an active visual effect on a card
+/// Represents an active visual effect on a card with sequence coordination
 struct CardEffect: Identifiable, Equatable {
     let id: UUID
     let type: CardEffectType
@@ -127,6 +317,7 @@ struct CardEffect: Identifiable, Equatable {
     let startTime: Date
     let duration: TimeInterval
     let intensity: EffectIntensity
+    let sequenceId: String?
     
     var progress: Double {
         let elapsed = Date().timeIntervalSince(startTime)
@@ -1581,6 +1772,187 @@ extension View {
             focusDistance: focusDistance,
             configuration: configuration
         ))
+    }
+}
+
+// MARK: - Coordinated Animation Sequences
+
+/// Types of coordinated animation sequences for multi-card animations
+enum CoordinatedSequenceType: String, CaseIterable {
+    case romanianSevenPlay = "romanian_seven_play"
+    case multiCardCapture = "multi_card_capture"
+    case gameEndingCelebration = "game_ending_celebration"
+    case trickCompletionAnimation = "trick_completion_animation"
+    
+    var duration: TimeInterval {
+        switch self {
+        case .romanianSevenPlay: return 2.5
+        case .multiCardCapture: return 1.8
+        case .gameEndingCelebration: return 4.0
+        case .trickCompletionAnimation: return 1.5
+        }
+    }
+    
+    var staggerDelay: TimeInterval {
+        switch self {
+        case .romanianSevenPlay: return 0.3
+        case .multiCardCapture: return 0.2
+        case .gameEndingCelebration: return 0.15
+        case .trickCompletionAnimation: return 0.1
+        }
+    }
+}
+
+/// Represents a coordinated sequence involving multiple cards
+struct CoordinatedSequence: Identifiable {
+    let id: UUID
+    let type: CoordinatedSequenceType
+    let cards: [Card]
+    let positions: [CGPoint]
+    let startTime: Date
+    let completion: () -> Void
+}
+
+/// Coordinates multiple animation sequences with precise timing and momentum preservation
+@MainActor
+class SequenceCoordinator: ObservableObject {
+    private var activeSequences: [CoordinatedSequenceType: CoordinatedSequence] = [:]
+    private var sequenceEffects: [CoordinatedSequenceType: [CardEffect]] = [:]
+    private var sequenceTimings: [CoordinatedSequenceType: [TimeInterval]] = [:]
+    
+    /// Register an effect as part of a coordinated sequence
+    func registerEffect(_ effect: CardEffect, for sequence: CoordinatedSequenceType) {
+        if sequenceEffects[sequence] == nil {
+            sequenceEffects[sequence] = []
+        }
+        sequenceEffects[sequence]?.append(effect)
+    }
+    
+    /// Start a coordinated sequence with precise timing
+    func startSequence(_ sequence: CoordinatedSequence) {
+        activeSequences[sequence.type] = sequence
+        
+        // Calculate precise timing for each card in the sequence
+        let totalCards = sequence.cards.count
+        let staggerDelay = sequence.type.staggerDelay
+        var timings: [TimeInterval] = []
+        
+        for index in 0..<totalCards {
+            let delay = Double(index) * staggerDelay
+            timings.append(delay)
+        }
+        
+        sequenceTimings[sequence.type] = timings
+    }
+    
+    /// Update sequence coordination with momentum preservation
+    func update(deltaTime: TimeInterval) {
+        let currentTime = Date()
+        
+        // Update all active sequences
+        for (sequenceType, sequence) in activeSequences {
+            let elapsed = currentTime.timeIntervalSince(sequence.startTime)
+            
+            // Check if sequence is complete
+            if elapsed > sequenceType.duration {
+                completeSequence(sequenceType)
+            } else {
+                // Update sequence progress with momentum considerations
+                updateSequenceProgress(sequenceType, progress: elapsed / sequenceType.duration)
+            }
+        }
+    }
+    
+    /// Update progress of a specific sequence
+    private func updateSequenceProgress(_ sequenceType: CoordinatedSequenceType, progress: Double) {
+        guard let sequence = activeSequences[sequenceType],
+              let timings = sequenceTimings[sequenceType] else { return }
+        
+        // Apply momentum-based timing adjustments
+        for (index, timing) in timings.enumerated() {
+            let cardProgress = max(0, min(1, (progress * sequenceType.duration - timing) / (sequenceType.duration - timing)))
+            
+            // Apply momentum curves based on sequence type
+            let momentumAdjustedProgress = applyMomentumCurve(progress: cardProgress, for: sequenceType)
+            
+            // Update card animation state based on momentum-adjusted progress
+            updateCardInSequence(
+                card: sequence.cards[index], 
+                progress: momentumAdjustedProgress, 
+                sequenceType: sequenceType,
+                cardIndex: index
+            )
+        }
+    }
+    
+    /// Apply momentum-based easing curves for different sequence types
+    private func applyMomentumCurve(progress: Double, for sequenceType: CoordinatedSequenceType) -> Double {
+        guard progress > 0 && progress < 1 else { return progress }
+        
+        switch sequenceType {
+        case .romanianSevenPlay:
+            // Ceremonial, deliberate curve with cultural respect
+            return easeInOutQuart(progress)
+        case .multiCardCapture:
+            // Quick, snappy curve with satisfying feedback
+            return easeOutBack(progress)
+        case .gameEndingCelebration:
+            // Bouncy, celebratory curve with joy
+            return easeOutElastic(progress)
+        case .trickCompletionAnimation:
+            // Smooth, professional curve
+            return easeInOutCubic(progress)
+        }
+    }
+    
+    /// Update individual card animation within a sequence
+    private func updateCardInSequence(
+        card: Card, 
+        progress: Double, 
+        sequenceType: CoordinatedSequenceType,
+        cardIndex: Int
+    ) {
+        // Implementation depends on the specific sequence type
+        // This would integrate with the visual effects system
+    }
+    
+    /// Complete a coordinated sequence
+    private func completeSequence(_ sequenceType: CoordinatedSequenceType) {
+        if let sequence = activeSequences[sequenceType] {
+            sequence.completion()
+        }
+        
+        activeSequences.removeValue(forKey: sequenceType)
+        sequenceEffects.removeValue(forKey: sequenceType)
+        sequenceTimings.removeValue(forKey: sequenceType)
+    }
+    
+    /// Clear all active sequences
+    func clearAll() {
+        activeSequences.removeAll()
+        sequenceEffects.removeAll()
+        sequenceTimings.removeAll()
+    }
+    
+    // MARK: - Easing Functions for Momentum Curves
+    
+    private func easeInOutQuart(_ x: Double) -> Double {
+        return x < 0.5 ? 8 * x * x * x * x : 1 - pow(-2 * x + 2, 4) / 2
+    }
+    
+    private func easeOutBack(_ x: Double) -> Double {
+        let c1 = 1.70158
+        let c3 = c1 + 1
+        return 1 + c3 * pow(x - 1, 3) + c1 * pow(x - 1, 2)
+    }
+    
+    private func easeOutElastic(_ x: Double) -> Double {
+        let c4 = (2 * Double.pi) / 3
+        return x == 0 ? 0 : x == 1 ? 1 : pow(2, -10 * x) * sin((x * 10 - 0.75) * c4) + 1
+    }
+    
+    private func easeInOutCubic(_ x: Double) -> Double {
+        return x < 0.5 ? 4 * x * x * x : 1 - pow(-2 * x + 2, 3) / 2
     }
 }
 
