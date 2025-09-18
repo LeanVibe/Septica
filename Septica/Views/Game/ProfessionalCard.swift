@@ -147,7 +147,7 @@ struct ProfessionalCard: View {
         .frame(width: cardSize.width, height: cardSize.height)
         .scaleEffect(professionalScaleEffect)
         .rotation3DEffect(
-            .degrees(Double(transform3D.rotation.y * 180 / .pi)),
+            Angle.degrees(Double(transform3D.rotation.y * 180 / Float.pi)),
             axis: (x: 0, y: 1, z: 0)
         )
         .professional3DTransform(transform3D)
