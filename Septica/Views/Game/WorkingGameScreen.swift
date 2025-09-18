@@ -713,16 +713,3 @@ struct FannedCardHandView: View {
     }
 }
 
-#Preview("Working Game Screen") {
-    let gameState = GameState()
-    gameState.players = [
-        Player(name: "Jucător"),
-        AIPlayer(name: "Computer")
-    ]
-    gameState.setupNewGame()
-    
-    return WorkingGameScreen(gameState: gameState)
-        .previewDevice("iPhone 14 Pro")
-        .preferredColorScheme(.dark)
-}
-

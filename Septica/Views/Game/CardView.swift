@@ -830,15 +830,15 @@ enum CardSize {
     
     var width: CGFloat {
         switch self {
-        case .small: return 90    // Enhanced visibility - significantly wider
-        case .compact: return 110  // Table cards - wider for better recognition
-        case .normal: return 130   // Standard cards - doubled width for clear visibility
-        case .large: return 200   // Large detailed view - doubled width
+        case .small: return 74
+        case .compact: return 90
+        case .normal: return 108
+        case .large: return 170
         }
     }
     
     var height: CGFloat {
-        return width * 1.4 // Standard playing card ratio (2.5" × 3.5" = 1.4) - matches reference card proportions better
+        width * 1.35
     }
     
     var cornerRadius: CGFloat {
@@ -863,30 +863,15 @@ enum CardSize {
     }
     
     var valueFont: Font {
-        switch self {
-        case .small: return .caption     // Increased from caption2
-        case .compact: return .caption   // Compact size for organized columns
-        case .normal: return .body       // Increased from caption  
-        case .large: return .title3      // Increased from body
-        }
+        Font.system(size: width * 0.34, weight: .heavy, design: .rounded)
     }
     
     var suitFont: Font {
-        switch self {
-        case .small: return .caption     // Increased from caption2
-        case .compact: return .caption   // Compact size for organized columns
-        case .normal: return .body       // Increased from caption
-        case .large: return .title3      // Increased from body
-        }
+        Font.system(size: width * 0.28, weight: .heavy, design: .rounded)
     }
     
     var centerSuitFont: Font {
-        switch self {
-        case .small: return .title2      // Increased from title3
-        case .compact: return .title3    // Compact size for organized columns
-        case .normal: return .largeTitle // Increased from title2  
-        case .large: return .largeTitle  // Increased from title
-        }
+        Font.system(size: width * 0.55, weight: .black, design: .rounded)
     }
 }
 

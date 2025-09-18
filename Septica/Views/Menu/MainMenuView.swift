@@ -372,7 +372,7 @@ struct NavigationDestinationView: View {
                 .environmentObject(AudioManager())
                 .environmentObject(AnimationManager())
         case .gamePlay(let session):
-            WorkingGameScreen(gameState: session.gameState)
+            ShuffleCatsInspiredGameScreen(gameState: session.gameState)
                 .environmentObject(navigationManager)
                 .environmentObject(AccessibilityManager())
                 .environmentObject(HapticManager())
