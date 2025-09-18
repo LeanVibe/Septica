@@ -624,7 +624,7 @@ class RomanianTournamentManager: ObservableObject {
         unlockedRegions.insert(region)
         
         // Create regional unlock achievement
-        let regionAchievement = createRegionalUnlockAchievement(for: region)
+        let _ = createRegionalUnlockAchievement(for: region)
         
         // Track regional unlock
         // achievementManager?.unlockAchievement(regionAchievement)

@@ -225,7 +225,9 @@ class CardVisualEffectsManager: ObservableObject {
     /// Start sequence coordination timer
     private func startSequenceCoordination() {
         sequenceUpdateTimer = Timer.scheduledTimer(withTimeInterval: 0.016, repeats: true) { _ in
-            self.updateActiveSequences()
+            Task { @MainActor in
+                self.updateActiveSequences()
+            }
         }
     }
     
@@ -752,7 +754,7 @@ struct GlobalIlluminationSystem {
         // Romanian cultural color influences
         let redInfluence = RomanianColors.primaryRed
         let blueInfluence = RomanianColors.primaryBlue
-        let goldInfluence = RomanianColors.goldAccent
+        let _ = RomanianColors.goldAccent
         
         // Distance-based color bleeding (simplified)
         let redContribution = simd_float3(0.8, 0.1, 0.1) * 0.02
@@ -932,7 +934,7 @@ struct ProfessionalLightingSystem {
                 
                 let reflectionDir = lightDir - 2 * dot(lightDir, normalDir) * normalDir
                 let specularFactor = max(0, dot(reflectionDir, viewDirection))
-                let specularIntensity = pow(specularFactor, 32) * lightIntensity // Shininess = 32
+                let specularIntensity = pow(Double(specularFactor), 32) * lightIntensity // Shininess = 32
                 
                 specularAccumulation += lightColorComponents * Float(specularIntensity) * 0.3
             }
@@ -1524,7 +1526,7 @@ struct PremiumCardAnimationSequence: View {
             )
             .rotationEffect(.degrees(rotationAngle))
             .scaleEffect(scaleEffect)
-            .onChange(of: isActive) { newValue in
+            .onChange(of: isActive) { _, newValue in
                 if newValue {
                     startAnimationSequence()
                 } else {
@@ -2364,13 +2366,13 @@ struct MaterialPhysicsSystem {
         let noiseY = cos(x * 0.12) * sin(y * 0.1) * 0.05
         
         // Add Romanian cultural pattern influences
-        let culturalX = sin(x * 0.05) * properties.culturalPatternIntensity * 0.02
-        let culturalY = cos(y * 0.05) * properties.culturalPatternIntensity * 0.02
+        let culturalX = sin(Double(x) * 0.05) * properties.culturalPatternIntensity * 0.02
+        let culturalY = cos(Double(y) * 0.05) * properties.culturalPatternIntensity * 0.02
         
         // Combine base normal with texture variations
         let perturbedNormal = simd_float3(
-            Float(noiseX + culturalX),
-            Float(noiseY + culturalY),
+            Float(Double(noiseX) + culturalX),
+            Float(Double(noiseY) + culturalY),
             1.0
         )
         
@@ -2420,16 +2422,17 @@ struct MaterialPhysicsModifier: ViewModifier {
     let isSelected: Bool
     let isSpecialCard: Bool
     
-    func body(content: Content) -> some View {
-        let materialProperties: MaterialPhysicsSystem.MaterialProperties
-        
+    private var materialProperties: MaterialPhysicsSystem.MaterialProperties {
         if isSpecialCard {
-            materialProperties = .specialCard
+            return .specialCard
         } else if isSelected {
-            materialProperties = .premiumCard
+            return .premiumCard
         } else {
-            materialProperties = .standardCard
+            return .standardCard
         }
+    }
+    
+    func body(content: Content) -> some View {
         
         content
             .background(
@@ -2613,9 +2616,9 @@ struct ProfessionalColorGradingSystem {
     /// Utility functions
     private static func pow(_ base: simd_float3, _ exponent: simd_float3) -> simd_float3 {
         return simd_float3(
-            Swift.pow(base.x, exponent.x),
-            Swift.pow(base.y, exponent.y),
-            Swift.pow(base.z, exponent.z)
+            Foundation.pow(base.x, exponent.x),
+            Foundation.pow(base.y, exponent.y),
+            Foundation.pow(base.z, exponent.z)
         )
     }
     

@@ -271,7 +271,7 @@ class RomanianCulturalIntelligence: ObservableObject {
     }
     
     private func createRuleExplanationPrompt(rule: GameRule, context: CulturalContext) -> String {
-        let template = ruleExplanationTemplates[rule] ?? CulturalRuleTemplate.default
+        let _ = ruleExplanationTemplates[rule] ?? CulturalRuleTemplate.default
         
         return """
         Explain the Septica rule: "\(rule.displayName)" with Romanian cultural context.

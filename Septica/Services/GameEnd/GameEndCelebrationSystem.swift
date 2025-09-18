@@ -225,7 +225,7 @@ class GameEndCelebrationSystem: ObservableObject {
     
     private func displayGameStatistics(statistics: GameEndStatistics) async {
         // Animated statistics reveal
-        await animationManager?.animateStatisticsReveal(statistics)
+        await animationManager?.animateStatisticCountUp(statistics)
         
         // Count-up animation for scores and achievements
         await animateCountUpEffects(statistics: statistics)
@@ -241,7 +241,7 @@ class GameEndCelebrationSystem: ObservableObject {
         
         // Achievement unlock animations
         for achievement in achievements {
-            await animationManager?.animateAchievementUnlock(achievement)
+            await animationManager?.animateExperienceGain(achievement)
             await hapticManager?.playAchievementUnlock()
             try? await Task.sleep(nanoseconds: 500_000_000) // Stagger achievements
         }
@@ -505,7 +505,7 @@ class GameEndCelebrationSystem: ObservableObject {
     }
     
     private func startVisualEffects(_ effects: VisualEffects) async {
-        await animationManager?.startParticleEffects(effects.particles)
+        await animationManager?.playAnimation(effects.particles)
         
         for animation in effects.animations {
             Task {
@@ -516,7 +516,7 @@ class GameEndCelebrationSystem: ObservableObject {
     
     private func animateCountUpEffects(statistics: GameEndStatistics) async {
         // Animate score counting
-        await animationManager?.animateScoreCountUp(from: 0, to: statistics.finalScore)
+        animationManager?.animateScoreIncrease(points: statistics.finalScore) {}
         
         // Animate other statistics
         await animationManager?.animateStatisticCountUp(statistics)
@@ -528,8 +528,8 @@ class GameEndCelebrationSystem: ObservableObject {
         celebrationPhase = .dismissing
         
         // Fade out all effects
-        await animationManager?.fadeOutAllEffects()
-        await folkMusicPlayer.stopMusic()
+        await animationManager?.fadeOutCelebration()
+        folkMusicPlayer.stopMusic()
         
         // Clear state
         isShowingCelebration = false

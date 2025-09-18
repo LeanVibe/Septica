@@ -281,7 +281,7 @@ struct PremiumMotionEffects: ViewModifier {
             )
             .animation(.spring(response: 0.6, dampingFraction: 0.8), value: parallaxOffset)
             .animation(.spring(response: 0.8, dampingFraction: 0.7), value: rotationEffect)
-            .onChange(of: motionData) { newData in
+            .onChange(of: motionData) { _, newData in
                 updateMotionEffects(newData)
             }
     }
@@ -316,7 +316,7 @@ struct MicroInteractionEffects: ViewModifier {
         content
             .scaleEffect(pulseScale)
             .overlay(rippleOverlay)
-            .onChange(of: state) { newState in
+            .onChange(of: state) { _, newState in
                 handleStateChange(newState)
             }
     }
