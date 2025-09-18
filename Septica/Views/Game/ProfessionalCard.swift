@@ -791,6 +791,17 @@ enum SpecialCardEffect {
     case goldenGlow
 }
 
+// MARK: - Fallback Types for Compilation
+
+/// Fallback lighting environment for compilation when ProfessionalCardRenderer is not available
+struct LightingEnvironmentFallback {
+    var primaryLightDirection = simd_float3(0.5, -0.8, 0.3)
+    var primaryLightColor = simd_float3(1.0, 0.95, 0.8)
+    var ambientLightColor = simd_float3(0.3, 0.3, 0.4)
+    var lightIntensity: Float = 1.0
+    var romanianCulturalTint = simd_float3(1.0, 0.85, 0.4)
+}
+
 // MARK: - View Modifiers
 
 extension View {
