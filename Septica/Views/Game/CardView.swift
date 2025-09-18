@@ -464,8 +464,14 @@ struct CardView: View {
     
     /// Check if Metal rendering should be used
     private func shouldUseMetalRendering() -> Bool {
-        // Temporarily disable Metal rendering to use enhanced SwiftUI cards
-        // Metal rendering will be re-enabled after proper card face textures are implemented
+        // Check user preference and device capability
+        if #available(iOS 18.0, *) {
+            let userDefault = UserDefaults.standard.bool(forKey: "enableMetalRendering")
+            let hasMetalDevice = MTLCreateSystemDefaultDevice() != nil
+            
+            // Enable Metal rendering if user opted in and device supports it
+            return userDefault && hasMetalDevice
+        }
         return false
     }
     
