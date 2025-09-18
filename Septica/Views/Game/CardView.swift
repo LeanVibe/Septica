@@ -794,27 +794,27 @@ struct CardView: View {
     /// Professional shadow color (Shuffle Cats quality)
     private var shadowColor: Color {
         if isSelected {
-            return RomanianColors.goldAccent.opacity(0.4)  // Romanian gold glow for selection
+            return RomanianColors.goldAccent.opacity(0.5)  // Stronger gold glow
         } else {
-            return Color.black.opacity(0.20)  // Deeper base shadow
+            return Color.black.opacity(0.25)  // Deeper shadow for contrast
         }
     }
     
     /// Enhanced shadow radius for professional depth
     private var shadowRadius: CGFloat {
         if isSelected {
-            return 16  // More dramatic glow for selected cards
+            return 20  // More dramatic glow for selected cards
         } else {
-            return 8   // Enhanced default depth
+            return 10  // Enhanced default depth
         }
     }
     
     /// Professional shadow offset for Shuffle Cats depth
     private var shadowOffset: CGFloat {
         if isSelected {
-            return 8   // Enhanced lift effect for selected cards
+            return 10  // Enhanced lift effect for selected cards
         } else {
-            return 4   // Professional default depth
+            return 5   // Professional default depth
         }
     }
 }
@@ -830,15 +830,15 @@ enum CardSize {
     
     var width: CGFloat {
         switch self {
-        case .small: return 74
-        case .compact: return 90
-        case .normal: return 108
-        case .large: return 170
+        case .small: return 85      // Wider for better visibility
+        case .compact: return 100   // ShuffleCats-style width
+        case .normal: return 120    // Standard game cards
+        case .large: return 180     // For detailed view
         }
     }
     
     var height: CGFloat {
-        width * 1.35
+        width * 1.25  // Changed from 1.35 to 1.25 for wider aspect ratio like ShuffleCats
     }
     
     var cornerRadius: CGFloat {

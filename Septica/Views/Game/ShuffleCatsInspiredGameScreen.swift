@@ -93,12 +93,12 @@ struct ShuffleCatsInspiredGameScreen: View {
     
     private var romanianBackground: some View {
         ZStack {
-            // Shuffle Cats-inspired gradient background
+            // Enhanced ShuffleCats-inspired vibrant background
             LinearGradient(
                 colors: [
-                    Color(red: 0.02, green: 0.1, blue: 0.15),
-                    RomanianColors.tableGreen.opacity(0.4),
-                    Color(red: 0.05, green: 0.15, blue: 0.20)
+                    Color(red: 0.02, green: 0.12, blue: 0.18),
+                    RomanianColors.tableGreen.opacity(0.5),
+                    Color(red: 0.05, green: 0.18, blue: 0.25)
                 ],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
@@ -124,12 +124,13 @@ struct ShuffleCatsInspiredGameScreen: View {
     // MARK: - Point Card Meter
     
     private var pointCardProgressBar: some View {
-        PointCardProgressBar(
+        SleekPointProgressBar(
             humanPoints: humanPointCardsCollected,
             opponentPoints: opponentPointCardsCollected,
-            totalPointCards: totalPointCards
+            totalPointCards: totalPointCards,
+            currentPlayer: gameViewModel.currentPlayer
         )
-        .frame(width: 110)
+        .frame(width: 85)  // Sleeker width like ShuffleCats
     }
     
     // MARK: - Game Status and Menu
@@ -677,11 +678,12 @@ struct TurnIndicatorAvatar: View {
     }
 }
 
-/// Segmented progress bar showing distribution of captured point cards
-struct PointCardProgressBar: View {
+/// Sleek ShuffleCats-style vertical progress bar
+struct SleekPointProgressBar: View {
     let humanPoints: Int
     let opponentPoints: Int
     let totalPointCards: Int
+    let currentPlayer: Player?
 
     private var clampedHumanPoints: Int {
         clamp(humanPoints)
@@ -705,46 +707,84 @@ struct PointCardProgressBar: View {
     }
 
     var body: some View {
-        VStack(spacing: 12) {
-            Text("Cărți de puncte")
-                .font(.caption.weight(.semibold))
-                .foregroundColor(RomanianColors.goldAccent)
+        VStack(spacing: 6) {
+            // Minimal icon indicator like ShuffleCats
+            Image(systemName: "star.fill")
+                .font(.caption2)
+                .foregroundColor(RomanianColors.goldAccent.opacity(0.8))
 
             ZStack(alignment: .bottom) {
-                RoundedRectangle(cornerRadius: 18)
-                    .fill(Color.black.opacity(0.55))
+                // Sleek minimal background like ShuffleCats
+                Capsule()
+                    .fill(Color.black.opacity(0.25))
+                    .frame(width: 30, height: 180)
                     .overlay(
-                        RoundedRectangle(cornerRadius: 18)
-                            .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                        Capsule()
+                            .stroke(Color.white.opacity(0.06), lineWidth: 0.5)
                     )
 
-                VStack(spacing: 6) {
+                // Clean segment stack without gaps
+                VStack(spacing: 0) {
                     ForEach((0..<totalPointCards).reversed(), id: \.self) { index in
-                        RoundedRectangle(cornerRadius: 6)
+                        Rectangle()
                             .fill(colorForSegment(at: index))
-                            .frame(width: 30, height: 18)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 6)
-                                    .stroke(Color.white.opacity(0.15), lineWidth: 0.8)
-                            )
+                            .frame(width: 22, height: 20)
                     }
                 }
-                .padding(.vertical, 14)
-                .padding(.horizontal, 10)
+                .clipShape(RoundedRectangle(cornerRadius: 10))
+                .padding(.vertical, 8)
+                
+                // Active player glow indicator
+                if let player = currentPlayer {
+                    let isHuman = player.isHuman
+                    let points = isHuman ? clampedHumanPoints : clampedOpponentPoints
+                    let glowHeight = CGFloat(points) * 20
+                    
+                    VStack {
+                        if !isHuman && points > 0 { 
+                            Rectangle()
+                                .fill(RomanianColors.countrysideGreen.opacity(0.35))
+                                .frame(width: 26, height: min(glowHeight, 160))
+                                .blur(radius: 5)
+                                .animation(.easeInOut(duration: 1.5).repeatForever(autoreverses: true), value: UUID())
+                        }
+                        Spacer()
+                        if isHuman && points > 0 {
+                            Rectangle()
+                                .fill(RomanianColors.countrysideGreen.opacity(0.35))
+                                .frame(width: 26, height: min(glowHeight, 160))
+                                .blur(radius: 5)
+                                .animation(.easeInOut(duration: 1.5).repeatForever(autoreverses: true), value: UUID())
+                        }
+                    }
+                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                    .padding(.vertical, 8)
+                }
             }
 
-            VStack(alignment: .leading, spacing: 6) {
-                LegendSwatch(color: RomanianColors.primaryBlue, label: "Tu \(clampedHumanPoints)")
-                LegendSwatch(color: RomanianColors.primaryRed, label: "Adversar \(clampedOpponentPoints)")
-                LegendSwatch(color: Color.white.opacity(0.25), label: "În joc \(remainingPoints)")
+            // Minimal legend
+            HStack(spacing: 10) {
+                VStack(spacing: 2) {
+                    Circle()
+                        .fill(RomanianColors.primaryBlue)
+                        .frame(width: 6, height: 6)
+                    Text("\(clampedHumanPoints)")
+                        .font(.system(size: 9, weight: .bold))
+                        .foregroundColor(.white.opacity(0.8))
+                }
+                VStack(spacing: 2) {
+                    Circle()
+                        .fill(RomanianColors.primaryRed)
+                        .frame(width: 6, height: 6)
+                    Text("\(clampedOpponentPoints)")
+                        .font(.system(size: 9, weight: .bold))
+                        .foregroundColor(.white.opacity(0.8))
+                }
             }
-            .font(.caption2)
-            .foregroundColor(.white.opacity(0.85))
         }
-        .padding(.vertical, 8)
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("Progres cărți de puncte")
-        .accessibilityValue("Tu \(clampedHumanPoints), adversar \(clampedOpponentPoints), în joc \(remainingPoints)")
+        .accessibilityLabel("Progres puncte")
+        .accessibilityValue("Tu \(clampedHumanPoints), adversar \(clampedOpponentPoints)")
     }
 
     private func clamp(_ value: Int) -> Int {
@@ -783,9 +823,9 @@ struct PointCardProgressBar: View {
 struct OpponentCardHandView: View {
     let cardCount: Int
     
-    // Tunable values to keep the fan tight around the avatar
-    private let maxFanAngle: Double = 42
-    private let fanRadius: CGFloat = 120
+    // Refined values for ShuffleCats-style tight fan
+    private let maxFanAngle: Double = 55    // Wider angle for better spread
+    private let fanRadius: CGFloat = 90     // Tighter radius around avatar
     
     var body: some View {
         ZStack {
@@ -795,7 +835,7 @@ struct OpponentCardHandView: View {
                 let fanAngle = (normalizedPosition - 0.5) * maxFanAngle
                 let angleRadians = fanAngle * .pi / 180
                 let xOffset = fanRadius * CGFloat(sin(angleRadians))
-                let yOffset = fanRadius * CGFloat(cos(angleRadians) * -0.55)
+                let yOffset = fanRadius * CGFloat(cos(angleRadians) * -0.4) - 10  // Better positioning
                 let depthTilt = 16 - abs(normalizedPosition - 0.5) * 10
                 let scale = 0.9 + CGFloat(abs(normalizedPosition - 0.5) * -0.08)
                 
@@ -810,7 +850,7 @@ struct OpponentCardHandView: View {
                             endPoint: .bottomTrailing
                         )
                     )
-                    .frame(width: 38, height: 54)
+                    .frame(width: 50, height: 62.5)  // Match new card proportions
                     .overlay(
                         RomanianOrnatePatternSystem.RomanianCrossPattern(
                             size: 12,
@@ -836,16 +876,16 @@ struct OpponentCardHandView: View {
     }
 }
 
-/// Elegant table surface inspired by Shuffle Cats
+/// Enhanced table surface with ShuffleCats vibrant style
 struct ElegantTableSurface: View {
     var body: some View {
         RoundedRectangle(cornerRadius: 20)
             .fill(
                 LinearGradient(
                     colors: [
-                        RomanianColors.tableGreen.opacity(0.95),
-                        RomanianColors.tableGreen.opacity(0.75),
-                        Color.black.opacity(0.35)
+                        RomanianColors.tableGreen,
+                        RomanianColors.tableGreen.opacity(0.85),
+                        Color(red: 0.1, green: 0.35, blue: 0.25).opacity(0.6)
                     ],
                     startPoint: .top,
                     endPoint: .bottom
@@ -945,17 +985,21 @@ struct ElegantTableCardsView: View {
             return center
         }
         
-        // Create a more dynamic spread based on card count
-        let spreadRadius: CGFloat = min(geometry.size.width, geometry.size.height) * 0.25
-        let angleStep = (total > 2 ? 60.0 : 30.0) / Double(total - 1) // Degrees between cards
-        let startAngle = -angleStep * Double(total - 1) / 2.0
-        let cardAngle = startAngle + (angleStep * Double(index))
+        // Cascade cards with top-left visible (like dealer dealing cards)
+        let baseX = center.x - 20  // Start slightly left of center
+        let baseY = center.y - 20  // Start slightly above center
         
-        let radian = cardAngle * .pi / 180
-        let x = center.x + spreadRadius * CGFloat(sin(radian))
-        let y = center.y + spreadRadius * CGFloat(cos(radian)) * 0.3 // Flatten the arc
+        // Each card offset to show top-left corner
+        let xOffset = CGFloat(index) * 18  // Horizontal cascade
+        let yOffset = CGFloat(index) * 12  // Vertical cascade
         
-        return CGPoint(x: x, y: y)
+        // Add slight rotation variation for natural look
+        let rotationOffset = Double(index - total/2) * 3
+        
+        return CGPoint(
+            x: baseX + xOffset + CGFloat(sin(rotationOffset * .pi / 180) * 5),
+            y: baseY + yOffset
+        )
     }
     
     private func getCardPerspective(for index: Int, total: Int) -> (scale: CGFloat, rotation: Double, xTilt: Double, yTilt: Double) {
@@ -963,15 +1007,18 @@ struct ElegantTableCardsView: View {
             return (scale: 0.95, rotation: 0, xTilt: 8, yTilt: 0)
         }
         
-        let normalizedPosition = total > 1 ? Double(index) / Double(total - 1) : 0.5
-        let offsetFromCenter = normalizedPosition - 0.5
+        // Natural dealing rotation for cascaded cards
+        let baseRotation = Double(index - total/2) * 4  // Slight rotation variance
+        let randomRotation = Double.random(in: -2...2)  // Natural variation
         
-        let scale: CGFloat = 0.9 + CGFloat(0.05 * (1 - abs(offsetFromCenter) * 2))
-        let rotation = offsetFromCenter * 20.0 // Rotation based on position
-        let xTilt = 8 - abs(offsetFromCenter) * 6 // Less tilt for center cards
-        let yTilt = offsetFromCenter * 12 // Y-axis rotation for depth
+        // Cards on top are slightly larger (more recent)
+        let scale: CGFloat = 0.9 + CGFloat(index) * 0.02
         
-        return (scale: scale, rotation: rotation, xTilt: xTilt, yTilt: yTilt)
+        // Consistent perspective for stacked look
+        let xTilt = 10.0  // Consistent tilt for all cards
+        let yTilt = 3.0   // Slight y-tilt for depth
+        
+        return (scale: min(scale, 1.0), rotation: baseRotation + randomRotation, xTilt: xTilt, yTilt: yTilt)
     }
 }
 
@@ -982,10 +1029,10 @@ struct ShuffleCatsPlayerHandView: View {
     let validMoves: [Card]
     let onCardTapped: (Card) -> Void
     
-    // ShuffleCats-style parameters for cards around avatar
-    private let fanRadius: CGFloat = 140.0
-    private let maximumFanSpan: Double = 80.0  // Wider span for ShuffleCats look
-    private let avatarOffset: CGFloat = 85.0   // Distance from avatar center
+    // Refined ShuffleCats-style parameters for tighter card grouping
+    private let fanRadius: CGFloat = 110.0     // Tighter radius for closer cards
+    private let maximumFanSpan: Double = 65.0  // Tighter span for better overlap
+    private let avatarOffset: CGFloat = 75.0   // Closer to avatar
     
     var body: some View {
         GeometryReader { geometry in
@@ -1005,10 +1052,10 @@ struct ShuffleCatsPlayerHandView: View {
                     let offsetFromCenter = Double(index) - Double(cardCount - 1) / 2
                     let fanAngle = offsetFromCenter * step
                     
-                    // Position calculations (cards behind avatar)
+                    // Position calculations with better arc (cards behind avatar)
                     let angleRadians = (fanAngle + 90) * .pi / 180  // +90 to position behind avatar
-                    let xOffset = fanRadius * CGFloat(sin(angleRadians))
-                    let yOffset = fanRadius * CGFloat(cos(angleRadians))
+                    let xOffset = fanRadius * CGFloat(sin(angleRadians)) * 0.9  // Slightly tighter X
+                    let yOffset = fanRadius * CGFloat(cos(angleRadians)) * 0.7  // Flatter arc like ShuffleCats
                     
                     // 3D perspective for depth
                     let depthTilt = 15 - abs(offsetFromCenter) * 3
