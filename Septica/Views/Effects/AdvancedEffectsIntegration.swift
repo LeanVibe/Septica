@@ -10,6 +10,15 @@ import SwiftUI
 import Metal
 import Combine
 
+// MARK: - UserDefaults Extension
+
+extension UserDefaults {
+    @objc dynamic var enableMetalRendering: Bool {
+        get { bool(forKey: "enableMetalRendering") }
+        set { set(newValue, forKey: "enableMetalRendering") }
+    }
+}
+
 // MARK: - Advanced Effects Integration Manager
 
 /// Integration manager that coordinates between CardVisualEffectsManager and MaterialEffectSystem
@@ -150,26 +159,26 @@ class AdvancedEffectsIntegrationManager: ObservableObject {
     private func triggerMetalEffects(for effect: IntegratedEffect) {
         switch effect.type {
         case .sevenCardSpecial:
-            let materialEffect = materialEffectSystem.createSevenCardEffect(for: effect.card.id ?? UUID())
+            let materialEffect = materialEffectSystem.createSevenCardEffect(for: effect.card.consistentID)
             materialEffectSystem.addEffect(materialEffect)
             
         case .pointCardHighlight:
             let goldEffect = materialEffectSystem.createGoldHighlightEffect(
-                for: effect.card.id ?? UUID(),
+                for: effect.card.consistentID,
                 intensity: effect.intensity
             )
             materialEffectSystem.addEffect(goldEffect)
             
         case .romanianCulturalFlourish:
             let culturalEffect = materialEffectSystem.createRomanianCulturalEffect(
-                for: effect.card.id ?? UUID(),
+                for: effect.card.consistentID,
                 intensity: effect.intensity
             )
             materialEffectSystem.addEffect(culturalEffect)
             
         case .selectionGlow:
             let glowEffect = materialEffectSystem.createGoldHighlightEffect(
-                for: effect.card.id ?? UUID(),
+                for: effect.card.consistentID,
                 intensity: effect.intensity * 0.8
             )
             materialEffectSystem.addEffect(glowEffect)
@@ -270,7 +279,7 @@ class AdvancedEffectsIntegrationManager: ObservableObject {
     private func applyDisabledEffects(for card: Card) {
         // Apply subtle material effects for disabled cards
         let weatheringEffect = materialEffectSystem.createWeatheringEffect(
-            for: card.id ?? UUID(),
+            for: card.consistentID,
             age: 0.3
         )
         materialEffectSystem.addEffect(weatheringEffect)
@@ -294,7 +303,9 @@ class AdvancedEffectsIntegrationManager: ObservableObject {
     
     private func setupPerformanceMonitoring() {
         Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
-            self?.updatePerformanceMetrics()
+            Task { @MainActor in
+                self?.updatePerformanceMetrics()
+            }
         }
     }
     
@@ -323,11 +334,16 @@ class AdvancedEffectsIntegrationManager: ObservableObject {
     
     private func getCurrentMemoryUsage() -> Int {
         // Simplified memory usage calculation
-        let info = mach_task_basic_info()
+        var info = mach_task_basic_info()
         var count = mach_msg_type_number_t(MemoryLayout<mach_task_basic_info>.size)/4
         
-        let kerr: kern_return_t = withUnsafeMutablePointer(to: &count) {
-            task_info(mach_task_self_, task_flavor_t(MACH_TASK_BASIC_INFO), UnsafeMutablePointer<integer_t>(OpaquePointer($0)), &count)
+        let kerr: kern_return_t = withUnsafeMutablePointer(to: &info) { infoPtr in
+            withUnsafeMutablePointer(to: &count) { countPtr in
+                task_info(mach_task_self_, 
+                         task_flavor_t(MACH_TASK_BASIC_INFO), 
+                         UnsafeMutablePointer<integer_t>(OpaquePointer(infoPtr)), 
+                         countPtr)
+            }
         }
         
         if kerr == KERN_SUCCESS {
@@ -456,10 +472,12 @@ struct PerformanceMetrics {
     var lastUpdateTime: CFTimeInterval = 0
 }
 
-// MARK: - Extension for Card ID
+// MARK: - Extension for Card Consistent ID
 
 extension Card {
-    var id: UUID? {
+    /// Generate a consistent identifier based on card properties
+    /// This can be used when we need deterministic IDs for effects
+    var consistentID: UUID {
         // Generate consistent UUID based on card properties
         let string = "\(suit.rawValue)_\(value)"
         return UUID(uuidString: string.md5) ?? UUID()

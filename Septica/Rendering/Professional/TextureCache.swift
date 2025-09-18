@@ -13,6 +13,8 @@ import MetalKit
 import SwiftUI
 import Combine
 import CoreGraphics
+import CoreText
+import UIKit
 
 // MARK: - Texture Cache System
 
@@ -55,7 +57,9 @@ class TextureCache: ObservableObject {
         
         // Setup cleanup timer
         Timer.scheduledTimer(withTimeInterval: 30.0, repeats: true) { [weak self] _ in
-            self?.performCacheCleanup()
+            Task { @MainActor in
+                self?.performCacheCleanup()
+            }
         }
         
         // Preload essential textures
@@ -354,7 +358,8 @@ class TextureCache: ObservableObject {
     
     private func drawCardContent(context: CGContext, card: Card, width: Int, height: Int) {
         // Draw value in top-left
-        let valueFont = CGFont("HelveticaNeue-Bold".cString(using: .utf8)!)
+        let fontName = "HelveticaNeue-Bold" as CFString
+        guard let valueFont = CGFont(fontName) else { return }
         context.setFont(valueFont)
         context.setFontSize(48)
         
@@ -362,11 +367,23 @@ class TextureCache: ObservableObject {
         let (red, green, blue) = getSuitColor(card.suit)
         context.setFillColor(red: red, green: green, blue: blue, alpha: 1.0)
         
-        // Draw value
+        // Draw value using Core Text
         let valueString = card.displayValue
         let valuePoint = CGPoint(x: 20, y: height - 60)
         context.textPosition = valuePoint
-        context.show(valueString.cString(using: .utf8)!, length: valueString.count)
+        
+        // Use showGlyphs instead of deprecated show method
+        let attributedString = NSAttributedString(
+            string: valueString,
+            attributes: [
+                .font: UIFont(name: "HelveticaNeue-Bold", size: 48) ?? UIFont.systemFont(ofSize: 48),
+                .foregroundColor: UIColor(red: red, green: green, blue: blue, alpha: 1.0)
+            ]
+        )
+        
+        let line = CTLineCreateWithAttributedString(attributedString)
+        context.textPosition = valuePoint
+        CTLineDraw(line, context)
         
         // Draw suit symbol in center
         drawSuitSymbol(context: context, suit: card.suit, center: CGPoint(x: width / 2, y: height / 2), size: 120)
@@ -376,8 +393,18 @@ class TextureCache: ObservableObject {
         context.translateBy(x: CGFloat(width - 20), y: 60)
         context.rotate(by: .pi)
         
+        // Draw rotated value using Core Text
+        let rotatedAttributedString = NSAttributedString(
+            string: valueString,
+            attributes: [
+                .font: UIFont(name: "HelveticaNeue-Bold", size: 48) ?? UIFont.systemFont(ofSize: 48),
+                .foregroundColor: UIColor(red: red, green: green, blue: blue, alpha: 1.0)
+            ]
+        )
+        
+        let rotatedLine = CTLineCreateWithAttributedString(rotatedAttributedString)
         context.textPosition = CGPoint.zero
-        context.show(valueString.cString(using: .utf8)!, length: valueString.count)
+        CTLineDraw(rotatedLine, context)
         
         drawSuitSymbol(context: context, suit: card.suit, center: CGPoint(x: 0, y: -30), size: 24)
         

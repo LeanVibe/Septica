@@ -465,7 +465,7 @@ enum LightingModel: String, CaseIterable {
 }
 
 /// Motion data for parallax effects
-struct MotionData {
+struct MotionData: Equatable {
     let accelerometer: (x: CGFloat, y: CGFloat, z: CGFloat)
     let gyroscope: (x: CGFloat, y: CGFloat, z: CGFloat)
     let timestamp: TimeInterval
@@ -475,6 +475,16 @@ struct MotionData {
         gyroscope: (0, 0, 0),
         timestamp: 0
     )
+    
+    static func == (lhs: MotionData, rhs: MotionData) -> Bool {
+        return lhs.accelerometer.x == rhs.accelerometer.x &&
+               lhs.accelerometer.y == rhs.accelerometer.y &&
+               lhs.accelerometer.z == rhs.accelerometer.z &&
+               lhs.gyroscope.x == rhs.gyroscope.x &&
+               lhs.gyroscope.y == rhs.gyroscope.y &&
+               lhs.gyroscope.z == rhs.gyroscope.z &&
+               lhs.timestamp == rhs.timestamp
+    }
 }
 
 /// Interaction states for micro-interactions

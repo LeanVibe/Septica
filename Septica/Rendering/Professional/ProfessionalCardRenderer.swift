@@ -658,11 +658,7 @@ struct LightingEnvironment {
     var romanianCulturalTint: simd_float3 = simd_float3(1.0, 0.85, 0.4) // Warm cultural lighting
 }
 
-enum PerformanceMode {
-    case battery_optimized
-    case balanced
-    case maximum_quality
-}
+// Note: PerformanceMode is defined in AdvancedEffectsIntegration.swift
 
 // MARK: - Error Types
 

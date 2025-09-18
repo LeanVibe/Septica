@@ -130,27 +130,33 @@ struct RomanianCulturalPatternView: View {
             ZStack {
                 // Subtle pulsing cultural elements
                 ForEach(0..<6, id: \.self) { index in
-                    Circle()
-                        .fill(
-                            RadialGradient(
-                                colors: [
-                                    RomanianColors.goldAccent.opacity(Double(intensity) * 0.2),
-                                    Color.clear
-                                ],
-                                center: .center,
-                                startRadius: 0,
-                                endRadius: 4
-                            )
-                        )
-                        .frame(width: 8, height: 8)
-                        .position(
-                            x: geometry.size.width * 0.2 + CGFloat(index) * geometry.size.width * 0.12,
-                            y: geometry.size.height * 0.1 + sin(animationOffset + Double(index)) * 3
-                        )
-                        .opacity(0.6 + sin(animationOffset + Double(index) * 0.5) * 0.4)
+                    culturalAccentCircle(index: index, geometry: geometry)
                 }
             }
         }
+    }
+    
+    @ViewBuilder
+    private func culturalAccentCircle(index: Int, geometry: GeometryProxy) -> some View {
+        let gradient = RadialGradient(
+            colors: [
+                RomanianColors.goldAccent.opacity(Double(intensity) * 0.2),
+                Color.clear
+            ],
+            center: .center,
+            startRadius: 0,
+            endRadius: 4
+        )
+        
+        let positionX = geometry.size.width * 0.2 + CGFloat(index) * geometry.size.width * 0.12
+        let positionY = geometry.size.height * 0.1 + sin(animationOffset + Double(index)) * 3
+        let opacity = 0.6 + sin(animationOffset + Double(index) * 0.5) * 0.4
+        
+        Circle()
+            .fill(gradient)
+            .frame(width: 8, height: 8)
+            .position(x: positionX, y: positionY)
+            .opacity(opacity)
     }
     
     // MARK: - Helper Methods

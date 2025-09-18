@@ -349,7 +349,7 @@ struct ProfessionalCard: View {
                             .foregroundColor(.red)
                     }
                 }
-                .font(.system(size: 8, family: .monospaced))
+                .font(.system(size: 8, design: .monospaced))
                 .foregroundColor(.white)
                 .padding(4)
                 .background(Color.black.opacity(0.7))
@@ -385,14 +385,14 @@ struct ProfessionalCard: View {
                 
                 // Update 3D transform based on drag
                 let normalizedTranslation = simd_float3(
-                    Float(value.translation.x) / 100,
-                    Float(-value.translation.y) / 100,
+                    Float(value.translation.width) / 100,
+                    Float(-value.translation.height) / 100,
                     0
                 )
                 transform3D.setPosition(normalizedTranslation, animated: false)
                 
                 // Add rotation based on drag direction
-                let rotationY = Float(value.translation.x) / 200
+                let rotationY = Float(value.translation.width) / 200
                 transform3D.setRotation(simd_float3(0, rotationY, 0), animated: false)
                 
                 onDragChanged?(value)
@@ -580,7 +580,7 @@ struct ProfessionalCard: View {
     }
     
     private func initializeMetalRendering() {
-        guard let device = MTLCreateSystemDefaultDevice() else {
+        guard MTLCreateSystemDefaultDevice() != nil else {
             renderError = "Metal not available"
             return
         }

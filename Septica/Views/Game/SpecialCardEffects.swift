@@ -44,7 +44,7 @@ struct SevenCardMagicalEffect: View {
                     Image(systemName: "sparkle")
                         .foregroundColor(Color.yellow.opacity(sparkleOpacities[index]))
                         .font(.system(size: 12, weight: .bold))
-                        .offset(sparkleOffsets[index])
+                        .offset(x: sparkleOffsets[index].x, y: sparkleOffsets[index].y)
                         .scaleEffect(0.5 + Double(intensity) * 0.5)
                 }
             }
