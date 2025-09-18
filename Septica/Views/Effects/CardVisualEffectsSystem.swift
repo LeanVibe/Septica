@@ -10,6 +10,10 @@ import SwiftUI
 import UIKit
 import Combine
 import simd
+#if canImport(Metal)
+import Metal
+import MetalKit
+#endif
 
 // MARK: - Enhanced Card Visual Effects Manager with Coordinated Animation Sequences
 

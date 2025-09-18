@@ -57,6 +57,12 @@ class ProfessionalCardRenderer: ObservableObject {
     private let geometryCache: GeometryCache
     private let materialEffectSystem: MaterialEffectSystem
     
+    // MARK: - Phase 2 Advanced Systems
+    
+    private var advancedLightingSystem: AdvancedLightingSystem?
+    private var enhancedMaterialSystem: EnhancedMaterialSystem?
+    private var advancedVisualEffectsIntegration: AdvancedVisualEffectsIntegration?
+    
     // MARK: - Render Configuration
     
     @Published var renderQuality: RenderQuality = .high
@@ -64,6 +70,12 @@ class ProfessionalCardRenderer: ObservableObject {
     @Published var enableRomanianCulturalEffects = true
     @Published var enableMaterialPhysics = true
     @Published var performanceMode: PerformanceMode = .balanced
+    
+    // MARK: - Phase 2 Configuration
+    
+    @Published var enableEnhancedMaterials = true
+    @Published var enableAdvancedVisualEffects = true
+    @Published var phase2QualityLevel: Phase2QualityLevel = .high
     
     // MARK: - Threading and Performance
     
@@ -141,12 +153,72 @@ class ProfessionalCardRenderer: ObservableObject {
         // Initialize shadow map texture
         self.shadowMapTexture = try Self.createShadowMapTexture(device: device)
         
+        // Initialize Phase 2 Advanced Systems
+        try initializePhase2Systems()
+        
         print("🎮 ProfessionalCardRenderer initialized successfully")
         print("   - Device: \(device.name)")
         print("   - Quality: \(renderQuality)")
         print("   - Advanced Lighting: \(enableAdvancedLighting)")
         print("   - Romanian Cultural Effects: \(enableRomanianCulturalEffects)")
         print("   - Material Physics: \(enableMaterialPhysics)")
+        print("   - Phase 2 Advanced Systems: ✅")
+        print("   - Phase 2 Quality Level: \(phase2QualityLevel)")
+    }
+    
+    // MARK: - Phase 2 System Initialization
+    
+    private func initializePhase2Systems() throws {
+        // Initialize Advanced Lighting System
+        if enableAdvancedLighting {
+            do {
+                advancedLightingSystem = try AdvancedLightingSystem(device: device, commandQueue: commandQueue)
+                print("✅ Advanced Lighting System initialized")
+            } catch {
+                print("⚠️ Failed to initialize Advanced Lighting System: \(error)")
+                enableAdvancedLighting = false
+            }
+        }
+        
+        // Initialize Enhanced Material System
+        if enableEnhancedMaterials {
+            do {
+                enhancedMaterialSystem = try EnhancedMaterialSystem(
+                    device: device,
+                    materialEffectSystem: materialEffectSystem,
+                    advancedLightingSystem: advancedLightingSystem!
+                )
+                print("✅ Enhanced Material System initialized")
+            } catch {
+                print("⚠️ Failed to initialize Enhanced Material System: \(error)")
+                enableEnhancedMaterials = false
+            }
+        }
+        
+        // Initialize Advanced Visual Effects Integration
+        if enableAdvancedVisualEffects {
+            do {
+                advancedVisualEffectsIntegration = try AdvancedVisualEffectsIntegration(
+                    device: device,
+                    commandQueue: commandQueue
+                )
+                print("✅ Advanced Visual Effects Integration initialized")
+            } catch {
+                print("⚠️ Failed to initialize Advanced Visual Effects Integration: \(error)")
+                enableAdvancedVisualEffects = false
+            }
+        }
+        
+        // Configure quality levels
+        configurePhase2QualityLevels()
+    }
+    
+    private func configurePhase2QualityLevels() {
+        let visualEffectsQuality = phase2QualityLevel.visualEffectsQuality
+        
+        advancedLightingSystem?.setLightingQuality(visualEffectsQuality.lightingQuality)
+        enhancedMaterialSystem?.setMaterialQuality(visualEffectsQuality.materialQuality)
+        advancedVisualEffectsIntegration?.setVisualEffectsQuality(visualEffectsQuality)
     }
     
     // MARK: - Pipeline State Creation
@@ -385,6 +457,92 @@ class ProfessionalCardRenderer: ObservableObject {
         
         // Update performance metrics
         updatePerformanceMetrics()
+    }
+    
+    /// Enhanced card rendering with Phase 2 advanced systems
+    func renderCardWithAdvancedEffects(
+        _ card: Card,
+        transform: Advanced3DTransform,
+        materialProperties: MaterialProperties,
+        lightingEnvironment: LightingEnvironment,
+        to renderTarget: MTLTexture,
+        viewMatrix: matrix_float4x4,
+        projectionMatrix: matrix_float4x4
+    ) throws {
+        
+        guard let commandBuffer = commandQueue.makeCommandBuffer() else {
+            throw ProfessionalRendererError.commandBufferCreationFailed
+        }
+        commandBuffer.label = "AdvancedCardRender"
+        
+        // Update frame data
+        updateFrameData(
+            card: card,
+            transform: transform,
+            materialProperties: materialProperties,
+            lightingEnvironment: lightingEnvironment,
+            viewMatrix: viewMatrix,
+            projectionMatrix: projectionMatrix
+        )
+        
+        // Create scene rendering data for Phase 2 systems
+        let sceneData = SceneRenderingData(
+            colorTarget: renderTarget,
+            depthTarget: try createDepthTexture(width: renderTarget.width, height: renderTarget.height),
+            cardGeometries: [createCardGeometry(for: card)],
+            viewMatrix: viewMatrix,
+            projectionMatrix: projectionMatrix
+        )
+        
+        // Phase 2: Use Advanced Visual Effects Integration if available
+        if enableAdvancedVisualEffects, let advancedEffects = advancedVisualEffectsIntegration {
+            try advancedEffects.renderAdvancedVisualEffects(
+                commandBuffer: commandBuffer,
+                sceneData: sceneData,
+                cards: [card],
+                lightingEnvironment: lightingEnvironment
+            )
+        } else {
+            // Fallback to Phase 1 rendering
+            // Shadow map pass (if advanced lighting is enabled)
+            if enableAdvancedLighting {
+                try renderShadowMapPass(commandBuffer: commandBuffer)
+            }
+            
+            // Main card rendering pass
+            try renderMainCardPass(
+                commandBuffer: commandBuffer,
+                card: card,
+                renderTarget: renderTarget
+            )
+            
+            // Material effects pass
+            if enableMaterialPhysics {
+                try renderMaterialEffectsPass(commandBuffer: commandBuffer, renderTarget: renderTarget)
+            }
+            
+            // Romanian cultural pattern overlay
+            if enableRomanianCulturalEffects {
+                try renderCulturalPatternPass(commandBuffer: commandBuffer, card: card, renderTarget: renderTarget)
+            }
+        }
+        
+        commandBuffer.commit()
+        commandBuffer.waitUntilCompleted()
+        
+        // Update performance metrics
+        updatePerformanceMetrics()
+    }
+    
+    private func createCardGeometry(for card: Card) -> CardGeometry {
+        let cachedGeometry = geometryCache.getCardGeometry(.romanian_traditional)
+        
+        return CardGeometry(
+            vertexBuffer: cachedGeometry.vertexBuffer,
+            indexBuffer: cachedGeometry.indexBuffer,
+            indexCount: cachedGeometry.indexCount,
+            indexType: cachedGeometry.indexType
+        )
     }
     
     // MARK: - Render Passes
@@ -717,5 +875,161 @@ extension matrix_float3x3 {
     
     var matrixInverse: matrix_float3x3 {
         return simd_inverse(self)
+    }
+}
+
+// MARK: - Phase 2 Configuration Types
+
+enum Phase2QualityLevel {
+    case low
+    case medium
+    case high
+    case ultra
+    
+    var visualEffectsQuality: VisualEffectsQuality {
+        switch self {
+        case .low: return .low
+        case .medium: return .medium
+        case .high: return .high
+        case .ultra: return .ultra
+        }
+    }
+    
+    var description: String {
+        switch self {
+        case .low:
+            return "Low - Basic visual effects, optimized for performance"
+        case .medium:
+            return "Medium - Balanced visual quality and performance"
+        case .high:
+            return "High - Advanced visual effects with good performance"
+        case .ultra:
+            return "Ultra - Maximum visual quality, premium devices only"
+        }
+    }
+}
+
+// MARK: - Phase 2 Configuration Extensions
+
+extension ProfessionalCardRenderer {
+    
+    /// Configure Phase 2 quality level
+    func setPhase2QualityLevel(_ level: Phase2QualityLevel) {
+        phase2QualityLevel = level
+        configurePhase2QualityLevels()
+        objectWillChange.send()
+    }
+    
+    /// Configure advanced lighting settings
+    func configureAdvancedLighting(
+        enableGlobalIllumination: Bool = true,
+        enableLightBouncing: Bool = true,
+        enableCascadedShadows: Bool = true,
+        romanianWarmth: Float = 0.8,
+        goldenHour: Float = 0.6
+    ) {
+        advancedLightingSystem?.enableGlobalIllumination = enableGlobalIllumination
+        advancedLightingSystem?.enableLightBouncing = enableLightBouncing
+        advancedLightingSystem?.enableCascadedShadows = enableCascadedShadows
+        advancedLightingSystem?.configureRomanianLighting(warmth: romanianWarmth, goldenHour: goldenHour)
+        
+        objectWillChange.send()
+    }
+    
+    /// Configure enhanced materials
+    func configureEnhancedMaterials(
+        enablePBR: Bool = true,
+        enableSubsurfaceScattering: Bool = true,
+        enableRomanianCultural: Bool = true,
+        metallicFactor: Float = 1.0,
+        roughnessFactor: Float = 1.0,
+        culturalIntensity: Float = 1.0
+    ) {
+        enhancedMaterialSystem?.enablePBRMaterials = enablePBR
+        enhancedMaterialSystem?.enableSubsurfaceScattering = enableSubsurfaceScattering
+        enhancedMaterialSystem?.enableRomanianCulturalMaterials = enableRomanianCultural
+        enhancedMaterialSystem?.configureGlobalMaterialFactors(
+            metallic: metallicFactor,
+            roughness: roughnessFactor,
+            cultural: culturalIntensity
+        )
+        
+        objectWillChange.send()
+    }
+    
+    /// Configure advanced visual effects
+    func configureAdvancedVisualEffects(
+        enableReflections: Bool = true,
+        enableRefractions: Bool = true,
+        enableShimmer: Bool = true,
+        enableCulturalGlow: Bool = true,
+        enableParticles: Bool = true,
+        globalIntensity: Float = 1.0
+    ) {
+        advancedVisualEffectsIntegration?.enableAdvancedReflections = enableReflections
+        advancedVisualEffectsIntegration?.enableRefractions = enableRefractions
+        advancedVisualEffectsIntegration?.enableShimmerEffects = enableShimmer
+        advancedVisualEffectsIntegration?.enableCulturalGlow = enableCulturalGlow
+        advancedVisualEffectsIntegration?.enableParticleEffects = enableParticles
+        
+        advancedVisualEffectsIntegration?.configureEffectIntensities(
+            global: globalIntensity,
+            reflection: 0.8,
+            refraction: 0.6,
+            shimmer: 0.7,
+            cultural: 0.9,
+            particle: 0.8
+        )
+        
+        objectWillChange.send()
+    }
+    
+    /// Get comprehensive Phase 2 performance metrics
+    func getPhase2Metrics() -> Phase2Metrics? {
+        guard let advancedEffects = advancedVisualEffectsIntegration else { return nil }
+        
+        let comprehensiveMetrics = advancedEffects.getComprehensiveMetrics()
+        
+        return Phase2Metrics(
+            totalRenderTime: comprehensiveMetrics.totalRenderTime,
+            lightingRenderTime: comprehensiveMetrics.lightingRenderTime,
+            materialRenderTime: comprehensiveMetrics.materialRenderTime,
+            effectsRenderTime: comprehensiveMetrics.effectsRenderTime,
+            totalMemoryUsage: comprehensiveMetrics.memoryUsage + comprehensiveMetrics.lightingMemoryUsage + comprehensiveMetrics.materialMemoryUsage,
+            activeEffectCount: comprehensiveMetrics.activeEffectCount,
+            particleCount: comprehensiveMetrics.particleCount,
+            qualityLevel: phase2QualityLevel,
+            systemsEnabled: Phase2SystemStatus(
+                advancedLighting: enableAdvancedLighting && advancedLightingSystem != nil,
+                enhancedMaterials: enableEnhancedMaterials && enhancedMaterialSystem != nil,
+                advancedVisualEffects: enableAdvancedVisualEffects && advancedVisualEffectsIntegration != nil
+            )
+        )
+    }
+}
+
+struct Phase2Metrics {
+    let totalRenderTime: Double
+    let lightingRenderTime: Double
+    let materialRenderTime: Double
+    let effectsRenderTime: Double
+    let totalMemoryUsage: Int
+    let activeEffectCount: Int
+    let particleCount: Int
+    let qualityLevel: Phase2QualityLevel
+    let systemsEnabled: Phase2SystemStatus
+}
+
+struct Phase2SystemStatus {
+    let advancedLighting: Bool
+    let enhancedMaterials: Bool
+    let advancedVisualEffects: Bool
+    
+    var allSystemsEnabled: Bool {
+        return advancedLighting && enhancedMaterials && advancedVisualEffects
+    }
+    
+    var enabledSystemsCount: Int {
+        return (advancedLighting ? 1 : 0) + (enhancedMaterials ? 1 : 0) + (advancedVisualEffects ? 1 : 0)
     }
 }
