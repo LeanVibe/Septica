@@ -24,7 +24,7 @@ class ProfessionalCardRenderer: ObservableObject {
     
     // MARK: - Core Metal Resources
     
-    private let device: MTLDevice
+    let device: MTLDevice  // Public access for ProfessionalCardView
     private let commandQueue: MTLCommandQueue
     private let library: MTLLibrary
     
@@ -42,6 +42,9 @@ class ProfessionalCardRenderer: ObservableObject {
     private var shadowDepthStencilState: MTLDepthStencilState
     private var samplerState: MTLSamplerState
     private var shadowSamplerState: MTLSamplerState
+
+    /// Reusable depth textures grouped by render target size, triple buffered to keep GPU busy without reallocating
+    private var depthTexturePools: [DepthTextureKey: DepthTexturePool] = [:]
     
     // MARK: - Textures and Buffers
     
@@ -88,6 +91,23 @@ class ProfessionalCardRenderer: ObservableObject {
     
     weak var errorDelegate: ProfessionalRendererErrorDelegate?
     private var cancellables = Set<AnyCancellable>()
+
+    private struct DepthTextureKey: Hashable {
+        let width: Int
+        let height: Int
+    }
+
+    private struct DepthTexturePool {
+        var textures: [MTLTexture]
+        var cursor: Int = 0
+
+        mutating func nextTexture() -> MTLTexture? {
+            guard !textures.isEmpty else { return nil }
+            let texture = textures[cursor % textures.count]
+            cursor = (cursor + 1) % textures.count
+            return texture
+        }
+    }
     
     // MARK: - Initialization
     
@@ -419,6 +439,7 @@ class ProfessionalCardRenderer: ObservableObject {
             throw ProfessionalRendererError.commandBufferCreationFailed
         }
         commandBuffer.label = "ProfessionalCardRender"
+        attachCompletionHandler(to: commandBuffer)
         
         // Update frame data
         updateFrameData(
@@ -453,10 +474,6 @@ class ProfessionalCardRenderer: ObservableObject {
         }
         
         commandBuffer.commit()
-        commandBuffer.waitUntilCompleted()
-        
-        // Update performance metrics
-        updatePerformanceMetrics()
     }
     
     /// Enhanced card rendering with Phase 2 advanced systems
@@ -474,6 +491,7 @@ class ProfessionalCardRenderer: ObservableObject {
             throw ProfessionalRendererError.commandBufferCreationFailed
         }
         commandBuffer.label = "AdvancedCardRender"
+        attachCompletionHandler(to: commandBuffer)
         
         // Update frame data
         updateFrameData(
@@ -488,7 +506,7 @@ class ProfessionalCardRenderer: ObservableObject {
         // Create scene rendering data for Phase 2 systems
         let sceneData = SceneRenderingData(
             colorTarget: renderTarget,
-            depthTarget: try createDepthTexture(width: renderTarget.width, height: renderTarget.height),
+            depthTarget: try depthTexture(for: renderTarget.width, height: renderTarget.height),
             cardGeometries: [createCardGeometry(for: card)],
             viewMatrix: viewMatrix,
             projectionMatrix: projectionMatrix
@@ -528,16 +546,12 @@ class ProfessionalCardRenderer: ObservableObject {
         }
         
         commandBuffer.commit()
-        commandBuffer.waitUntilCompleted()
-        
-        // Update performance metrics
-        updatePerformanceMetrics()
     }
     
-    private func createCardGeometry(for card: Card) -> CardGeometry {
+    private func createCardGeometry(for card: Card) -> CardGeometryData {
         let cachedGeometry = geometryCache.getCardGeometry(.romanian_traditional)
         
-        return CardGeometry(
+        return CardGeometryData(
             vertexBuffer: cachedGeometry.vertexBuffer,
             indexBuffer: cachedGeometry.indexBuffer,
             indexCount: cachedGeometry.indexCount,
@@ -588,7 +602,7 @@ class ProfessionalCardRenderer: ObservableObject {
         renderPassDescriptor.colorAttachments[0].storeAction = .store
         
         // Create depth texture if needed
-        let depthTexture = try createDepthTexture(width: renderTarget.width, height: renderTarget.height)
+        let depthTexture = try depthTexture(for: renderTarget.width, height: renderTarget.height)
         renderPassDescriptor.depthAttachment.texture = depthTexture
         renderPassDescriptor.depthAttachment.loadAction = .clear
         renderPassDescriptor.depthAttachment.storeAction = .dontCare
@@ -705,6 +719,27 @@ class ProfessionalCardRenderer: ObservableObject {
         texture.label = "DepthTexture"
         return texture
     }
+
+    private func depthTexture(for width: Int, height: Int) throws -> MTLTexture {
+        let key = DepthTextureKey(width: width, height: height)
+        var pool = depthTexturePools[key] ?? DepthTexturePool(textures: [])
+
+        if pool.textures.count < 3 {
+            let texture = try createDepthTexture(width: width, height: height)
+            pool.textures.append(texture)
+        }
+
+        guard let texture = pool.nextTexture() else {
+            // Fallback: generate one more texture if pool was empty for some reason
+            let texture = try createDepthTexture(width: width, height: height)
+            pool.textures = [texture]
+            depthTexturePools[key] = pool
+            return texture
+        }
+
+        depthTexturePools[key] = pool
+        return texture
+    }
     
     private func updateFrameData(
         card: Card,
@@ -764,6 +799,23 @@ class ProfessionalCardRenderer: ObservableObject {
         )
     }
     
+    private func attachCompletionHandler(to commandBuffer: MTLCommandBuffer) {
+        commandBuffer.addCompletedHandler { [weak self] buffer in
+            guard let self else { return }
+            Task { @MainActor in
+                if buffer.status == .error {
+                    if let error = buffer.error {
+                        print("⚠️ Professional renderer command buffer error: \(error.localizedDescription)")
+                    }
+                    self.errorDelegate?.rendererDidEncounterError(.commandBufferExecutionFailed)
+                } else {
+                    self.errorDelegate?.rendererDidRecoverFromError()
+                }
+                self.updatePerformanceMetrics()
+            }
+        }
+    }
+    
     private func updatePerformanceMetrics() {
         frameCounter += 1
         let currentTime = CACurrentMediaTime()
@@ -778,16 +830,6 @@ class ProfessionalCardRenderer: ObservableObject {
 }
 
 // MARK: - Supporting Types
-
-struct FrameData {
-    var card: Card?
-    var transform: Advanced3DTransform = Advanced3DTransform()
-    var materialProperties: MaterialProperties = MaterialProperties()
-    var lightingEnvironment: LightingEnvironment = LightingEnvironment()
-    var viewMatrix: matrix_float4x4 = matrix_identity_float4x4
-    var projectionMatrix: matrix_float4x4 = matrix_identity_float4x4
-    var timestamp: CFTimeInterval = 0
-}
 
 struct TransformUniforms {
     let modelMatrix: matrix_float4x4
@@ -807,15 +849,6 @@ struct LightingUniforms {
     let romanianCulturalTint: simd_float3
 }
 
-struct LightingEnvironment {
-    var primaryLightDirection: simd_float3 = simd_float3(0.5, -0.8, 0.3)
-    var primaryLightColor: simd_float3 = simd_float3(1.0, 0.95, 0.8)
-    var ambientLightColor: simd_float3 = simd_float3(0.3, 0.3, 0.4)
-    var lightIntensity: Float = 1.0
-    var shadowBias: Float = 0.001
-    var romanianCulturalTint: simd_float3 = simd_float3(1.0, 0.85, 0.4) // Warm cultural lighting
-}
-
 // Note: PerformanceMode is defined in AdvancedEffectsIntegration.swift
 
 // MARK: - Error Types
@@ -829,6 +862,7 @@ enum ProfessionalRendererError: Error, LocalizedError {
     case bufferAllocationFailed
     case commandBufferCreationFailed
     case renderEncoderCreationFailed
+    case commandBufferExecutionFailed
     
     var errorDescription: String? {
         switch self {
@@ -848,6 +882,8 @@ enum ProfessionalRendererError: Error, LocalizedError {
             return "Failed to create command buffer"
         case .renderEncoderCreationFailed:
             return "Failed to create render encoder"
+        case .commandBufferExecutionFailed:
+            return "Command buffer execution failed"
         }
     }
 }

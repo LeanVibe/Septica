@@ -201,7 +201,7 @@ class EnhancedMaterialSystem: ObservableObject {
                     embroideryDetail: 0.0,
                     weatheringLevel: 0.0,
                     authenticityFactor: 0.5,
-                    regionalVariation: .modern
+                    regionalVariation: RomanianCulturalRegion.modernRegionFallback
                 )
             ),
             
@@ -538,7 +538,7 @@ class EnhancedMaterialSystem: ObservableObject {
                     embroideryDetail: materialDefinition.culturalProperties.embroideryDetail,
                     weatheringLevel: materialDefinition.culturalProperties.weatheringLevel,
                     authenticityFactor: materialDefinition.culturalProperties.authenticityFactor,
-                    regionalVariation: Float(materialDefinition.culturalProperties.regionalVariation.rawValue),
+                    regionalVariation: Float(materialDefinition.culturalProperties.regionalVariation.materialIndex),
                     timeAnimation: Float(CACurrentMediaTime()) * materialAnimationSpeed
                 )
             }
@@ -780,7 +780,9 @@ enum MaterialRenderingQuality {
 }
 
 extension RomanianCulturalRegion {
-    var rawValue: Int {
+    /// Numerical index used by the material system for buffer packing. We avoid overriding the
+    /// existing `rawValue` (String) conformance exposed to SwiftUI and data layers.
+    var materialIndex: Int {
         switch self {
         case .maramures: return 0
         case .moldavia: return 1
@@ -789,13 +791,11 @@ extension RomanianCulturalRegion {
         case .oltenia: return 4
         case .banat: return 5
         case .dobrogea: return 6
-        case .modern: return 7 // Added modern as case 7
         }
     }
-}
 
-extension RomanianCulturalRegion {
-    static let modern = RomanianCulturalRegion.dobrogea // Temporary mapping
+    /// Placeholder mapping until a dedicated modern region asset set is added.
+    static var modernRegionFallback: RomanianCulturalRegion { .dobrogea }
 }
 
 // MARK: - Error Types

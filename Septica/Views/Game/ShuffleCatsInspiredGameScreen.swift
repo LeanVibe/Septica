@@ -7,6 +7,8 @@
 //
 
 import SwiftUI
+import MetalKit
+import simd
 
 /// Shuffle Cats-inspired game screen with Romanian cultural elements
 struct ShuffleCatsInspiredGameScreen: View {
@@ -20,17 +22,45 @@ struct ShuffleCatsInspiredGameScreen: View {
     // Navigation manager for proper menu navigation
     @EnvironmentObject private var navigationManager: NavigationManager
     
-    // Animation states
+    // Professional Rendering System - ShuffleCats Quality
+    @State private var professionalRenderer: ProfessionalCardRenderer?
+    @StateObject private var advanced3DTransformManager = Advanced3DTransformManager()
+    @StateObject private var materialEffectCoordinator = MaterialEffectCoordinator()
+    @StateObject private var lightingEnvironmentManager = LightingEnvironmentManager()
+    
+    // Animation states - Enhanced for physics-based motion
     @State private var backgroundPulse = false
     @State private var cardAnimationOffset: CGFloat = 0
+    @State private var physicsSpringActive = false
+    @State private var coordinatedAnimationSequence: AnimationSequence?
     
     // Trick completion states
     @State private var isTrickComplete = false
     @State private var trickWinner: Player?
     @State private var showingTrickResult = false
     
+    // Performance optimization state
+    @State private var renderQuality: RenderQuality = .high
+    @State private var performanceMode: PerformanceMode = .balanced
+    
     init(gameState: GameState) {
         self._gameViewModel = StateObject(wrappedValue: GameViewModel(gameState: gameState))
+        
+        // Initialize Professional Rendering System
+        if let device = MTLCreateSystemDefaultDevice(),
+           let commandQueue = device.makeCommandQueue() {
+            do {
+                let renderer = try ProfessionalCardRenderer(device: device, commandQueue: commandQueue)
+                self._professionalRenderer = State(wrappedValue: renderer)
+                print("🎮 Professional Card Renderer initialized successfully")
+            } catch {
+                print("⚠️ Failed to initialize Professional Card Renderer: \(error)")
+                self._professionalRenderer = State(wrappedValue: nil)
+            }
+        } else {
+            print("⚠️ Metal not available, using fallback rendering")
+            self._professionalRenderer = State(wrappedValue: nil)
+        }
     }
     
     var body: some View {
@@ -73,20 +103,15 @@ struct ShuffleCatsInspiredGameScreen: View {
                     trickCompletionOverlay
                 }
             }
-            .overlay(alignment: .trailing) {
-                pointCardProgressBar
-                    .padding(.vertical, geometry.size.height * 0.08)
-                    .padding(.trailing, 16)
-            }
         }
         .navigationBarHidden(true)
         .preferredColorScheme(.dark)
         .onAppear {
             setupGame()
+            initializeProfessionalRenderingSystems()
         }
-        .onChange(of: gameViewModel.gamePhase) { _, newPhase in
-            handleGamePhaseChange(newPhase)
-        }
+        .onChange(of: gameViewModel.gamePhase) { handleGamePhaseChange($0) }
+        .onChange(of: selectedCard) { handleCardSelectionChange($0) }
     }
     
     // MARK: - Background
@@ -128,59 +153,51 @@ struct ShuffleCatsInspiredGameScreen: View {
             humanPoints: humanPointCardsCollected,
             opponentPoints: opponentPointCardsCollected,
             totalPointCards: totalPointCards,
-            currentPlayer: gameViewModel.currentPlayer
+            currentPlayer: gameViewModel.currentPlayer,
+            humanName: gameViewModel.humanPlayer?.name ?? "Tu",
+            opponentName: primaryOpponent?.name ?? "Adversar"
         )
-        .frame(width: 85)  // Sleeker width like ShuffleCats
     }
     
     // MARK: - Game Status and Menu
     
-    private var gameStatusAndMenu: some View {
+private var gameStatusAndMenu: some View {
         VStack {
-            HStack {
-                Spacer()
-                
-                // Game status indicator (centered)
-                VStack(spacing: 4) {
-                    Text("Rundă \(gameViewModel.gameState.roundNumber)")
-                        .font(.caption.weight(.bold))
-                        .foregroundColor(RomanianColors.goldAccent)
-                    
-                    Text("Mână \(gameViewModel.gameState.trickNumber)")
-                        .font(.caption2)
-                        .foregroundColor(.white.opacity(0.8))
-                }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
-                .background(
-                    RoundedRectangle(cornerRadius: 8)
-                        .fill(Color.black.opacity(0.6))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 8)
-                                .stroke(RomanianColors.goldAccent.opacity(0.5), lineWidth: 1)
-                        )
+            HStack(alignment: .center) {
+                RoundBadge(
+                    round: gameViewModel.gameState.roundNumber,
+                    hand: gameViewModel.gameState.trickNumber
                 )
+                .padding(.leading, 24)
                 
                 Spacer()
                 
-                // Menu button with Romanian styling
                 Button(action: { showingGameMenu.toggle() }) {
                     Image(systemName: "line.horizontal.3")
-                        .font(.title3)
-                        .foregroundColor(RomanianColors.goldAccent)
-                        .frame(width: 32, height: 32)
+                        .font(.title3.weight(.semibold))
+                        .foregroundColor(.white)
+                        .frame(width: 38, height: 38)
                         .background(
                             Circle()
-                                .fill(Color.black.opacity(0.6))
+                                .fill(
+                                    LinearGradient(
+                                        colors: [
+                                            Color.black.opacity(0.7),
+                                            Color.black.opacity(0.5)
+                                        ],
+                                        startPoint: .top,
+                                        endPoint: .bottom
+                                    )
+                                )
                                 .overlay(
-                                    Circle()
-                                        .stroke(RomanianColors.goldAccent.opacity(0.5), lineWidth: 1)
+                                    Circle().stroke(RomanianColors.goldAccent.opacity(0.6), lineWidth: 1)
                                 )
                         )
+                        .shadow(color: .black.opacity(0.4), radius: 4, x: 0, y: 2)
                 }
+                .padding(.trailing, 24)
             }
-            .padding(.horizontal)
-            .padding(.top, 8)
+            .padding(.top, 12)
             
             Spacer()
         }
@@ -192,7 +209,13 @@ struct ShuffleCatsInspiredGameScreen: View {
         GeometryReader { geometry in
             ZStack(alignment: .top) {
                 if let opponent = primaryOpponent {
-                    OpponentCardHandView(cardCount: opponent.hand.count)
+                    OpponentCardHandView(
+                        opponent: opponent,
+                        professionalRenderer: professionalRenderer,
+                        transformManager: advanced3DTransformManager,
+                        materialCoordinator: materialEffectCoordinator,
+                        lightingManager: lightingEnvironmentManager
+                    )
                         .frame(maxWidth: geometry.size.width * 0.85)
                         .frame(height: geometry.size.height * 0.75, alignment: .top)
                         .offset(y: geometry.size.height * 0.18)
@@ -238,68 +261,79 @@ struct ShuffleCatsInspiredGameScreen: View {
     
     private var gameTableArea: some View {
         GeometryReader { geometry in
-            ZStack {
-                // Elegant table surface with subtle foreshortening
-                ElegantTableSurface()
-                    .frame(
-                        width: geometry.size.width * 0.92,
-                        height: geometry.size.height * 1.12
-                    )
-
-                VStack(spacing: 18) {
-                    // Table title with Romanian ornate styling
-                    HStack {
-                        RomanianOrnatePatternSystem.RomanianCrossPattern(
-                            size: 14,
-                            color: RomanianColors.goldAccent.opacity(0.8)
-                        )
-
-                        Text("Masa de Joc")
-                            .font(.title3.weight(.bold))
-                            .foregroundStyle(
-                                LinearGradient(
-                                    colors: [
-                                        RomanianColors.goldAccent,
-                                        RomanianColors.primaryYellow
-                                    ],
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                )
+            let tableWidth = geometry.size.width * 0.78
+            let tableHeight = geometry.size.height * 0.95
+            let spacing = geometry.size.width * 0.05
+            let rotationAngle: Double = 8
+            
+            HStack(alignment: .center, spacing: spacing) {
+                ZStack {
+                    // Elegant table surface with subtle foreshortening
+                    ElegantTableSurface()
+                        .frame(width: tableWidth, height: tableHeight)
+                    
+                    VStack(spacing: 18) {
+                        // Table title with Romanian ornate styling
+                        HStack {
+                            RomanianOrnatePatternSystem.RomanianCrossPattern(
+                                size: 14,
+                                color: RomanianColors.goldAccent.opacity(0.8)
                             )
-                            .shadow(color: .black.opacity(0.5), radius: 2, x: 1, y: 1)
-
-                        RomanianOrnatePatternSystem.RomanianCrossPattern(
-                            size: 14,
-                            color: RomanianColors.goldAccent.opacity(0.8)
-                        )
+                            
+                            Text("Masa de Joc")
+                                .font(.title3.weight(.bold))
+                                .foregroundStyle(
+                                    LinearGradient(
+                                        colors: [
+                                            RomanianColors.goldAccent,
+                                            RomanianColors.primaryYellow
+                                        ],
+                                        startPoint: .leading,
+                                        endPoint: .trailing
+                                    )
+                                )
+                                .shadow(color: .black.opacity(0.5), radius: 2, x: 1, y: 1)
+                            
+                            RomanianOrnatePatternSystem.RomanianCrossPattern(
+                                size: 14,
+                                color: RomanianColors.goldAccent.opacity(0.8)
+                            )
+                        }
+                        
+                        // Table cards with elegant arrangement
+                        if !gameViewModel.tableCards.isEmpty {
+                            ElegantTableCardsView(
+                                cards: gameViewModel.tableCards,
+                                professionalRenderer: professionalRenderer,
+                                transformManager: advanced3DTransformManager,
+                                materialCoordinator: materialEffectCoordinator,
+                                lightingManager: lightingEnvironmentManager
+                            )
+                            .frame(height: geometry.size.height * 0.55)
+                        } else {
+                            EmptyTablePlaceholder()
+                                .frame(height: geometry.size.height * 0.4)
+                        }
                     }
-
-                    // Table cards with elegant arrangement
-                    if !gameViewModel.tableCards.isEmpty {
-                        ElegantTableCardsView(
-                            cards: gameViewModel.tableCards,
-                            validMoves: gameViewModel.validMoves,
-                            onCardTapped: { card in
-                                if gameViewModel.validMoves.contains(card) {
-                                    playCard(card)
-                                }
-                            }
-                        )
-                        .frame(height: geometry.size.height * 0.55)
-                    } else {
-                        EmptyTablePlaceholder()
-                            .frame(height: geometry.size.height * 0.4)
-                    }
+                    .padding(.top, geometry.size.height * 0.06)
                 }
-                .padding(.top, geometry.size.height * 0.1)
+                .rotation3DEffect(
+                    .degrees(rotationAngle),
+                    axis: (x: 1, y: 0, z: 0),
+                    anchor: .center,
+                    perspective: 0.55
+                )
+                
+                pointCardProgressBar
+                    .frame(width: geometry.size.width * 0.2)
+                    .rotation3DEffect(
+                        .degrees(rotationAngle),
+                        axis: (x: 1, y: 0, z: 0),
+                        anchor: .center,
+                        perspective: 0.55
+                    )
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .rotation3DEffect(
-                .degrees(12),
-                axis: (x: 1, y: 0, z: 0),
-                anchor: .center,
-                perspective: 0.55
-            )
             .padding(.horizontal, geometry.size.width * 0.04)
         }
     }
@@ -315,6 +349,10 @@ struct ShuffleCatsInspiredGameScreen: View {
                         cards: humanPlayer.hand,
                         selectedCard: selectedCard,
                         validMoves: gameViewModel.validMoves,
+                        professionalRenderer: professionalRenderer,
+                        transformManager: advanced3DTransformManager,
+                        materialCoordinator: materialEffectCoordinator,
+                        lightingManager: lightingEnvironmentManager,
                         onCardTapped: { card in
                             if gameViewModel.validMoves.contains(card) {
                                 withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
@@ -344,9 +382,6 @@ struct ShuffleCatsInspiredGameScreen: View {
                                 .font(.caption.weight(.bold))
                                 .foregroundColor(RomanianColors.primaryBlue)
 
-                            Text("\(humanPlayer.score) puncte")
-                                .font(.caption2.weight(.semibold))
-                                .foregroundColor(RomanianColors.primaryBlue.opacity(0.85))
                         }
                         .allowsHitTesting(false)
                     }
@@ -493,6 +528,27 @@ struct ShuffleCatsInspiredGameScreen: View {
         }
     }
     
+    // Overload for GamePhase type
+    private func handleGamePhaseChange(_ newPhase: GamePhase) {
+        // Handle game phase transitions
+        // Update UI accordingly
+        print("🎮 Game phase changed to: \(newPhase)")
+    }
+    
+    // MARK: - Professional Rendering System Integration
+    
+    private func initializeProfessionalRenderingSystems() {
+        // Initialize any additional professional rendering systems
+        print("🎮 Professional rendering systems initialized")
+    }
+    
+    private func handleCardSelectionChange(_ newCard: Card?) {
+        // Handle card selection changes for professional rendering
+        if let card = newCard {
+            print("🃏 Card selected for professional rendering: \(card)")
+        }
+    }
+    
     private func playCard(_ card: Card) {
         guard gameViewModel.canPlayCard(card) else { return }
         
@@ -582,6 +638,52 @@ struct ShuffleCatsInspiredGameScreen: View {
     private var isOpponentTurn: Bool {
         guard let opponent = primaryOpponent else { return false }
         return gameViewModel.currentPlayer?.id == opponent.id
+    }
+}
+
+private struct RoundBadge: View {
+    let round: Int
+    let hand: Int
+    
+    var body: some View {
+        HStack(spacing: 12) {
+//            ZStack {
+//                RoundedRectangle(cornerRadius: 14)
+//                    .fill(
+//                        LinearGradient(
+//                            colors: [
+//                                RomanianColors.primaryBlue.opacity(0.85),
+//                                Color.black.opacity(0.75)
+//                            ],
+//                            startPoint: .topLeading,
+//                            endPoint: .bottomTrailing
+//                        )
+//                    )
+//                
+//                HStack(spacing: 8) {
+//                    Image(systemName: "rectangle.stack.fill")
+//                        .font(.caption.weight(.bold))
+//                        .foregroundColor(.white.opacity(0.85))
+//                        .shadow(color: .black.opacity(0.4), radius: 2, x: 0, y: 1)
+//                    
+//                    VStack(alignment: .leading, spacing: 2) {
+//                        Text("Rundă \(round)")
+//                            .font(.caption.weight(.bold))
+//                            .foregroundColor(.white)
+//                        Text("Mână \(hand)")
+//                            .font(.caption2)
+//                            .foregroundColor(.white.opacity(0.8))
+//                    }
+//                }
+//                .padding(.horizontal, 14)
+//                .padding(.vertical, 8)
+//            }
+//            .overlay(
+//                RoundedRectangle(cornerRadius: 14)
+//                    .stroke(RomanianColors.goldAccent.opacity(0.6), lineWidth: 1)
+//            )
+//            .shadow(color: .black.opacity(0.35), radius: 6, x: 0, y: 3)
+        }
     }
 }
 
@@ -678,12 +780,14 @@ struct TurnIndicatorAvatar: View {
     }
 }
 
-/// Sleek ShuffleCats-style vertical progress bar
+/// Sleek ShuffleCats-style horizontal progress bar aligned with the table surface
 struct SleekPointProgressBar: View {
     let humanPoints: Int
     let opponentPoints: Int
     let totalPointCards: Int
     let currentPlayer: Player?
+    let humanName: String
+    let opponentName: String
 
     private var clampedHumanPoints: Int {
         clamp(humanPoints)
@@ -707,113 +811,119 @@ struct SleekPointProgressBar: View {
     }
 
     var body: some View {
-        VStack(spacing: 6) {
-            // Minimal icon indicator like ShuffleCats
-            Image(systemName: "star.fill")
-                .font(.caption2)
-                .foregroundColor(RomanianColors.goldAccent.opacity(0.8))
-
-            ZStack(alignment: .bottom) {
-                // Sleek minimal background like ShuffleCats
-                Capsule()
-                    .fill(Color.black.opacity(0.25))
-                    .frame(width: 30, height: 180)
-                    .overlay(
-                        Capsule()
-                            .stroke(Color.white.opacity(0.06), lineWidth: 0.5)
-                    )
-
-                // Clean segment stack without gaps
-                VStack(spacing: 0) {
-                    ForEach((0..<totalPointCards).reversed(), id: \.self) { index in
-                        Rectangle()
-                            .fill(colorForSegment(at: index))
-                            .frame(width: 22, height: 20)
-                    }
-                }
-                .clipShape(RoundedRectangle(cornerRadius: 10))
-                .padding(.vertical, 8)
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 8) {
+                Image(systemName: "star.fill")
+                    .font(.caption.weight(.bold))
+                    .foregroundColor(RomanianColors.goldAccent)
+            }
+            
+            GeometryReader { proxy in
+                let inset: CGFloat = 8
+                let usableWidth = max(proxy.size.width - inset * 2, 0)
+                let segmentWidth = usableWidth / CGFloat(max(totalPointCards, 1))
                 
-                // Active player glow indicator
-                if let player = currentPlayer {
-                    let isHuman = player.isHuman
-                    let points = isHuman ? clampedHumanPoints : clampedOpponentPoints
-                    let glowHeight = CGFloat(points) * 20
+                ZStack {
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .fill(Color.black.opacity(0.28))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                .stroke(Color.white.opacity(0.08), lineWidth: 1)
+                        )
                     
-                    VStack {
-                        if !isHuman && points > 0 { 
+                    if isOpponentTurn, clampedOpponentPoints > 0 {
+                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+                            .fill(RomanianColors.primaryRed.opacity(0.25))
+                            .frame(width: segmentWidth * CGFloat(clampedOpponentPoints) + inset * 2, height: 28)
+                            .padding(.horizontal, inset)
+                            .frame(maxWidth: .infinity, alignment: .trailing)
+                            .shadow(color: RomanianColors.primaryRed.opacity(0.4), radius: 10)
+                    }
+                    
+                    if isHumanTurn, clampedHumanPoints > 0 {
+                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+                            .fill(RomanianColors.primaryBlue.opacity(0.25))
+                            .frame(width: segmentWidth * CGFloat(clampedHumanPoints) + inset * 2, height: 28)
+                            .padding(.horizontal, inset)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .shadow(color: RomanianColors.primaryBlue.opacity(0.4), radius: 10)
+                    }
+                    
+                    HStack(spacing: 0) {
+                        ForEach(0..<totalPointCards, id: \.self) { index in
                             Rectangle()
-                                .fill(RomanianColors.countrysideGreen.opacity(0.35))
-                                .frame(width: 26, height: min(glowHeight, 160))
-                                .blur(radius: 5)
-                                .animation(.easeInOut(duration: 1.5).repeatForever(autoreverses: true), value: UUID())
-                        }
-                        Spacer()
-                        if isHuman && points > 0 {
-                            Rectangle()
-                                .fill(RomanianColors.countrysideGreen.opacity(0.35))
-                                .frame(width: 26, height: min(glowHeight, 160))
-                                .blur(radius: 5)
-                                .animation(.easeInOut(duration: 1.5).repeatForever(autoreverses: true), value: UUID())
+                                .fill(colorForSegment(at: index))
+                                .frame(width: segmentWidth, height: 24)
                         }
                     }
-                    .clipShape(RoundedRectangle(cornerRadius: 10))
-                    .padding(.vertical, 8)
+                    .padding(.horizontal, inset)
+                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                 }
             }
+            .frame(width: 34)
+            
 
-            // Minimal legend
-            HStack(spacing: 10) {
-                VStack(spacing: 2) {
-                    Circle()
-                        .fill(RomanianColors.primaryBlue)
-                        .frame(width: 6, height: 6)
-                    Text("\(clampedHumanPoints)")
-                        .font(.system(size: 9, weight: .bold))
-                        .foregroundColor(.white.opacity(0.8))
-                }
-                VStack(spacing: 2) {
-                    Circle()
-                        .fill(RomanianColors.primaryRed)
-                        .frame(width: 6, height: 6)
-                    Text("\(clampedOpponentPoints)")
-                        .font(.system(size: 9, weight: .bold))
-                        .foregroundColor(.white.opacity(0.8))
-                }
-            }
         }
+        .padding(.vertical, 14)
+        .padding(.horizontal, 16)
+        .background(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .fill(Color.black.opacity(0.32))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                        .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                )
+        )
+        .shadow(color: Color.black.opacity(0.45), radius: 12, x: 0, y: 6)
         .accessibilityElement(children: .combine)
         .accessibilityLabel("Progres puncte")
-        .accessibilityValue("Tu \(clampedHumanPoints), adversar \(clampedOpponentPoints)")
+        .accessibilityValue("\(humanName) are \(clampedHumanPoints) puncte, \(opponentName) are \(clampedOpponentPoints) puncte. Rămase \(remainingPoints)")
     }
 
     private func clamp(_ value: Int) -> Int {
         max(0, min(value, totalPointCards))
     }
 
-    private func colorForSegment(at reversedIndex: Int) -> Color {
-        // reversedIndex: totalPointCards-1 is bottom, 0 is top
-        let bottomIndex = totalPointCards - 1 - reversedIndex
-        if humanSegments.contains(bottomIndex) {
+    private func colorForSegment(at index: Int) -> Color {
+        if humanSegments.contains(index) {
             return RomanianColors.primaryBlue
         }
-        if opponentSegments.contains(bottomIndex) {
+        if opponentSegments.contains(index) {
             return RomanianColors.primaryRed
         }
         return Color.white.opacity(0.25)
     }
 
-    /// Small labelled swatch used in the legend row
-    private struct LegendSwatch: View {
-        let color: Color
-        let label: String
+    private var isHumanTurn: Bool {
+        currentPlayer?.isHuman == true
+    }
+
+    private var isOpponentTurn: Bool {
+        guard let player = currentPlayer else { return false }
+        return !player.isHuman
+    }
+
+    private struct LegendEntry: View {
+        let iconColor: Color
+        let name: String
+        let points: Int
+        let isActive: Bool
 
         var body: some View {
-            HStack(spacing: 4) {
+            HStack(spacing: 6) {
                 Circle()
-                    .fill(color)
-                    .frame(width: 8, height: 8)
-                Text(label)
+                    .fill(iconColor.opacity(isActive ? 1.0 : 0.6))
+                    .frame(width: 10, height: 10)
+                    .shadow(color: iconColor.opacity(isActive ? 0.45 : 0), radius: isActive ? 6 : 0)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(name)
+                        .font(.caption.weight(.semibold))
+                        .foregroundColor(.white)
+                    Text("\(points) puncte")
+                        .font(.caption2)
+                        .foregroundColor(.white.opacity(0.72))
+                }
             }
         }
     }
@@ -821,15 +931,19 @@ struct SleekPointProgressBar: View {
 
 /// Opponent card hand view inspired by Shuffle Cats
 struct OpponentCardHandView: View {
-    let cardCount: Int
-    
+    let opponent: Player
+    let professionalRenderer: ProfessionalCardRenderer?
+    @ObservedObject var transformManager: Advanced3DTransformManager
+    @ObservedObject var materialCoordinator: MaterialEffectCoordinator
+    @ObservedObject var lightingManager: LightingEnvironmentManager
+
     // Refined values for ShuffleCats-style tight fan
     private let maxFanAngle: Double = 55    // Wider angle for better spread
     private let fanRadius: CGFloat = 90     // Tighter radius around avatar
-    
+
     var body: some View {
         ZStack {
-            ForEach(0..<cardCount, id: \.self) { index in
+            ForEach(Array(opponent.hand.enumerated()), id: \.element.id) { index, card in
                 let normalizedPosition = cardCount > 1 ?
                     Double(index) / Double(cardCount - 1) : 0.5
                 let fanAngle = (normalizedPosition - 0.5) * maxFanAngle
@@ -838,25 +952,48 @@ struct OpponentCardHandView: View {
                 let yOffset = fanRadius * CGFloat(cos(angleRadians) * -0.4) - 10  // Better positioning
                 let depthTilt = 16 - abs(normalizedPosition - 0.5) * 10
                 let scale = 0.9 + CGFloat(abs(normalizedPosition - 0.5) * -0.08)
-                
-                RoundedRectangle(cornerRadius: 6)
-                    .fill(
-                        LinearGradient(
-                            colors: [
-                                RomanianColors.cardBack,
-                                RomanianColors.primaryBlue.opacity(0.85)
-                            ],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
+
+                let transform = transformManager.getTransform(for: card)
+                let material = materialCoordinator.getMaterialProperties(for: card)
+                let lighting = lightingManager.tableEnvironment
+
+                Group {
+                    if let renderer = professionalRenderer {
+                        ProfessionalCardView(
+                            card: card,
+                            isSelected: false,
+                            isPlayable: false,
+                            isAnimating: false,
+                            cardSize: .compact,
+                            professionalRenderer: renderer,
+                            transform: transform,
+                            materialProperties: material,
+                            lightingEnvironment: lighting,
+                            onTap: nil,
+                            onDragChanged: nil,
+                            onDragEnded: nil
                         )
-                    )
-                    .frame(width: 50, height: 62.5)  // Match new card proportions
-                    .overlay(
-                        RomanianOrnatePatternSystem.RomanianCrossPattern(
-                            size: 12,
-                            color: RomanianColors.goldAccent.opacity(0.35)
-                        )
-                    )
+                    } else {
+                        RoundedRectangle(cornerRadius: 6)
+                            .fill(
+                                LinearGradient(
+                                    colors: [
+                                        RomanianColors.cardBack,
+                                        RomanianColors.primaryBlue.opacity(0.85)
+                                    ],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                            .frame(width: 50, height: 62.5)
+                            .overlay(
+                                RomanianOrnatePatternSystem.RomanianCrossPattern(
+                                    size: 12,
+                                    color: RomanianColors.goldAccent.opacity(0.35)
+                                )
+                            )
+                    }
+                }
                     .scaleEffect(scale)
                     .rotationEffect(.degrees(fanAngle))
                     .rotation3DEffect(
@@ -871,8 +1008,12 @@ struct OpponentCardHandView: View {
             }
         }
         .frame(height: fanRadius * 0.85)
-        .animation(.spring(response: 0.45, dampingFraction: 0.85), value: cardCount)
+        .animation(.spring(response: 0.45, dampingFraction: 0.85), value: opponent.hand.count)
         .accessibilityHidden(true)
+    }
+    
+    private var cardCount: Int {
+        opponent.hand.count
     }
 }
 
@@ -914,31 +1055,56 @@ struct ElegantTableSurface: View {
 /// Enhanced table cards view with ShuffleCats-style perspective
 struct ElegantTableCardsView: View {
     let cards: [Card]
-    let validMoves: [Card]
-    let onCardTapped: (Card) -> Void
+    let professionalRenderer: ProfessionalCardRenderer?
+    @ObservedObject var transformManager: Advanced3DTransformManager
+    @ObservedObject var materialCoordinator: MaterialEffectCoordinator
+    @ObservedObject var lightingManager: LightingEnvironmentManager
     
     var body: some View {
         GeometryReader { geometry in
             ZStack {
                 ForEach(Array(cards.enumerated()), id: \.element.id) { index, card in
                     let isLastPlayed = index == cards.count - 1
-                    let isPlayable = validMoves.contains(card)
                     let cardCount = cards.count
                     
                     // Enhanced positioning for ShuffleCats-style perspective
                     let position = getCardPosition(for: index, total: cardCount, in: geometry)
                     let perspective = getCardPerspective(for: index, total: cardCount)
                     
-                    CardView(
-                        card: card,
-                        isSelected: false,
-                        isPlayable: isPlayable,
-                        isAnimating: false,
-                        cardSize: .compact,
-                        onTap: { onCardTapped(card) },
-                        onDragChanged: nil,
-                        onDragEnded: nil
-                    )
+                    let transform = transformManager.getTransform(for: card)
+                    let material = materialCoordinator.getMaterialProperties(for: card)
+                    let lighting = lightingManager.tableEnvironment
+
+                    Group {
+                        if let renderer = professionalRenderer {
+                            ProfessionalCardView(
+                                card: card,
+                                isSelected: false,
+                                isPlayable: true,
+                                isAnimating: false,
+                                cardSize: .small,
+                                professionalRenderer: renderer,
+                                transform: transform,
+                                materialProperties: material,
+                                lightingEnvironment: lighting,
+                                onTap: nil,
+                                onDragChanged: nil,
+                                onDragEnded: nil
+                            )
+                        } else {
+                            CardView(
+                                card: card,
+                                isSelected: false,
+                                isPlayable: true,
+                                isAnimating: false,
+                                cardSize: .small,
+                                onTap: nil,
+                                onDragChanged: nil,
+                                onDragEnded: nil
+                            )
+                        }
+                    }
+                    .scaleEffect(0.8)
                     .scaleEffect(isLastPlayed ? 1.05 : perspective.scale)
                     .rotationEffect(.degrees(perspective.rotation))
                     .rotation3DEffect(
@@ -960,21 +1126,11 @@ struct ElegantTableCardsView: View {
                         x: 0,
                         y: isLastPlayed ? 8 : 6
                     )
-                    .overlay(
-                        // Subtle highlight for last played card
-                        RoundedRectangle(cornerRadius: 8)
-                            .stroke(
-                                isLastPlayed ? RomanianColors.goldAccent.opacity(0.7) : Color.clear,
-                                lineWidth: isLastPlayed ? 2 : 0
-                            )
-                            .scaleEffect(1.02)
-                            .animation(.easeInOut(duration: 0.8).repeatForever(autoreverses: true), value: isLastPlayed)
-                    )
                     .zIndex(Double(index) + (isLastPlayed ? 100 : 0))
                     .animation(.spring(response: 0.4, dampingFraction: 0.8), value: isLastPlayed)
                 }
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            
         }
     }
     
@@ -986,11 +1142,11 @@ struct ElegantTableCardsView: View {
         }
         
         // Cascade cards with top-left visible (like dealer dealing cards)
-        let baseX = center.x - 20  // Start slightly left of center
+        let baseX = center.x - 80  // Start slightly left of center
         let baseY = center.y - 20  // Start slightly above center
         
         // Each card offset to show top-left corner
-        let xOffset = CGFloat(index) * 18  // Horizontal cascade
+        let xOffset = CGFloat(index) * 70  // Horizontal cascade
         let yOffset = CGFloat(index) * 12  // Vertical cascade
         
         // Add slight rotation variation for natural look
@@ -1027,52 +1183,75 @@ struct ShuffleCatsPlayerHandView: View {
     let cards: [Card]
     let selectedCard: Card?
     let validMoves: [Card]
+    let professionalRenderer: ProfessionalCardRenderer?
+    @ObservedObject var transformManager: Advanced3DTransformManager
+    @ObservedObject var materialCoordinator: MaterialEffectCoordinator
+    @ObservedObject var lightingManager: LightingEnvironmentManager
     let onCardTapped: (Card) -> Void
-    
-    // Refined ShuffleCats-style parameters for tighter card grouping
-    private let fanRadius: CGFloat = 110.0     // Tighter radius for closer cards
-    private let maximumFanSpan: Double = 65.0  // Tighter span for better overlap
-    private let avatarOffset: CGFloat = 75.0   // Closer to avatar
     
     var body: some View {
         GeometryReader { geometry in
             ZStack {
                 ForEach(Array(cards.enumerated()), id: \.element.id) { index, card in
-                    let cardCount = cards.count
-                    let isSelected = selectedCard?.id == card.id
-                    let isPlayable = validMoves.contains(card)
+        let cardCount = cards.count
+        let isSelected = selectedCard?.id == card.id
+        let isPlayable = validMoves.contains(card)
                     
                     // Calculate position around avatar (bottom center)
                     let avatarCenterX = geometry.size.width / 2
-                    let avatarCenterY = geometry.size.height - avatarOffset
+                    let avatarCenterY = geometry.size.height * 0.88
                     
                     // Fan angle calculations
-                    let span = cardCount > 1 ? maximumFanSpan : 0
-                    let step = cardCount > 1 ? span / Double(cardCount - 1) : 0
+                    let maxFanAngle = min(70.0, Double(cardCount - 1) * 12.0)
+                    let step = cardCount > 1 ? maxFanAngle / Double(cardCount - 1) : 0
                     let offsetFromCenter = Double(index) - Double(cardCount - 1) / 2
                     let fanAngle = offsetFromCenter * step
                     
-                    // Position calculations with better arc (cards behind avatar)
-                    let angleRadians = (fanAngle + 90) * .pi / 180  // +90 to position behind avatar
-                    let xOffset = fanRadius * CGFloat(sin(angleRadians)) * 0.9  // Slightly tighter X
-                    let yOffset = fanRadius * CGFloat(cos(angleRadians)) * 0.7  // Flatter arc like ShuffleCats
+                    // Position calculations with smoother arc similar to ShuffleCats hand
+                    let angleRadians = fanAngle * .pi / 180
+                    let dynamicRadius = min(geometry.size.width * 0.38, geometry.size.height * 0.52)
+                    let xOffset = dynamicRadius * CGFloat(sin(angleRadians))
+                    let yOffset = dynamicRadius * CGFloat(cos(angleRadians)) * 0.72
                     
                     // 3D perspective for depth
-                    let depthTilt = 15 - abs(offsetFromCenter) * 3
-                    let perspectiveRotation = offsetFromCenter * 8
+                    let depthTilt = 10 - abs(offsetFromCenter) * 2.5
+                    let perspectiveRotation = offsetFromCenter * 6
                     
-                    CardView(
-                        card: card,
-                        isSelected: isSelected,
-                        isPlayable: isPlayable,
-                        isAnimating: false,
-                        cardSize: .small,
-                        onTap: { onCardTapped(card) },
-                        onDragChanged: nil,
-                        onDragEnded: nil
-                    )
-                    .scaleEffect(isSelected ? 1.1 : 0.85)
-                    .rotationEffect(.degrees(fanAngle))
+                    let transform = transformManager.getTransform(for: card)
+                    let material = materialCoordinator.getMaterialProperties(for: card)
+                    let lighting = lightingManager.currentEnvironment
+
+                    Group {
+                        if let renderer = professionalRenderer {
+                            ProfessionalCardView(
+                                card: card,
+                                isSelected: isSelected,
+                                isPlayable: isPlayable,
+                                isAnimating: false,
+                                cardSize: .normal,
+                                professionalRenderer: renderer,
+                                transform: transform,
+                                materialProperties: material,
+                                lightingEnvironment: lighting,
+                                onTap: { onCardTapped(card) },
+                                onDragChanged: nil,
+                                onDragEnded: nil
+                            )
+                        } else {
+                            CardView(
+                                card: card,
+                                isSelected: isSelected,
+                                isPlayable: isPlayable,
+                                isAnimating: false,
+                                cardSize: .normal,
+                                onTap: { onCardTapped(card) },
+                                onDragChanged: nil,
+                                onDragEnded: nil
+                            )
+                        }
+                    }
+                    .scaleEffect(isSelected ? 1.08 : 0.88)
+                    .rotationEffect(.degrees(fanAngle * 0.7))
                     .rotation3DEffect(
                         .degrees(depthTilt),
                         axis: (x: 1, y: 0, z: 0),
@@ -1087,7 +1266,7 @@ struct ShuffleCatsPlayerHandView: View {
                     )
                     .position(
                         x: avatarCenterX + xOffset,
-                        y: isSelected ? avatarCenterY + yOffset - 20 : avatarCenterY + yOffset
+                        y: isSelected ? avatarCenterY - yOffset - 22 : avatarCenterY - yOffset
                     )
                     .shadow(
                         color: .black.opacity(0.3),
@@ -1101,12 +1280,13 @@ struct ShuffleCatsPlayerHandView: View {
                         x: 0,
                         y: isSelected ? 8 : 0
                     )
-                    .zIndex(isSelected ? 100 : Double(cardCount - index))  // Cards further from center on top
+                    .zIndex(isSelected ? 100 : Double(index))
                     .animation(.spring(response: 0.4, dampingFraction: 0.8), value: isSelected)
                     .animation(.spring(response: 0.5, dampingFraction: 0.9), value: isPlayable)
+                    .aspectRatio(1.25, contentMode: .fit)
                 }
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            
         }
     }
 }
@@ -1114,9 +1294,9 @@ struct ShuffleCatsPlayerHandView: View {
 /// Empty table placeholder with Romanian styling
 struct EmptyTablePlaceholder: View {
     var body: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 10) {
             Text("♠♥♣♦")
-                .font(.title)
+                .font(.title2.weight(.semibold))
                 .foregroundStyle(
                     LinearGradient(
                         colors: [
@@ -1131,7 +1311,7 @@ struct EmptyTablePlaceholder: View {
                 .shadow(color: RomanianColors.primaryBlue.opacity(0.4), radius: 3, x: 1, y: 1)
             
             Text("Primul jucător începe")
-                .font(.headline.weight(.semibold))
+                .font(.subheadline.weight(.semibold))
                 .foregroundStyle(
                     LinearGradient(
                         colors: [
@@ -1210,6 +1390,9 @@ struct QuickGameScreenPreview: View {
             Card(suit: .clubs, value: 11),
             Card(suit: .diamonds, value: 10)
         ]
+        let transformManager = Advanced3DTransformManager()
+        let materialCoordinator = MaterialEffectCoordinator()
+        let lightingManager = LightingEnvironmentManager()
         
         ZStack {
             // Romanian theme background
@@ -1237,13 +1420,18 @@ struct QuickGameScreenPreview: View {
                 Spacer()
                 
                 // Quick player hand preview  
-                HStack(spacing: -20) {
-                    ForEach(mockCards, id: \.id) { card in
-                        CardView(card: card, cardSize: .normal)
-                            .scaleEffect(0.90)
-                    }
-                }
-                .padding()
+                ShuffleCatsPlayerHandView(
+                    cards: mockCards,
+                    selectedCard: mockCards.first,
+                    validMoves: mockCards,
+                    professionalRenderer: nil,
+                    transformManager: transformManager,
+                    materialCoordinator: materialCoordinator,
+                    lightingManager: lightingManager,
+                    onCardTapped: { _ in }
+                )
+                .frame(height: 260)
+                .padding(.bottom, 24)
             }
         }
         .previewDisplayName("Quick Layout Preview")

@@ -120,12 +120,8 @@ struct ProfessionalCard: View {
         .onAppear {
             setupProfessionalCard()
         }
-        .onChange(of: isSelected) { newValue in
-            handleSelectionChange(newValue)
-        }
-        .onChange(of: card.value) { _ in
-            updateMaterialProperties()
-        }
+        .onChange(of: isSelected) { handleSelectionChange($1) }
+        .onChange(of: card.value) { _ in updateMaterialProperties() }
         .onReceive(Timer.publish(every: 1.0, on: .main, in: .common).autoconnect()) { _ in
             updatePerformanceMetrics()
         }
@@ -585,15 +581,10 @@ struct ProfessionalCard: View {
             return
         }
         
-        do {
-            // Metal initialization would be handled by ProfessionalCardRenderer
-            isMetalInitialized = true
-            renderError = nil
-            print("✅ Professional Metal rendering initialized")
-        } catch {
-            renderError = "Failed to initialize Metal: \(error.localizedDescription)"
-            print("❌ Metal initialization failed: \(error)")
-        }
+        // Metal initialization would be handled by ProfessionalCardRenderer
+        isMetalInitialized = true
+        renderError = nil
+        print("✅ Professional Metal rendering initialized")
     }
     
     // MARK: - Performance Monitoring

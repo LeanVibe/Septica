@@ -16,11 +16,13 @@ struct GameTableView: View {
     let animatingCard: Card?
     
     @State private var cardAnimations: [UUID: Bool] = [:]
+    @State private var dropZonePulse = false
     
     var body: some View {
         ZStack {
             // Enhanced ornate Romanian table surface with traditional folk art patterns
             OrnateRomanianTableSurface(size: CGSize(width: 280, height: 180))
+                .overlay(dropZoneHalo)
             
             // Table cards
             if !tableCards.isEmpty {
@@ -193,6 +195,37 @@ struct GameTableView: View {
             }
         }
         .frame(width: 320, height: 200)
+        .onAppear { dropZonePulse = true }
+    }
+}
+
+private extension GameTableView {
+    var dropZoneHalo: some View {
+        ZStack {
+            if tableCards.isEmpty {
+                Circle()
+                    .stroke(
+                        LinearGradient(
+                            colors: [
+                                RomanianColors.primaryYellow.opacity(0.35),
+                                RomanianColors.goldAccent.opacity(0.15)
+                            ],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        ),
+                        lineWidth: 6
+                    )
+                    .frame(width: 220, height: 220)
+                    .scaleEffect(dropZonePulse ? 1.05 : 0.98)
+                    .animation(
+                        .easeInOut(duration: 2.2).repeatForever(autoreverses: true),
+                        value: dropZonePulse
+                    )
+                    .blur(radius: 1)
+                    .opacity(validMoves.isEmpty ? 0.12 : 0.4)
+                    .blendMode(.screen)
+            }
+        }
     }
 }
 

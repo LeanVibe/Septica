@@ -300,9 +300,9 @@ struct WorkingGameScreen: View {
             .frame(width: 380, height: 200)
         }
     }
-    
+
     // MARK: - Player Hand Area
-    
+
     private var playerHandArea: some View {
         VStack(spacing: 8) {
             // Player title with Romanian styling
@@ -496,7 +496,7 @@ struct WorkingGameScreen: View {
     }
     
     // MARK: - Pass Button Logic
-    
+
     /// Determines when the Pass button should be visible in Romanian Septica
     private var shouldShowPassButton: Bool {
         // Show pass button when:
@@ -617,22 +617,29 @@ struct FannedTableCardsView: View {
     let onCardTapped: (Card) -> Void
     
     private let maxFanAngle: Double = 25.0 // Wider fan for table cards
-    private let cardSpacing: CGFloat = -60.0 // More overlap for table
+    private let baseCardSpacing: CGFloat = 48.0 // Desired spacing between cards before fitting to width
+    private let minimumSpacing: CGFloat = 26.0
     
     var body: some View {
         GeometryReader { geometry in
-            HStack(spacing: 0) {
+            let cardCount = cards.count
+            let spacing = spacingForCards(
+                count: cardCount,
+                availableWidth: geometry.size.width,
+                cardWidth: CardSize.compact.width,
+                baseSpacing: baseCardSpacing,
+                minimumSpacing: minimumSpacing
+            )
+            let centerIndex = Double(cardCount - 1) / 2.0
+            
+            ZStack(alignment: .bottom) {
                 ForEach(Array(cards.enumerated()), id: \.element.id) { index, card in
-                    let cardCount = cards.count
                     let isPlayable = validMoves.contains(card)
-                    
-                    // Calculate fan rotation (center cards straight, edge cards angled)
-                    let normalizedPosition = cardCount > 1 ? 
-                        Double(index) / Double(cardCount - 1) : 0.5 // 0.0 to 1.0
-                    let fanAngle = (normalizedPosition - 0.5) * 2 * maxFanAngle // -25° to +25°
-                    
-                    // Calculate slight vertical offset for natural spread
+                    let normalizedPosition = cardCount > 1 ?
+                        Double(index) / Double(cardCount - 1) : 0.5
+                    let fanAngle = (normalizedPosition - 0.5) * 2 * maxFanAngle
                     let verticalOffset = abs(normalizedPosition - 0.5) * 12.0
+                    let horizontalOffset = CGFloat(Double(index) - centerIndex) * spacing
                     
                     CardView(
                         card: card,
@@ -645,17 +652,12 @@ struct FannedTableCardsView: View {
                         onDragEnded: nil
                     )
                     .rotationEffect(.degrees(fanAngle))
-                    .offset(
-                        x: CGFloat(index) * cardSpacing,
-                        y: verticalOffset
-                    )
+                    .offset(x: horizontalOffset, y: verticalOffset)
                     .zIndex(Double(index))
                 }
             }
-            .frame(maxWidth: .infinity)
-            .position(x: geometry.size.width / 2, y: geometry.size.height / 2)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
         }
-        .clipped()
     }
 }
 
@@ -668,23 +670,31 @@ struct FannedCardHandView: View {
     let onCardTapped: (Card) -> Void
     
     private let maxFanAngle: Double = 15.0 // Maximum rotation for edge cards
-    private let cardSpacing: CGFloat = -70.0 // Negative spacing for overlap with wider cards
+    private let baseCardSpacing: CGFloat = 64.0 // Desired spacing before fitting to width
+    private let minimumSpacing: CGFloat = 32.0
     
     var body: some View {
         GeometryReader { geometry in
-            HStack(spacing: 0) {
+            let cardCount = cards.count
+            let spacing = spacingForCards(
+                count: cardCount,
+                availableWidth: geometry.size.width,
+                cardWidth: CardSize.normal.width,
+                baseSpacing: baseCardSpacing,
+                minimumSpacing: minimumSpacing
+            )
+            let centerIndex = Double(cardCount - 1) / 2.0
+            
+            ZStack(alignment: .bottom) {
                 ForEach(Array(cards.enumerated()), id: \.element.id) { index, card in
-                    let cardCount = cards.count
                     let isSelected = selectedCard?.id == card.id
                     let isPlayable = validMoves.contains(card)
-                    
-                    // Calculate fan rotation (center cards straight, edge cards angled)
-                    let normalizedPosition = cardCount > 1 ? 
-                        Double(index) / Double(cardCount - 1) : 0.5 // 0.0 to 1.0
-                    let fanAngle = (normalizedPosition - 0.5) * 2 * maxFanAngle // -15° to +15°
-                    
-                    // Calculate vertical offset for natural hand curve
-                    let verticalOffset = abs(normalizedPosition - 0.5) * 8.0
+                    let normalizedPosition = cardCount > 1 ?
+                        Double(index) / Double(cardCount - 1) : 0.5
+                    let fanAngle = (normalizedPosition - 0.5) * 2 * maxFanAngle
+                    let verticalOffset = abs(normalizedPosition - 0.5) * 10.0
+                    let horizontalOffset = CGFloat(Double(index) - centerIndex) * spacing
+                    let liftOffset: CGFloat = isSelected ? -28 : verticalOffset
                     
                     CardView(
                         card: card,
@@ -697,19 +707,31 @@ struct FannedCardHandView: View {
                         onDragEnded: nil
                     )
                     .rotationEffect(.degrees(fanAngle))
-                    .offset(
-                        x: CGFloat(index) * cardSpacing,
-                        y: isSelected ? -20 : verticalOffset
-                    )
+                    .offset(x: horizontalOffset, y: liftOffset)
                     .scaleEffect(isSelected ? 1.1 : 1.0)
                     .zIndex(isSelected ? 100 : Double(index))
                     .animation(.spring(response: 0.4, dampingFraction: 0.8), value: isSelected)
                 }
             }
-            .frame(maxWidth: .infinity)
-            .position(x: geometry.size.width / 2, y: geometry.size.height / 2)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
         }
-        .clipped()
     }
 }
 
+private extension FannedTableCardsView {
+    func spacingForCards(count: Int, availableWidth: CGFloat, cardWidth: CGFloat, baseSpacing: CGFloat, minimumSpacing: CGFloat) -> CGFloat {
+        guard count > 1 else { return 0 }
+        let availableSpan = max(availableWidth - cardWidth, 0)
+        let fittedSpacing = availableSpan / CGFloat(count - 1)
+        return max(minimumSpacing, min(baseSpacing, fittedSpacing))
+    }
+}
+
+private extension FannedCardHandView {
+    func spacingForCards(count: Int, availableWidth: CGFloat, cardWidth: CGFloat, baseSpacing: CGFloat, minimumSpacing: CGFloat) -> CGFloat {
+        guard count > 1 else { return 0 }
+        let availableSpan = max(availableWidth - cardWidth, 0)
+        let fittedSpacing = availableSpan / CGFloat(count - 1)
+        return max(minimumSpacing, min(baseSpacing, fittedSpacing))
+    }
+}

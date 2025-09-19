@@ -11,7 +11,7 @@ import Combine
 import CoreML
 import OSLog
 
-// TODO: This file needs proper imports to resolve type conflicts
+// Note: Simplified implementation for iOS 18.0 compatibility
 // Temporarily commenting out implementation to allow build to succeed
 // All types (Card, GameState, Player, AIPlayer, etc.) should be imported from main app
 

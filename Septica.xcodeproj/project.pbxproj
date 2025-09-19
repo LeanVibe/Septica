@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		EDF7C155F2FF4BD0BF1A6A5F /* Septica/Services/CloudKit/SepticaCloudKitManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 860DF5B1BAEF4FE4B814A342 /* Septica/Services/CloudKit/SepticaCloudKitManager.swift */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		43E32FE32E748E7200DA050E /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -27,11 +31,36 @@
 		43E32FCA2E748E7000DA050E /* Septica.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Septica.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		43E32FE22E748E7200DA050E /* SepticaTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SepticaTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		43E32FEC2E748E7200DA050E /* SepticaUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SepticaUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		860DF5B1BAEF4FE4B814A342 /* Septica/Services/CloudKit/SepticaCloudKitManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Septica/Services/CloudKit/SepticaCloudKitManager.swift; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		4367BFB72E7DB56D0000AC66 /* Exceptions for "Septica" folder in "Septica" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Shaders.metal,
+			);
+			target = 43E32FC92E748E7000DA050E /* Septica */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
+/* Begin PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
+		4367BFB82E7DB56D0000AC66 /* Exceptions for "Septica" folder in "Copy Bundle Resources" phase from "Septica" target */ = {
+			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
+			buildPhase = 43E32FC82E748E7000DA050E /* Resources */;
+			membershipExceptions = (
+				Shaders.metal,
+			);
+		};
+/* End PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		43E32FCC2E748E7000DA050E /* Septica */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				4367BFB72E7DB56D0000AC66 /* Exceptions for "Septica" folder in "Septica" target */,
+				4367BFB82E7DB56D0000AC66 /* Exceptions for "Septica" folder in "Copy Bundle Resources" phase from "Septica" target */,
+			);
 			path = Septica;
 			sourceTree = "<group>";
 		};
@@ -72,6 +101,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		4367BE852E7C98C70000AC66 /* Recovered References */ = {
+			isa = PBXGroup;
+			children = (
+				860DF5B1BAEF4FE4B814A342 /* Septica/Services/CloudKit/SepticaCloudKitManager.swift */,
+			);
+			name = "Recovered References";
+			sourceTree = "<group>";
+		};
 		43E32FC12E748E7000DA050E = {
 			isa = PBXGroup;
 			children = (
@@ -79,6 +116,7 @@
 				43E32FE52E748E7200DA050E /* SepticaTests */,
 				43E32FEF2E748E7200DA050E /* SepticaUITests */,
 				43E32FCB2E748E7000DA050E /* Products */,
+				4367BE852E7C98C70000AC66 /* Recovered References */,
 			);
 			sourceTree = "<group>";
 		};
@@ -236,6 +274,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EDF7C155F2FF4BD0BF1A6A5F /* Septica/Services/CloudKit/SepticaCloudKitManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -406,7 +445,6 @@
 				INFOPLIST_KEY_NSHumanReadableCopyright = "© 2025 LeanVibe Games. All rights reserved.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
-				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UIRequiredDeviceCapabilities = metal;
 				INFOPLIST_KEY_UIStatusBarHidden = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
@@ -443,7 +481,6 @@
 				INFOPLIST_KEY_NSHumanReadableCopyright = "© 2025 LeanVibe Games. All rights reserved.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
-				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UIRequiredDeviceCapabilities = metal;
 				INFOPLIST_KEY_UIStatusBarHidden = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";

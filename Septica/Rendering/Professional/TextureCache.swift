@@ -887,16 +887,38 @@ class TextureCache: ObservableObject {
     
     private func preloadEssentialTextures() {
         // Preload commonly used patterns
-        Task {
-            do {
-                _ = try await generateRomanianPattern(type: .traditionalBorder)
-                _ = try await generateRomanianPattern(type: .floralMotif)
-                _ = try await generateRomanianPattern(type: .geometricPattern)
-                
-                print("✅ Essential textures preloaded")
-            } catch {
-                print("⚠️ Failed to preload essential textures: \(error)")
+        Task(priority: .utility) { [weak self] in
+            guard let self else { return }
+            await self.performEssentialTexturePreload()
+        }
+    }
+}
+
+// MARK: - Essential Preload Helpers
+
+@MainActor
+private extension TextureCache {
+    func performEssentialTexturePreload() async {
+        do {
+            // Romanian cultural patterns used across cards
+            let patterns: [RomanianPatternType] = [.traditionalBorder, .floralMotif, .geometricPattern]
+            for pattern in patterns {
+                _ = try generateRomanianPattern(type: pattern)
             }
+
+            // Pre-generate face and normal textures for the entire Septica deck (7 through Ace)
+            let cardValues = Array(7...14)
+            for suit in Suit.allCases {
+                for value in cardValues {
+                    let prototype = Card(suit: suit, value: value)
+                    _ = try getCardTexture(for: prototype)
+                    _ = try getNormalMapTexture(for: prototype)
+                }
+            }
+
+            print("✅ Essential textures preloaded")
+        } catch {
+            print("⚠️ Failed to preload essential textures: \(error)")
         }
     }
 }

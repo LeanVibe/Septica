@@ -100,7 +100,7 @@ struct CardView: View {
     // MARK: - Card View Components
     
     private var cardBackgroundView: some View {
-        RoundedRectangle(cornerRadius: cardSize.cornerRadius)
+        RoundedRectangle(cornerRadius: cardSize.cornerRadius * 1.15)  // Increased corner radius for enhanced depth
             .fill(
                 // Enhanced premium card background with professional depth
                 LinearGradient(
@@ -114,9 +114,11 @@ struct CardView: View {
                     endPoint: .bottomTrailing
                 )
             )
+            // Added extra shadow for more depth and lift
+            .shadow(color: Color.black.opacity(0.08), radius: 6, x: 0, y: 3) // Additional subtle shadow for depth
             .overlay(
                 // Premium border with sophisticated depth effect
-                RoundedRectangle(cornerRadius: cardSize.cornerRadius)
+                RoundedRectangle(cornerRadius: cardSize.cornerRadius * 1.15)
                     .stroke(
                         LinearGradient(
                             colors: [
@@ -127,19 +129,55 @@ struct CardView: View {
                             ],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
-                        ), 
-                        lineWidth: cardSize.borderWidth
+                        ),
+                        lineWidth: {
+                            // Thinner border for unselected or unplayable cards
+                            if !isSelected && !isPlayable {
+                                return cardSize.borderWidth * 0.7
+                            } else if !isSelected {
+                                return cardSize.borderWidth * 0.7
+                            } else {
+                                return cardSize.borderWidth
+                            }
+                        }()
                     )
+            )
+            // Added inner shadow for 'groove' effect
+            .overlay(
+                RoundedRectangle(cornerRadius: cardSize.cornerRadius * 1.15)
+                    .stroke(Color.black.opacity(0.07), lineWidth: 2)
+                    .blur(radius: 3)
+                    .opacity(0.7)
+            )
+            .overlay(
+                // Linen/paper texture overlay for subtle tactile feel
+                Group {
+                    if Bundle.main.path(forResource: "linen_texture", ofType: nil) != nil {
+                        Image("linen_texture")
+                            .resizable()
+                            .scaledToFill()
+                            .opacity(0.09)
+                            .blendMode(.overlay)
+                    } else {
+                        // Elegant fallback with subtle texture effect
+                        Rectangle()
+                            .fill(Color.black.opacity(0.03))
+                            .blendMode(.overlay)
+                    }
+                }
+                .clipShape(RoundedRectangle(cornerRadius: cardSize.cornerRadius * 1.15))
             )
             .frame(width: cardSize.width, height: cardSize.height)
             // Multi-layer shadow system for premium depth (Shuffle Cats style)
             .background(
                 RoundedRectangle(cornerRadius: cardSize.cornerRadius)
-                    .fill(Color.white)
+                    .fill(Color.red)
                     .shadow(color: Color.black.opacity(0.12), radius: 2, x: 0, y: 1)
                     .shadow(color: Color.black.opacity(0.08), radius: 6, x: 0, y: 3)
                     .shadow(color: Color.black.opacity(0.05), radius: 12, x: 0, y: 6)
             )
+            // Added extra lift shadow when selected for stronger visual presence
+            .shadow(color: Color.black.opacity(0.18), radius: isSelected ? 18 : 7, x: 0, y: isSelected ? 10 : 5)
     }
     
     private var cardContentView: some View {
@@ -149,8 +187,8 @@ struct CardView: View {
                 .fill(
                     LinearGradient(
                         colors: [
-                            Color.white.opacity(0.98), 
-                            Color.white.opacity(0.94), 
+                            Color.white.opacity(0.98),
+                            Color.white.opacity(0.94),
                             Color.white.opacity(0.96),
                             Color.white.opacity(0.92)
                         ],
@@ -164,14 +202,14 @@ struct CardView: View {
                         .stroke(
                             LinearGradient(
                                 colors: [
-                                    Color.white.opacity(0.6), 
+                                    Color.white.opacity(0.6),
                                     Color.clear,
                                     Color.clear,
                                     suitColor.opacity(0.3)
                                 ],
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
-                            ), 
+                            ),
                             lineWidth: 1.0
                         )
                 )
@@ -179,7 +217,7 @@ struct CardView: View {
                     // Inner Romanian cultural accent
                     RoundedRectangle(cornerRadius: cardSize.cornerRadius * 0.85)
                         .stroke(
-                            suitColor.opacity(0.15), 
+                            suitColor.opacity(0.15),
                             lineWidth: 0.8
                         )
                         .padding(1)
@@ -193,11 +231,13 @@ struct CardView: View {
                 )
             
             VStack(spacing: cardSize.contentSpacing) {
-                // Top left value and suit - Enhanced for visibility
+                // Top left value and suit - Enhanced for visibility and boldness
                 HStack {
                     VStack(spacing: 1) {
                         Text(card.displayValue)
-                            .font(cardSize.valueFont.weight(.heavy))
+                            .font(
+                                Font.system(size: cardSize.width * 0.34 * 1.1, weight: isSelected ? .black : .heavy, design: .rounded)
+                            )
                             .foregroundStyle(
                                 LinearGradient(
                                     colors: [suitColor, suitColor.opacity(0.8)],
@@ -208,9 +248,13 @@ struct CardView: View {
                             .shadow(color: Color.white, radius: 1, x: 0, y: 0)
                             .shadow(color: Color.white.opacity(0.9), radius: 2, x: 1, y: 1)
                             .shadow(color: suitColor.opacity(0.3), radius: 2, x: 1, y: 1)
+                            // Glow effect when selected
+                            .shadow(color: isSelected ? suitColor.opacity(0.7) : .clear, radius: isSelected ? 7 : 0, x: 0, y: 0)
                         
                         Text(card.suit.symbol)
-                            .font(cardSize.suitFont.weight(.heavy))
+                            .font(
+                                Font.system(size: cardSize.width * 0.28 * 1.1, weight: isSelected ? .black : .heavy, design: .rounded)
+                            )
                             .foregroundStyle(
                                 LinearGradient(
                                     colors: [suitColor, suitColor.opacity(0.8)],
@@ -221,6 +265,8 @@ struct CardView: View {
                             .shadow(color: Color.white, radius: 1, x: 0, y: 0)
                             .shadow(color: Color.white.opacity(0.9), radius: 2, x: 1, y: 1)
                             .shadow(color: suitColor.opacity(0.3), radius: 2, x: 1, y: 1)
+                            // Glow effect when selected
+                            .shadow(color: isSelected ? suitColor.opacity(0.7) : .clear, radius: isSelected ? 7 : 0, x: 0, y: 0)
                     }
                     .background(
                         // White backing for better contrast
@@ -281,23 +327,31 @@ struct CardView: View {
                 
                 Spacer()
                 
-                // Bottom right value and suit (rotated) - Enhanced for visibility
+                // Bottom right value and suit (rotated) - Enhanced for visibility and boldness
                 HStack {
                     Spacer()
                     VStack(spacing: 1) {
                         Text(card.suit.symbol)
-                            .font(cardSize.suitFont.weight(.black))
+                            .font(
+                                Font.system(size: cardSize.width * 0.28 * 1.1, weight: isSelected ? .black : .heavy, design: .rounded)
+                            )
                             .foregroundStyle(suitColor)
                             .shadow(color: Color.white, radius: 2, x: 0, y: 0)
                             .shadow(color: Color.white.opacity(0.8), radius: 3, x: 1, y: 1)
                             .shadow(color: suitColor.opacity(0.5), radius: 3, x: 2, y: 2)
+                            // Glow effect when selected
+                            .shadow(color: isSelected ? suitColor.opacity(0.7) : .clear, radius: isSelected ? 7 : 0, x: 0, y: 0)
                         
                         Text(card.displayValue)
-                            .font(cardSize.valueFont.weight(.black))
+                            .font(
+                                Font.system(size: cardSize.width * 0.34 * 1.1, weight: isSelected ? .black : .heavy, design: .rounded)
+                            )
                             .foregroundStyle(suitColor)
                             .shadow(color: Color.white, radius: 2, x: 0, y: 0)
                             .shadow(color: Color.white.opacity(0.8), radius: 3, x: 1, y: 1)
                             .shadow(color: suitColor.opacity(0.5), radius: 3, x: 2, y: 2)
+                            // Glow effect when selected
+                            .shadow(color: isSelected ? suitColor.opacity(0.7) : .clear, radius: isSelected ? 7 : 0, x: 0, y: 0)
                     }
                     .background(
                         // White backing for better contrast
@@ -388,14 +442,18 @@ struct CardView: View {
                 .shadow(color: RomanianColors.primaryYellow.opacity(0.4), radius: 16, x: 0, y: 0)
                 .shadow(color: .yellow.opacity(0.6), radius: 10, x: 0, y: 4)
                 .shadow(color: .orange.opacity(0.4), radius: 15, x: 0, y: 6)
+                // Animate pulse for soft glowing effect
+                .scaleEffect(isSelected ? 1.08 : 1.0)
+                .opacity(isSelected ? 1.0 : 0.0)
+                .animation(.easeInOut(duration: 1.2).repeatForever(autoreverses: true), value: isSelected)
             
             // Enhanced animated pulse effect with more visibility
             RoundedRectangle(cornerRadius: cardSize.cornerRadius)
                 .stroke(
                     LinearGradient(
                         colors: [
-                            Color.yellow.opacity(0.9), 
-                            Color.orange.opacity(0.8), 
+                            Color.yellow.opacity(0.9),
+                            Color.orange.opacity(0.8),
                             Color.yellow.opacity(0.7),
                             Color.orange.opacity(0.6)
                         ],
@@ -473,11 +531,12 @@ struct CardView: View {
         if #available(iOS 18.0, *) {
             let userDefault = UserDefaults.standard.bool(forKey: "enableMetalRendering")
             let hasMetalDevice = MTLCreateSystemDefaultDevice() != nil
-            
+
             // Enable Metal rendering if user opted in and device supports it
             return userDefault && hasMetalDevice
         }
-        return false
+        // Fallback to SwiftUI rendering on earlier iOS versions until Metal path is verified
+        return true
     }
     
     /// Enhanced SwiftUI card implementation with premium design
@@ -508,6 +567,7 @@ struct CardView: View {
                 )
             }
         }
+        
         .frame(width: cardSize.width, height: cardSize.height) // CRITICAL: Enforce proper card dimensions to prevent stretching
         .romanianPatternOverlay() // Subtle Romanian cultural pattern
         .premiumSelection(

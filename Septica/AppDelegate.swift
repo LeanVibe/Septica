@@ -13,8 +13,18 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
 
 
-    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // Override point for customization after application launch.
+    func application(
+        _ application: UIApplication,
+        didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
+    ) -> Bool {
+        // Force the modern SwiftUI-driven experience; bypass any legacy storyboard flow.
+        window = UIWindow(frame: UIScreen.main.bounds)
+        window?.rootViewController = SepticaGameViewController()
+        window?.makeKeyAndVisible()
+
+        // Diagnostics so QA can confirm the expected entry point is active.
+        print("🚀 Launching Septica with SepticaGameViewController root controller")
+
         return true
     }
 
@@ -37,4 +47,3 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
 
 }
-

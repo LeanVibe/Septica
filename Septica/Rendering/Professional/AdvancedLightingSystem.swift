@@ -560,20 +560,6 @@ struct CascadeData {
     let bias: Float
 }
 
-struct SceneRenderingData {
-    let colorTarget: MTLTexture
-    let depthTarget: MTLTexture
-    let cardGeometries: [CardGeometry]
-    let viewMatrix: matrix_float4x4
-    let projectionMatrix: matrix_float4x4
-}
-
-struct CardGeometry {
-    let vertexBuffer: MTLBuffer
-    let indexBuffer: MTLBuffer
-    let indexCount: Int
-    let indexType: MTLIndexType
-}
 
 struct LightingMetrics {
     let renderTime: Double

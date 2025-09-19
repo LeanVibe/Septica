@@ -1,42 +1,35 @@
 # Repository Guidelines
 
 ## Project Structure & Module Organization
-- App code lives in `Septica/` with subfolders: `Models/`, `ViewModels/`, `Views/`, `Controllers/`, `Managers/`, `Services/`, `Rendering/`, `Performance/`, `ErrorHandling/`, and `AI/`. Assets in `Assets.xcassets/`.
-- Tests in `SepticaTests/` (unit/integration/performance) and `SepticaUITests/` (UI & launch tests).
-- Xcode project: `Septica.xcodeproj` with scheme `Septica`. Supporting docs in `/docs` and root markdown files.
+- App sources live in `Septica/` with feature folders such as `Models/`, `ViewModels/`, `Views/`, `Controllers/`, `Managers/`, `Services/`, `Rendering/`, `Performance/`, `ErrorHandling/`, and `AI/`.
+- Store shared assets in `Assets.xcassets/`. Supporting docs sit in `/docs` and root-level markdown files.
+- Place unit, integration, and performance tests in `SepticaTests/`; UI and launch coverage belongs in `SepticaUITests/`.
+- Xcode project file is `Septica.xcodeproj`, using the `Septica` scheme for local work.
 
 ## Build, Test, and Development Commands
-- Build (Debug, simulator):
-  `xcodebuild -project Septica.xcodeproj -scheme Septica -configuration Debug -destination 'platform=iOS Simulator,name=iPhone 15' build`
-- Run tests (unit + UI):
-  `xcodebuild -project Septica.xcodeproj -scheme Septica -configuration Debug -destination 'platform=iOS Simulator,name=iPhone 15' clean test`
-- Archive for App Store (CI/local):
-  `./CreateAppStoreArchive.sh`
-- Validation utilities:
-  `./run_all_validation.sh`
-
-Use Xcode for day‑to‑day development: open `Septica.xcodeproj`, select the `Septica` scheme, and run on an iOS Simulator.
+- `xcodebuild -project Septica.xcodeproj -scheme Septica -configuration Debug -destination 'platform=iOS Simulator,name=iPhone 15' build` — compile the app for the iOS 15 simulator in Debug mode.
+- `xcodebuild -project Septica.xcodeproj -scheme Septica -configuration Debug -destination 'platform=iOS Simulator,name=iPhone 15' clean test` — reset derived data and run all unit and UI tests.
+- `./CreateAppStoreArchive.sh` — produce a signed archive suitable for App Store submission.
+- `./run_all_validation.sh` — execute repository validation utilities before merging.
 
 ## Coding Style & Naming Conventions
-- Language: Swift 5; indentation: 4 spaces; 120‑char soft wrap.
-- Types: `PascalCase` (e.g., `GameViewController`, `HandViewModel`).
-- Methods/properties: `camelCase`; constants `let` preferred; avoid force‑unwraps.
-- File names mirror primary type (e.g., `Card.swift`, `GameRulesTests.swift`).
-- Linting: SwiftLint recommended (no repo config present). If installed, run `swiftlint` locally before commits.
+- Swift 5 with 4-space indentation and a 120-character soft wrap.
+- Types use `PascalCase`; methods, properties, and variables use `camelCase`.
+- Prefer `let` for constants, avoid force unwraps, and keep filenames aligned to their primary type (e.g., `Card.swift`).
+- Run `swiftlint` locally if installed to flag style violations.
 
 ## Testing Guidelines
-- Framework: XCTest.
-- Place tests under `SepticaTests/` or `SepticaUITests/` matching source module paths.
-- Naming: test files end with `Tests.swift`; functions start with `test…` and assert one behavior.
-- Prefer fast, deterministic tests; use `Integration/`, `Performance/`, `Stress/` subfolders as already organized.
+- Tests rely on XCTest. Name files with the `Tests.swift` suffix and methods beginning with `test…`.
+- Keep cases focused on a single behavior; use subfolders like `Integration/`, `Performance/`, or `Stress/` where appropriate.
+- Execute the full suite with the `xcodebuild … clean test` command above before opening a PR.
 
 ## Commit & Pull Request Guidelines
-- Commits: short, imperative subject; emoji prefix used in history is welcome (e.g., `✨ Add card dealing animation`). Group related changes; keep diffs focused.
-- PRs: include summary, rationale, screenshots for UI, and steps to test. Link issues where applicable. Passing CI and tests required.
+- Follow concise, imperative commit messages; emoji prefixes such as `✨ Add card dealing animation` mirror existing history.
+- PRs should summarize intent, explain rationale, attach UI screenshots when relevant, and link issues.
+- Ensure CI is green, validations have run, and tests pass prior to requesting review.
 
 ## Security & Configuration Tips
-- Do not commit signing certificates, provisioning profiles, or secrets. Respect `.gitignore`.
-- Use simulated data for tests; avoid embedding real user data.
+- Never commit signing certificates, provisioning profiles, or secrets. Use simulated data for tests and respect `.gitignore` entries.
 
 ## Architecture Notes
-- The app follows a pragmatic MVC/MVVM blend: `Models` + `ViewModels` drive `Views`/`ViewControllers`, with `Managers`/`Services` for coordination and `Rendering` for Metal/graphics.
+- The app blends MVC and MVVM: models and view models drive UIKit views/controllers, with `Managers/` and `Services/` coordinating flows and `Rendering/` dedicated to Metal/graphics work.

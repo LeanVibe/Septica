@@ -54,12 +54,7 @@ struct Card: Identifiable, Codable, Equatable, Hashable {
         self.suit = suit
         self.value = value
     }
-    
-    /// Returns true if this card is worth a point in Septica
-    /// Point cards are 10s and Aces (value 14)
-    var isPointCard: Bool {
-        return value == 10 || value == 14 // 10s and Aces
-    }
+
     
     /// Returns the display name for the card value
     var displayValue: String {

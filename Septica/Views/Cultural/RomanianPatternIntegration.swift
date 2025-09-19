@@ -159,28 +159,28 @@ class RomanianPatternIntegrationManager: ObservableObject {
     }
     
     private func preloadEssentialPatterns() {
-        Task {
+        Task(priority: .utility) {
             do {
                 // Preload most commonly used patterns
                 for pattern in availablePatterns.prefix(3) {
-                    _ = try await preloadPattern(pattern)
+                    _ = try preloadPattern(pattern)
                 }
-                
+
                 // Preload folk motifs
                 for motif in RomanianMotif.allCases {
-                    _ = try await textureCache.getFolkMotifTexture(motif: motif)
+                    _ = try textureCache.getFolkMotifTexture(motif: motif)
                 }
-                
+
                 updateCacheMetrics()
                 print("✅ Romanian patterns preloaded successfully")
-                
+
             } catch {
                 print("⚠️ Failed to preload Romanian patterns: \(error)")
             }
         }
     }
     
-    private func preloadPattern(_ patternInfo: RomanianPatternInfo) async throws -> MTLTexture {
+    private func preloadPattern(_ patternInfo: RomanianPatternInfo) throws -> MTLTexture {
         // Create a dummy card to generate the pattern
         let dummyCard = Card(suit: .hearts, value: 7)
         return try textureCache.getRomanianPatternTexture(for: dummyCard)
@@ -449,7 +449,7 @@ struct RomanianPatternView: View {
         
         Task {
             do {
-                let data = try await patternManager.generateCulturalOverlay(for: card, size: size)
+                let data = try patternManager.generateCulturalOverlay(for: card, size: size)
                 
                 await MainActor.run {
                     overlayData = data

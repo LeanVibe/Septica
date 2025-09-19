@@ -84,39 +84,61 @@ struct PlayerHandView: View {
             
             // Cards in hand
             if !player.hand.isEmpty {
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: -15) {
-                        ForEach(Array(player.hand.enumerated()), id: \.element.id) { index, card in
-                            CardView(
-                                card: card,
-                                isSelected: selectedCard?.id == card.id,
-                                isPlayable: isCardPlayable(card),
-                                cardSize: .normal,
-                                onTap: {
-                                    handleCardTap(card)
-                                },
-                                onDragChanged: { dragValue in
-                                    // Handle drag feedback - will implement drop zone highlighting
-                                    handleCardDrag(card: card, dragValue: dragValue)
-                                },
-                                onDragEnded: { dragValue in
-                                    // Handle card drop
-                                    handleCardDrop(card: card, dragValue: dragValue)
-                                }
+                ZStack(alignment: .bottom) {
+                    RoundedRectangle(cornerRadius: 26)
+                        .fill(
+                            LinearGradient(
+                                colors: [
+                                    Color.white.opacity(0.06),
+                                    Color.white.opacity(0.02)
+                                ],
+                                startPoint: .top,
+                                endPoint: .bottom
                             )
-                            .offset(y: selectedCard?.id == card.id ? -10 : 0)
-                            .zIndex(selectedCard?.id == card.id ? 1 : 0)
-                            .rotation3DEffect(
-                                .degrees(Double(index - player.hand.count/2) * 5),
-                                axis: (x: 0, y: 0, z: 1)
-                            )
-                            .offset(y: CGFloat(abs(index - player.hand.count/2)) * -2)
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 26)
+                                .stroke(Color.white.opacity(0.08), lineWidth: 1)
+                        )
+                        .shadow(color: .black.opacity(0.3), radius: 12, x: 0, y: 8)
+                        .padding(.horizontal, 12)
+                        .frame(height: 210)
+                    
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: -16) {
+                            ForEach(Array(player.hand.enumerated()), id: \.element.id) { index, card in
+                                CardView(
+                                    card: card,
+                                    isSelected: selectedCard?.id == card.id,
+                                    isPlayable: isCardPlayable(card),
+                                    cardSize: .normal,
+                                    onTap: {
+                                        handleCardTap(card)
+                                    },
+                                    onDragChanged: { dragValue in
+                                        handleCardDrag(card: card, dragValue: dragValue)
+                                    },
+                                    onDragEnded: { dragValue in
+                                        handleCardDrop(card: card, dragValue: dragValue)
+                                    }
+                                )
+                                .offset(y: selectedCard?.id == card.id ? -12 : 0)
+                                .scaleEffect(selectedCard?.id == card.id ? 1.04 : 1.0)
+                                .rotation3DEffect(
+                                    .degrees(Double(index - player.hand.count/2) * 5.5),
+                                    axis: (x: 0, y: 0, z: 1)
+                                )
+                                .offset(y: CGFloat(abs(index - player.hand.count/2)) * -3)
+                                .shadow(color: Color.black.opacity(0.35), radius: 6, x: 0, y: 5)
+                            }
                         }
+                        .padding(.horizontal, 36)
+                        .padding(.bottom, 32)
+                        .padding(.top, 36)
                     }
-                    .padding(.horizontal, 20)
-                    .frame(height: 300)
+                    .frame(height: 220)
                 }
-                .frame(height: 300)
+                .frame(height: 220)
             } else {
                 // Empty hand placeholder
                 RoundedRectangle(cornerRadius: 8)
