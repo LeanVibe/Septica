@@ -171,13 +171,16 @@ struct CardView: View {
             // Multi-layer shadow system for premium depth (Shuffle Cats style)
             .background(
                 RoundedRectangle(cornerRadius: cardSize.cornerRadius)
-                    .fill(Color.red)
-                    .shadow(color: Color.black.opacity(0.12), radius: 2, x: 0, y: 1)
-                    .shadow(color: Color.black.opacity(0.08), radius: 6, x: 0, y: 3)
-                    .shadow(color: Color.black.opacity(0.05), radius: 12, x: 0, y: 6)
+                    .fill(Color.clear)
+                    .shadow(color: Color.black.opacity(0.15), radius: 2, x: 0, y: 1)
+                    .shadow(color: Color.black.opacity(0.12), radius: 4, x: 0, y: 2)
+                    .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 4)
+                    .shadow(color: Color.black.opacity(0.05), radius: 16, x: 0, y: 8)
             )
-            // Added extra lift shadow when selected for stronger visual presence
-            .shadow(color: Color.black.opacity(0.18), radius: isSelected ? 18 : 7, x: 0, y: isSelected ? 10 : 5)
+            // Enhanced professional lift shadow for reference quality depth
+            .shadow(color: Color.black.opacity(isSelected ? 0.25 : 0.18), radius: isSelected ? 24 : 12, x: 0, y: isSelected ? 12 : 6)
+            // Special glow for selected cards to match reference quality
+            .shadow(color: isSelected ? RomanianColors.goldAccent.opacity(0.4) : Color.clear, radius: isSelected ? 16 : 0, x: 0, y: 0)
     }
     
     private var cardContentView: some View {

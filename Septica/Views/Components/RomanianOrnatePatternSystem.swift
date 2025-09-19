@@ -270,25 +270,48 @@ struct Diamond: Shape {
 
 // MARK: - Table-Specific Ornate Components
 
-/// Enhanced ornate table surface with Romanian folk patterns
+/// Enhanced ornate table surface with Romanian folk patterns and felt texture
 struct OrnateRomanianTableSurface: View {
     let size: CGSize
     
     var body: some View {
         ZStack {
-            // Base table surface with gradient
+            // Base felt texture surface
             RoundedRectangle(cornerRadius: 20)
                 .fill(
-                    RadialGradient(
-                        colors: [
-                            RomanianColors.tableGreen.opacity(0.9),
-                            RomanianColors.tableGreen,
-                            Color(red: 0.05, green: 0.2, blue: 0.05)
-                        ],
-                        center: .center,
-                        startRadius: 30,
-                        endRadius: max(size.width, size.height) * 0.6
-                    )
+                    ZStack {
+                        // Felt texture background
+                        if let feltTexture = UIImage(named: "felt_texture") {
+                            Image(uiImage: feltTexture)
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                                .clipped()
+                        } else {
+                            // Fallback rich felt-like gradient
+                            RadialGradient(
+                                colors: [
+                                    Color(red: 0.13, green: 0.33, blue: 0.53),
+                                    Color(red: 0.10, green: 0.25, blue: 0.45),
+                                    Color(red: 0.08, green: 0.20, blue: 0.38)
+                                ],
+                                center: .center,
+                                startRadius: 30,
+                                endRadius: max(size.width, size.height) * 0.6
+                            )
+                        }
+                        
+                        // Rich overlay gradient for depth
+                        RadialGradient(
+                            colors: [
+                                RomanianColors.tableGreen.opacity(0.4),
+                                RomanianColors.tableGreen.opacity(0.6),
+                                Color(red: 0.05, green: 0.2, blue: 0.05).opacity(0.8)
+                            ],
+                            center: .center,
+                            startRadius: 30,
+                            endRadius: max(size.width, size.height) * 0.6
+                        )
+                    }
                 )
             
             // Ornate border pattern
