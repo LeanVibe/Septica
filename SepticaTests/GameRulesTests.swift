@@ -313,12 +313,12 @@ final class GameRulesTests: XCTestCase {
     func testDealInitialHands() {
         var deck = Deck()
         deck.shuffle()
-        let playerCount = 2
         
-        let hands = GameRules.dealInitialHands(from: &deck, playerCount: playerCount)
+        let hands = GameRules.dealInitialHands(from: &deck)
         
-        // Should have hands for each player
-        XCTAssertEqual(hands.count, playerCount)
+        // Should have hands for exactly 2 players (Romanian Septica requirement)
+        XCTAssertEqual(hands.count, GameRules.maxPlayers)
+        XCTAssertEqual(hands.count, 2)
         
         // Each hand should have the correct number of cards
         for hand in hands {
@@ -326,7 +326,7 @@ final class GameRulesTests: XCTestCase {
         }
         
         // Deck should have fewer cards
-        let expectedDeckCount = 32 - (playerCount * GameRules.initialHandSize)
+        let expectedDeckCount = 32 - (GameRules.maxPlayers * GameRules.initialHandSize)
         XCTAssertEqual(deck.count, expectedDeckCount)
     }
 }

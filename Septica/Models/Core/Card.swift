@@ -164,3 +164,12 @@ extension Card: Comparable {
         return lhs.value < rhs.value
     }
 }
+
+// MARK: - Game Logic Extensions
+
+extension Card {
+    /// Returns true if this card is a point card in Romanian Septica (10s and Aces)
+    var isPointCard: Bool {
+        return value == 10 || value == 14 // 10s and Aces are worth 1 point each
+    }
+}

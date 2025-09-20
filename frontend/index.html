@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="description" content="Progressive Web App for testing Septica WebSocket backend">
+    <meta name="theme-color" content="#16213e">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="SepticaTester">
+    
+    <title>Septica Game Tester</title>
+    
+    <link rel="manifest" href="./manifest.json">
+    <link rel="stylesheet" href="./css/styles.css">
+    
+    <!-- PWA Icons -->
+    <link rel="icon" type="image/png" sizes="192x192" href="./images/icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="./images/icon-512.png">
+    <link rel="apple-touch-icon" href="./images/icon-192.png">
+    
+    <!-- Preload critical resources -->
+    <link rel="preload" href="./js/app.js" as="script">
+    <link rel="preload" href="./js/websocket-client.js" as="script">
+    <link rel="preload" href="./js/game-ui.js" as="script">
+</head>
+<body>
+    <div id="app">
+        <!-- Header -->
+        <header class="app-header">
+            <h1>Septica Game Tester</h1>
+            <div class="connection-status" id="connectionStatus">
+                <span class="status-indicator" id="statusIndicator"></span>
+                <span class="status-text" id="statusText">Disconnected</span>
+            </div>
+        </header>
+
+        <!-- Connection Panel -->
+        <section class="panel connection-panel">
+            <h2>Connection</h2>
+            <div class="form-group">
+                <label for="serverUrl">WebSocket Server URL:</label>
+                <input type="text" id="serverUrl" value="ws://localhost:8080/ws/connect" placeholder="ws://localhost:8080/ws/connect">
+            </div>
+            <div class="button-group">
+                <button id="connectBtn" class="btn btn-primary">Connect</button>
+                <button id="disconnectBtn" class="btn btn-secondary" disabled>Disconnect</button>
+                <button id="pingBtn" class="btn btn-secondary" disabled>Send Ping</button>
+            </div>
+            <div class="connection-info" id="connectionInfo">
+                <div class="info-item">
+                    <span class="label">Player ID:</span>
+                    <span class="value" id="playerId">-</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Session ID:</span>
+                    <span class="value" id="sessionId">-</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Server Time:</span>
+                    <span class="value" id="serverTime">-</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Heartbeat Interval:</span>
+                    <span class="value" id="heartbeatInterval">-</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Game Controls Panel -->
+        <section class="panel game-panel">
+            <h2>Game Controls</h2>
+            <div class="form-group">
+                <label for="gameMode">Game Mode:</label>
+                <select id="gameMode">
+                    <option value="casual">Casual</option>
+                    <option value="ranked">Ranked</option>
+                    <option value="custom">Custom</option>
+                </select>
+            </div>
+            <div class="button-group">
+                <button id="joinGameBtn" class="btn btn-primary" disabled>Join Game</button>
+                <button id="leaveGameBtn" class="btn btn-secondary" disabled>Leave Game</button>
+                <button id="getGameStateBtn" class="btn btn-secondary" disabled>Get Game State</button>
+            </div>
+            <div class="game-info" id="gameInfo">
+                <div class="info-item">
+                    <span class="label">Game ID:</span>
+                    <span class="value" id="gameId">-</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Your Turn:</span>
+                    <span class="value" id="yourTurn">-</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Current Player:</span>
+                    <span class="value" id="currentPlayer">-</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Status:</span>
+                    <span class="value" id="gameStatus">-</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Trick Number:</span>
+                    <span class="value" id="trickNumber">-</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Move Number:</span>
+                    <span class="value" id="moveNumber">-</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Game Board -->
+        <section class="panel game-board">
+            <h2>Game Board</h2>
+            
+            <!-- Table Cards -->
+            <div class="table-section">
+                <h3>Table Cards</h3>
+                <div class="cards-container" id="tableCards">
+                    <div class="empty-message">No cards on table</div>
+                </div>
+            </div>
+            
+            <!-- Your Hand -->
+            <div class="hand-section">
+                <h3>Your Hand</h3>
+                <div class="cards-container" id="playerHand">
+                    <div class="empty-message">No cards in hand</div>
+                </div>
+            </div>
+            
+            <!-- Valid Moves -->
+            <div class="moves-section">
+                <h3>Valid Moves</h3>
+                <div class="cards-container small" id="validMoves">
+                    <div class="empty-message">No valid moves</div>
+                </div>
+            </div>
+            
+            <!-- Quick Play Card -->
+            <div class="quick-play">
+                <h3>Quick Play Card</h3>
+                <div class="form-group">
+                    <label for="cardSuit">Suit:</label>
+                    <select id="cardSuit">
+                        <option value="hearts">Hearts</option>
+                        <option value="diamonds">Diamonds</option>
+                        <option value="clubs">Clubs</option>
+                        <option value="spades">Spades</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="cardValue">Value:</label>
+                    <select id="cardValue">
+                        <option value="7">7</option>
+                        <option value="8">8</option>
+                        <option value="9">9</option>
+                        <option value="10">10</option>
+                        <option value="11">Jack</option>
+                        <option value="12">Queen</option>
+                        <option value="13">King</option>
+                        <option value="14">Ace</option>
+                    </select>
+                </div>
+                <button id="playCardBtn" class="btn btn-primary" disabled>Play Card</button>
+            </div>
+        </section>
+
+        <!-- Scores Panel -->
+        <section class="panel scores-panel">
+            <h2>Scores</h2>
+            <div class="scores-container" id="scoresContainer">
+                <div class="empty-message">No scores available</div>
+            </div>
+        </section>
+
+        <!-- Message Log Panel -->
+        <section class="panel log-panel">
+            <h2>Message Log</h2>
+            <div class="log-controls">
+                <button id="clearLogBtn" class="btn btn-small">Clear Log</button>
+                <button id="exportLogBtn" class="btn btn-small">Export Log</button>
+                <label class="checkbox-label">
+                    <input type="checkbox" id="autoScrollLog" checked>
+                    Auto-scroll
+                </label>
+            </div>
+            <div class="log-container" id="messageLog">
+                <div class="log-entry system">
+                    <span class="timestamp">[${new Date().toLocaleTimeString()}]</span>
+                    <span class="type">SYSTEM</span>
+                    <span class="message">Application initialized</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Error Messages -->
+        <div class="error-overlay" id="errorOverlay">
+            <div class="error-modal">
+                <h3>Error</h3>
+                <p id="errorMessage"></p>
+                <button id="closeErrorBtn" class="btn btn-primary">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading indicator -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+        <p>Connecting...</p>
+    </div>
+
+    <!-- PWA Install Banner -->
+    <div class="install-banner" id="installBanner">
+        <div class="banner-content">
+            <h3>Install Septica Tester</h3>
+            <p>Install this app for a better experience</p>
+            <button id="installBtn" class="btn btn-primary">Install</button>
+            <button id="dismissBannerBtn" class="btn btn-secondary">Dismiss</button>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="./js/websocket-client.js"></script>
+    <script src="./js/game-ui.js"></script>
+    <script src="./js/app.js"></script>
+</body>
+</html>
