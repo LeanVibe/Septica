@@ -398,8 +398,9 @@ extension CloudKitSyncEngine {
 extension CloudKitSyncEngine {
     
     private func downloadPlayerProfile() async throws -> CloudKitPlayerProfile? {
-        // Implementation would fetch from CloudKit
-        return nil
+        // Get current user ID - for now use a default
+        let currentPlayerID = "current_player" // This should come from authentication
+        return try await cloudKitManager.loadPlayerProfile(playerID: currentPlayerID)
     }
     
     private func loadLocalPlayerProfile() -> CloudKitPlayerProfile? {
@@ -431,12 +432,12 @@ extension CloudKitSyncEngine {
     }
     
     private func uploadPlayerProfile(_ profile: CloudKitPlayerProfile) async throws {
-        // Implementation would save to CloudKit
+        try await cloudKitManager.savePlayerProfile(profile)
     }
     
     private func downloadGameRecords(limit: Int) async throws -> [CloudKitGameRecord] {
-        // Implementation would fetch from CloudKit
-        return []
+        let currentPlayerID = "current_player" // This should come from authentication
+        return try await cloudKitManager.fetchGameRecords(for: currentPlayerID, limit: limit)
     }
     
     private func loadLocalGameRecords() -> [CloudKitGameRecord] {
@@ -468,12 +469,12 @@ extension CloudKitSyncEngine {
     }
     
     private func uploadGameRecord(_ record: CloudKitGameRecord) async throws {
-        // Implementation would save to CloudKit
+        try await cloudKitManager.saveGameRecord(record)
     }
     
     private func downloadCulturalProgress() async throws -> CulturalEducationProgress? {
-        // Implementation would fetch from CloudKit
-        return nil
+        let currentPlayerID = "current_player" // This should come from authentication
+        return try await cloudKitManager.fetchCulturalProgress(for: currentPlayerID)
     }
     
     private func loadLocalCulturalProgress() -> CulturalEducationProgress? {
@@ -505,12 +506,13 @@ extension CloudKitSyncEngine {
     }
     
     private func uploadCulturalProgress(_ progress: CulturalEducationProgress) async throws {
-        // Implementation would save to CloudKit
+        let currentPlayerID = "current_player" // This should come from authentication
+        try await cloudKitManager.saveCulturalProgress(progress, playerID: currentPlayerID)
     }
     
     private func downloadAchievements() async throws -> [CulturalAchievement] {
-        // Implementation would fetch from CloudKit
-        return []
+        let currentPlayerID = "current_player" // This should come from authentication
+        return try await cloudKitManager.fetchAchievements(for: currentPlayerID)
     }
     
     private func loadLocalAchievements() -> [CulturalAchievement] {
@@ -542,7 +544,8 @@ extension CloudKitSyncEngine {
     }
     
     private func uploadAchievements(_ achievements: [CulturalAchievement]) async throws {
-        // Implementation would save to CloudKit
+        let currentPlayerID = "current_player" // This should come from authentication
+        try await cloudKitManager.saveAchievements(achievements, playerID: currentPlayerID)
     }
 }
 

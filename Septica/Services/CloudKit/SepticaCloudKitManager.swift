@@ -52,6 +52,13 @@ class SepticaCloudKitManager: ObservableObject {
     private var offlineSyncQueue = OfflineSyncQueue()
     private var reachabilityMonitor = NetworkReachabilityMonitor()
     
+    // CloudKit record management
+    private lazy var recordManager = CloudKitRecordManager(container: container)
+    
+    // Operation queues for batched operations
+    private var pendingOperations: [String: CKDatabaseOperation] = [:]
+    private let operationQueue = OperationQueue()
+    
     // MARK: - Initialization
     
     init() {
@@ -147,63 +154,11 @@ class SepticaCloudKitManager: ObservableObject {
         
         logger.info("🔽 Loading Romanian player profile: \(playerID)")
         
-        let recordID = CKRecord.ID(recordName: playerID)
+        let recordID = CKRecord.ID(recordName: "player_\(playerID)")
         
         do {
             let record = try await privateDatabase.record(for: recordID)
-            
-            // Decode complex data fields
-            let decoder = JSONDecoder()
-            
-            let folkMusicData = record["folkMusicListened"] as? Data ?? Data()
-            let folkMusicListened = try decoder.decode([String].self, from: folkMusicData)
-            
-            let culturalStoriesData = record["culturalStoriesRead"] as? Data ?? Data()
-            let culturalStoriesRead = try decoder.decode([String].self, from: culturalStoriesData)
-            
-            let traditionalColorsData = record["traditionalColorsUnlocked"] as? Data ?? Data()
-            let traditionalColorsUnlocked = try decoder.decode([String].self, from: traditionalColorsData)
-            
-            let achievementsData = record["achievements"] as? Data ?? Data()
-            let achievementStrings = try decoder.decode([String].self, from: achievementsData)
-            let achievements = achievementStrings.compactMap { CulturalAchievement(rawValue: $0) }
-            
-            let cardMasteriesData = record["cardMasteries"] as? Data ?? Data()
-            let cardMasteries = try decoder.decode([String: CardMastery].self, from: cardMasteriesData)
-            
-            let culturalProgressData = record["culturalEducationProgress"] as? Data ?? Data()
-            let culturalEducationProgress = try decoder.decode(CulturalEducationProgress.self, from: culturalProgressData)
-            
-            let preferencesData = record["preferences"] as? Data ?? Data()
-            let preferences = try decoder.decode(GamePreferences.self, from: preferencesData)
-            
-            // Create profile from CloudKit record
-            let profile = CloudKitPlayerProfile(
-                playerID: playerID,
-                displayName: record["displayName"] as? String ?? "Unknown Player",
-                currentArena: RomanianArena(rawValue: record["currentArena"] as? Int ?? 0) ?? .sateImarica,
-                trophies: record["trophies"] as? Int ?? 0,
-                totalGamesPlayed: record["totalGamesPlayed"] as? Int ?? 0,
-                totalWins: record["totalWins"] as? Int ?? 0,
-                currentStreak: record["currentStreak"] as? Int ?? 0,
-                longestStreak: record["longestStreak"] as? Int ?? 0,
-                favoriteAIDifficulty: record["favoriteAIDifficulty"] as? String ?? "medium",
-                cardMasteries: cardMasteries,
-                achievements: achievements,
-                seasonalProgress: SeasonalProgress(seasonID: "2025-winter", seasonTrophies: 0, seasonWins: 0, seasonChestsOpened: 0, seasonAchievements: [], celebrationParticipation: [:]),
-                preferences: preferences,
-                culturalEducationProgress: culturalEducationProgress,
-                lastPlayedDate: record["lastPlayedDate"] as? Date ?? Date(),
-                createdDate: record["createdDate"] as? Date ?? Date(),
-                heritageEngagementLevel: record["heritageEngagementLevel"] as? Float ?? 0.0,
-                folkMusicListened: folkMusicListened,
-                culturalStoriesRead: culturalStoriesRead,
-                traditionalColorsUnlocked: traditionalColorsUnlocked,
-                selectedAvatar: record["selectedAvatar"] as? String ?? RomanianCharacterAvatar.traditionalPlayer.rawValue,
-                selectedAvatarFrame: record["selectedAvatarFrame"] as? String ?? AvatarFrame.woodenFrame.rawValue,
-                unlockedAvatars: [RomanianCharacterAvatar.traditionalPlayer.rawValue],
-                unlockedAvatarFrames: [AvatarFrame.woodenFrame.rawValue]
-            )
+            let profile = try recordManager.parsePlayerProfileRecord(record)
             
             logger.info("✅ Romanian player profile loaded: \(profile.displayName) - Arena: \(profile.currentArena.displayName)")
             return profile
@@ -228,46 +183,7 @@ class SepticaCloudKitManager: ObservableObject {
         logger.info("🔄 Saving Romanian game record: \(record.gameResult) in \(record.arenaAtTimeOfPlay.displayName)")
         
         do {
-            let ckRecord = CKRecord(recordType: "GameRecord", recordID: CKRecord.ID(recordName: record.gameID))
-            
-            // Core game data
-            ckRecord["playerID"] = record.playerID as CKRecordValue
-            ckRecord["gameResult"] = record.gameResult as CKRecordValue
-            ckRecord["timestamp"] = record.timestamp as CKRecordValue
-            ckRecord["arena"] = record.arenaAtTimeOfPlay.rawValue as CKRecordValue
-            ckRecord["opponentType"] = record.opponentType as CKRecordValue
-            ckRecord["aiDifficulty"] = record.aiDifficulty as CKRecordValue?
-            ckRecord["gameDuration"] = record.gameDuration as CKRecordValue
-            
-            // Romanian cultural metrics
-            ckRecord["sevenWildCardUses"] = record.sevenWildCardUses as CKRecordValue
-            ckRecord["eightSpecialUses"] = record.eightSpecialUses as CKRecordValue
-            ckRecord["tricksWon"] = record.tricksWon as CKRecordValue
-            ckRecord["pointsScored"] = record.pointsScored as CKRecordValue
-            
-            // Encode complex data
-            let encoder = JSONEncoder()
-            
-            let finalScoreData = try encoder.encode(record.finalScore)
-            ckRecord["finalScore"] = finalScoreData as CKRecordValue
-            
-            let cardsPlayedData = try encoder.encode(record.cardsPlayed)
-            ckRecord["cardsPlayed"] = cardsPlayedData as CKRecordValue
-            
-            let culturalMomentsData = try encoder.encode(record.culturalMomentsTriggered)
-            ckRecord["culturalMomentsTriggered"] = culturalMomentsData as CKRecordValue
-            
-            let mistakesData = try encoder.encode(record.mistakesMade)
-            ckRecord["mistakesMade"] = mistakesData as CKRecordValue
-            
-            let strategicMovesData = try encoder.encode(record.strategicMoves)
-            ckRecord["strategicMoves"] = strategicMovesData as CKRecordValue
-            
-            // Romanian cultural metadata
-            ckRecord["culturalVersion"] = "1.0" as CKRecordValue
-            ckRecord["arenaDisplayName"] = record.arenaAtTimeOfPlay.displayName as CKRecordValue
-            ckRecord["syncTimestamp"] = Date() as CKRecordValue
-            
+            let ckRecord = try recordManager.createGameRecord(record)
             _ = try await privateDatabase.save(ckRecord)
             
             logger.info("✅ Romanian game record saved: \(record.gameResult) in \(record.arenaAtTimeOfPlay.displayName)")
@@ -280,30 +196,16 @@ class SepticaCloudKitManager: ObservableObject {
     }
     
     /// Save cultural education progress with Romanian heritage data
-    func saveCulturalProgress(_ progress: CulturalEducationProgress) async throws {
+    func saveCulturalProgress(_ progress: CulturalEducationProgress, playerID: String) async throws {
         guard isAvailable && networkReachable else {
             await queueOfflineUpdate(.culturalProgress(progress))
             return
         }
         
-        logger.info("🔄 Saving Romanian cultural progress")
+        logger.info("🔄 Saving Romanian cultural progress for player: \(playerID)")
         
         do {
-            let recordID = CKRecord.ID(recordName: "cultural_progress_\(UUID().uuidString)")
-            let record = CKRecord(recordType: "CulturalProgress", recordID: recordID)
-            
-            // Encode cultural progress data
-            let encoder = JSONEncoder()
-            let progressData = try encoder.encode(progress)
-            record["progressData"] = progressData as CKRecordValue
-            
-            // Romanian cultural metadata
-            record["folkTalesRead"] = progress.folkTalesRead as CKRecordValue
-            record["traditionalMusicKnowledge"] = progress.traditionalMusicKnowledge as CKRecordValue
-            record["cardHistoryKnowledge"] = progress.cardHistoryKnowledge as CKRecordValue
-            record["culturalBadgesCount"] = progress.culturalBadges.count as CKRecordValue
-            record["syncTimestamp"] = Date() as CKRecordValue
-            
+            let record = try recordManager.createCulturalProgressRecord(progress, playerID: playerID)
             _ = try await privateDatabase.save(record)
             
             await updateLastSyncDate()
@@ -317,30 +219,20 @@ class SepticaCloudKitManager: ObservableObject {
     }
     
     /// Save cultural achievements with Romanian heritage preservation
-    func saveAchievements(_ achievements: [CulturalAchievement]) async throws {
+    func saveAchievements(_ achievements: [CulturalAchievement], playerID: String) async throws {
         guard isAvailable && networkReachable else {
             await queueOfflineUpdate(.achievements(achievements))
             return
         }
         
-        logger.info("🔄 Saving Romanian achievements (\(achievements.count) items)")
+        logger.info("🔄 Saving Romanian achievements (\(achievements.count) items) for player: \(playerID)")
         
         do {
-            let recordID = CKRecord.ID(recordName: "achievements_\(UUID().uuidString)")
-            let record = CKRecord(recordType: "Achievements", recordID: recordID)
-            
-            // Encode achievements data
-            let encoder = JSONEncoder()
-            let achievementStrings = achievements.map { $0.rawValue }
-            let achievementsData = try encoder.encode(achievementStrings)
-            record["achievementsData"] = achievementsData as CKRecordValue
-            
-            // Romanian cultural metadata
-            record["achievementCount"] = achievements.count as CKRecordValue
-            record["culturalVersion"] = "1.0" as CKRecordValue
-            record["syncTimestamp"] = Date() as CKRecordValue
-            
-            _ = try await privateDatabase.save(record)
+            // Create individual records for each achievement to enable better querying
+            for achievement in achievements {
+                let record = try recordManager.createAchievementRecord(achievement, playerID: playerID, unlockedDate: Date())
+                _ = try await privateDatabase.save(record)
+            }
             
             await updateLastSyncDate()
             logger.info("✅ Romanian achievements saved successfully (\(achievements.count) items)")
@@ -361,6 +253,185 @@ class SepticaCloudKitManager: ObservableObject {
     
     private func updateLastSyncDate() async {
         lastSyncDate = Date()
+    }
+    
+    // MARK: - Additional Data Operations
+    
+    /// Fetch game records for a player with pagination
+    func fetchGameRecords(for playerID: String, limit: Int = 50) async throws -> [CloudKitGameRecord] {
+        guard isAvailable else {
+            throw CloudKitError.notAvailable
+        }
+        
+        logger.info("🔽 Fetching game records for player: \(playerID)")
+        
+        let predicate = NSPredicate(format: "playerID == %@", playerID)
+        let query = CKQuery(recordType: CloudKitRecordManager.RecordTypes.gameRecord, predicate: predicate)
+        
+        // Sort by timestamp descending (newest first)
+        query.sortDescriptors = [NSSortDescriptor(key: "timestamp", ascending: false)]
+        
+        do {
+            let (matchResults, _) = try await privateDatabase.records(matching: query, resultsLimit: limit)
+            
+            var gameRecords: [CloudKitGameRecord] = []
+            for (_, result) in matchResults {
+                switch result {
+                case .success(let record):
+                    let gameRecord = try recordManager.parseGameRecord(record)
+                    gameRecords.append(gameRecord)
+                case .failure(let error):
+                    logger.error("Failed to fetch game record: \(error.localizedDescription)")
+                }
+            }
+            
+            logger.info("✅ Fetched \(gameRecords.count) game records for player: \(playerID)")
+            return gameRecords
+            
+        } catch {
+            logger.error("❌ Failed to fetch game records: \(error.localizedDescription)")
+            throw CloudKitError.fetchFailed(error)
+        }
+    }
+    
+    /// Fetch cultural progress for a player
+    func fetchCulturalProgress(for playerID: String) async throws -> CulturalEducationProgress? {
+        guard isAvailable else {
+            throw CloudKitError.notAvailable
+        }
+        
+        logger.info("🔽 Fetching cultural progress for player: \(playerID)")
+        
+        let recordID = CKRecord.ID(recordName: "cultural_\(playerID)")
+        
+        do {
+            let record = try await privateDatabase.record(for: recordID)
+            let progress = try recordManager.parseCulturalProgressRecord(record)
+            
+            logger.info("✅ Cultural progress fetched for player: \(playerID)")
+            return progress
+            
+        } catch CKError.unknownItem {
+            logger.info("📱 No cultural progress found for player: \(playerID)")
+            return nil
+        } catch {
+            logger.error("❌ Failed to fetch cultural progress: \(error.localizedDescription)")
+            throw CloudKitError.fetchFailed(error)
+        }
+    }
+    
+    /// Fetch achievements for a player
+    func fetchAchievements(for playerID: String) async throws -> [CulturalAchievement] {
+        guard isAvailable else {
+            throw CloudKitError.notAvailable
+        }
+        
+        logger.info("🔽 Fetching achievements for player: \(playerID)")
+        
+        let predicate = NSPredicate(format: "playerID == %@", playerID)
+        let query = CKQuery(recordType: CloudKitRecordManager.RecordTypes.achievement, predicate: predicate)
+        
+        do {
+            let (matchResults, _) = try await privateDatabase.records(matching: query)
+            
+            var achievements: [CulturalAchievement] = []
+            for (_, result) in matchResults {
+                switch result {
+                case .success(let record):
+                    let (achievement, _, _) = try recordManager.parseAchievementRecord(record)
+                    achievements.append(achievement)
+                case .failure(let error):
+                    logger.error("Failed to fetch achievement record: \(error.localizedDescription)")
+                }
+            }
+            
+            logger.info("✅ Fetched \(achievements.count) achievements for player: \(playerID)")
+            return achievements
+            
+        } catch {
+            logger.error("❌ Failed to fetch achievements: \(error.localizedDescription)")
+            throw CloudKitError.fetchFailed(error)
+        }
+    }
+    
+    /// Batch save multiple records for efficiency
+    func batchSaveRecords(_ records: [CKRecord]) async throws {
+        guard isAvailable && networkReachable else {
+            throw CloudKitError.networkUnavailable
+        }
+        
+        logger.info("🔄 Batch saving \(records.count) CloudKit records")
+        
+        // CloudKit supports up to 400 records per batch operation
+        let batchSize = 400
+        let batches = records.chunked(into: batchSize)
+        
+        for (index, batch) in batches.enumerated() {
+            do {
+                let saveResults = try await privateDatabase.modifyRecords(saving: batch, deleting: [])
+                
+                var successCount = 0
+                for (_, result) in saveResults.saveResults {
+                    switch result {
+                    case .success:
+                        successCount += 1
+                    case .failure(let error):
+                        logger.error("Failed to save record in batch \(index): \(error.localizedDescription)")
+                    }
+                }
+                
+                logger.info("✅ Batch \(index + 1)/\(batches.count): \(successCount)/\(batch.count) records saved")
+                
+            } catch {
+                logger.error("❌ Failed to save batch \(index): \(error.localizedDescription)")
+                throw CloudKitError.syncFailed(error)
+            }
+        }
+        
+        await updateLastSyncDate()
+        logger.info("✅ All batches completed successfully")
+    }
+    
+    /// Delete records by IDs
+    func deleteRecords(withIDs recordIDs: [CKRecord.ID]) async throws {
+        guard isAvailable && networkReachable else {
+            throw CloudKitError.networkUnavailable
+        }
+        
+        logger.info("🗑️ Deleting \(recordIDs.count) CloudKit records")
+        
+        do {
+            let deleteResults = try await privateDatabase.modifyRecords(saving: [], deleting: recordIDs)
+            
+            var successCount = 0
+            for (_, result) in deleteResults.deleteResults {
+                switch result {
+                case .success:
+                    successCount += 1
+                case .failure(let error):
+                    logger.error("Failed to delete record: \(error.localizedDescription)")
+                }
+            }
+            
+            logger.info("✅ Deleted \(successCount)/\(recordIDs.count) records")
+            
+        } catch {
+            logger.error("❌ Failed to delete records: \(error.localizedDescription)")
+            throw CloudKitError.syncFailed(error)
+        }
+    }
+    
+    /// Validate CloudKit schema and setup
+    func validateAndSetupSchema() async throws {
+        logger.info("🔍 Validating and setting up CloudKit schema")
+        
+        do {
+            try await recordManager.validateCloudKitSchema()
+            logger.info("✅ CloudKit schema validation successful")
+        } catch {
+            logger.error("❌ CloudKit schema validation failed: \(error.localizedDescription)")
+            throw error
+        }
     }
     
     deinit {
@@ -395,6 +466,16 @@ extension SepticaCloudKitManager {
     }
 }
 
+// MARK: - Array Extension for Batching
+
+fileprivate extension Array {
+    func chunked(into size: Int) -> [[Element]] {
+        return stride(from: 0, to: count, by: size).map {
+            Array(self[$0..<Swift.min($0 + size, count)])
+        }
+    }
+}
+
 // MARK: - Compatibility stubs
 
 extension SepticaCloudKitManager {
@@ -410,54 +491,7 @@ extension SepticaCloudKitManager {
         logger.info("🔄 Saving Romanian player profile: \(profile.displayName)")
         
         do {
-            let recordID = CKRecord.ID(recordName: profile.playerID)
-            let record = CKRecord(recordType: "PlayerProfile", recordID: recordID)
-            
-            // Core player data
-            record["displayName"] = profile.displayName as CKRecordValue
-            record["currentArena"] = profile.currentArena.rawValue as CKRecordValue
-            record["trophies"] = profile.trophies as CKRecordValue
-            record["totalGamesPlayed"] = profile.totalGamesPlayed as CKRecordValue
-            record["totalWins"] = profile.totalWins as CKRecordValue
-            record["currentStreak"] = profile.currentStreak as CKRecordValue
-            record["longestStreak"] = profile.longestStreak as CKRecordValue
-            
-            // Romanian cultural data
-            record["heritageEngagementLevel"] = profile.heritageEngagementLevel as CKRecordValue
-            record["selectedAvatar"] = profile.selectedAvatar as CKRecordValue
-            record["selectedAvatarFrame"] = profile.selectedAvatarFrame as CKRecordValue
-            
-            // Encode complex data as JSON
-            let encoder = JSONEncoder()
-            
-            let folkMusicData = try encoder.encode(profile.folkMusicListened)
-            record["folkMusicListened"] = folkMusicData as CKRecordValue
-            
-            let culturalStoriesData = try encoder.encode(profile.culturalStoriesRead)
-            record["culturalStoriesRead"] = culturalStoriesData as CKRecordValue
-            
-            let traditionalColorsData = try encoder.encode(profile.traditionalColorsUnlocked)
-            record["traditionalColorsUnlocked"] = traditionalColorsData as CKRecordValue
-            
-            let achievementsData = try encoder.encode(profile.achievements.map { $0.rawValue })
-            record["achievements"] = achievementsData as CKRecordValue
-            
-            let cardMasteriesData = try encoder.encode(profile.cardMasteries)
-            record["cardMasteries"] = cardMasteriesData as CKRecordValue
-            
-            let culturalProgressData = try encoder.encode(profile.culturalEducationProgress)
-            record["culturalEducationProgress"] = culturalProgressData as CKRecordValue
-            
-            let preferencesData = try encoder.encode(profile.preferences)
-            record["preferences"] = preferencesData as CKRecordValue
-            
-            // Romanian cultural metadata
-            record["culturalVersion"] = "1.0" as CKRecordValue
-            record["romanianAuthenticity"] = true as CKRecordValue
-            record["lastPlayedDate"] = profile.lastPlayedDate as CKRecordValue
-            record["createdDate"] = profile.createdDate as CKRecordValue
-            record["syncTimestamp"] = Date() as CKRecordValue
-            
+            let record = try recordManager.createPlayerProfileRecord(profile)
             _ = try await privateDatabase.save(record)
             
             await updateLastSyncDate()
