@@ -2,80 +2,81 @@ package main
 
 import (
 	"context"
-	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
-	"septica-backend/internal/api"
-	"septica-backend/internal/auth"
 	"septica-backend/internal/database"
 	"septica-backend/internal/game"
-	"septica-backend/internal/matchmaking"
+	"septica-backend/internal/handlers"
 	"septica-backend/internal/websocket"
 	"septica-backend/pkg/config"
 	"septica-backend/pkg/logger"
 
 	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
 )
 
 func main() {
-	// Load environment variables
-	if err := godotenv.Load(); err != nil {
-		log.Println("No .env file found, using system environment variables")
-	}
-
-	// Initialize configuration
+	// Load configuration
 	cfg := config.Load()
 
 	// Initialize logger
 	logger := logger.New(cfg.LogLevel)
+	logger.Info("Starting Septica backend server", "environment", cfg.Environment, "port", cfg.Port)
 
 	// Initialize database
-	db, err := database.Initialize(cfg.DatabaseURL)
+	db, err := database.Initialize(cfg.DatabaseURL, logger)
 	if err != nil {
 		logger.Fatal("Failed to initialize database", "error", err)
 	}
+	logger.Info("Database connected successfully")
 
 	// Run database migrations
 	if err := database.Migrate(db); err != nil {
 		logger.Fatal("Failed to run database migrations", "error", err)
 	}
+	logger.Info("Database migrations completed")
 
-	// Initialize services
-	authService := auth.NewService(cfg.JWTSecret, cfg.JWTExpiration)
+	// Initialize game engine
 	gameEngine := game.NewEngine()
-	matchmaker := matchmaking.NewService(db)
+	logger.Info("Game engine initialized")
 
 	// Initialize WebSocket hub
 	wsHub := websocket.NewHub(gameEngine, logger)
 	go wsHub.Run()
+	logger.Info("WebSocket hub started")
 
-	// Initialize API router
-	router := api.NewRouter(db, authService, matchmaker, wsHub, logger)
-
-	// Set Gin mode
+	// Set up Gin router
 	if cfg.Environment == "production" {
 		gin.SetMode(gin.ReleaseMode)
 	}
 
+	router := gin.New()
+
+	// Global middleware
+	router.Use(gin.Recovery())
+	router.Use(LoggerMiddleware(logger))
+	router.Use(CORSMiddleware(cfg))
+
+	// Register routes
+	registerRoutes(router, wsHub, logger)
+
 	// Create HTTP server
-	srv := &http.Server{
-		Addr:         ":" + cfg.Port,
-		Handler:      router,
-		ReadTimeout:  15 * time.Second,
-		WriteTimeout: 15 * time.Second,
-		IdleTimeout:  60 * time.Second,
+	server := &http.Server{
+		Addr:    ":" + cfg.Port,
+		Handler: router,
 	}
+
+	// Start heartbeat ticker
+	go startHeartbeatTicker(wsHub, logger)
 
 	// Start server in a goroutine
 	go func() {
-		logger.Info("Starting Septica backend server", "port", cfg.Port)
-		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			logger.Fatal("Failed to start server", "error", err)
+		logger.Info("Server starting", "port", cfg.Port)
+		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			logger.Fatal("Server failed to start", "error", err)
 		}
 	}()
 
@@ -84,16 +85,142 @@ func main() {
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 
-	logger.Info("Shutting down server...")
+	logger.Info("Server shutting down...")
 
-	// Give outstanding requests a deadline for completion
+	// Give outstanding requests 30 seconds to complete
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	// Shutdown server
-	if err := srv.Shutdown(ctx); err != nil {
+	if err := server.Shutdown(ctx); err != nil {
 		logger.Fatal("Server forced to shutdown", "error", err)
 	}
 
 	logger.Info("Server exited")
+}
+
+// registerRoutes sets up all application routes
+func registerRoutes(router *gin.Engine, wsHub *websocket.Hub, logger *logger.Logger) {
+	// Health check endpoint
+	router.GET("/health", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{
+			"status":    "healthy",
+			"timestamp": time.Now(),
+			"version":   "1.0.0",
+			"service":   "septica-backend",
+		})
+	})
+
+	// API version group
+	v1 := router.Group("/api/v1")
+
+	// Register WebSocket routes
+	handlers.RegisterWebSocketRoutes(router, wsHub, logger)
+
+	// Game management endpoints
+	v1.GET("/games/:id", getGameHandler(logger))
+	v1.POST("/games", createGameHandler(logger))
+	v1.POST("/games/:id/join", joinGameHandler(logger))
+	v1.DELETE("/games/:id/leave", leaveGameHandler(logger))
+
+	// Server info endpoint
+	v1.GET("/info", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{
+			"connections": wsHub.GetConnectionCount(),
+			"active_games": wsHub.GetGameCount(),
+			"server_time": time.Now(),
+			"uptime":      time.Since(time.Now()), // This would be calculated from start time
+		})
+	})
+
+	logger.Info("Routes registered successfully")
+}
+
+// LoggerMiddleware provides request logging
+func LoggerMiddleware(logger *logger.Logger) gin.HandlerFunc {
+	return gin.LoggerWithFormatter(func(param gin.LogFormatterParams) string {
+		logger.Info("HTTP Request",
+			"method", param.Method,
+			"path", param.Path,
+			"status", param.StatusCode,
+			"latency", param.Latency,
+			"ip", param.ClientIP,
+			"user_agent", param.Request.UserAgent(),
+		)
+		return ""
+	})
+}
+
+// CORSMiddleware handles CORS headers
+func CORSMiddleware(cfg *config.Config) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		origin := c.Request.Header.Get("Origin")
+
+		// Check if origin is allowed
+		for _, allowedOrigin := range cfg.AllowedOrigins {
+			if origin == allowedOrigin {
+				c.Header("Access-Control-Allow-Origin", origin)
+				break
+			}
+		}
+
+		c.Header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		c.Header("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With")
+		c.Header("Access-Control-Allow-Credentials", "true")
+		c.Header("Access-Control-Max-Age", "86400")
+
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(http.StatusNoContent)
+			return
+		}
+
+		c.Next()
+	}
+}
+
+// startHeartbeatTicker sends periodic heartbeats to all connected clients
+func startHeartbeatTicker(hub *websocket.Hub, logger *logger.Logger) {
+	ticker := time.NewTicker(30 * time.Second)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ticker.C:
+			hub.SendHeartbeat()
+			logger.Debug("Heartbeat sent to all clients", "connections", hub.GetConnectionCount())
+		}
+	}
+}
+
+// Placeholder handlers for game management (to be implemented)
+
+func getGameHandler(logger *logger.Logger) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.JSON(http.StatusNotImplemented, gin.H{
+			"error": "Game management endpoints not implemented yet",
+		})
+	}
+}
+
+func createGameHandler(logger *logger.Logger) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.JSON(http.StatusNotImplemented, gin.H{
+			"error": "Game creation endpoint not implemented yet",
+		})
+	}
+}
+
+func joinGameHandler(logger *logger.Logger) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.JSON(http.StatusNotImplemented, gin.H{
+			"error": "Game join endpoint not implemented yet",
+		})
+	}
+}
+
+func leaveGameHandler(logger *logger.Logger) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.JSON(http.StatusNotImplemented, gin.H{
+			"error": "Game leave endpoint not implemented yet",
+		})
+	}
 }

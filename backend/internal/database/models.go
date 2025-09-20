@@ -46,7 +46,6 @@ type Player struct {
 	
 	// Relationships
 	User        User              `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"user,omitempty"`
-	Statistics  PlayerStatistics  `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"statistics,omitempty"`
 	GamesPlayer1 []Game           `gorm:"foreignKey:Player1ID" json:"-"`
 	GamesPlayer2 []Game           `gorm:"foreignKey:Player2ID" json:"-"`
 }
@@ -70,9 +69,6 @@ type PlayerStatistics struct {
 	EightsPlayed    int `gorm:"default:0" json:"eights_played"`
 	PointCardsWon   int `gorm:"default:0" json:"point_cards_won"`
 	TricksWon       int `gorm:"default:0" json:"tricks_won"`
-	
-	// Relationships
-	Player Player `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"player,omitempty"`
 }
 
 // Game represents a game session between two players

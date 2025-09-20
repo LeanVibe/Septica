@@ -1,21 +1,21 @@
 package database
 
 import (
-	"database/sql"
 	"fmt"
 	"time"
 
-	_ "github.com/lib/pq"
+	"septica-backend/pkg/logger"
+
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
+	gormlogger "gorm.io/gorm/logger"
 )
 
 // Initialize creates a new database connection
-func Initialize(databaseURL string) (*gorm.DB, error) {
+func Initialize(databaseURL string, logger *logger.Logger) (*gorm.DB, error) {
 	// Configure GORM
 	config := &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Info),
+		Logger: gormlogger.Default.LogMode(gormlogger.Info),
 		NowFunc: func() time.Time {
 			return time.Now().UTC()
 		},

@@ -1,6 +1,7 @@
 package logger
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"strings"
@@ -103,7 +104,7 @@ func formatValue(v interface{}) string {
 	case error:
 		return val.Error()
 	default:
-		return log.Printf("%v", val)[0:0] // This is a hack to use log.Printf formatting
+		return fmt.Sprintf("%v", val)
 	}
 }
 
