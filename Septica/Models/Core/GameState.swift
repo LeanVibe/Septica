@@ -30,9 +30,7 @@ class GameState: ObservableObject, Codable {
     @Published var trickNumber: Int = 1
     
     // MARK: - Game Configuration
-    // Non-published - rarely changes during game
-    // Note: Traditional Septica doesn't use target score - game ends when all cards are played
-    var targetScore: Int = 11  // Legacy field, not used in traditional Septica gameplay
+    // Romanian Septica configuration - games end when all cards are played, not by target score
     
     // MARK: - Players
     @Published var players: [Player] = []
@@ -66,6 +64,14 @@ class GameState: ObservableObject, Codable {
     @Published var lastMove: GameMove?
     @Published var gameResult: GameResult?
     @Published var isWaitingForPlayerInput: Bool = false
+    
+    // MARK: - Multiplayer Support
+    @Published var isMultiplayer: Bool = false
+    @Published var isOnlineGame: Bool = false
+    @Published var localPlayerId: UUID?
+    @Published var gameSessionId: String?
+    @Published var serverSequenceNumber: Int = 0
+    @Published var connectionStatus: ConnectionStatus = .disconnected
     
     // Performance optimization: Batch state updates
     private var _batchingUpdates = false
@@ -155,9 +161,12 @@ class GameState: ObservableObject, Codable {
         updateTimestamp()
     }
     
-    /// Deal initial hands to all players
+    /// Deal initial hands to both players (2-player Septica only)
     private func dealInitialHands() {
-        let hands = GameRules.dealInitialHands(from: &_deck, playerCount: players.count)
+        // Ensure exactly 2 players for Romanian Septica
+        assert(players.count == GameRules.maxPlayers, "Romanian Septica requires exactly 2 players")
+        
+        let hands = GameRules.dealInitialHands(from: &_deck)
         for (index, hand) in hands.enumerated() {
             players[index].hand = hand
         }
@@ -366,9 +375,10 @@ class GameState: ObservableObject, Codable {
     // MARK: - Codable Implementation
     
     enum CodingKeys: String, CodingKey {
-        case id, createdAt, updatedAt, phase, roundNumber, trickNumber, targetScore
+        case id, createdAt, updatedAt, phase, roundNumber, trickNumber
         case players, currentPlayerIndex, dealerIndex, deck, tableCards
         case trickHistory, lastMove, gameResult, isWaitingForPlayerInput
+        case isMultiplayer, isOnlineGame, localPlayerId, gameSessionId, serverSequenceNumber, connectionStatus
     }
     
     required init(from decoder: Decoder) throws {
@@ -381,7 +391,6 @@ class GameState: ObservableObject, Codable {
         phase = try container.decode(GamePhase.self, forKey: .phase)
         roundNumber = try container.decode(Int.self, forKey: .roundNumber)
         trickNumber = try container.decode(Int.self, forKey: .trickNumber)
-        targetScore = try container.decodeIfPresent(Int.self, forKey: .targetScore) ?? 11
         currentPlayerIndex = try container.decode(Int.self, forKey: .currentPlayerIndex)
         _dealerIndex = try container.decode(Int.self, forKey: .dealerIndex)
         _deck = try container.decode(Deck.self, forKey: .deck)
@@ -390,6 +399,14 @@ class GameState: ObservableObject, Codable {
         lastMove = try container.decodeIfPresent(GameMove.self, forKey: .lastMove)
         gameResult = try container.decodeIfPresent(GameResult.self, forKey: .gameResult)
         isWaitingForPlayerInput = try container.decode(Bool.self, forKey: .isWaitingForPlayerInput)
+        
+        // Decode multiplayer fields
+        isMultiplayer = try container.decodeIfPresent(Bool.self, forKey: .isMultiplayer) ?? false
+        isOnlineGame = try container.decodeIfPresent(Bool.self, forKey: .isOnlineGame) ?? false
+        localPlayerId = try container.decodeIfPresent(UUID.self, forKey: .localPlayerId)
+        gameSessionId = try container.decodeIfPresent(String.self, forKey: .gameSessionId)
+        serverSequenceNumber = try container.decodeIfPresent(Int.self, forKey: .serverSequenceNumber) ?? 0
+        connectionStatus = try container.decodeIfPresent(ConnectionStatus.self, forKey: .connectionStatus) ?? .disconnected
         
         // Handle players separately as they need special treatment
         let playersData = try container.decode([PlayerData].self, forKey: .players)
@@ -408,7 +425,6 @@ class GameState: ObservableObject, Codable {
         try container.encode(phase, forKey: .phase)
         try container.encode(roundNumber, forKey: .roundNumber)
         try container.encode(trickNumber, forKey: .trickNumber)
-        try container.encode(targetScore, forKey: .targetScore)
         try container.encode(currentPlayerIndex, forKey: .currentPlayerIndex)
         try container.encode(_dealerIndex, forKey: .dealerIndex)
         try container.encode(_deck, forKey: .deck)
@@ -417,6 +433,14 @@ class GameState: ObservableObject, Codable {
         try container.encodeIfPresent(lastMove, forKey: .lastMove)
         try container.encodeIfPresent(gameResult, forKey: .gameResult)
         try container.encode(isWaitingForPlayerInput, forKey: .isWaitingForPlayerInput)
+        
+        // Encode multiplayer fields
+        try container.encode(isMultiplayer, forKey: .isMultiplayer)
+        try container.encode(isOnlineGame, forKey: .isOnlineGame)
+        try container.encodeIfPresent(localPlayerId, forKey: .localPlayerId)
+        try container.encodeIfPresent(gameSessionId, forKey: .gameSessionId)
+        try container.encode(serverSequenceNumber, forKey: .serverSequenceNumber)
+        try container.encode(connectionStatus, forKey: .connectionStatus)
         
         // Convert players to codable data
         let playersData = players.map { PlayerData.from($0) }
@@ -563,6 +587,55 @@ struct PlayerGameStats {
     let tricksWon: Int
 }
 
+// MARK: - Multiplayer Types
+
+/// Connection status for online multiplayer games
+enum ConnectionStatus: String, CaseIterable, Codable {
+    case disconnected = "disconnected"
+    case connecting = "connecting"
+    case connected = "connected"
+    case reconnecting = "reconnecting"
+    case error = "error"
+}
+
 // MARK: - GameState Extensions
+
+extension GameState {
+    
+    /// Configure game for multiplayer mode
+    /// - Parameters:
+    ///   - localPlayerId: UUID of the local player
+    ///   - gameSessionId: Server-assigned game session ID
+    ///   - isOnline: Whether this is an online game (vs local multiplayer)
+    func configureForMultiplayer(localPlayerId: UUID, gameSessionId: String, isOnline: Bool = true) {
+        self.isMultiplayer = true
+        self.isOnlineGame = isOnline
+        self.localPlayerId = localPlayerId
+        self.gameSessionId = gameSessionId
+        self.serverSequenceNumber = 0
+        self.connectionStatus = isOnline ? .connecting : .connected
+    }
+    
+    /// Update server sequence number for synchronization
+    /// - Parameter sequenceNumber: New sequence number from server
+    func updateServerSequence(_ sequenceNumber: Int) {
+        self.serverSequenceNumber = sequenceNumber
+    }
+    
+    /// Check if it's the local player's turn
+    var isLocalPlayerTurn: Bool {
+        guard let localId = localPlayerId,
+              let currentId = currentPlayer?.id else { return false }
+        return currentId == localId
+    }
+    
+    /// Get the remote player (opponent)
+    var remotePlayer: Player? {
+        guard let localId = localPlayerId else { return nil }
+        return players.first { $0.id != localId }
+    }
+}
+
+// MARK: - GameState Extensions  
 // Note: GameState is not Codable due to ObservableObject complexity
 // Use GameSession for persistence instead
