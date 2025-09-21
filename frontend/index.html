@@ -14,6 +14,7 @@
     <link rel="manifest" href="./manifest.json">
     <link rel="stylesheet" href="./css/styles.css">
     <link rel="stylesheet" href="./css/modern-styles.css">
+    <link rel="stylesheet" href="./css/mobile-optimizations.css">
     
     <!-- Google Fonts for Professional Typography -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -33,8 +34,8 @@
     <link rel="preload" href="./js/websocket-client.js" as="script">
     <link rel="preload" href="./js/game-ui.js" as="script">
 </head>
-<body>
-    <div id="app">
+<body class="mobile-optimized">
+    <div id="app" class="safe-area-top safe-area-bottom">
         <!-- Header -->
         <header class="app-header">
             <h1>Septica Game Tester</h1>
@@ -223,6 +224,9 @@
                     <button id="runTestsBtn" class="btn btn-primary enhanced-btn">
                         🚀 Run Complete Test Suite
                     </button>
+                    <button id="runMobileTestsBtn" class="btn btn-primary enhanced-btn">
+                        📱 Mobile Performance Test
+                    </button>
                     <button id="clearTestResultsBtn" class="btn btn-secondary">
                         🗑️ Clear Results
                     </button>
@@ -296,6 +300,9 @@
     <!-- Scripts -->
     <script src="./js/dev-auth.js"></script>
     <script src="./js/performance-monitor.js"></script>
+    <script src="./js/mobile-lod-system.js"></script>
+    <script src="./js/mobile-touch-system.js"></script>
+    <script src="./js/mobile-performance-test.js"></script>
     <script src="./js/particle-effects.js"></script>
     <script src="./js/performance-dashboard.js"></script>
     <script src="./js/card-renderer-3d.js"></script>

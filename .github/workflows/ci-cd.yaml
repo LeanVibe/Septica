@@ -1,0 +1,429 @@
+name: Romanian Septica CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  release:
+    types: [ published ]
+
+env:
+  REGISTRY: ghcr.io
+  BACKEND_IMAGE_NAME: septica/backend
+  FRONTEND_IMAGE_NAME: septica/frontend
+  CLUSTER_NAME: romanian-septica-cluster
+  CLUSTER_ZONE: europe-central2-a
+
+jobs:
+  # Security and code quality checks
+  security-scan:
+    name: Security & Quality Scan
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.23'
+
+    - name: Run Go security check
+      run: |
+        cd backend
+        go install github.com/securecodewarrior/gosec/v2/cmd/gosec@latest
+        gosec ./...
+
+    - name: Run Go vulnerability check
+      run: |
+        cd backend
+        go install golang.org/x/vuln/cmd/govulncheck@latest
+        govulncheck ./...
+
+    - name: Dependency Review
+      uses: actions/dependency-review-action@v4
+      if: github.event_name == 'pull_request'
+
+  # Backend testing and build
+  backend-test-build:
+    name: Backend Test & Build
+    runs-on: ubuntu-latest
+    needs: security-scan
+    
+    services:
+      postgres:
+        image: postgres:14-alpine
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+          POSTGRES_DB: septica_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+          
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.23'
+
+    - name: Cache Go modules
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cache/go-build
+          ~/go/pkg/mod
+        key: ${{ runner.os }}-go-${{ hashFiles('backend/go.sum') }}
+        restore-keys: |
+          ${{ runner.os }}-go-
+
+    - name: Install dependencies
+      run: |
+        cd backend
+        go mod download
+        go mod verify
+
+    - name: Run tests with coverage
+      env:
+        DATABASE_URL: postgres://postgres:postgres@localhost:5432/septica_test?sslmode=disable
+        REDIS_URL: redis://localhost:6379
+        ENV: test
+      run: |
+        cd backend
+        go test -v -coverprofile=coverage.out -covermode=atomic ./...
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v4
+      with:
+        file: ./backend/coverage.out
+        flags: backend
+        name: backend-coverage
+
+    - name: Romanian Septica Rule Validation
+      env:
+        DATABASE_URL: postgres://postgres:postgres@localhost:5432/septica_test?sslmode=disable
+        REDIS_URL: redis://localhost:6379
+        ENV: test
+      run: |
+        cd backend
+        go test -v -run TestRomanianSepticaRules ./internal/game/...
+
+    - name: Performance Benchmarks
+      env:
+        DATABASE_URL: postgres://postgres:postgres@localhost:5432/septica_test?sslmode=disable
+        REDIS_URL: redis://localhost:6379
+        ENV: test
+      run: |
+        cd backend
+        go test -bench=. -benchmem ./...
+
+    - name: Build backend binary
+      run: |
+        cd backend
+        CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
+          -ldflags='-w -s -extldflags "-static"' \
+          -a -installsuffix cgo \
+          -o septica-server \
+          ./cmd/server/main.go
+
+    - name: Upload backend artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: backend-binary
+        path: backend/septica-server
+
+  # Frontend testing and build
+  frontend-test-build:
+    name: Frontend Test & Build
+    runs-on: ubuntu-latest
+    needs: security-scan
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+
+    - name: Cache Node modules
+      uses: actions/cache@v4
+      with:
+        path: |
+          frontend/node_modules
+          ~/.npm
+        key: ${{ runner.os }}-node-${{ hashFiles('frontend/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-node-
+
+    - name: Install dependencies
+      run: |
+        cd frontend
+        if [ -f "package.json" ]; then npm ci; fi
+
+    - name: PWA Validation
+      run: |
+        cd frontend
+        # Validate manifest.json
+        if [ -f "manifest.json" ]; then
+          echo " PWA manifest found"
+          cat manifest.json | jq empty # Validate JSON syntax
+        else
+          echo "L PWA manifest missing"
+          exit 1
+        fi
+        
+        # Validate service worker
+        if [ -f "sw.js" ]; then
+          echo " Service Worker found"
+        else
+          echo "L Service Worker missing"
+          exit 1
+        fi
+
+    - name: Performance Audit (Lighthouse)
+      run: |
+        cd frontend
+        npm install -g lighthouse
+        node serve.js &
+        sleep 5
+        lighthouse http://localhost:8001 --output json --output-path lighthouse-report.json
+        kill %1
+
+    - name: Upload frontend artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: frontend-files
+        path: frontend/
+
+  # Build and push Docker images
+  docker-build-push:
+    name: Docker Build & Push
+    runs-on: ubuntu-latest
+    needs: [backend-test-build, frontend-test-build]
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Log in to Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Download artifacts
+      uses: actions/download-artifact@v4
+
+    - name: Extract metadata (tags, labels)
+      id: meta-backend
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.REGISTRY }}/${{ env.BACKEND_IMAGE_NAME }}
+        tags: |
+          type=ref,event=branch
+          type=ref,event=pr
+          type=sha,prefix={{branch}}-
+          type=raw,value=latest,enable={{is_default_branch}}
+
+    - name: Extract metadata for frontend
+      id: meta-frontend
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.REGISTRY }}/${{ env.FRONTEND_IMAGE_NAME }}
+        tags: |
+          type=ref,event=branch
+          type=ref,event=pr
+          type=sha,prefix={{branch}}-
+          type=raw,value=latest,enable={{is_default_branch}}
+
+    - name: Build and push backend image
+      uses: docker/build-push-action@v5
+      with:
+        context: ./backend
+        platforms: linux/amd64,linux/arm64
+        push: true
+        tags: ${{ steps.meta-backend.outputs.tags }}
+        labels: ${{ steps.meta-backend.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+    - name: Build and push frontend image
+      uses: docker/build-push-action@v5
+      with:
+        context: ./frontend
+        platforms: linux/amd64,linux/arm64
+        push: true
+        tags: ${{ steps.meta-frontend.outputs.tags }}
+        labels: ${{ steps.meta-frontend.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+  # Deploy to staging environment
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: docker-build-push
+    if: github.ref == 'refs/heads/develop'
+    environment: staging
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up kubectl
+      uses: azure/setup-kubectl@v3
+      with:
+        version: 'v1.28.0'
+
+    - name: Configure kubectl for staging
+      run: |
+        echo "${{ secrets.KUBE_CONFIG_STAGING }}" | base64 -d > kubeconfig
+        export KUBECONFIG=kubeconfig
+
+    - name: Deploy to staging namespace
+      run: |
+        export KUBECONFIG=kubeconfig
+        kubectl apply -f k8s/base/namespace.yaml
+        kubectl apply -f k8s/base/ -n romanian-septica-staging
+        kubectl set image deployment/septica-backend septica-backend=${{ env.REGISTRY }}/${{ env.BACKEND_IMAGE_NAME }}:develop -n romanian-septica-staging
+        kubectl set image deployment/septica-frontend septica-frontend=${{ env.REGISTRY }}/${{ env.FRONTEND_IMAGE_NAME }}:develop -n romanian-septica-staging
+        kubectl rollout status deployment/septica-backend -n romanian-septica-staging
+        kubectl rollout status deployment/septica-frontend -n romanian-septica-staging
+
+    - name: Run Romanian Septica E2E Tests
+      run: |
+        export KUBECONFIG=kubeconfig
+        STAGING_URL=$(kubectl get ingress septica-ingress -n romanian-septica-staging -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+        node test-romanian-septica-comprehensive.js --url="https://$STAGING_URL"
+
+  # Deploy to production environment
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: docker-build-push
+    if: github.ref == 'refs/heads/main'
+    environment: production
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up kubectl
+      uses: azure/setup-kubectl@v3
+      with:
+        version: 'v1.28.0'
+
+    - name: Configure kubectl for production
+      run: |
+        echo "${{ secrets.KUBE_CONFIG_PRODUCTION }}" | base64 -d > kubeconfig
+        export KUBECONFIG=kubeconfig
+
+    - name: Pre-deployment health check
+      run: |
+        export KUBECONFIG=kubeconfig
+        kubectl get pods -n romanian-septica
+        kubectl get services -n romanian-septica
+
+    - name: Deploy to production
+      run: |
+        export KUBECONFIG=kubeconfig
+        kubectl apply -f k8s/base/namespace.yaml
+        kubectl apply -f k8s/base/ -n romanian-septica
+        kubectl apply -f k8s/ingress/ -n romanian-septica
+        kubectl set image deployment/septica-backend septica-backend=${{ env.REGISTRY }}/${{ env.BACKEND_IMAGE_NAME }}:latest -n romanian-septica
+        kubectl set image deployment/septica-frontend septica-frontend=${{ env.REGISTRY }}/${{ env.FRONTEND_IMAGE_NAME }}:latest -n romanian-septica
+
+    - name: Wait for deployment rollout
+      run: |
+        export KUBECONFIG=kubeconfig
+        kubectl rollout status deployment/septica-backend -n romanian-septica --timeout=600s
+        kubectl rollout status deployment/septica-frontend -n romanian-septica --timeout=600s
+
+    - name: Post-deployment validation
+      run: |
+        export KUBECONFIG=kubeconfig
+        # Check if all pods are running
+        kubectl get pods -n romanian-septica | grep Running
+        
+        # Check health endpoints
+        kubectl run health-check --image=curlimages/curl --rm -i --restart=Never -n romanian-septica -- \
+          curl -f http://septica-backend:8080/health
+        
+        # Run Romanian Septica gameplay validation
+        node test-romanian-septica-comprehensive.js --url="https://septica.ro"
+
+    - name: Notify deployment success
+      if: success()
+      run: |
+        echo "<‰ Romanian Septica successfully deployed to production!"
+        echo "< Available at: https://septica.ro"
+        echo "<® Romanian Septica gameplay validated"
+
+  # Database migration (production only)
+  database-migration:
+    name: Database Migration
+    runs-on: ubuntu-latest
+    needs: deploy-production
+    if: github.ref == 'refs/heads/main'
+    environment: production
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up kubectl
+      uses: azure/setup-kubectl@v3
+      with:
+        version: 'v1.28.0'
+
+    - name: Configure kubectl
+      run: |
+        echo "${{ secrets.KUBE_CONFIG_PRODUCTION }}" | base64 -d > kubeconfig
+        export KUBECONFIG=kubeconfig
+
+    - name: Run database migrations
+      run: |
+        export KUBECONFIG=kubeconfig
+        kubectl run migration-job --image=${{ env.REGISTRY }}/${{ env.BACKEND_IMAGE_NAME }}:latest \
+          --rm -i --restart=Never -n romanian-septica \
+          --env="DATABASE_URL=${{ secrets.DATABASE_URL }}" \
+          -- ./septica-server --migrate
+
+    - name: Backup database post-migration
+      run: |
+        export KUBECONFIG=kubeconfig
+        kubectl run db-backup --image=postgres:14-alpine \
+          --rm -i --restart=Never -n romanian-septica \
+          --env="PGPASSWORD=${{ secrets.DB_PASSWORD }}" \
+          -- pg_dump -h postgres -U septica septica > backup-post-migration-$(date +%Y%m%d-%H%M%S).sql

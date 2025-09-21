@@ -50,6 +50,9 @@ class SepticaApp {
             // Initialize PWA features
             this.initializePWAFeatures();
             
+            // Initialize mobile performance testing
+            this.initializeMobilePerformanceTest();
+            
             // Setup error handling
             this.setupErrorHandling();
             
@@ -481,6 +484,129 @@ Note: Shortcuts work when not typing in input fields.
         if (this.gameUI) {
             this.gameUI.log('Debug info exported');
         }
+    }
+    
+    /**
+     * Initialize mobile performance testing
+     */
+    initializeMobilePerformanceTest() {
+        // Initialize mobile performance test if available
+        if (typeof MobilePerformanceTest !== 'undefined') {
+            this.mobilePerformanceTest = new MobilePerformanceTest();
+            
+            // Set up mobile test button
+            const mobileTestBtn = document.getElementById('runMobileTestsBtn');
+            if (mobileTestBtn) {
+                mobileTestBtn.addEventListener('click', () => this.runMobilePerformanceTest());
+            }
+            
+            console.log('Mobile Performance Test initialized');
+        } else {
+            console.warn('MobilePerformanceTest not available');
+        }
+    }
+    
+    /**
+     * Run mobile performance test
+     */
+    async runMobilePerformanceTest() {
+        if (!this.mobilePerformanceTest) {
+            console.error('Mobile performance test not initialized');
+            return;
+        }
+        
+        try {
+            const testResults = document.getElementById('testResults');
+            if (testResults) {
+                testResults.innerHTML = '<div class="test-running">🚀 Running Mobile Performance Tests...</div>';
+            }
+            
+            if (this.gameUI) {
+                this.gameUI.log('🚀 Starting Mobile Performance Test Suite...');
+            }
+            
+            const report = await this.mobilePerformanceTest.runPerformanceTests();
+            
+            // Display results
+            this.displayMobileTestResults(report);
+            
+            if (this.gameUI) {
+                this.gameUI.log(`✅ Mobile Performance Tests completed: ${report.summary.performanceScore}% score`);
+            }
+            
+        } catch (error) {
+            console.error('Mobile performance test failed:', error);
+            
+            if (this.gameUI) {
+                this.gameUI.logError('❌ Mobile Performance Test failed', error);
+            }
+            
+            const testResults = document.getElementById('testResults');
+            if (testResults) {
+                testResults.innerHTML = `<div class="test-error">❌ Test failed: ${error.message}</div>`;
+            }
+        }
+    }
+    
+    /**
+     * Display mobile test results
+     */
+    displayMobileTestResults(report) {
+        const testResults = document.getElementById('testResults');
+        if (!testResults) return;
+        
+        const { summary, testResults: results, recommendations } = report;
+        
+        const html = `
+            <div class="mobile-test-results">
+                <div class="test-summary ${summary.performanceScore >= 80 ? 'success' : summary.performanceScore >= 60 ? 'warning' : 'error'}">
+                    <h3>📱 Mobile Performance Report</h3>
+                    <div class="score-display">
+                        <div class="score-circle">
+                            <span class="score">${summary.performanceScore}%</span>
+                        </div>
+                        <div class="score-details">
+                            <p><strong>Device:</strong> ${summary.device.platform} ${summary.device.browser}</p>
+                            <p><strong>Tests:</strong> ${summary.passedTests}/${summary.totalTests} passed</p>
+                            <p><strong>Ready for Production:</strong> ${report.ready_for_production ? '✅ Yes' : '❌ No'}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="test-details">
+                    <h4>Test Results</h4>
+                    ${results.map(test => `
+                        <div class="test-item ${test.passed ? 'passed' : 'failed'}">
+                            <span class="test-icon">${test.passed ? '✅' : '❌'}</span>
+                            <span class="test-name">${test.testName}</span>
+                            <span class="test-details">${test.details}</span>
+                            <span class="test-time">${test.executionTime}ms</span>
+                        </div>
+                    `).join('')}
+                </div>
+                
+                <div class="recommendations">
+                    <h4>Performance Recommendations</h4>
+                    <ul>
+                        ${recommendations.map(rec => `<li>${rec}</li>`).join('')}
+                    </ul>
+                </div>
+                
+                <div class="device-info">
+                    <h4>Device Information</h4>
+                    <ul>
+                        <li><strong>Platform:</strong> ${summary.device.platform}</li>
+                        <li><strong>Browser:</strong> ${summary.device.browser}</li>
+                        <li><strong>Viewport:</strong> ${summary.device.viewport.width}x${summary.device.viewport.height}</li>
+                        <li><strong>Pixel Ratio:</strong> ${summary.device.pixelRatio}</li>
+                        <li><strong>Memory:</strong> ${summary.device.memory}GB</li>
+                        <li><strong>CPU Cores:</strong> ${summary.device.cores}</li>
+                    </ul>
+                </div>
+            </div>
+        `;
+        
+        testResults.innerHTML = html;
     }
 }
 

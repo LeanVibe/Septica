@@ -14,6 +14,12 @@ class Card3DRenderer {
             onPerformanceAlert: (type, data) => this.handlePerformanceAlert(type, data)
         });
         
+        // Initialize Mobile LOD System (if available)
+        this.mobileLODSystem = null;
+        if (typeof MobileLODSystem !== 'undefined') {
+            this.mobileLODSystem = new MobileLODSystem(null, this.performanceMonitor);
+        }
+        
         // Default options with mobile optimizations
         this.options = {
             width: options.width || 800,
@@ -30,12 +36,19 @@ class Card3DRenderer {
             ...options
         };
         
-        // Adaptive quality settings
-        this.currentQuality = this.performanceMonitor.deviceCapabilities.tier;
-        this.qualitySettings = this.performanceMonitor.getQualitySettings(this.currentQuality);
-        
-        // Apply quality settings to options
-        this.applyQualitySettings();
+        // Apply LOD settings if available
+        if (this.mobileLODSystem) {
+            const lodSettings = this.mobileLODSystem.getLODSettings();
+            this.options.pixelRatio = lodSettings.pixelRatio;
+            this.options.enableShadows = lodSettings.enableShadows;
+            this.options.enableAntialiasing = lodSettings.enableAntialiasing;
+            this.options.shadowMapSize = lodSettings.shadowMapSize;
+        } else {
+            // Fallback to performance monitor settings
+            this.currentQuality = this.performanceMonitor.deviceCapabilities.tier;
+            this.qualitySettings = this.performanceMonitor.getQualitySettings(this.currentQuality);
+            this.applyQualitySettings();
+        }
         
         this.scene = null;
         this.camera = null;
@@ -48,6 +61,7 @@ class Card3DRenderer {
         // Performance tracking
         this.frameCount = 0;
         this.lastTime = performance.now();
+        this.currentFPS = 0;
         this.fpsTarget = this.options.targetFPS;
         this.frameTimeThreshold = 1000 / this.fpsTarget;
         
@@ -55,16 +69,17 @@ class Card3DRenderer {
         this.isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
         this.isLowEndDevice = this.performanceMonitor.isLowEndDevice;
         
-        // Initialize renderer with optimizations
+        // Initialize systems
         this.initializeRenderer();
         this.createLighting();
         this.createTable();
         this.setupEventListeners();
         this.setupMobileOptimizations();
         this.initializeParticleEffects();
+        this.initializeMobileTouchSystem();
         this.startRenderLoop();
         
-        console.log(`3D Renderer initialized - Quality: ${this.currentQuality}, Mobile: ${this.isMobile}, Low-end: ${this.isLowEndDevice}`);
+        console.log(`3D Renderer initialized - Quality: ${this.currentQuality || 'LOD'}, Mobile: ${this.isMobile}, Low-end: ${this.isLowEndDevice}`);
     }
     
     /**
@@ -109,6 +124,88 @@ class Card3DRenderer {
         if ('ontouchstart' in window) {
             this.setupTouchControls();
         }
+    }
+    
+    /**
+     * Initialize mobile touch system
+     */
+    initializeMobileTouchSystem() {
+        if (typeof MobileTouchSystem !== 'undefined' && this.isMobile) {
+            this.mobileTouchSystem = new MobileTouchSystem(this.container, this);
+            
+            // Set up touch event listeners
+            this.mobileTouchSystem.on('cardSelected', (data) => {
+                this.handleCardSelected(data.detail.card, data.detail.position);
+            });
+            
+            this.mobileTouchSystem.on('tap', (touchData) => {
+                this.handleMobileTap(touchData);
+            });
+            
+            this.mobileTouchSystem.on('longpress', (touchData) => {
+                this.handleMobileLongPress(touchData);
+            });
+            
+            console.log('Mobile Touch System initialized');
+        }
+    }
+    
+    /**
+     * Handle mobile card selection
+     */
+    handleCardSelected(cardData, position) {
+        console.log('Mobile card selected:', cardData);
+        
+        // Emit event for game logic
+        const event = new CustomEvent('cardTapped', {
+            detail: {
+                suit: cardData.suit,
+                value: cardData.value,
+                mobile: true
+            }
+        });
+        this.container.dispatchEvent(event);
+    }
+    
+    /**
+     * Handle mobile tap
+     */
+    handleMobileTap(touchData) {
+        // Add touch ripple effect
+        this.addTouchRipple(touchData.startX, touchData.startY);
+    }
+    
+    /**
+     * Handle mobile long press
+     */
+    handleMobileLongPress(touchData) {
+        // Show card details or context menu
+        console.log('Long press detected at:', touchData.startX, touchData.startY);
+    }
+    
+    /**
+     * Add touch ripple effect
+     */
+    addTouchRipple(x, y) {
+        const ripple = document.createElement('div');
+        ripple.className = 'touch-ripple';
+        
+        const rect = this.container.getBoundingClientRect();
+        const size = 60;
+        
+        ripple.style.left = (x - rect.left - size/2) + 'px';
+        ripple.style.top = (y - rect.top - size/2) + 'px';
+        ripple.style.width = size + 'px';
+        ripple.style.height = size + 'px';
+        
+        this.container.appendChild(ripple);
+        
+        // Remove after animation
+        setTimeout(() => {
+            if (ripple.parentNode) {
+                ripple.parentNode.removeChild(ripple);
+            }
+        }, 600);
     }
     
     /**
@@ -892,7 +989,14 @@ class Card3DRenderer {
             // Update FPS every 500ms
             if (fpsAccumulator >= 500) {
                 const fps = Math.round((framesSinceLastFPSUpdate * 1000) / fpsAccumulator);
+                this.currentFPS = fps;
                 this.updateFPSDisplay(fps);
+                
+                // Update LOD system with current FPS
+                if (this.mobileLODSystem) {
+                    this.mobileLODSystem.updateLOD(fps);
+                }
+                
                 fpsAccumulator = 0;
                 framesSinceLastFPSUpdate = 0;
             }

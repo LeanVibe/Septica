@@ -1,20 +1,61 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: septica
+  name: romanian-septica
   labels:
-    name: septica
     app.kubernetes.io/name: romanian-septica
-    app.kubernetes.io/version: "1.0.0"
     app.kubernetes.io/component: namespace
+    app.kubernetes.io/part-of: septica-game
+    app.kubernetes.io/version: "1.0.0"
+    environment: production
+    team: game-development
+    region: eu-central-1
 ---
+# ResourceQuota for production limits
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: septica-quota
+  namespace: romanian-septica
+spec:
+  hard:
+    requests.cpu: "8"
+    requests.memory: 16Gi
+    limits.cpu: "16"
+    limits.memory: 32Gi
+    persistentvolumeclaims: "10"
+    pods: "50"
+    services: "20"
+---
+# LimitRange for container resource limits
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: septica-limits
+  namespace: romanian-septica
+spec:
+  limits:
+  - default:
+      cpu: "1"
+      memory: "1Gi"
+    defaultRequest:
+      cpu: "100m"
+      memory: "128Mi"
+    type: Container
+  - default:
+      storage: "10Gi"
+    type: PersistentVolumeClaim
+---
+# Staging namespace
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: septica-staging
+  name: romanian-septica-staging
   labels:
-    name: septica-staging
     app.kubernetes.io/name: romanian-septica
-    app.kubernetes.io/version: "1.0.0"
     app.kubernetes.io/component: namespace
+    app.kubernetes.io/part-of: septica-game
+    app.kubernetes.io/version: "1.0.0"
     environment: staging
+    team: game-development
+    region: eu-central-1
