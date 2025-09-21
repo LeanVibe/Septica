@@ -1,0 +1,207 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: septica-ingress
+  namespace: septica
+  labels:
+    app.kubernetes.io/name: romanian-septica
+    app.kubernetes.io/component: ingress
+  annotations:
+    # NGINX Ingress Controller specific annotations
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    
+    # WebSocket support for multiplayer
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+    nginx.ingress.kubernetes.io/websocket-services: "septica-backend"
+    
+    # Rate limiting for DDoS protection
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+    nginx.ingress.kubernetes.io/rate-limit-window: "1m"
+    
+    # CORS for Romanian Septica PWA
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "https://septica.ro,https://www.septica.ro"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, OPTIONS"
+    nginx.ingress.kubernetes.io/cors-allow-headers: "DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization"
+    
+    # Security headers
+    nginx.ingress.kubernetes.io/server-snippet: |
+      add_header X-Frame-Options DENY always;
+      add_header X-Content-Type-Options nosniff always;
+      add_header X-XSS-Protection "1; mode=block" always;
+      add_header Referrer-Policy strict-origin-when-cross-origin always;
+      add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+    
+    # Certificate management (cert-manager)
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    
+    # Cache control for static assets
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2)$ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+      }
+      location ~* \.(html|json|webmanifest)$ {
+        expires -1;
+        add_header Cache-Control "no-cache, no-store, must-revalidate";
+      }
+      location = /sw.js {
+        expires -1;
+        add_header Cache-Control "no-cache, no-store, must-revalidate";
+      }
+
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - septica.ro
+    - www.septica.ro
+    secretName: septica-tls
+  rules:
+  - host: septica.ro
+    http:
+      paths:
+      # WebSocket endpoints for real-time multiplayer
+      - path: /ws
+        pathType: Prefix
+        backend:
+          service:
+            name: septica-backend
+            port:
+              number: 8080
+      # API endpoints for game logic
+      - path: /api
+        pathType: Prefix
+        backend:
+          service:
+            name: septica-backend
+            port:
+              number: 8080
+      # Health check endpoint
+      - path: /health
+        pathType: Exact
+        backend:
+          service:
+            name: septica-backend
+            port:
+              number: 8080
+      # Metrics endpoint (restricted access)
+      - path: /metrics
+        pathType: Exact
+        backend:
+          service:
+            name: septica-backend
+            port:
+              number: 8080
+      # Static frontend assets (PWA)
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: septica-frontend
+            port:
+              number: 80
+  - host: www.septica.ro
+    http:
+      paths:
+      # WebSocket endpoints for real-time multiplayer
+      - path: /ws
+        pathType: Prefix
+        backend:
+          service:
+            name: septica-backend
+            port:
+              number: 8080
+      # API endpoints for game logic
+      - path: /api
+        pathType: Prefix
+        backend:
+          service:
+            name: septica-backend
+            port:
+              number: 8080
+      # Health check endpoint
+      - path: /health
+        pathType: Exact
+        backend:
+          service:
+            name: septica-backend
+            port:
+              number: 8080
+      # Static frontend assets (PWA)
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: septica-frontend
+            port:
+              number: 80
+
+---
+# Network Policies for security
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: septica-network-policy
+  namespace: septica
+  labels:
+    app.kubernetes.io/name: romanian-septica
+    app.kubernetes.io/component: security
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  # Allow ingress traffic from ingress controller
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: ingress-nginx
+    ports:
+    - protocol: TCP
+      port: 80
+    - protocol: TCP
+      port: 8080
+  # Allow internal communication between services
+  - from:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/name: romanian-septica
+    ports:
+    - protocol: TCP
+      port: 80
+    - protocol: TCP
+      port: 8080
+    - protocol: TCP
+      port: 5432
+    - protocol: TCP
+      port: 6379
+  egress:
+  # Allow DNS resolution
+  - to: []
+    ports:
+    - protocol: UDP
+      port: 53
+  # Allow internal service communication
+  - to:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/name: romanian-septica
+    ports:
+    - protocol: TCP
+      port: 80
+    - protocol: TCP
+      port: 8080
+    - protocol: TCP
+      port: 5432
+    - protocol: TCP
+      port: 6379
+  # Allow HTTPS outbound for external APIs (if needed)
+  - to: []
+    ports:
+    - protocol: TCP
+      port: 443

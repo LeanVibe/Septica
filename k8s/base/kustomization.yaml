@@ -1,0 +1,29 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+metadata:
+  name: romanian-septica-base
+  annotations:
+    config.kubernetes.io/local-config: "true"
+
+resources:
+  - namespace.yaml
+  - configmap.yaml
+  - secrets.yaml
+  - postgres.yaml
+  - redis.yaml
+  - backend.yaml
+  - frontend.yaml
+  - ingress.yaml
+
+commonLabels:
+  app.kubernetes.io/name: romanian-septica
+  app.kubernetes.io/managed-by: kustomize
+
+namespace: septica
+
+images:
+  - name: septica/backend
+    newTag: latest
+  - name: septica/frontend
+    newTag: latest
