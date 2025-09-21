@@ -127,7 +127,7 @@ struct PlayCardPayload: Codable {
     
     init(card: Card) {
         self.suit = card.suit.rawValue
-        self.value = card.value.rawValue
+        self.value = card.value
         self.id = card.id.uuidString
     }
 }
@@ -188,18 +188,17 @@ struct NetworkCard: Codable {
     
     /// Convert to domain Card model
     func toCard() -> Card? {
-        guard let suitEnum = Card.Suit(rawValue: suit),
-              let valueEnum = Card.Value(rawValue: value),
-              let cardId = UUID(uuidString: id) else {
+        guard let suitEnum = Suit(rawValue: suit),
+              value >= 7 && value <= 14 else {
             return nil
         }
-        return Card(suit: suitEnum, value: valueEnum, id: cardId)
+        return Card(suit: suitEnum, value: value)
     }
     
     /// Create from domain Card model
     init(from card: Card) {
         self.suit = card.suit.rawValue
-        self.value = card.value.rawValue
+        self.value = card.value
         self.id = card.id.uuidString
     }
 }

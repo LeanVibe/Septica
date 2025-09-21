@@ -8,6 +8,7 @@
 
 import Foundation
 import Combine
+import OSLog
 
 /// Main view model for the Septica game interface
 @MainActor
@@ -25,6 +26,24 @@ class GameViewModel: ObservableObject {
     
     var cancellables = Set<AnyCancellable>()
     private let aiMoveDelay: TimeInterval = 1.5
+    private let logger = Logger(subsystem: "com.septica.app", category: "GameViewModel")
+    
+    // MARK: - Multiplayer Properties
+    
+    /// Network manager for WebSocket connections
+    private let networkManager: NetworkManager
+    
+    /// Multiplayer service for coordinating online games
+    private let multiplayerService: MultiplayerService
+    
+    /// Whether this is an online multiplayer game
+    @Published var isOnlineGame: Bool = false
+    
+    /// Current multiplayer session state
+    @Published var multiplayerSessionState: MultiplayerSessionState = .disconnected
+    
+    /// Connection quality indicator
+    @Published var connectionQuality: ConnectionQuality = .unknown
     
     // Performance monitoring for 60 FPS targets
     @Published var performanceMonitor = PerformanceMonitor()
@@ -95,20 +114,41 @@ class GameViewModel: ObservableObject {
     
     // MARK: - Initialization
     
-    init(gameState: GameState) {
+    init(gameState: GameState, networkManager: NetworkManager? = nil, isOnline: Bool = false) {
         self.gameState = gameState
+        self.isOnlineGame = isOnline
+        
+        // Initialize networking components
+        self.networkManager = networkManager ?? NetworkManager()
+        self.multiplayerService = MultiplayerService(networkManager: self.networkManager)
+        
         setupBindings()
         setupPerformanceMonitoring()
+        
+        if isOnline {
+            setupMultiplayerBindings()
+        }
+        
+        logger.info("GameViewModel initialized (online: \(isOnline))")
     }
     
     convenience init() {
         let gameState = GameState()
-        self.init(gameState: gameState)
+        self.init(gameState: gameState, isOnline: false)
+    }
+    
+    convenience init(onlineGame gameState: GameState) {
+        self.init(gameState: gameState, isOnline: true)
     }
     
     deinit {
         Task { @MainActor in
             await self.performanceMonitor.stopMonitoring()
+        }
+        
+        // Clean up multiplayer service
+        if isOnlineGame {
+            multiplayerService.stopService()
         }
     }
     
@@ -151,6 +191,55 @@ class GameViewModel: ObservableObject {
         }
     }
     
+    /// Set up reactive bindings for multiplayer events
+    private func setupMultiplayerBindings() {
+        logger.info("Setting up multiplayer bindings")
+        
+        // Start multiplayer service with game state
+        multiplayerService.startService(with: gameState)
+        
+        // Observe multiplayer session state changes
+        multiplayerService.$sessionState
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] state in
+                self?.multiplayerSessionState = state
+                self?.handleMultiplayerSessionStateChange(state)
+            }
+            .store(in: &cancellables)
+        
+        // Observe connection quality changes
+        multiplayerService.$connectionQuality
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] quality in
+                self?.connectionQuality = quality
+            }
+            .store(in: &cancellables)
+        
+        // Observe game events from multiplayer service
+        multiplayerService.gameEventPublisher
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] event in
+                self?.handleMultiplayerGameEvent(event)
+            }
+            .store(in: &cancellables)
+        
+        // Observe session events from multiplayer service
+        multiplayerService.sessionEventPublisher
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] event in
+                self?.handleMultiplayerSessionEvent(event)
+            }
+            .store(in: &cancellables)
+        
+        // Observe multiplayer errors
+        multiplayerService.errorPublisher
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] error in
+                self?.handleMultiplayerError(error)
+            }
+            .store(in: &cancellables)
+    }
+    
     // MARK: - Game Management
     
     /// Start a new game
@@ -189,30 +278,42 @@ class GameViewModel: ObservableObject {
         isProcessingMove = true
         statusMessage = "Playing \(card.displayName)..."
         
-        let result = gameState.playCard(card, by: humanPlayer.id)
-        
-        switch result {
-        case .success:
-            statusMessage = "\(humanPlayer.name) played \(card.displayName)"
+        // Handle online vs offline gameplay
+        if isOnlineGame {
+            // Send move to server via multiplayer service
+            multiplayerService.playCard(card)
             
             // Track achievements for the played card
             trackCardPlayAchievements(card: card, player: humanPlayer)
             
-            // Check for AI move after a delay
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                self.checkForAIMove()
-            }
+        } else {
+            // Local offline gameplay
+            let result = gameState.playCard(card, by: humanPlayer.id)
             
-        case .failure(let error):
-            handlePlayError(error)
+            switch result {
+            case .success:
+                statusMessage = "\(humanPlayer.name) played \(card.displayName)"
+                
+                // Track achievements for the played card
+                trackCardPlayAchievements(card: card, player: humanPlayer)
+                
+                // Check for AI move after a delay
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    self.checkForAIMove()
+                }
+                
+            case .failure(let error):
+                handlePlayError(error)
+                isProcessingMove = false
+                return
+            }
         }
-        
-        isProcessingMove = false
         
         // Clear status after delay
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
             if self.statusMessage?.contains("played") == true {
                 self.statusMessage = nil
+                self.isProcessingMove = false
             }
         }
     }
@@ -231,6 +332,9 @@ class GameViewModel: ObservableObject {
     
     /// Check if it's an AI player's turn and make their move
     private func checkForAIMove() {
+        // Skip AI moves in online games - server handles this
+        guard !isOnlineGame else { return }
+        
         guard let currentPlayer = currentPlayer,
               !currentPlayer.isHuman,
               gameState.phase == .playing else { return }
@@ -460,6 +564,221 @@ class GameViewModel: ObservableObject {
         showingAchievementUnlock = false
         unlockedAchievement = nil
     }
+    
+    // MARK: - Multiplayer Methods
+    
+    /// Start searching for an online game
+    func findOnlineGame(mode: GameMode = .casual) {
+        guard isOnlineGame else {
+            logger.warning("Cannot find online game - not in online mode")
+            return
+        }
+        
+        logger.info("Starting search for online game")
+        statusMessage = "Searching for opponent..."
+        multiplayerService.findGame(mode: mode)
+    }
+    
+    /// Leave the current online game
+    func leaveOnlineGame() {
+        guard isOnlineGame,
+              let currentSession = multiplayerService.currentGameSession else {
+            logger.warning("Cannot leave game - no active session")
+            return
+        }
+        
+        logger.info("Leaving online game")
+        statusMessage = "Leaving game..."
+        multiplayerService.leaveGame(currentSession.gameId)
+    }
+    
+    /// Get connection statistics for display
+    func getConnectionStats() -> ConnectionStats? {
+        guard isOnlineGame else { return nil }
+        return multiplayerService.getConnectionStats()
+    }
+    
+    // MARK: - Multiplayer Event Handlers
+    
+    private func handleMultiplayerSessionStateChange(_ state: MultiplayerSessionState) {
+        logger.info("Multiplayer session state changed: \(state)")
+        
+        switch state {
+        case .disconnected:
+            statusMessage = "Disconnected from server"
+        case .connected:
+            statusMessage = "Connected to server"
+        case .searchingForGame:
+            statusMessage = "Searching for opponent..."
+        case .inGame:
+            statusMessage = "Game in progress"
+        case .reconnecting:
+            statusMessage = "Reconnecting..."
+        }
+    }
+    
+    private func handleMultiplayerGameEvent(_ event: MultiplayerGameEvent) {
+        logger.debug("Handling multiplayer game event: \(String(describing: event))")
+        
+        switch event {
+        case .gameStateUpdated(let serverGameState):
+            handleServerGameStateUpdate(serverGameState)
+            
+        case .moveResult(let moveResult):
+            handleServerMoveResult(moveResult)
+            
+        case .playerJoined(let playerJoined):
+            statusMessage = "Player \(playerJoined.username ?? "Unknown") joined"
+            
+        case .playerLeft(let playerLeft):
+            statusMessage = "Player left the game"
+            
+        case .gameEnded(let gameEnd):
+            handleGameEnd(gameEnd)
+            
+        case .gameReady:
+            statusMessage = "Game is ready!"
+            
+        case .trickCompleted:
+            statusMessage = "Trick completed"
+            
+        case .turnChanged(let playerId, let isLocalPlayer):
+            if isLocalPlayer {
+                statusMessage = "Your turn"
+                isWaitingForPlayerInput = true
+            } else {
+                statusMessage = "Opponent's turn"
+                isWaitingForPlayerInput = false
+            }
+            
+        case .chatMessageReceived(let from, let message):
+            // Handle chat message (could show in UI)
+            logger.info("Chat message from \(from): \(message)")
+            
+        case .cardPlayAttempted(let card):
+            logger.debug("Card play attempted: \(card.displayName)")
+        }
+    }
+    
+    private func handleMultiplayerSessionEvent(_ event: MultiplayerSessionEvent) {
+        logger.info("Handling multiplayer session event: \(String(describing: event))")
+        
+        switch event {
+        case .connected:
+            statusMessage = "Connected to server"
+            
+        case .disconnected:
+            statusMessage = "Disconnected from server"
+            
+        case .reconnecting:
+            statusMessage = "Reconnecting..."
+            
+        case .searchingForGame:
+            statusMessage = "Searching for opponent..."
+            
+        case .gameStarted(let session):
+            statusMessage = "Game started!"
+            logger.info("Game started with session: \(session.gameId)")
+            
+        case .leftGame(let gameId):
+            statusMessage = "Left the game"
+            logger.info("Left game: \(gameId)")
+            
+        case .gameEnded(let reason):
+            statusMessage = "Game ended: \(reason)"
+            
+        case .connectionFailed(let error):
+            statusMessage = "Connection failed"
+            handleMultiplayerError(error)
+        }
+    }
+    
+    private func handleMultiplayerError(_ error: MultiplayerError) {
+        logger.error("Multiplayer error: \(error.localizedDescription)")
+        
+        errorMessage = error.localizedDescription
+        showingError = true
+        
+        // Clear error after delay
+        DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
+            self.showingError = false
+            self.errorMessage = ""
+        }
+    }
+    
+    private func handleServerGameStateUpdate(_ serverState: GameStatePayload) {
+        logger.debug("Updating local game state from server")
+        
+        // The MultiplayerService already updates the local game state
+        // We just need to update UI-specific properties
+        
+        statusMessage = serverState.yourTurn ? "Your turn" : "Opponent's turn"
+        isWaitingForPlayerInput = serverState.yourTurn
+        
+        // Update processing state
+        if !serverState.yourTurn {
+            isProcessingMove = false
+        }
+    }
+    
+    private func handleServerMoveResult(_ moveResult: MoveResultPayload) {
+        isProcessingMove = false
+        
+        if moveResult.valid {
+            statusMessage = "Move accepted"
+            
+            if moveResult.trickComplete {
+                statusMessage = "Trick completed"
+            }
+            
+            if moveResult.gameComplete {
+                statusMessage = "Game completed"
+                if let winnerId = moveResult.winnerId {
+                    // Determine if local player won
+                    let localPlayerId = gameState.localPlayerId
+                    if winnerId == localPlayerId {
+                        statusMessage = "🎉 You won!"
+                    } else {
+                        statusMessage = "Game over - Opponent won"
+                    }
+                }
+            }
+        } else {
+            statusMessage = "Invalid move: \(moveResult.error ?? "Unknown error")"
+            errorMessage = moveResult.error ?? "Invalid move"
+            showingError = true
+        }
+        
+        // Clear status after delay
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+            if self.statusMessage?.contains("Move") == true ||
+               self.statusMessage?.contains("Invalid") == true {
+                self.statusMessage = nil
+            }
+            self.showingError = false
+        }
+    }
+    
+    private func handleGameEnd(_ gameEnd: GameEndPayload) {
+        logger.info("Game ended: \(gameEnd.reason)")
+        
+        gameState.phase = .finished
+        
+        // Determine winner message
+        if let winnerId = gameEnd.winnerId {
+            let localPlayerId = gameState.localPlayerId
+            if winnerId == localPlayerId {
+                statusMessage = "🎉 You won the game!"
+            } else {
+                statusMessage = "Game over - Opponent won"
+            }
+        } else {
+            statusMessage = "Game ended in a tie"
+        }
+        
+        // Track achievements for game completion
+        trackGameCompletionAchievements()
+    }
 }
 
 // MARK: - Game Setup Extensions
@@ -492,6 +811,28 @@ extension GameViewModel {
         let player2 = Player(name: player2Name)
         
         setupGame(with: [player1, player2])
+    }
+    
+    /// Setup an online multiplayer game
+    func setupOnlineMultiplayerGame(playerName: String) {
+        guard isOnlineGame else {
+            logger.error("Cannot setup online game - not in online mode")
+            return
+        }
+        
+        let localPlayer = Player(name: playerName)
+        
+        // Configure game state for multiplayer
+        gameState.configureForMultiplayer(
+            localPlayerId: localPlayer.id,
+            gameSessionId: "", // Will be set when game starts
+            isOnline: true
+        )
+        
+        // Add local player to game state
+        gameState.players = [localPlayer]
+        
+        logger.info("Online multiplayer game setup for player: \(playerName)")
     }
 }
 
