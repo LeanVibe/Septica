@@ -141,7 +141,11 @@ class MultiplayerService: ObservableObject {
         isSearchingForGame = true
         sessionState = .searchingForGame
         
-        networkManager.send(.joinGame(mode: mode))
+        // Backend requires game_id for join_game message
+        // For matchmaking, we create a new game ID that the backend can use
+        let gameId = UUID()
+        
+        networkManager.send(.joinGame(gameId: gameId, mode: mode))
         sessionEventSubject.send(.searchingForGame)
     }
     

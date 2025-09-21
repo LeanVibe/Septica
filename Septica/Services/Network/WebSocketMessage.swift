@@ -393,9 +393,10 @@ extension OutgoingMessage {
     }
     
     /// Create a join game message
-    static func joinGame(mode: GameMode = .casual) -> OutgoingMessage {
+    static func joinGame(gameId: UUID? = nil, mode: GameMode = .casual) -> OutgoingMessage {
         return OutgoingMessage(
             type: .joinGame,
+            gameId: gameId,
             payload: JoinGamePayload(gameMode: mode)
         )
     }
@@ -436,7 +437,7 @@ extension IncomingMessage {
     /// Parse a specific payload type from the message
     func parsePayload<T: Codable>(as type: T.Type) throws -> T {
         guard let payloadData = payload else {
-            throw NetworkError.invalidMessageFormat("Missing payload")
+            throw MessageParsingError.invalidMessageFormat("Missing payload")
         }
         
         let jsonData = try JSONSerialization.data(withJSONObject: payloadData)
@@ -452,9 +453,9 @@ extension IncomingMessage {
     }
 }
 
-// MARK: - Network Error
+// MARK: - Message Parsing Error
 
-enum NetworkError: Error, LocalizedError {
+enum MessageParsingError: Error, LocalizedError {
     case invalidMessageFormat(String)
     case decodingError(Error)
     case encodingError(Error)

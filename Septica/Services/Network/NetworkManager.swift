@@ -99,12 +99,15 @@ class NetworkManager: ObservableObject {
     // MARK: - Connection Management
     
     /// Connect to the WebSocket server
-    /// - Parameter playerId: Optional player ID for authentication
+    /// - Parameter playerId: Player ID for authentication (required by backend)
     func connect(playerId: UUID? = nil) {
         guard connectionStatus == .disconnected || connectionStatus == .error else {
             logger.warning("Attempted to connect while already connected or connecting")
             return
         }
+        
+        // Generate or validate player ID - backend requires user_id parameter
+        let userID = playerId ?? UUID()
         
         logger.info("Starting connection to WebSocket server...")
         connectionStatus = .connecting
@@ -115,12 +118,16 @@ class NetworkManager: ObservableObject {
         urlComponents.scheme = urlComponents.scheme == "https" ? "wss" : "ws"
         urlComponents.path = "/ws/connect"
         
-        // Add player ID if provided
-        if let playerId = playerId {
-            urlComponents.queryItems = [
-                URLQueryItem(name: "player_id", value: playerId.uuidString)
-            ]
-        }
+        // Backend requires user_id parameter (not player_id)
+        urlComponents.queryItems = [
+            URLQueryItem(name: "user_id", value: userID.uuidString)
+        ]
+        
+        // Add optional session_id for tracking
+        let sessionId = UUID().uuidString
+        urlComponents.queryItems?.append(
+            URLQueryItem(name: "session_id", value: sessionId)
+        )
         
         guard let wsURL = urlComponents.url else {
             handleConnectionError(.invalidURL)
@@ -465,6 +472,15 @@ class NetworkManager: ObservableObject {
 }
 
 // MARK: - Supporting Types
+
+/// Connection status for tracking current state
+enum ConnectionStatus {
+    case disconnected
+    case connecting
+    case connected
+    case reconnecting
+    case error
+}
 
 /// Connection events that can occur
 enum ConnectionEvent {
