@@ -57,6 +57,10 @@ func Migrate(db *gorm.DB) error {
 		&PlayerStatistics{},
 		&Tournament{},
 		&TournamentParticipant{},
+		&TournamentBracket{},
+		&ELORatingHistory{},
+		&PlayerSeasonStats{},
+		&MatchmakingQueue{},
 		&Friendship{},
 		&ChatMessage{},
 	)

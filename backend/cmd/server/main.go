@@ -16,6 +16,8 @@ import (
 	"septica-backend/pkg/logger"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 func main() {
@@ -61,7 +63,7 @@ func main() {
 	router.Use(CORSMiddleware(cfg))
 
 	// Register routes
-	registerRoutes(router, wsHub, logger)
+	registerRoutes(router, wsHub, db, logger)
 
 	// Create HTTP server
 	server := &http.Server{
@@ -99,7 +101,7 @@ func main() {
 }
 
 // registerRoutes sets up all application routes
-func registerRoutes(router *gin.Engine, wsHub *websocket.Hub, logger *logger.Logger) {
+func registerRoutes(router *gin.Engine, wsHub *websocket.Hub, db *gorm.DB, logger *logger.Logger) {
 	// Health check endpoint
 	router.GET("/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
@@ -116,9 +118,12 @@ func registerRoutes(router *gin.Engine, wsHub *websocket.Hub, logger *logger.Log
 	// Register WebSocket routes
 	handlers.RegisterWebSocketRoutes(router, wsHub, logger)
 
+	// Register tournament routes
+	handlers.RegisterTournamentRoutes(v1, db, logger)
+
 	// Game management endpoints
 	v1.GET("/games/:id", getGameHandler(logger))
-	v1.POST("/games", createGameHandler(logger))
+	v1.POST("/games", createGameHandler(wsHub, logger))
 	v1.POST("/games/:id/join", joinGameHandler(logger))
 	v1.DELETE("/games/:id/leave", leaveGameHandler(logger))
 
@@ -201,10 +206,58 @@ func getGameHandler(logger *logger.Logger) gin.HandlerFunc {
 	}
 }
 
-func createGameHandler(logger *logger.Logger) gin.HandlerFunc {
+func createGameHandler(wsHub *websocket.Hub, logger *logger.Logger) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		c.JSON(http.StatusNotImplemented, gin.H{
-			"error": "Game creation endpoint not implemented yet",
+		// Parse request body
+		var req struct {
+			GameMode string `json:"game_mode,omitempty"`
+			PlayerID string `json:"player_id,omitempty"`
+		}
+		
+		if err := c.ShouldBindJSON(&req); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "Invalid request format",
+				"details": err.Error(),
+			})
+			return
+		}
+		
+		// Parse player ID or generate one for testing
+		var player1ID uuid.UUID
+		var err error
+		if req.PlayerID != "" {
+			player1ID, err = uuid.Parse(req.PlayerID)
+			if err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{
+					"error": "Invalid player ID format",
+				})
+				return
+			}
+		} else {
+			player1ID = uuid.New()
+		}
+		
+		// For testing: Create a dummy second player
+		// TODO: Replace with proper matchmaking system
+		player2ID := uuid.New()
+		
+		// Create game using the game engine
+		game := wsHub.GetGameEngine().CreateGame(player1ID, player2ID)
+		
+		logger.Info("Game created successfully", 
+			"game_id", game.ID, 
+			"player1_id", player1ID, 
+			"player2_id", player2ID,
+			"game_mode", req.GameMode)
+		
+		c.JSON(http.StatusCreated, gin.H{
+			"game_id": game.ID,
+			"player1_id": player1ID,
+			"player2_id": player2ID,
+			"status": game.Status,
+			"current_player": game.CurrentPlayerID,
+			"created_at": game.CreatedAt,
+			"game_mode": req.GameMode,
 		})
 	}
 }

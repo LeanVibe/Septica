@@ -77,6 +77,12 @@ type Game struct {
 	Player1ID uuid.UUID `gorm:"type:uuid;not null" json:"player1_id"`
 	Player2ID uuid.UUID `gorm:"type:uuid;not null" json:"player2_id"`
 	
+	// Tournament context
+	TournamentID       *uuid.UUID `gorm:"type:uuid" json:"tournament_id"`
+	TournamentBracketID *uuid.UUID `gorm:"type:uuid" json:"tournament_bracket_id"`
+	TournamentRound    *int       `json:"tournament_round"`
+	IsPlayoffGame      bool       `gorm:"default:false" json:"is_playoff_game"`
+	
 	// Game state
 	Status       string    `gorm:"default:'waiting'" json:"status"` // waiting, in_progress, completed, abandoned
 	WinnerID     *uuid.UUID `gorm:"type:uuid" json:"winner_id"`
@@ -85,22 +91,35 @@ type Game struct {
 	IsMars       bool      `gorm:"default:false" json:"is_mars"`
 	
 	// Game metadata
-	GameMode      string     `gorm:"default:'ranked'" json:"game_mode"` // ranked, casual, tournament
-	StartedAt     *time.Time `json:"started_at"`
-	EndedAt       *time.Time `json:"ended_at"`
-	DurationMs    int64      `gorm:"default:0" json:"duration_ms"`
-	MoveCount     int        `gorm:"default:0" json:"move_count"`
-	TrickCount    int        `gorm:"default:0" json:"trick_count"`
+	GameMode         string     `gorm:"default:'ranked'" json:"game_mode"` // ranked, casual, tournament, swiss
+	StartedAt        *time.Time `json:"started_at"`
+	EndedAt          *time.Time `json:"ended_at"`
+	DurationMs       int64      `gorm:"default:0" json:"duration_ms"`
+	MoveCount        int        `gorm:"default:0" json:"move_count"`
+	TrickCount       int        `gorm:"default:0" json:"trick_count"`
+	
+	// Rating context (captured at game start)
+	Player1RatingBefore int `json:"player1_rating_before"`
+	Player2RatingBefore int `json:"player2_rating_before"`
+	Player1RatingAfter  *int `json:"player1_rating_after"`
+	Player2RatingAfter  *int `json:"player2_rating_after"`
 	
 	// Rating changes
 	Player1RatingChange int `gorm:"default:0" json:"player1_rating_change"`
 	Player2RatingChange int `gorm:"default:0" json:"player2_rating_change"`
 	
+	// Game quality metrics
+	AverageTimeBetweenMoves float64 `gorm:"default:0" json:"average_time_between_moves"`
+	Player1AverageTimePerMove float64 `gorm:"default:0" json:"player1_average_time_per_move"`
+	Player2AverageTimePerMove float64 `gorm:"default:0" json:"player2_average_time_per_move"`
+	
 	// Relationships
-	Player1 Player     `gorm:"foreignKey:Player1ID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT;" json:"player1,omitempty"`
-	Player2 Player     `gorm:"foreignKey:Player2ID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT;" json:"player2,omitempty"`
-	Winner  *Player    `gorm:"foreignKey:WinnerID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"winner,omitempty"`
-	Moves   []GameMove `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"moves,omitempty"`
+	Player1         Player             `gorm:"foreignKey:Player1ID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT;" json:"player1,omitempty"`
+	Player2         Player             `gorm:"foreignKey:Player2ID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT;" json:"player2,omitempty"`
+	Winner          *Player            `gorm:"foreignKey:WinnerID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"winner,omitempty"`
+	Tournament      *Tournament        `gorm:"foreignKey:TournamentID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"tournament,omitempty"`
+	TournamentBracket *TournamentBracket `gorm:"foreignKey:TournamentBracketID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"tournament_bracket,omitempty"`
+	Moves           []GameMove         `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"moves,omitempty"`
 }
 
 // GameMove represents a single move in a game
@@ -126,17 +145,32 @@ type Tournament struct {
 	BaseModel
 	Name        string    `gorm:"not null" json:"name"`
 	Description string    `json:"description"`
-	Type        string    `gorm:"not null" json:"type"` // single_elimination, double_elimination, round_robin
-	Status      string    `gorm:"default:'registration'" json:"status"` // registration, in_progress, completed
+	Type        string    `gorm:"not null" json:"type"` // single_elimination, double_elimination, swiss_system, round_robin
+	Status      string    `gorm:"default:'registration'" json:"status"` // registration, in_progress, completed, cancelled
 	
 	// Tournament settings
-	MaxParticipants int       `gorm:"not null" json:"max_participants"`
-	EntryFeeCoins   int       `gorm:"default:0" json:"entry_fee_coins"`
-	EntryFeeGems    int       `gorm:"default:0" json:"entry_fee_gems"`
+	MaxParticipants    int  `gorm:"not null" json:"max_participants"`
+	MinParticipants    int  `gorm:"default:2" json:"min_participants"`
+	EntryFeeCoins      int  `gorm:"default:0" json:"entry_fee_coins"`
+	EntryFeeGems       int  `gorm:"default:0" json:"entry_fee_gems"`
+	IsRankedTournament bool `gorm:"default:true" json:"is_ranked_tournament"`
 	
-	// Prize pool
-	PrizePoolCoins int `gorm:"default:0" json:"prize_pool_coins"`
-	PrizePoolGems  int `gorm:"default:0" json:"prize_pool_gems"`
+	// Prize pool and distribution
+	PrizePoolCoins          int    `gorm:"default:0" json:"prize_pool_coins"`
+	PrizePoolGems           int    `gorm:"default:0" json:"prize_pool_gems"`
+	PrizeDistributionType   string `gorm:"default:'percentage'" json:"prize_distribution_type"` // percentage, fixed, winner_takes_all
+	FirstPlacePrizePercent  int    `gorm:"default:50" json:"first_place_prize_percent"`
+	SecondPlacePrizePercent int    `gorm:"default:30" json:"second_place_prize_percent"`
+	ThirdPlacePrizePercent  int    `gorm:"default:20" json:"third_place_prize_percent"`
+	
+	// Tournament progression settings (for Swiss system)
+	SwissRounds           int `gorm:"default:0" json:"swiss_rounds"`
+	CurrentSwissRound     int `gorm:"default:0" json:"current_swiss_round"`
+	SwissPointsToWin      int `gorm:"default:3" json:"swiss_points_to_win"`
+	
+	// ELO rating requirements
+	MinRatingRequired int `gorm:"default:0" json:"min_rating_required"`
+	MaxRatingAllowed  int `gorm:"default:3000" json:"max_rating_allowed"`
 	
 	// Timing
 	RegistrationStart time.Time  `gorm:"not null" json:"registration_start"`
@@ -144,28 +178,155 @@ type Tournament struct {
 	TournamentStart   time.Time  `gorm:"not null" json:"tournament_start"`
 	TournamentEnd     *time.Time `json:"tournament_end"`
 	
+	// Metadata
+	CreatorPlayerID uuid.UUID `gorm:"type:uuid" json:"creator_player_id"`
+	IsPrivate       bool      `gorm:"default:false" json:"is_private"`
+	InviteCode      string    `gorm:"uniqueIndex" json:"invite_code,omitempty"`
+	
 	// Relationships
+	Creator      *Player                 `gorm:"foreignKey:CreatorPlayerID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"creator,omitempty"`
 	Participants []TournamentParticipant `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"participants,omitempty"`
+	Brackets     []TournamentBracket     `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"brackets,omitempty"`
+	Games        []Game                  `gorm:"foreignKey:TournamentID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"games,omitempty"`
 }
 
 // TournamentParticipant represents a player's participation in a tournament
 type TournamentParticipant struct {
 	BaseModel
-	TournamentID uuid.UUID `gorm:"type:uuid;not null" json:"tournament_id"`
-	PlayerID     uuid.UUID `gorm:"type:uuid;not null" json:"player_id"`
+	TournamentID uuid.UUID `gorm:"type:uuid;not null;uniqueIndex:idx_tournament_player" json:"tournament_id"`
+	PlayerID     uuid.UUID `gorm:"type:uuid;not null;uniqueIndex:idx_tournament_player" json:"player_id"`
 	
 	// Tournament progress
-	BracketPosition int  `json:"bracket_position"`
-	IsEliminated    bool `gorm:"default:false" json:"is_eliminated"`
-	FinalRank       *int `json:"final_rank"`
+	BracketPosition    int     `json:"bracket_position"`
+	SeedPosition       int     `json:"seed_position"`
+	IsEliminated       bool    `gorm:"default:false" json:"is_eliminated"`
+	EliminationRound   *int    `json:"elimination_round"`
+	FinalRank          *int    `json:"final_rank"`
+	
+	// Swiss system specific
+	SwissPoints        int     `gorm:"default:0" json:"swiss_points"`
+	SwissWins          int     `gorm:"default:0" json:"swiss_wins"`
+	SwissLosses        int     `gorm:"default:0" json:"swiss_losses"`
+	SwissDraws         int     `gorm:"default:0" json:"swiss_draws"`
+	SwissBuchholzScore float64 `gorm:"default:0" json:"swiss_buchholz_score"`
+	
+	// Performance metrics
+	GamesWon           int     `gorm:"default:0" json:"games_won"`
+	GamesLost          int     `gorm:"default:0" json:"games_lost"`
+	TotalPointsScored  int     `gorm:"default:0" json:"total_points_scored"`
+	AverageGameTime    float64 `gorm:"default:0" json:"average_game_time"`
+	
+	// Rating changes
+	StartingRating     int `json:"starting_rating"`
+	EndingRating       *int `json:"ending_rating"`
+	RatingChange       int `gorm:"default:0" json:"rating_change"`
 	
 	// Prizes awarded
-	PrizeCoins int `gorm:"default:0" json:"prize_coins"`
-	PrizeGems  int `gorm:"default:0" json:"prize_gems"`
+	PrizeCoins         int `gorm:"default:0" json:"prize_coins"`
+	PrizeGems          int `gorm:"default:0" json:"prize_gems"`
+	
+	// Registration info
+	RegistrationDate   time.Time `gorm:"autoCreateTime" json:"registration_date"`
 	
 	// Relationships
 	Tournament Tournament `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"tournament,omitempty"`
 	Player     Player     `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"player,omitempty"`
+}
+
+// TournamentBracket represents a bracket structure for elimination tournaments
+type TournamentBracket struct {
+	BaseModel
+	TournamentID     uuid.UUID  `gorm:"type:uuid;not null" json:"tournament_id"`
+	BracketType      string     `gorm:"not null" json:"bracket_type"` // winners, losers
+	Round            int        `gorm:"not null" json:"round"`
+	Position         int        `gorm:"not null" json:"position"`
+	Player1ID        *uuid.UUID `gorm:"type:uuid" json:"player1_id"`
+	Player2ID        *uuid.UUID `gorm:"type:uuid" json:"player2_id"`
+	WinnerID         *uuid.UUID `gorm:"type:uuid" json:"winner_id"`
+	GameID           *uuid.UUID `gorm:"type:uuid" json:"game_id"`
+	AdvancesToBracket *uuid.UUID `gorm:"type:uuid" json:"advances_to_bracket"`
+	IsComplete       bool       `gorm:"default:false" json:"is_complete"`
+	IsBye            bool       `gorm:"default:false" json:"is_bye"`
+	
+	// Relationships
+	Tournament Tournament `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"tournament,omitempty"`
+	Player1    *Player    `gorm:"foreignKey:Player1ID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"player1,omitempty"`
+	Player2    *Player    `gorm:"foreignKey:Player2ID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"player2,omitempty"`
+	Winner     *Player    `gorm:"foreignKey:WinnerID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"winner,omitempty"`
+	Game       *Game      `gorm:"foreignKey:GameID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"game,omitempty"`
+}
+
+// ELORatingHistory tracks rating changes over time
+type ELORatingHistory struct {
+	BaseModel
+	PlayerID     uuid.UUID  `gorm:"type:uuid;not null" json:"player_id"`
+	GameID       *uuid.UUID `gorm:"type:uuid" json:"game_id"`
+	TournamentID *uuid.UUID `gorm:"type:uuid" json:"tournament_id"`
+	
+	// Rating changes
+	OldRating      int       `gorm:"not null" json:"old_rating"`
+	NewRating      int       `gorm:"not null" json:"new_rating"`
+	RatingChange   int       `gorm:"not null" json:"rating_change"`
+	KFactor        int       `gorm:"not null" json:"k_factor"`
+	
+	// Context
+	ChangeReason   string    `gorm:"not null" json:"change_reason"` // game_win, game_loss, tournament_completion, manual_adjustment
+	OpponentID     *uuid.UUID `gorm:"type:uuid" json:"opponent_id"`
+	OpponentRating *int      `json:"opponent_rating"`
+	
+	// Game result context
+	GameResult     *string   `json:"game_result"` // win, loss, draw
+	ScoreDifference *int     `json:"score_difference"`
+	
+	// Relationships
+	Player     Player      `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"player,omitempty"`
+	Game       *Game       `gorm:"foreignKey:GameID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"game,omitempty"`
+	Tournament *Tournament `gorm:"foreignKey:TournamentID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"tournament,omitempty"`
+	Opponent   *Player     `gorm:"foreignKey:OpponentID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"opponent,omitempty"`
+}
+
+// PlayerSeasonStats tracks player performance across seasons
+type PlayerSeasonStats struct {
+	BaseModel
+	PlayerID       uuid.UUID `gorm:"type:uuid;not null;uniqueIndex:idx_player_season" json:"player_id"`
+	Season         string    `gorm:"not null;uniqueIndex:idx_player_season" json:"season"`
+	
+	// Tournament performance
+	TournamentsPlayed    int     `gorm:"default:0" json:"tournaments_played"`
+	TournamentsWon       int     `gorm:"default:0" json:"tournaments_won"`
+	TournamentTop3       int     `gorm:"default:0" json:"tournament_top3"`
+	TournamentTop8       int     `gorm:"default:0" json:"tournament_top8"`
+	TotalPrizeCoinsWon   int     `gorm:"default:0" json:"total_prize_coins_won"`
+	TotalPrizeGemsWon    int     `gorm:"default:0" json:"total_prize_gems_won"`
+	
+	// Rating progression
+	SeasonStartRating    int     `json:"season_start_rating"`
+	SeasonEndRating      *int    `json:"season_end_rating"`
+	SeasonPeakRating     int     `json:"season_peak_rating"`
+	SeasonLowestRating   int     `json:"season_lowest_rating"`
+	
+	// Game performance
+	RankedGamesPlayed    int     `gorm:"default:0" json:"ranked_games_played"`
+	RankedGamesWon       int     `gorm:"default:0" json:"ranked_games_won"`
+	WinRate              float64 `gorm:"default:0" json:"win_rate"`
+	
+	// Relationships
+	Player Player `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"player,omitempty"`
+}
+
+// MatchmakingQueue tracks players waiting for matches
+type MatchmakingQueue struct {
+	BaseModel
+	PlayerID       uuid.UUID `gorm:"type:uuid;not null;uniqueIndex" json:"player_id"`
+	QueueType      string    `gorm:"not null" json:"queue_type"` // ranked, casual, tournament
+	Rating         int       `gorm:"not null" json:"rating"`
+	QueuedAt       time.Time `gorm:"autoCreateTime" json:"queued_at"`
+	SearchRange    int       `gorm:"default:100" json:"search_range"`
+	MaxWaitTime    int       `gorm:"default:300" json:"max_wait_time"` // seconds
+	IsActive       bool      `gorm:"default:true" json:"is_active"`
+	
+	// Relationships
+	Player Player `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"player,omitempty"`
 }
 
 // Friendship represents a friendship between two players
