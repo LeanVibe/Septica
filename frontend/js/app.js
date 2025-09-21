@@ -7,6 +7,7 @@ class SepticaApp {
     constructor() {
         this.wsClient = null;
         this.gameUI = null;
+        this.devAuth = null;
         this.isInitialized = false;
         
         // Initialize when DOM is ready
@@ -26,6 +27,10 @@ class SepticaApp {
         try {
             console.log('Initializing Septica Test App...');
             
+            // Initialize development authentication
+            this.devAuth = new DevAuthManager();
+            window.devAuth = this.devAuth; // Make globally available
+            
             // Initialize UI
             this.gameUI = new GameUI();
             window.gameUI = this.gameUI; // Make globally available
@@ -36,6 +41,11 @@ class SepticaApp {
             
             // Connect UI to WebSocket client
             this.gameUI.setWebSocketClient(this.wsClient);
+            
+            // Auto-connect in development mode
+            if (this.devAuth.isDevelopment) {
+                await this.handleDevelopmentAutoConnect();
+            }
             
             // Initialize PWA features
             this.initializePWAFeatures();
@@ -61,6 +71,44 @@ class SepticaApp {
         } catch (error) {
             console.error('Failed to initialize application:', error);
             this.showCriticalError('Application failed to initialize', error);
+        }
+    }
+    
+    /**
+     * Handle automatic connection in development mode
+     */
+    async handleDevelopmentAutoConnect() {
+        console.log('🎮 Development mode detected - attempting auto-connect');
+        
+        // Update server URL with dev auth parameters
+        const devUrl = this.devAuth.getWebSocketUrl();
+        if (this.gameUI.elements.serverUrl) {
+            this.gameUI.elements.serverUrl.value = devUrl;
+        }
+        
+        // Update connection status UI
+        this.devAuth.updateConnectionUI('connecting');
+        
+        try {
+            // Auto-connect using dev auth
+            const connected = await this.devAuth.autoConnect(this.wsClient);
+            
+            if (connected) {
+                this.devAuth.updateConnectionUI('connected');
+                this.gameUI.log(`🎮 Auto-connected as ${this.devAuth.getPlayerInfo().number === 1 ? 'Player 1' : 'Player 2'}`);
+                
+                // Update connection info display
+                const playerInfo = this.devAuth.getPlayerInfo();
+                if (this.gameUI.elements.playerId) {
+                    this.gameUI.elements.playerId.textContent = playerInfo.id.substring(0, 16) + '...';
+                }
+            } else {
+                this.devAuth.updateConnectionUI('disconnected');
+                this.gameUI.log('❌ Development auto-connect failed');
+            }
+        } catch (error) {
+            this.devAuth.updateConnectionUI('disconnected');
+            this.gameUI.logError('Development auto-connect error', error);
         }
     }
     

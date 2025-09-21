@@ -13,6 +13,15 @@
     
     <link rel="manifest" href="./manifest.json">
     <link rel="stylesheet" href="./css/styles.css">
+    <link rel="stylesheet" href="./css/modern-styles.css">
+    
+    <!-- Google Fonts for Professional Typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Three.js for 3D Card Rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
     
     <!-- PWA Icons -->
     <link rel="icon" type="image/png" sizes="192x192" href="./images/icon-192.png">
@@ -111,60 +120,122 @@
             </div>
         </section>
 
-        <!-- Game Board -->
+        <!-- Professional 3D Game Board -->
         <section class="panel game-board">
-            <h2>Game Board</h2>
+            <h2>🃏 Romanian Septica Game Table</h2>
             
-            <!-- Table Cards -->
-            <div class="table-section">
-                <h3>Table Cards</h3>
-                <div class="cards-container" id="tableCards">
-                    <div class="empty-message">No cards on table</div>
+            <!-- Three.js 3D Card Renderer -->
+            <div class="threejs-container glass-container" id="threejsContainer">
+                <div class="threejs-canvas-wrapper">
+                    <!-- Three.js canvas will be inserted here -->
+                </div>
+                <div class="table-overlay">
+                    <div class="table-info">
+                        <span class="table-status" id="tableStatus">Ready to Play</span>
+                        <span class="card-count" id="cardCount">0 cards on table</span>
+                    </div>
                 </div>
             </div>
             
-            <!-- Your Hand -->
-            <div class="hand-section">
-                <h3>Your Hand</h3>
-                <div class="cards-container" id="playerHand">
-                    <div class="empty-message">No cards in hand</div>
+            <!-- Enhanced Game Controls -->
+            <div class="game-controls-enhanced">
+                <!-- Table Cards Info -->
+                <div class="table-section-info">
+                    <h3>🎴 Table Cards</h3>
+                    <div class="cards-container" id="tableCards">
+                        <div class="empty-message">No cards on table</div>
+                    </div>
+                </div>
+                
+                <!-- Your Hand Info -->
+                <div class="hand-section-info">
+                    <h3>🂠 Your Hand</h3>
+                    <div class="cards-container" id="playerHand">
+                        <div class="empty-message">No cards in hand</div>
+                    </div>
+                </div>
+                
+                <!-- Valid Moves -->
+                <div class="moves-section-info">
+                    <h3>✅ Valid Moves</h3>
+                    <div class="cards-container small" id="validMoves">
+                        <div class="empty-message">No valid moves</div>
+                    </div>
                 </div>
             </div>
             
-            <!-- Valid Moves -->
-            <div class="moves-section">
-                <h3>Valid Moves</h3>
-                <div class="cards-container small" id="validMoves">
-                    <div class="empty-message">No valid moves</div>
+            <!-- Enhanced Quick Play Card -->
+            <div class="quick-play glass-container">
+                <h3>🚀 Quick Play Card</h3>
+                <div class="quick-play-grid">
+                    <div class="form-group">
+                        <label for="cardSuit">Suit:</label>
+                        <select id="cardSuit" class="enhanced-select">
+                            <option value="hearts">♥️ Hearts</option>
+                            <option value="diamonds">♦️ Diamonds</option>
+                            <option value="clubs">♣️ Clubs</option>
+                            <option value="spades">♠️ Spades</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="cardValue">Value:</label>
+                        <select id="cardValue" class="enhanced-select">
+                            <option value="7">7</option>
+                            <option value="8">8</option>
+                            <option value="9">9</option>
+                            <option value="10">10</option>
+                            <option value="11">Jack</option>
+                            <option value="12">Queen</option>
+                            <option value="13">King</option>
+                            <option value="14">Ace</option>
+                        </select>
+                    </div>
+                    <button id="playCardBtn" class="btn btn-primary enhanced-btn" disabled>
+                        🎯 Play Card
+                    </button>
                 </div>
             </div>
             
-            <!-- Quick Play Card -->
-            <div class="quick-play">
-                <h3>Quick Play Card</h3>
-                <div class="form-group">
-                    <label for="cardSuit">Suit:</label>
-                    <select id="cardSuit">
-                        <option value="hearts">Hearts</option>
-                        <option value="diamonds">Diamonds</option>
-                        <option value="clubs">Clubs</option>
-                        <option value="spades">Spades</option>
-                    </select>
+            <!-- 3D Renderer Controls -->
+            <div class="renderer-controls glass-container">
+                <h4>🎮 3D Renderer Controls</h4>
+                <div class="control-group">
+                    <button id="toggleRendererBtn" class="btn btn-secondary">Toggle 3D/2D View</button>
+                    <button id="resetCameraBtn" class="btn btn-secondary">Reset Camera</button>
+                    <button id="rendererStatsBtn" class="btn btn-secondary">Performance Stats</button>
                 </div>
-                <div class="form-group">
-                    <label for="cardValue">Value:</label>
-                    <select id="cardValue">
-                        <option value="7">7</option>
-                        <option value="8">8</option>
-                        <option value="9">9</option>
-                        <option value="10">10</option>
-                        <option value="11">Jack</option>
-                        <option value="12">Queen</option>
-                        <option value="13">King</option>
-                        <option value="14">Ace</option>
-                    </select>
+                <div class="renderer-info" id="rendererInfo">
+                    <span class="fps-counter" id="fpsCounter">FPS: --</span>
+                    <span class="render-stats" id="renderStats">Triangles: --</span>
                 </div>
-                <button id="playCardBtn" class="btn btn-primary" disabled>Play Card</button>
+            </div>
+        </section>
+
+        <!-- Comprehensive E2E Testing Panel -->
+        <section class="panel testing-panel">
+            <h2>🧪 Comprehensive Backend Testing</h2>
+            <div class="testing-controls glass-container">
+                <div class="test-description">
+                    <p>🎯 <strong>Romanian Septica E2E Test Suite</strong></p>
+                    <p>Comprehensive testing of backend logic, WebSocket protocol, Romanian game rules, and performance validation.</p>
+                </div>
+                <div class="button-group">
+                    <button id="runTestsBtn" class="btn btn-primary enhanced-btn">
+                        🚀 Run Complete Test Suite
+                    </button>
+                    <button id="clearTestResultsBtn" class="btn btn-secondary">
+                        🗑️ Clear Results
+                    </button>
+                </div>
+                <div class="test-progress" id="testProgress" style="display: none;">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <span class="progress-text" id="progressText">Initializing tests...</span>
+                </div>
+            </div>
+            <div class="test-results" id="testResults">
+                <div class="empty-message">No test results yet. Click "Run Complete Test Suite" to begin.</div>
             </div>
         </section>
 
@@ -223,6 +294,12 @@
     </div>
 
     <!-- Scripts -->
+    <script src="./js/dev-auth.js"></script>
+    <script src="./js/performance-monitor.js"></script>
+    <script src="./js/particle-effects.js"></script>
+    <script src="./js/performance-dashboard.js"></script>
+    <script src="./js/card-renderer-3d.js"></script>
+    <script src="./js/test-e2e-septica.js"></script>
     <script src="./js/websocket-client.js"></script>
     <script src="./js/game-ui.js"></script>
     <script src="./js/app.js"></script>

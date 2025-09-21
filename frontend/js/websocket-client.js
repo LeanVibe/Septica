@@ -15,6 +15,15 @@ class SepticaWebSocketClient {
         this.messageQueue = [];
         this.maxMessageQueue = 100;
         
+        // Network performance monitoring
+        this.latencyHistory = [];
+        this.maxLatencyHistory = 20;
+        this.pingStartTimes = new Map();
+        this.currentLatency = 0;
+        this.averageLatency = 0;
+        this.connectionQuality = 'unknown'; // excellent, good, fair, poor
+        this.lastLatencyUpdate = 0;
+        
         // Connection info
         this.playerId = null;
         this.sessionId = null;
@@ -274,10 +283,23 @@ class SepticaWebSocketClient {
     }
     
     /**
-     * Handle pong response
+     * Handle pong response and calculate latency
      */
     handlePong(message) {
-        this.log('Received pong');
+        let latency = 0;
+        
+        if (message.payload && message.payload.ping_id) {
+            const pingId = message.payload.ping_id;
+            const startTime = this.pingStartTimes.get(pingId);
+            
+            if (startTime) {
+                latency = performance.now() - startTime;
+                this.pingStartTimes.delete(pingId);
+                this.updateLatencyMetrics(latency);
+            }
+        }
+        
+        this.log(`Received pong (latency: ${Math.round(latency)}ms)`);
     }
     
     /**
@@ -287,8 +309,9 @@ class SepticaWebSocketClient {
         if (message.payload && message.payload.server_time) {
             this.serverTime = new Date(message.payload.server_time);
         }
-        // Respond with pong
-        this.sendMessage(this.MESSAGE_TYPES.PONG, null, {});
+        // Note: No pong response needed for server heartbeats
+        // The backend handles WebSocket-level ping/pong separately
+        this.log('Received heartbeat from server');
     }
     
     /**
@@ -390,17 +413,32 @@ class SepticaWebSocketClient {
     }
     
     /**
-     * Send ping to server
+     * Send ping to server with latency tracking
      */
     ping() {
-        return this.sendMessage(this.MESSAGE_TYPES.PING);
+        const messageId = this.generateMessageId();
+        const startTime = performance.now();
+        this.pingStartTimes.set(messageId, startTime);
+        
+        const success = this.sendMessage(this.MESSAGE_TYPES.PING, null, { ping_id: messageId });
+        
+        // Clean up old ping times (in case pong is never received)
+        setTimeout(() => {
+            this.pingStartTimes.delete(messageId);
+        }, 10000);
+        
+        return success;
     }
     
     /**
      * Join a game
      */
-    joinGame(gameMode = 'casual') {
-        return this.sendMessage(this.MESSAGE_TYPES.JOIN_GAME, null, {
+    joinGame(gameId, gameMode = 'casual') {
+        if (!gameId) {
+            this.logError('Game ID is required to join a game');
+            return false;
+        }
+        return this.sendMessage(this.MESSAGE_TYPES.JOIN_GAME, gameId, {
             game_mode: gameMode
         });
     }
@@ -587,6 +625,100 @@ class SepticaWebSocketClient {
             case WebSocket.CLOSED: return 'CLOSED';
             default: return 'UNKNOWN';
         }
+    }
+    
+    /**
+     * Update latency metrics
+     */
+    updateLatencyMetrics(latency) {
+        this.currentLatency = latency;
+        this.latencyHistory.push(latency);
+        
+        // Keep history size manageable
+        if (this.latencyHistory.length > this.maxLatencyHistory) {
+            this.latencyHistory.shift();
+        }
+        
+        // Calculate average latency
+        this.averageLatency = this.latencyHistory.reduce((sum, l) => sum + l, 0) / this.latencyHistory.length;
+        
+        // Determine connection quality
+        this.updateConnectionQuality();
+        
+        // Update performance monitor if available
+        if (window.PerformanceMonitor && window.performanceMonitor) {
+            window.performanceMonitor.updateNetworkLatency(latency);
+        }
+        
+        // Update UI
+        this.updateLatencyDisplay();
+        
+        this.lastLatencyUpdate = Date.now();
+    }
+    
+    /**
+     * Update connection quality based on latency
+     */
+    updateConnectionQuality() {
+        const avg = this.averageLatency;
+        
+        if (avg < 50) {
+            this.connectionQuality = 'excellent';
+        } else if (avg < 100) {
+            this.connectionQuality = 'good';
+        } else if (avg < 200) {
+            this.connectionQuality = 'fair';
+        } else {
+            this.connectionQuality = 'poor';
+        }
+    }
+    
+    /**
+     * Update latency display in UI
+     */
+    updateLatencyDisplay() {
+        // Update connection status if element exists
+        const statusElement = document.getElementById('connectionStatus');
+        if (statusElement) {
+            let latencyElement = statusElement.querySelector('.latency-indicator');
+            if (!latencyElement) {
+                latencyElement = document.createElement('div');
+                latencyElement.className = 'latency-indicator';
+                latencyElement.innerHTML = `
+                    <span class="latency-text">${Math.round(this.currentLatency)}ms</span>
+                    <div class="latency-bars ${this.connectionQuality}">
+                        <div class="latency-bar ${this.currentLatency < 50 ? 'active' : ''}"></div>
+                        <div class="latency-bar ${this.currentLatency < 100 ? 'active' : ''}"></div>
+                        <div class="latency-bar ${this.currentLatency < 150 ? 'active' : ''}"></div>
+                        <div class="latency-bar ${this.currentLatency < 200 ? 'active' : ''}"></div>
+                    </div>
+                `;
+                statusElement.appendChild(latencyElement);
+            } else {
+                latencyElement.querySelector('.latency-text').textContent = `${Math.round(this.currentLatency)}ms`;
+                const bars = latencyElement.querySelector('.latency-bars');
+                bars.className = `latency-bars ${this.connectionQuality}`;
+                
+                const barElements = bars.querySelectorAll('.latency-bar');
+                barElements[0].className = `latency-bar ${this.currentLatency < 50 ? 'active' : ''}`;
+                barElements[1].className = `latency-bar ${this.currentLatency < 100 ? 'active' : ''}`;
+                barElements[2].className = `latency-bar ${this.currentLatency < 150 ? 'active' : ''}`;
+                barElements[3].className = `latency-bar ${this.currentLatency < 200 ? 'active' : ''}`;
+            }
+        }
+    }
+    
+    /**
+     * Get network performance metrics
+     */
+    getNetworkMetrics() {
+        return {
+            currentLatency: this.currentLatency,
+            averageLatency: Math.round(this.averageLatency),
+            connectionQuality: this.connectionQuality,
+            latencyHistory: [...this.latencyHistory],
+            lastUpdate: this.lastLatencyUpdate
+        };
     }
 }
 

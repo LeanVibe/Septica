@@ -406,3 +406,8 @@ func (h *Hub) GetGameCount() int {
 	defer h.mutex.RUnlock()
 	return len(h.gameClients)
 }
+
+// GetGameEngine returns the game engine instance
+func (h *Hub) GetGameEngine() *game.Engine {
+	return h.gameEngine
+}

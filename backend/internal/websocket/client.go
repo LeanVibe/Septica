@@ -280,6 +280,10 @@ func (c *Client) handleMessage(msg IncomingMessage) {
 			Payload:   playerView,
 		}
 
+	case "pong":
+		// Client responded to our heartbeat - just acknowledge, no response needed
+		c.hub.logger.Debug("Received pong from client", "user_id", c.userID)
+
 	default:
 		c.sendError("unknown_message_type", "Unknown message type: "+msg.Type)
 	}

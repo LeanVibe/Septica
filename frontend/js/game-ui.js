@@ -10,6 +10,11 @@ class GameUI {
         this.messageLog = [];
         this.maxLogEntries = 1000;
         
+        // 3D Card Renderer
+        this.cardRenderer3D = null;
+        this.is3DEnabled = true;
+        this.performanceStats = { fps: 0, triangles: 0 };
+        
         // UI Elements
         this.elements = {};
         this.initializeElements();
@@ -105,6 +110,21 @@ class GameUI {
         this.elements.installBanner = document.getElementById('installBanner');
         this.elements.installBtn = document.getElementById('installBtn');
         this.elements.dismissBannerBtn = document.getElementById('dismissBannerBtn');
+        
+        // 3D Renderer Elements
+        this.elements.threejsContainer = document.getElementById('threejsContainer');
+        this.elements.tableStatus = document.getElementById('tableStatus');
+        this.elements.cardCount = document.getElementById('cardCount');
+        this.elements.toggleRendererBtn = document.getElementById('toggleRendererBtn');
+        this.elements.resetCameraBtn = document.getElementById('resetCameraBtn');
+        this.elements.rendererStatsBtn = document.getElementById('rendererStatsBtn');
+        this.elements.fpsCounter = document.getElementById('fpsCounter');
+        this.elements.renderStats = document.getElementById('renderStats');
+        
+        // Initialize 3D renderer if container exists
+        if (this.elements.threejsContainer) {
+            this.initialize3DRenderer();
+        }
     }
     
     /**
@@ -132,6 +152,17 @@ class GameUI {
         // PWA events
         this.elements.installBtn.addEventListener('click', () => this.handleInstall());
         this.elements.dismissBannerBtn.addEventListener('click', () => this.dismissInstallBanner());
+        
+        // 3D Renderer events
+        if (this.elements.toggleRendererBtn) {
+            this.elements.toggleRendererBtn.addEventListener('click', () => this.toggle3DRenderer());
+        }
+        if (this.elements.resetCameraBtn) {
+            this.elements.resetCameraBtn.addEventListener('click', () => this.resetCamera());
+        }
+        if (this.elements.rendererStatsBtn) {
+            this.elements.rendererStatsBtn.addEventListener('click', () => this.showRendererStats());
+        }
         
         // Keyboard shortcuts
         document.addEventListener('keydown', (e) => this.handleKeydown(e));
@@ -240,9 +271,21 @@ class GameUI {
             return;
         }
         
+        // Get game ID from the UI or use the test game ID
+        let gameId = this.elements.gameId.textContent;
+        if (gameId === '-' || !gameId) {
+            // Try to get game ID from global test variable
+            gameId = window.testGameId;
+        }
+        
+        if (!gameId || gameId === '-') {
+            this.showError('No game ID available. Please create a game first.');
+            return;
+        }
+        
         const gameMode = this.elements.gameMode.value;
-        this.wsClient.joinGame(gameMode);
-        this.logMessage('SENT', 'join_game', { game_mode: gameMode });
+        this.wsClient.joinGame(gameId, gameMode);
+        this.logMessage('SENT', 'join_game', { game_id: gameId, game_mode: gameMode });
     }
     
     /**
@@ -392,6 +435,12 @@ class GameUI {
         this.displayCards('tableCards', gameState.table_cards || []);
         this.displayCards('playerHand', gameState.your_cards || [], true);
         this.displayCards('validMoves', gameState.valid_moves || []);
+        
+        // Update 3D renderer if enabled
+        if (this.cardRenderer3D && this.is3DEnabled) {
+            this.cardRenderer3D.updateGameState(gameState);
+            this.update3DUI(gameState);
+        }
         
         // Update scores
         this.displayScores(gameState.scores || {});
@@ -719,6 +768,244 @@ class GameUI {
      */
     logError(message, error = null) {
         this.logMessage('ERROR', message, error);
+    }
+    
+    // ===== 3D RENDERER METHODS =====
+    
+    /**
+     * Initialize 3D card renderer
+     */
+    initialize3DRenderer() {
+        try {
+            if (!window.Card3DRenderer) {
+                console.warn('Card3DRenderer not available - 3D features disabled');
+                this.is3DEnabled = false;
+                return;
+            }
+            
+            const canvasWrapper = this.elements.threejsContainer.querySelector('.threejs-canvas-wrapper');
+            if (!canvasWrapper) {
+                console.error('3D canvas wrapper not found');
+                this.is3DEnabled = false;
+                return;
+            }
+            
+            const containerRect = this.elements.threejsContainer.getBoundingClientRect();
+            this.cardRenderer3D = new Card3DRenderer(canvasWrapper, {
+                width: containerRect.width || 800,
+                height: containerRect.height || 500,
+                enableShadows: true,
+                enableAntialiasing: true
+            });
+            
+            // Start performance monitoring
+            this.startPerformanceMonitoring();
+            
+            this.log('3D card renderer initialized successfully');
+            this.update3DStatus('3D Renderer Active');
+            
+        } catch (error) {
+            console.error('Failed to initialize 3D renderer:', error);
+            this.is3DEnabled = false;
+            this.logError('3D renderer initialization failed', error);
+            this.update3DStatus('3D Renderer Failed');
+        }
+    }
+    
+    /**
+     * Update 3D UI elements
+     */
+    update3DUI(gameState) {
+        if (!this.is3DEnabled) return;
+        
+        try {
+            // Update table status
+            let status = 'Ready to Play';
+            if (gameState.status === 'playing') {
+                status = `${gameState.your_turn ? 'Your Turn' : 'Opponent\'s Turn'}`;
+            } else if (gameState.status === 'finished') {
+                status = 'Game Finished';
+            }
+            this.update3DStatus(status);
+            
+            // Update card count
+            const tableCardCount = (gameState.table_cards || []).length;
+            this.updateCardCount(`${tableCardCount} cards on table`);
+            
+            // Update performance stats
+            this.updatePerformanceStats();
+            
+        } catch (error) {
+            console.error('Error updating 3D UI:', error);
+            this.logError('3D UI update failed', error);
+        }
+    }
+    
+    /**
+     * Update 3D status display
+     */
+    update3DStatus(status) {
+        if (this.elements.tableStatus) {
+            this.elements.tableStatus.textContent = status;
+        }
+    }
+    
+    /**
+     * Update card count display
+     */
+    updateCardCount(count) {
+        if (this.elements.cardCount) {
+            this.elements.cardCount.textContent = count;
+        }
+    }
+    
+    /**
+     * Toggle between 3D and 2D view
+     */
+    toggle3DRenderer() {
+        if (!this.cardRenderer3D) {
+            this.showError('3D renderer not available');
+            return;
+        }
+        
+        this.is3DEnabled = !this.is3DEnabled;
+        
+        if (this.is3DEnabled) {
+            this.elements.threejsContainer.style.display = 'block';
+            this.elements.toggleRendererBtn.textContent = 'Switch to 2D View';
+            this.update3DStatus('3D View Active');
+            this.log('Switched to 3D view');
+            
+            // Re-render current game state
+            if (this.currentGameState) {
+                this.cardRenderer3D.updateGameState(this.currentGameState);
+            }
+        } else {
+            this.elements.threejsContainer.style.display = 'none';
+            this.elements.toggleRendererBtn.textContent = 'Switch to 3D View';
+            this.log('Switched to 2D view');
+        }
+    }
+    
+    /**
+     * Reset camera to default position
+     */
+    resetCamera() {
+        if (!this.cardRenderer3D || !this.is3DEnabled) {
+            this.showError('3D renderer not available');
+            return;
+        }
+        
+        try {
+            // Reset camera position
+            this.cardRenderer3D.camera.position.set(0, 8, 12);
+            this.cardRenderer3D.camera.lookAt(0, 0, 0);
+            this.log('Camera position reset');
+        } catch (error) {
+            this.logError('Failed to reset camera', error);
+        }
+    }
+    
+    /**
+     * Show renderer performance statistics
+     */
+    showRendererStats() {
+        if (!this.cardRenderer3D) {
+            this.showError('3D renderer not available');
+            return;
+        }
+        
+        try {
+            const stats = this.cardRenderer3D.getStats();
+            const perfInfo = `
+3D Renderer Performance Statistics:
+
+• Triangles: ${stats.triangles.toLocaleString()}
+• Draw Calls: ${stats.calls.toLocaleString()}
+• Points: ${stats.points.toLocaleString()}
+• Lines: ${stats.lines.toLocaleString()}
+
+• Current FPS: ${this.performanceStats.fps}
+• Memory Usage: ${(performance.memory?.usedJSHeapSize / 1024 / 1024).toFixed(1) || 'N/A'} MB
+• GPU Renderer: ${this.cardRenderer3D.renderer.info.render.triangles > 0 ? 'Active' : 'Idle'}
+
+Performance Status: ${this.getPerformanceStatus()}
+            `.trim();
+            
+            this.showError(perfInfo);
+            this.log('Performance stats displayed');
+        } catch (error) {
+            this.logError('Failed to get renderer stats', error);
+        }
+    }
+    
+    /**
+     * Start performance monitoring
+     */
+    startPerformanceMonitoring() {
+        let lastTime = performance.now();
+        let frames = 0;
+        
+        const measurePerformance = () => {
+            frames++;
+            const currentTime = performance.now();
+            
+            if (currentTime - lastTime >= 1000) {
+                this.performanceStats.fps = Math.round((frames * 1000) / (currentTime - lastTime));
+                
+                if (this.cardRenderer3D) {
+                    const stats = this.cardRenderer3D.getStats();
+                    this.performanceStats.triangles = stats.triangles;
+                }
+                
+                frames = 0;
+                lastTime = currentTime;
+            }
+            
+            if (this.is3DEnabled) {
+                requestAnimationFrame(measurePerformance);
+            }
+        };
+        
+        requestAnimationFrame(measurePerformance);
+    }
+    
+    /**
+     * Update performance statistics display
+     */
+    updatePerformanceStats() {
+        if (this.elements.fpsCounter) {
+            const fpsClass = this.performanceStats.fps >= 45 ? 'performance-good' : 
+                            this.performanceStats.fps >= 30 ? 'performance-warning' : 'performance-critical';
+            this.elements.fpsCounter.textContent = `FPS: ${this.performanceStats.fps}`;
+            this.elements.fpsCounter.className = `fps-counter ${fpsClass}`;
+        }
+        
+        if (this.elements.renderStats) {
+            this.elements.renderStats.textContent = `Triangles: ${this.performanceStats.triangles.toLocaleString()}`;
+        }
+    }
+    
+    /**
+     * Get performance status
+     */
+    getPerformanceStatus() {
+        const fps = this.performanceStats.fps;
+        if (fps >= 45) return 'Excellent (60+ FPS target)';
+        if (fps >= 30) return 'Good (30+ FPS stable)';
+        if (fps >= 15) return 'Poor (consider 2D mode)';
+        return 'Critical (switch to 2D mode)';
+    }
+    
+    /**
+     * Cleanup 3D renderer
+     */
+    destroy3DRenderer() {
+        if (this.cardRenderer3D) {
+            this.cardRenderer3D.destroy();
+            this.cardRenderer3D = null;
+            this.log('3D renderer destroyed');
+        }
     }
 }
 
