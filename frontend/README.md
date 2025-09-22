@@ -1,6 +1,34 @@
-# Septica Game Tester PWA
+# Romanian Septica - Premium PWA Frontend
 
-A Progressive Web App for testing the Go WebSocket backend implementation of the Romanian Septica card game.
+A premium Progressive Web App implementation of the traditional Romanian Septica card game, featuring ShuffleCats-quality Three.js rendering, authentic Romanian cultural elements, and real-time multiplayer gameplay.
+
+## 🎨 Premium Features (ShuffleCats Quality)
+
+### Three.js 3D Rendering
+- **60 FPS Performance**: Optimized WebGL2 rendering with mobile LOD system
+- **Physical-Based Materials**: Authentic card textures with Romanian cultural patterns  
+- **Romanian Ambient Lighting**: Golden hour café atmosphere with traditional candle lighting
+- **Smooth Animations**: Folk dance inspired motion (Hora, Brău, Călușari timing)
+- **Glass Morphism UI**: Modern design with Romanian heritage color palette
+
+### Romanian Cultural Authenticity  
+- **Regional Variations**: Moldova, Transilvania, Wallachia, Traditional settings
+- **Time-of-Day Atmosphere**: Morning, Afternoon, Evening, Night lighting moods
+- **Cultural Color Palette**: Authentic Romanian blue, yellow, red heritage colors
+- **Traditional Elements**: Candle flickering, fireplace glow, window lighting effects
+- **Folk Animation Timing**: Animations based on traditional Romanian dance rhythms
+
+### Cross-Platform Excellence
+- **Mobile-First Design**: Touch-optimized with haptic feedback and gesture controls
+- **Responsive Performance**: Automatic quality adjustment for device capabilities  
+- **Progressive Enhancement**: WebGL2 with graceful fallbacks for older devices
+- **PWA Capabilities**: Offline support, installable, native app experience
+
+### Premium Demo Experience
+- **Complete Game Demo**: `premium-demo.html` showcasing all features
+- **Interactive Controls**: Q-quality, R-region, D-deal, P-play, C-stats shortcuts
+- **Real-time Performance**: FPS monitoring and quality adjustment
+- **Cultural Settings**: Live switching between Romanian regions and time periods
 
 ## Features
 
@@ -31,24 +59,37 @@ A Progressive Web App for testing the Go WebSocket backend implementation of the
 ## Quick Start
 
 ### 1. Start the Backend Server
-Ensure your Go WebSocket server is running on `ws://localhost:8080/ws/connect`
-
-### 2. Serve the Frontend
-You can serve the PWA using any static file server:
-
 ```bash
-# Using Python (if available)
-cd /Users/bogdan/work/Septica/frontend
-python3 -m http.server 8000
+# Start PostgreSQL database
+docker-compose up -d
 
-# Using Node.js serve (if available)
-npx serve .
-
-# Using any other static file server
+# Start Go backend server  
+cd backend && DATABASE_URL="postgres://septica:septica@localhost:5433/septica?sslmode=disable" go run ./server
 ```
 
-### 3. Open in Browser
-Navigate to `http://localhost:8000` in your web browser
+### 2. Serve the Premium Frontend
+```bash
+cd frontend && python3 -m http.server 3002
+```
+
+### 3. Experience the Premium Demo ⭐
+Navigate to `http://localhost:3002/premium-demo.html` for the **ShuffleCats-quality experience**:
+- ✨ Three.js 3D rendering at 60 FPS
+- 🇷🇴 Authentic Romanian cultural elements  
+- 🎮 Interactive controls (Q-quality, R-region, D-deal, P-play, C-stats)
+- 🎨 Glass morphism UI with heritage colors
+- ⚙️ Real-time performance monitoring
+
+### Alternative: Basic Tester Interface
+For basic WebSocket testing, navigate to `http://localhost:3002/index.html`
+
+### Alternative Servers
+```bash
+# Using Node.js serve (if available)
+npx serve . --port 3002
+
+# Using any other static file server on port 3002
+```
 
 ### 4. Test the Connection
 1. Click "Connect" to establish WebSocket connection
