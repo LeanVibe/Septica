@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Premium Romanian Septica - ShuffleCats Quality Implementation">
+    <title>Premium Romanian Septica - Demo</title>
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#002b7f">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Septica Premium">
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+    
+    <!-- Preload Critical Resources -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Inter:wght@400;500;600&family=Playfair+Display:wght@400;600&display=swap" rel="stylesheet">
+    
+    <!-- Three.js Library -->
+    <script src="https://unpkg.com/three@0.152.2/build/three.min.js"></script>
+    <script src="https://unpkg.com/three@0.152.2/examples/js/controls/OrbitControls.js"></script>
+    
+    <!-- GSAP for Premium Animations -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    
+    <!-- Premium Styles -->
+    <link rel="stylesheet" href="css/premium-glass-morphism.css">
+    
+    <style>
+        /* Additional demo-specific styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: var(--font-secondary, 'Inter', sans-serif);
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d3748 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        .premium-container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(252, 211, 77, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(220, 38, 38, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(0, 43, 127, 0.1) 0%, transparent 50%);
+        }
+        
+        .septica-ui-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .septica-ui-overlay > * {
+            pointer-events: auto;
+        }
+        
+        .romanian-glass-panel {
+            background: var(--glass-background);
+            backdrop-filter: var(--glass-backdrop);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 16px;
+            margin: 16px;
+            box-shadow: var(--glass-shadow);
+        }
+        
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+            font-weight: 600;
+        }
+        
+        .player-info,
+        .opponent-info {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .game-info {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .game-status {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: white;
+            font-weight: 600;
+            padding: 20px;
+            min-width: 200px;
+        }
+        
+        .turn-indicator {
+            font-size: 18px;
+            margin-bottom: 12px;
+            display: block;
+        }
+        
+        .cultural-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            opacity: 0.1;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .romanian-patterns {
+            width: 100%;
+            height: 100%;
+            background-size: 40px 40px;
+            background-repeat: repeat;
+        }
+        
+        .romanian-patterns.moldovan {
+            background-image: var(--moldovan-pattern);
+        }
+        
+        .romanian-patterns.transylvanian {
+            background-image: var(--transylvanian-pattern);
+        }
+        
+        .romanian-patterns.wallachian {
+            background-image: var(--wallachian-pattern);
+        }
+        
+        .performance-indicator {
+            position: absolute;
+            bottom: 16px;
+            right: 16px;
+            display: flex;
+            gap: 12px;
+            color: white;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .fps-counter {
+            background: rgba(16, 185, 129, 0.2);
+            padding: 4px 8px;
+            border-radius: 8px;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+        
+        .quality-level {
+            background: rgba(59, 130, 246, 0.2);
+            padding: 4px 8px;
+            border-radius: 8px;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+        
+        .romanian-region-selector,
+        .time-of-day-selector {
+            position: absolute;
+            bottom: 16px;
+            left: 16px;
+            margin-bottom: 8px;
+            background: var(--glass-background);
+            backdrop-filter: var(--glass-backdrop);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            padding: 8px 12px;
+            color: white;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        
+        .time-of-day-selector {
+            left: 140px;
+        }
+        
+        .romanian-welcome-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--glass-background-strong);
+            backdrop-filter: var(--glass-backdrop-strong);
+            border: 2px solid var(--glass-border-strong);
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            color: white;
+            z-index: 1000;
+            border-image: var(--romanian-gold) 1;
+            opacity: 0;
+            transform: translate(-50%, -50%) scale(0.8) translateY(50px);
+            transition: all 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+        
+        .romanian-welcome-message h2 {
+            font-family: var(--font-primary);
+            font-size: 24px;
+            margin-bottom: 12px;
+            color: #fcd34d;
+        }
+        
+        .romanian-welcome-message p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        
+        .fallback-interface {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            text-align: center;
+            color: white;
+            padding: 40px;
+        }
+        
+        .fallback-interface h2 {
+            font-family: var(--font-primary);
+            font-size: 32px;
+            margin-bottom: 16px;
+            color: #fcd34d;
+        }
+        
+        .fallback-interface p {
+            font-size: 18px;
+            margin-bottom: 24px;
+            opacity: 0.9;
+        }
+        
+        .demo-controls {
+            position: absolute;
+            top: 100px;
+            right: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            z-index: 200;
+        }
+        
+        .demo-button {
+            background: var(--glass-background);
+            backdrop-filter: var(--glass-backdrop);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            padding: 8px 16px;
+            color: white;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .demo-button:hover {
+            background: var(--glass-background-strong);
+            transform: translateY(-2px);
+        }
+        
+        .loading-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            z-index: 2000;
+            transition: opacity 0.5s ease;
+        }
+        
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 3px solid rgba(252, 211, 77, 0.3);
+            border-top: 3px solid #fcd34d;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .loading-text {
+            font-family: var(--font-primary);
+            font-size: 18px;
+            margin-bottom: 8px;
+        }
+        
+        .loading-subtitle {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+        
+        /* Mobile optimizations */
+        @media (max-width: 768px) {
+            .game-header {
+                flex-direction: column;
+                gap: 8px;
+                padding: 12px;
+            }
+            
+            .demo-controls {
+                top: auto;
+                bottom: 80px;
+                right: 8px;
+                left: 8px;
+                flex-direction: row;
+                justify-content: space-between;
+            }
+            
+            .demo-button {
+                flex: 1;
+                margin: 0 4px;
+            }
+            
+            .romanian-region-selector,
+            .time-of-day-selector {
+                position: static;
+                margin: 8px;
+                width: calc(50% - 16px);
+                display: inline-block;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loadingScreen" class="loading-screen">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Inițializare Septica Premium</div>
+        <div class="loading-subtitle">Loading Romanian cultural elements...</div>
+    </div>
+    
+    <!-- Main Game Container -->
+    <div id="premiumGameContainer" class="premium-container">
+        <!-- Three.js canvas will be inserted here -->
+    </div>
+    
+    <!-- Demo Controls -->
+    <div class="demo-controls">
+        <button class="demo-button" onclick="toggleQuality()">Toggle Quality</button>
+        <button class="demo-button" onclick="triggerDealAnimation()">Deal Cards</button>
+        <button class="demo-button" onclick="triggerPlayAnimation()">Play Card</button>
+        <button class="demo-button" onclick="toggleRegion()">Change Region</button>
+        <button class="demo-button" onclick="exportPerformanceData()">Performance Stats</button>
+    </div>
+    
+    <!-- Include existing scripts for fallback -->
+    <script src="js/mobile-lod-system.js"></script>
+    <script src="js/websocket-client.js"></script>
+    <script src="js/game-ui.js"></script>
+    
+    <!-- Include premium components -->
+    <script src="js/premium-card-material.js"></script>
+    <script src="js/romanian-ambient-lighting.js"></script>
+    <script src="js/premium-card-animations.js"></script>
+    <script src="js/premium-septica-game.js"></script>
+    
+    <script>
+        // Global variables
+        let premiumGame = null;
+        let currentRegionIndex = 0;
+        let currentQualityIndex = 1;
+        
+        const romanianRegions = ['moldovan', 'transylvanian', 'wallachian', 'traditional'];
+        const qualityLevels = ['low', 'medium', 'high', 'ultra'];
+        
+        // Initialize the premium game
+        async function initializePremiumGame() {
+            try {
+                console.log('🎮 Starting Premium Romanian Septica Demo...');
+                
+                // Show loading for Romanian authenticity
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                // Initialize premium game
+                premiumGame = new PremiumSepticaGame('premiumGameContainer');
+                
+                // Wait for initialization
+                await new Promise(resolve => {
+                    const checkInit = setInterval(() => {
+                        if (premiumGame.isInitialized) {
+                            clearInterval(checkInit);
+                            resolve();
+                        }
+                    }, 100);
+                });
+                
+                // Hide loading screen
+                const loadingScreen = document.getElementById('loadingScreen');
+                loadingScreen.style.opacity = '0';
+                setTimeout(() => {
+                    loadingScreen.style.display = 'none';
+                }, 500);
+                
+                console.log('🎮 Premium Romanian Septica Demo ready!');
+                
+                // Setup demo interactions
+                setupDemoInteractions();
+                
+            } catch (error) {
+                console.error('🎮 Failed to initialize demo:', error);
+                showFallbackMessage();
+            }
+        }
+        
+        // Setup demo interaction features
+        function setupDemoInteractions() {
+            // Add welcome message
+            showWelcomeMessage();
+            
+            // Setup performance monitoring display
+            updatePerformanceDisplay();
+            
+            // Add keyboard shortcuts info
+            console.log(`
+🎮 Premium Septica Demo - Keyboard Shortcuts:
+• Q - Toggle Quality Level
+• R - Change Romanian Region  
+• T - Change Time of Day
+• D - Trigger Deal Cards Animation
+• P - Trigger Play Card Animation
+• S - Show Performance Stats
+• F - Toggle Fullscreen
+            `);
+        }
+        
+        // Show Romanian welcome message
+        function showWelcomeMessage() {
+            const welcomeMsg = document.createElement('div');
+            welcomeMsg.className = 'romanian-welcome-message';
+            welcomeMsg.innerHTML = `
+                <h2>🃏 Bun venit la Septica Premium!</h2>
+                <p>Experience authentic Romanian Septica with ShuffleCats-quality visuals</p>
+            `;
+            document.body.appendChild(welcomeMsg);
+            
+            // Animate welcome message
+            setTimeout(() => {
+                welcomeMsg.style.opacity = '1';
+                welcomeMsg.style.transform = 'translate(-50%, -50%) scale(1) translateY(0)';
+            }, 500);
+            
+            // Remove after display
+            setTimeout(() => {
+                welcomeMsg.style.opacity = '0';
+                welcomeMsg.style.transform = 'translate(-50%, -50%) scale(0.8) translateY(-50px)';
+                setTimeout(() => welcomeMsg.remove(), 800);
+            }, 4000);
+        }
+        
+        // Demo control functions
+        function toggleQuality() {
+            if (!premiumGame) return;
+            
+            currentQualityIndex = (currentQualityIndex + 1) % qualityLevels.length;
+            const newQuality = qualityLevels[currentQualityIndex];
+            
+            premiumGame.qualityLevel = newQuality;
+            premiumGame.updateQualitySettings();
+            
+            console.log(`🎨 Quality changed to: ${newQuality.toUpperCase()}`);
+            showNotification(`Quality: ${newQuality.toUpperCase()}`);
+        }
+        
+        function triggerDealAnimation() {
+            if (!premiumGame || !premiumGame.premiumAnimations) return;
+            
+            // Create dummy cards for animation demo
+            const dummyCards = [];
+            for (let i = 0; i < 4; i++) {
+                const card = document.createElement('div');
+                card.className = 'septica-premium-card';
+                card.style.position = 'absolute';
+                card.style.left = `${300 + i * 80}px`;
+                card.style.top = '400px';
+                card.style.opacity = '0';
+                card.style.transform = 'scale(0) rotate(180deg)';
+                card.textContent = ['🂡', '🂢', '🂣', '🂤'][i];
+                document.body.appendChild(card);
+                dummyCards.push(card);
+            }
+            
+            // Trigger Romanian dealing animation
+            premiumGame.premiumAnimations.dealCardsSequence(dummyCards, premiumGame.romanianRegion)
+                .then(() => {
+                    setTimeout(() => {
+                        dummyCards.forEach(card => card.remove());
+                    }, 2000);
+                });
+            
+            console.log('🃏 Romanian card dealing animation triggered');
+            showNotification('🃏 Dealing cards...');
+        }
+        
+        function triggerPlayAnimation() {
+            if (!premiumGame || !premiumGame.premiumAnimations) return;
+            
+            // Create a demo card
+            const card = document.createElement('div');
+            card.className = 'septica-premium-card seven'; // Special seven card
+            card.style.position = 'absolute';
+            card.style.left = '400px';
+            card.style.top = '500px';
+            card.textContent = '🂷'; // Seven of hearts
+            document.body.appendChild(card);
+            
+            // Target position (center of screen)
+            const targetPos = {
+                x: window.innerWidth / 2,
+                y: window.innerHeight / 2
+            };
+            
+            // Trigger play animation
+            premiumGame.premiumAnimations.playCardAnimation(card, targetPos, 'seven')
+                .then(() => {
+                    setTimeout(() => card.remove(), 1000);
+                });
+            
+            console.log('🎭 Romanian card play animation triggered');
+            showNotification('🎭 Playing card...');
+        }
+        
+        function toggleRegion() {
+            if (!premiumGame) return;
+            
+            currentRegionIndex = (currentRegionIndex + 1) % romanianRegions.length;
+            const newRegion = romanianRegions[currentRegionIndex];
+            
+            premiumGame.setRomanianRegion(newRegion);
+            
+            console.log(`🏛️ Romanian region changed to: ${newRegion}`);
+            showNotification(`Region: ${newRegion.charAt(0).toUpperCase() + newRegion.slice(1)}`);
+        }
+        
+        function exportPerformanceData() {
+            if (!premiumGame) return;
+            
+            const stats = premiumGame.getPerformanceStats();
+            console.log('📊 Performance Statistics:', stats);
+            
+            // Create downloadable performance report
+            const report = {
+                timestamp: new Date().toISOString(),
+                device: {
+                    userAgent: navigator.userAgent,
+                    platform: navigator.platform,
+                    webgl: !!window.WebGLRenderingContext,
+                    webgl2: !!window.WebGL2RenderingContext
+                },
+                performance: stats,
+                settings: {
+                    qualityLevel: premiumGame.qualityLevel,
+                    romanianRegion: premiumGame.romanianRegion
+                }
+            };
+            
+            const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `septica-premium-performance-${Date.now()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            showNotification(`📊 Performance data exported (${Math.round(stats.fps)} FPS)`);
+        }
+        
+        // Show notification
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: var(--glass-background-strong);
+                backdrop-filter: var(--glass-backdrop);
+                border: 1px solid var(--glass-border);
+                border-radius: 12px;
+                padding: 12px 24px;
+                color: white;
+                font-weight: 600;
+                font-size: 14px;
+                z-index: 3000;
+                opacity: 0;
+                transition: all 0.3s ease;
+            `;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            // Animate in
+            setTimeout(() => {
+                notification.style.opacity = '1';
+                notification.style.transform = 'translateX(-50%) translateY(0)';
+            }, 10);
+            
+            // Remove after delay
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                notification.style.transform = 'translateX(-50%) translateY(-20px)';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+        
+        // Show fallback message
+        function showFallbackMessage() {
+            const loadingScreen = document.getElementById('loadingScreen');
+            loadingScreen.innerHTML = `
+                <div class="fallback-interface">
+                    <h2>🃏 Romanian Septica - Compatibility Mode</h2>
+                    <p>Your device doesn't support advanced 3D graphics, but you can still enjoy the authentic Romanian card game experience!</p>
+                    <button onclick="location.reload()" class="romanian-glass-button">Try Again</button>
+                </div>
+            `;
+        }
+        
+        // Update performance display
+        function updatePerformanceDisplay() {
+            setInterval(() => {
+                if (premiumGame && premiumGame.isInitialized) {
+                    const stats = premiumGame.getPerformanceStats();
+                    
+                    // Update page title with FPS
+                    document.title = `Premium Septica (${Math.round(stats.fps)} FPS)`;
+                    
+                    // Update loading subtitle if still visible
+                    const loadingSubtitle = document.querySelector('.loading-subtitle');
+                    if (loadingSubtitle) {
+                        loadingSubtitle.textContent = `${Math.round(stats.fps)} FPS • ${stats.qualityLevel.toUpperCase()} Quality`;
+                    }
+                }
+            }, 1000);
+        }
+        
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (event) => {
+            switch (event.key.toLowerCase()) {
+                case 'q':
+                    event.preventDefault();
+                    toggleQuality();
+                    break;
+                case 'r':
+                    event.preventDefault();
+                    toggleRegion();
+                    break;
+                case 't':
+                    if (premiumGame && premiumGame.romanianLighting) {
+                        const times = ['morning', 'afternoon', 'evening', 'night'];
+                        const currentTime = times.indexOf(premiumGame.romanianLighting.timeOfDay || 'evening');
+                        const newTime = times[(currentTime + 1) % times.length];
+                        premiumGame.romanianLighting.setTimeOfDay(newTime);
+                        showNotification(`Time: ${newTime.charAt(0).toUpperCase() + newTime.slice(1)}`);
+                    }
+                    event.preventDefault();
+                    break;
+                case 'd':
+                    event.preventDefault();
+                    triggerDealAnimation();
+                    break;
+                case 'p':
+                    event.preventDefault();
+                    triggerPlayAnimation();
+                    break;
+                case 's':
+                    event.preventDefault();
+                    exportPerformanceData();
+                    break;
+                case 'f':
+                    event.preventDefault();
+                    if (document.fullscreenElement) {
+                        document.exitFullscreen();
+                    } else {
+                        document.documentElement.requestFullscreen();
+                    }
+                    break;
+            }
+        });
+        
+        // Handle window events
+        window.addEventListener('beforeunload', () => {
+            if (premiumGame) {
+                premiumGame.dispose();
+            }
+        });
+        
+        // Start the premium demo
+        document.addEventListener('DOMContentLoaded', () => {
+            initializePremiumGame();
+        });
+        
+        // PWA install prompt
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            
+            // Show install suggestion after game loads
+            setTimeout(() => {
+                if (deferredPrompt && !window.matchMedia('(display-mode: standalone)').matches) {
+                    showNotification('💾 Install as PWA for best experience');
+                }
+            }, 10000);
+        });
+        
+        // Log startup information
+        console.log(`
+🎮 Premium Romanian Septica Demo
+==================================
+🇷🇴 Authentic Romanian Septica with ShuffleCats-quality visuals
+🎨 Three.js + WebGL rendering with Romanian cultural elements
+🎭 Physics-based animations with traditional Romanian timing
+🌐 Progressive Web App with offline support
+📱 Optimized for Android and Desktop platforms
+
+Features:
+• Premium glass morphism UI with Romanian patterns
+• Multi-regional cultural variations (Moldova, Transilvania, Wallachia)
+• Adaptive performance management (60 FPS target)
+• Real-time multiplayer support (WebSocket integration)
+• Traditional Romanian ambient lighting and atmosphere
+• Physics-based card animations with cultural flourishes
+
+Try the demo controls or use keyboard shortcuts for interaction!
+        `);
+    </script>
+</body>
+</html>
