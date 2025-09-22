@@ -69,9 +69,32 @@ class GameUI {
         
         // Game controls
         this.elements.gameMode = document.getElementById('gameMode');
+        this.elements.createGameBtn = document.getElementById('createGameBtn');
         this.elements.joinGameBtn = document.getElementById('joinGameBtn');
         this.elements.leaveGameBtn = document.getElementById('leaveGameBtn');
         this.elements.getGameStateBtn = document.getElementById('getGameStateBtn');
+        
+        // Game creation and joining elements
+        this.elements.gameCreationResult = document.getElementById('gameCreationResult');
+        this.elements.createdGameId = document.getElementById('createdGameId');
+        this.elements.copyGameIdBtn = document.getElementById('copyGameIdBtn');
+        this.elements.playersInGame = document.getElementById('playersInGame');
+        this.elements.joinGameId = document.getElementById('joinGameId');
+        
+        // Multiplayer display elements
+        this.elements.turnIndicator = document.getElementById('turnIndicator');
+        this.elements.turnText = document.getElementById('turnText');
+        this.elements.playersDisplay = document.getElementById('playersDisplay');
+        this.elements.gameStatusBanner = document.getElementById('gameStatusBanner');
+        this.elements.gameStatusText = document.getElementById('gameStatusText');
+        this.elements.player1Info = document.getElementById('player1Info');
+        this.elements.player1Name = document.getElementById('player1Name');
+        this.elements.player1Cards = document.getElementById('player1Cards');
+        this.elements.player1Score = document.getElementById('player1Score');
+        this.elements.player2Info = document.getElementById('player2Info');
+        this.elements.player2Name = document.getElementById('player2Name');
+        this.elements.player2Cards = document.getElementById('player2Cards');
+        this.elements.player2Score = document.getElementById('player2Score');
         
         // Game info
         this.elements.gameId = document.getElementById('gameId');
@@ -137,10 +160,13 @@ class GameUI {
         this.elements.pingBtn.addEventListener('click', () => this.handlePing());
         
         // Game events
+        this.elements.createGameBtn.addEventListener('click', () => this.handleCreateGame());
         this.elements.joinGameBtn.addEventListener('click', () => this.handleJoinGame());
         this.elements.leaveGameBtn.addEventListener('click', () => this.handleLeaveGame());
         this.elements.getGameStateBtn.addEventListener('click', () => this.handleGetGameState());
         this.elements.playCardBtn.addEventListener('click', () => this.handlePlayCard());
+        this.elements.copyGameIdBtn.addEventListener('click', () => this.handleCopyGameId());
+        this.elements.joinGameId.addEventListener('input', () => this.handleJoinGameIdInput());
         
         // Log events
         this.elements.clearLogBtn.addEventListener('click', () => this.clearLog());
@@ -263,6 +289,63 @@ class GameUI {
     }
     
     /**
+     * Handle create game button
+     */
+    async handleCreateGame() {
+        if (!this.wsClient || !this.wsClient.isConnected) {
+            this.showError('Not connected to server');
+            return;
+        }
+        
+        try {
+            const gameMode = this.elements.gameMode.value;
+            const playerId = this.wsClient.playerId;
+            
+            this.log(`Creating game with mode: ${gameMode}, player: ${playerId}`);
+            
+            // Call backend API to create game
+            const response = await fetch('http://localhost:8080/api/v1/games', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    game_mode: gameMode,
+                    player_id: playerId
+                })
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const gameData = await response.json();
+            
+            if (gameData.error) {
+                throw new Error(gameData.error);
+            }
+            
+            // Show game creation result
+            this.elements.createdGameId.value = gameData.game_id;
+            this.elements.gameCreationResult.style.display = 'block';
+            this.elements.playersInGame.textContent = 'Players: 1/2';
+            
+            // Update game info
+            this.elements.gameId.textContent = gameData.game_id;
+            
+            // Store game ID globally for easy access
+            window.currentGameId = gameData.game_id;
+            
+            this.log('Game created successfully', gameData);
+            this.logMessage('CREATED', 'game_created', gameData);
+            
+        } catch (error) {
+            this.logError('Failed to create game', error);
+            this.showError(`Failed to create game: ${error.message}`);
+        }
+    }
+    
+    /**
      * Handle join game button
      */
     handleJoinGame() {
@@ -271,15 +354,20 @@ class GameUI {
             return;
         }
         
-        // Get game ID from the UI or use the test game ID
-        let gameId = this.elements.gameId.textContent;
+        // Get game ID from input field or use created game ID
+        let gameId = this.elements.joinGameId.value.trim();
+        if (!gameId && this.elements.createdGameId.value) {
+            gameId = this.elements.createdGameId.value;
+        }
+        if (!gameId) {
+            gameId = this.elements.gameId.textContent;
+        }
         if (gameId === '-' || !gameId) {
-            // Try to get game ID from global test variable
-            gameId = window.testGameId;
+            gameId = window.testGameId || window.currentGameId;
         }
         
         if (!gameId || gameId === '-') {
-            this.showError('No game ID available. Please create a game first.');
+            this.showError('Please enter a game ID or create a new game first.');
             return;
         }
         
@@ -409,7 +497,8 @@ class GameUI {
         this.elements.connectBtn.disabled = status.isConnected;
         this.elements.disconnectBtn.disabled = !status.isConnected;
         this.elements.pingBtn.disabled = !status.isConnected;
-        this.elements.joinGameBtn.disabled = !status.isConnected;
+        this.elements.createGameBtn.disabled = !status.isConnected;
+        this.elements.joinGameBtn.disabled = !status.isConnected || (this.elements.joinGameId.value.trim() === '' && !status.gameId);
         this.elements.leaveGameBtn.disabled = !status.isConnected || !status.gameId;
         this.elements.getGameStateBtn.disabled = !status.isConnected || !status.gameId;
         this.elements.playCardBtn.disabled = !status.isConnected || !status.gameId;
@@ -430,6 +519,9 @@ class GameUI {
         this.elements.gameStatus.textContent = gameState.status || '-';
         this.elements.trickNumber.textContent = gameState.trick_number || '-';
         this.elements.moveNumber.textContent = gameState.move_number || '-';
+        
+        // Update multiplayer display
+        this.updateMultiplayerDisplay(gameState);
         
         // Update cards
         this.displayCards('tableCards', gameState.table_cards || []);
@@ -482,7 +574,25 @@ class GameUI {
      */
     createCardElement(card, clickable = false) {
         const cardEl = document.createElement('div');
-        cardEl.className = `card ${clickable ? 'clickable' : ''}`;
+        
+        // Add multiplayer class for enhanced styling
+        let cardClasses = `card ${clickable ? 'clickable multiplayer' : ''}`;
+        
+        // Check if this card is a valid move in multiplayer
+        if (clickable && this.currentGameState) {
+            const validMoves = this.currentGameState.valid_moves || [];
+            const isValidMove = validMoves.some(validCard => 
+                validCard.suit === card.suit && validCard.value === card.value
+            );
+            
+            if (isValidMove) {
+                cardClasses += ' valid-move';
+            } else if (this.currentGameState.your_turn) {
+                cardClasses += ' invalid-move';
+            }
+        }
+        
+        cardEl.className = cardClasses;
         cardEl.setAttribute('data-suit', card.suit);
         cardEl.setAttribute('data-value', card.value);
         cardEl.setAttribute('data-id', card.id || '');
@@ -501,6 +611,17 @@ class GameUI {
         if (clickable) {
             cardEl.addEventListener('click', () => {
                 this.handleCardClick(card);
+            });
+            
+            // Add hover effects for multiplayer
+            cardEl.addEventListener('mouseenter', () => {
+                if (!cardEl.classList.contains('invalid-move')) {
+                    cardEl.classList.add('hover');
+                }
+            });
+            
+            cardEl.addEventListener('mouseleave', () => {
+                cardEl.classList.remove('hover');
             });
         }
         
@@ -768,6 +889,203 @@ class GameUI {
      */
     logError(message, error = null) {
         this.logMessage('ERROR', message, error);
+    }
+    
+    /**
+     * Handle copy game ID button
+     */
+    async handleCopyGameId() {
+        const gameId = this.elements.createdGameId.value;
+        if (!gameId) {
+            this.showError('No game ID to copy');
+            return;
+        }
+        
+        try {
+            await navigator.clipboard.writeText(gameId);
+            
+            // Visual feedback
+            const button = this.elements.copyGameIdBtn;
+            const originalText = button.textContent;
+            button.textContent = '✓ Copied!';
+            button.classList.add('copied');
+            
+            setTimeout(() => {
+                button.textContent = originalText;
+                button.classList.remove('copied');
+            }, 2000);
+            
+            this.log(`Game ID copied to clipboard: ${gameId}`);
+        } catch (error) {
+            // Fallback for browsers that don't support clipboard API
+            this.elements.createdGameId.select();
+            document.execCommand('copy');
+            this.log('Game ID copied to clipboard (fallback)');
+        }
+    }
+    
+    /**
+     * Handle join game ID input changes
+     */
+    handleJoinGameIdInput() {
+        const gameId = this.elements.joinGameId.value.trim();
+        const isValidGameId = gameId.length > 0;
+        
+        // Enable/disable join button based on input
+        if (this.wsClient && this.wsClient.isConnected) {
+            this.elements.joinGameBtn.disabled = !isValidGameId;
+        }
+    }
+    
+    /**
+     * Update multiplayer display with game state
+     */
+    updateMultiplayerDisplay(gameState) {
+        if (!gameState) return;
+        
+        const hasGameId = !!gameState.game_id;
+        const hasPlayers = gameState.players && gameState.players.length > 0;
+        
+        // Show/hide multiplayer elements
+        if (hasGameId) {
+            this.elements.turnIndicator.style.display = 'block';
+            this.elements.gameStatusBanner.style.display = 'block';
+            
+            if (hasPlayers && gameState.players.length >= 2) {
+                this.elements.playersDisplay.style.display = 'block';
+            }
+        }
+        
+        // Update turn indicator
+        this.updateTurnIndicator(gameState);
+        
+        // Update game status banner
+        this.updateGameStatusBanner(gameState);
+        
+        // Update players display
+        if (hasPlayers) {
+            this.updatePlayersDisplay(gameState);
+        }
+    }
+    
+    /**
+     * Update turn indicator
+     */
+    updateTurnIndicator(gameState) {
+        const turnIndicator = this.elements.turnIndicator;
+        const turnText = this.elements.turnText;
+        
+        // Remove all turn classes
+        turnIndicator.classList.remove('your-turn', 'opponent-turn', 'waiting');
+        
+        if (gameState.status === 'waiting_for_players') {
+            turnIndicator.classList.add('waiting');
+            turnText.innerHTML = '<span class="turn-icon">⏳</span> Waiting for players...';
+        } else if (gameState.status === 'playing') {
+            if (gameState.your_turn) {
+                turnIndicator.classList.add('your-turn');
+                turnText.innerHTML = '<span class="turn-icon">🎯</span> Your turn - Play a card!';
+            } else {
+                turnIndicator.classList.add('opponent-turn');
+                turnText.innerHTML = '<span class="turn-icon">⏱️</span> Opponent\'s turn';
+            }
+        } else if (gameState.status === 'finished') {
+            turnIndicator.classList.add('waiting');
+            if (gameState.winner_id) {
+                const isWinner = gameState.winner_id === this.wsClient.playerId;
+                turnText.innerHTML = `<span class="turn-icon">${isWinner ? '🏆' : '😔'}</span> Game finished - ${isWinner ? 'You won!' : 'You lost'}`;
+            } else {
+                turnText.innerHTML = '<span class="turn-icon">🏁</span> Game finished';
+            }
+        }
+    }
+    
+    /**
+     * Update game status banner
+     */
+    updateGameStatusBanner(gameState) {
+        const banner = this.elements.gameStatusBanner;
+        const statusText = this.elements.gameStatusText;
+        
+        // Remove all status classes
+        banner.classList.remove('waiting-for-players', 'game-active', 'game-finished');
+        
+        if (gameState.status === 'waiting_for_players') {
+            banner.classList.add('waiting-for-players');
+            const playerCount = gameState.players ? gameState.players.length : 1;
+            statusText.textContent = `Waiting for players (${playerCount}/2)`;
+        } else if (gameState.status === 'playing') {
+            banner.classList.add('game-active');
+            statusText.textContent = `Game in progress - Round ${gameState.trick_number || 1}`;
+        } else if (gameState.status === 'finished') {
+            banner.classList.add('game-finished');
+            if (gameState.winner_id) {
+                const isWinner = gameState.winner_id === this.wsClient.playerId;
+                statusText.textContent = isWinner ? '🏆 You won the game!' : '😔 You lost the game';
+            } else {
+                statusText.textContent = 'Game finished';
+            }
+        }
+    }
+    
+    /**
+     * Update players display
+     */
+    updatePlayersDisplay(gameState) {
+        if (!gameState.players || gameState.players.length === 0) return;
+        
+        const currentPlayerId = this.wsClient.playerId;
+        let player1 = null;
+        let player2 = null;
+        
+        // Organize players - current player first
+        gameState.players.forEach(player => {
+            if (player.id === currentPlayerId) {
+                player1 = player;
+            } else {
+                player2 = player;
+            }
+        });
+        
+        // If no current player found, use order from array
+        if (!player1 && gameState.players.length > 0) {
+            player1 = gameState.players[0];
+            player2 = gameState.players[1] || null;
+        }
+        
+        // Update player 1 (current player)
+        if (player1) {
+            this.elements.player1Name.textContent = player1.id === currentPlayerId ? 'You' : `Player 1`;
+            this.elements.player1Cards.textContent = `${player1.hand_size || 0} cards`;
+            this.elements.player1Score.textContent = `${player1.score || 0} points`;
+            
+            // Highlight current player
+            if (gameState.current_player_id === player1.id) {
+                this.elements.player1Info.classList.add('current-player');
+            } else {
+                this.elements.player1Info.classList.remove('current-player');
+            }
+        }
+        
+        // Update player 2 (opponent)
+        if (player2) {
+            this.elements.player2Name.textContent = player2.id === currentPlayerId ? 'You' : 'Opponent';
+            this.elements.player2Cards.textContent = `${player2.hand_size || 0} cards`;
+            this.elements.player2Score.textContent = `${player2.score || 0} points`;
+            
+            // Highlight current player
+            if (gameState.current_player_id === player2.id) {
+                this.elements.player2Info.classList.add('current-player');
+            } else {
+                this.elements.player2Info.classList.remove('current-player');
+            }
+        } else {
+            // No second player yet
+            this.elements.player2Name.textContent = 'Waiting...';
+            this.elements.player2Cards.textContent = '- cards';
+            this.elements.player2Score.textContent = '- points';
+            this.elements.player2Info.classList.remove('current-player');
+        }
     }
     
     // ===== 3D RENDERER METHODS =====
