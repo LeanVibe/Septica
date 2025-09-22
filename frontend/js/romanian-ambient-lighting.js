@@ -39,6 +39,12 @@ class RomanianAmbientLighting {
      * Configure renderer for optimal lighting
      */
     setupRenderer() {
+        // Safety check for renderer
+        if (!this.renderer || !this.renderer.shadowMap) {
+            console.warn('🕯️ Renderer not available for shadow configuration');
+            return;
+        }
+        
         // Enable shadows for realistic depth
         this.renderer.shadowMap.enabled = this.shadowConfig.enabled;
         this.renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Soft shadows

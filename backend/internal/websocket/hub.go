@@ -2,6 +2,7 @@ package websocket
 
 import (
 	"encoding/json"
+	"errors"
 	"sync"
 	"time"
 
@@ -34,11 +35,22 @@ type Hub struct {
 	// Game engine for validating moves
 	gameEngine *game.Engine
 
+	// Matchmaking service reference
+	matchmakingService MatchmakingServiceInterface
+
 	// Logger
 	logger *logger.Logger
 
 	// Mutex for thread-safe operations
 	mutex sync.RWMutex
+}
+
+// MatchmakingServiceInterface defines the interface for matchmaking service
+type MatchmakingServiceInterface interface {
+	JoinQueue(playerID uuid.UUID, queueType, gameMode string) error
+	LeaveQueue(playerID uuid.UUID) error
+	GetQueueStatus(playerID uuid.UUID) (map[string]interface{}, error)
+	IsPlayerInQueue(playerID uuid.UUID) bool
 }
 
 // NewHub creates a new WebSocket hub
@@ -410,4 +422,28 @@ func (h *Hub) GetGameCount() int {
 // GetGameEngine returns the game engine instance
 func (h *Hub) GetGameEngine() *game.Engine {
 	return h.gameEngine
+}
+
+// SetMatchmakingService sets the matchmaking service reference
+func (h *Hub) SetMatchmakingService(service MatchmakingServiceInterface) {
+	h.matchmakingService = service
+}
+
+// SendToPlayer sends a message to a specific player by user ID
+func (h *Hub) SendToPlayer(playerID uuid.UUID, message Message) error {
+	h.mutex.RLock()
+	defer h.mutex.RUnlock()
+	
+	client, exists := h.userClients[playerID]
+	if !exists {
+		return ErrClientNotFound
+	}
+	
+	select {
+	case client.send <- message:
+		return nil
+	default:
+		h.logger.Warn("Failed to send message to client - channel full", "user_id", playerID)
+		return errors.New("client channel full")
+	}
 }

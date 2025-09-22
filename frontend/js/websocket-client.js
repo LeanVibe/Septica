@@ -37,6 +37,13 @@ class SepticaWebSocketClient {
         this.onError = null;
         this.onGameStateUpdate = null;
         this.onMoveResult = null;
+        this.onPlayerJoined = null;
+        this.onPlayerLeft = null;
+        this.onMatchmakingJoined = null;
+        this.onMatchmakingUpdate = null;
+        this.onMatchFound = null;
+        this.onMatchmakingLeft = null;
+        this.onMatchmakingError = null;
         
         // Message types (matching backend constants)
         this.MESSAGE_TYPES = {
@@ -47,6 +54,9 @@ class SepticaWebSocketClient {
             PLAY_CARD: 'play_card',
             GET_GAME_STATE: 'get_game_state',
             CHAT_MESSAGE: 'chat_message',
+            JOIN_MATCHMAKING: 'join_matchmaking',
+            LEAVE_MATCHMAKING: 'leave_matchmaking',
+            MATCHMAKING_STATUS: 'matchmaking_status',
             
             // Server -> Client
             PONG: 'pong',
@@ -59,6 +69,11 @@ class SepticaWebSocketClient {
             GAME_END: 'game_end',
             HEARTBEAT: 'heartbeat',
             CHAT_RECEIVED: 'chat_received',
+            MATCHMAKING_JOINED: 'matchmaking_joined',
+            MATCHMAKING_UPDATE: 'matchmaking_update',
+            MATCH_FOUND: 'match_found',
+            MATCHMAKING_LEFT: 'matchmaking_left',
+            MATCHMAKING_ERROR: 'matchmaking_error',
             GAME_STARTED: 'game_started',
             TRICK_COMPLETE: 'trick_complete',
             PLAYER_TURN: 'player_turn',
@@ -96,6 +111,16 @@ class SepticaWebSocketClient {
                 this.log('Already connected');
                 return;
             }
+            
+            // Generate user_id if not already set, or get from localStorage for silent signin
+            if (!this.playerId) {
+                this.playerId = localStorage.getItem('septica_user_id') || crypto.randomUUID();
+                localStorage.setItem('septica_user_id', this.playerId);
+            }
+            
+            // Add user_id parameter to WebSocket URL
+            const connectUrl = `${url}?user_id=${this.playerId}`;
+            url = connectUrl;
             
             this.log(`Connecting to ${url}...`);
             this.ws = new WebSocket(url);
@@ -166,6 +191,7 @@ class SepticaWebSocketClient {
         this.reconnectDelay = 1000; // Reset delay
         
         this.log('Connected to WebSocket server');
+        console.log('🟢 DEBUG: WebSocket connection opened successfully');
         this.notifyConnectionChange();
     }
     
@@ -181,10 +207,12 @@ class SepticaWebSocketClient {
         }
         
         this.log(`Connection closed: ${event.code} - ${event.reason}`);
+        console.log(`🔴 DEBUG: WebSocket closed - Code: ${event.code}, Reason: "${event.reason}", Clean: ${event.code === 1000}`);
         this.notifyConnectionChange();
         
         // Auto-reconnect if not a clean disconnect
         if (event.code !== 1000 && this.connectionAttempts < this.maxReconnectAttempts) {
+            console.log(`🔄 DEBUG: Auto-reconnecting... (attempt ${this.connectionAttempts + 1}/${this.maxReconnectAttempts})`);
             this.attemptReconnect();
         }
     }
@@ -245,6 +273,26 @@ class SepticaWebSocketClient {
                     this.handleServerError(message);
                     break;
                     
+                case this.MESSAGE_TYPES.MATCHMAKING_JOINED:
+                    this.handleMatchmakingJoined(message);
+                    break;
+                    
+                case this.MESSAGE_TYPES.MATCHMAKING_UPDATE:
+                    this.handleMatchmakingUpdate(message);
+                    break;
+                    
+                case this.MESSAGE_TYPES.MATCH_FOUND:
+                    this.handleMatchFound(message);
+                    break;
+                    
+                case this.MESSAGE_TYPES.MATCHMAKING_LEFT:
+                    this.handleMatchmakingLeft(message);
+                    break;
+                    
+                case this.MESSAGE_TYPES.MATCHMAKING_ERROR:
+                    this.handleMatchmakingError(message);
+                    break;
+                    
                 default:
                     this.log('Unknown message type', message.type);
             }
@@ -263,22 +311,40 @@ class SepticaWebSocketClient {
      * Handle connection acknowledgment
      */
     handleConnectionAck(message) {
-        if (message.payload) {
-            this.playerId = message.player_id;
-            this.sessionId = message.payload.session_id;
-            this.serverTime = new Date(message.payload.server_time);
-            this.heartbeatIntervalMs = message.payload.heartbeat_interval || 30000;
-            this.maxMessageQueue = message.payload.max_message_queue || 100;
-            
-            this.log('Connection acknowledged', {
-                playerId: this.playerId,
-                sessionId: this.sessionId,
-                heartbeatInterval: this.heartbeatIntervalMs
-            });
-            
-            // Start heartbeat
-            this.startHeartbeat();
-            this.notifyConnectionChange();
+        console.log('🔍 DEBUG: handleConnectionAck called with:', message);
+        
+        try {
+            if (message.payload) {
+                this.playerId = message.player_id;
+                this.sessionId = message.payload.session_id;
+                this.serverTime = new Date(message.payload.server_time);
+                this.heartbeatIntervalMs = message.payload.heartbeat_interval || 30000;
+                this.maxMessageQueue = message.payload.max_message_queue || 100;
+                
+                console.log('🎯 DEBUG: Connection ACK processed successfully', {
+                    playerId: this.playerId,
+                    sessionId: this.sessionId,
+                    heartbeatInterval: this.heartbeatIntervalMs
+                });
+                
+                this.log('Connection acknowledged', {
+                    playerId: this.playerId,
+                    sessionId: this.sessionId,
+                    heartbeatInterval: this.heartbeatIntervalMs
+                });
+                
+                // Start heartbeat
+                console.log('❤️ DEBUG: Starting heartbeat...');
+                this.startHeartbeat();
+                console.log('📡 DEBUG: Notifying connection change...');
+                this.notifyConnectionChange();
+                console.log('✅ DEBUG: handleConnectionAck completed successfully');
+            } else {
+                console.log('⚠️ DEBUG: No payload in connection_ack message');
+            }
+        } catch (error) {
+            console.error('💥 DEBUG: Error in handleConnectionAck:', error);
+            throw error; // Re-throw to see the error in console
         }
     }
     
@@ -344,6 +410,10 @@ class SepticaWebSocketClient {
      */
     handlePlayerJoined(message) {
         this.log('Player joined', message.payload);
+        
+        if (this.onPlayerJoined) {
+            this.onPlayerJoined(message.payload);
+        }
     }
     
     /**
@@ -351,6 +421,10 @@ class SepticaWebSocketClient {
      */
     handlePlayerLeft(message) {
         this.log('Player left', message.payload);
+        
+        if (this.onPlayerLeft) {
+            this.onPlayerLeft(message.payload);
+        }
     }
     
     /**
@@ -376,6 +450,66 @@ class SepticaWebSocketClient {
                 code: error.code,
                 details: error.details
             });
+        }
+    }
+    
+    /**
+     * Handle matchmaking joined confirmation
+     */
+    handleMatchmakingJoined(message) {
+        this.log('Matchmaking joined', message.payload);
+        
+        if (this.onMatchmakingJoined) {
+            this.onMatchmakingJoined(message.payload);
+        }
+    }
+    
+    /**
+     * Handle matchmaking queue update
+     */
+    handleMatchmakingUpdate(message) {
+        this.log('Matchmaking update', message.payload);
+        
+        if (this.onMatchmakingUpdate) {
+            this.onMatchmakingUpdate(message.payload);
+        }
+    }
+    
+    /**
+     * Handle match found notification
+     */
+    handleMatchFound(message) {
+        this.log('Match found!', message.payload);
+        
+        // Set the game ID from the match
+        if (message.payload && message.payload.game_id) {
+            this.gameId = message.payload.game_id;
+        }
+        
+        if (this.onMatchFound) {
+            this.onMatchFound(message.payload);
+        }
+    }
+    
+    /**
+     * Handle matchmaking left confirmation
+     */
+    handleMatchmakingLeft(message) {
+        this.log('Left matchmaking', message.payload);
+        
+        if (this.onMatchmakingLeft) {
+            this.onMatchmakingLeft(message.payload);
+        }
+    }
+    
+    /**
+     * Handle matchmaking error
+     */
+    handleMatchmakingError(message) {
+        this.logError('Matchmaking error', message.payload);
+        
+        if (this.onMatchmakingError) {
+            this.onMatchmakingError(message.payload);
         }
     }
     
@@ -499,6 +633,32 @@ class SepticaWebSocketClient {
             message: message,
             type: type
         });
+    }
+    
+    /**
+     * Join matchmaking queue
+     */
+    joinMatchmaking(queueType = 'casual', gameMode = 'septica') {
+        this.log(`Joining matchmaking queue: ${queueType}`);
+        return this.sendMessage(this.MESSAGE_TYPES.JOIN_MATCHMAKING, null, {
+            queue_type: queueType,
+            game_mode: gameMode
+        });
+    }
+    
+    /**
+     * Leave matchmaking queue
+     */
+    leaveMatchmaking() {
+        this.log('Leaving matchmaking queue');
+        return this.sendMessage(this.MESSAGE_TYPES.LEAVE_MATCHMAKING);
+    }
+    
+    /**
+     * Get matchmaking status
+     */
+    getMatchmakingStatus() {
+        return this.sendMessage(this.MESSAGE_TYPES.MATCHMAKING_STATUS);
     }
     
     /**

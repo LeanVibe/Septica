@@ -14,9 +14,9 @@ class Card3DRenderer {
             onPerformanceAlert: (type, data) => this.handlePerformanceAlert(type, data)
         });
         
-        // Initialize Mobile LOD System (if available)
+        // Initialize Mobile LOD System (if available) - temporarily disabled due to circular dependency
         this.mobileLODSystem = null;
-        if (typeof MobileLODSystem !== 'undefined') {
+        if (false && typeof MobileLODSystem !== 'undefined') {
             this.mobileLODSystem = new MobileLODSystem(null, this.performanceMonitor);
         }
         
@@ -86,6 +86,17 @@ class Card3DRenderer {
      * Apply quality settings to renderer options
      */
     applyQualitySettings() {
+        // Use fallback values if quality settings are undefined
+        if (!this.qualitySettings) {
+            console.warn('Quality settings undefined, using fallback values');
+            this.qualitySettings = {
+                pixelRatio: Math.min(window.devicePixelRatio, 2),
+                enableShadows: true,
+                enableAntialiasing: true,
+                shadowMapSize: 1024
+            };
+        }
+        
         this.options.pixelRatio = this.qualitySettings.pixelRatio;
         this.options.enableShadows = this.qualitySettings.enableShadows;
         this.options.enableAntialiasing = this.qualitySettings.enableAntialiasing;
@@ -309,12 +320,23 @@ class Card3DRenderer {
     adaptQuality(newQuality, settings) {
         console.log(`Adapting quality to ${newQuality}`, settings);
         
+        // Validate settings parameter
+        if (!settings) {
+            console.warn('Settings undefined in adaptQuality, using fallback');
+            settings = {
+                pixelRatio: Math.min(window.devicePixelRatio, 2),
+                enableShadows: true,
+                enableAntialiasing: true,
+                shadowMapSize: 1024
+            };
+        }
+        
         this.currentQuality = newQuality;
         this.qualitySettings = settings;
         this.applyQualitySettings();
         
         // Update renderer settings
-        if (this.renderer) {
+        if (this.renderer && settings.pixelRatio !== undefined) {
             this.renderer.setPixelRatio(settings.pixelRatio);
             this.renderer.shadowMap.enabled = settings.enableShadows;
             

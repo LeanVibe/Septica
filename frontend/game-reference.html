@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Romanian Septica - Game</title>
+    
+    <!-- PWA Configuration -->
+    <meta name="theme-color" content="#1e3a8a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" href="favicon.ico">
+    
+    <!-- Game Scripts -->
+    <script src="js/websocket-client.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3a8a 0%, #3730a3 50%, #1e40af 100%);
+            height: 100vh;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            position: relative;
+        }
+
+        /* Top UI - Opponent Area */
+        .opponent-area {
+            height: 25%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        .opponent-info {
+            color: white;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .opponent-cards {
+            display: flex;
+            gap: -20px;
+            margin-top: 10px;
+        }
+
+        /* Center UI - Game Table */
+        .game-table {
+            height: 40%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .game-status {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-size: 14px;
+        }
+
+        .table-cards {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            margin-top: 20px;
+        }
+
+        /* Bottom UI - Player Area */
+        .player-area {
+            height: 35%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        .player-cards {
+            display: flex;
+            gap: -15px;
+            margin-bottom: 10px;
+            perspective: 1000px;
+        }
+
+        .player-info {
+            color: white;
+            font-size: 14px;
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        /* Card Styles */
+        .card {
+            width: 50px;
+            height: 70px;
+            border-radius: 8px;
+            border: 2px solid #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+
+        .card.playable:hover {
+            transform: translateY(-10px) scale(1.05);
+            z-index: 10;
+            box-shadow: 0 5px 15px rgba(255, 215, 0, 0.5);
+        }
+
+        .card.selected {
+            transform: translateY(-15px) scale(1.1);
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.8);
+            border-color: #ffd700;
+        }
+
+        .card.face-down {
+            background: linear-gradient(135deg, #1e3a8a, #3730a3);
+            color: transparent;
+        }
+
+        .card.face-up {
+            background: white;
+        }
+
+        .card.hearts, .card.diamonds {
+            color: #dc2626;
+        }
+
+        .card.clubs, .card.spades {
+            color: #000;
+        }
+
+        .card-value {
+            font-size: 10px;
+            margin: 2px;
+        }
+
+        .card-suit {
+            font-size: 16px;
+            margin: 2px;
+        }
+
+        /* Table card stacking */
+        .table-cards .card {
+            position: relative;
+        }
+
+        .table-cards .card:not(:first-child) {
+            margin-left: -35px; /* Stack with top-left corner visible */
+        }
+
+        .table-cards .card:last-child {
+            margin-left: -35px; /* Rightmost card fully visible */
+        }
+
+        /* Connection Status */
+        .connection-status {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 5px 10px;
+            border-radius: 15px;
+            color: white;
+            font-size: 12px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #dc2626;
+            transition: background-color 0.3s;
+        }
+
+        .status-dot.connected {
+            background: #16a34a;
+        }
+
+        /* Game Controls */
+        .game-controls {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            backdrop-filter: blur(10px);
+            font-size: 12px;
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Multi-tab info */
+        .tab-info {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 10px;
+        }
+
+        /* Score display */
+        .score-display {
+            display: flex;
+            gap: 30px;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .score {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .score-value {
+            font-size: 24px;
+            color: #ffd700;
+        }
+
+        /* Turn indicator */
+        .turn-indicator {
+            background: rgba(255, 215, 0, 0.2);
+            border: 2px solid #ffd700;
+            padding: 5px 15px;
+            border-radius: 20px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.7; }
+            50% { opacity: 1; }
+            100% { opacity: 0.7; }
+        }
+
+        /* Loading overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(30, 58, 138, 0.9);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid #ffd700;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            margin-top: 20px;
+            color: white;
+            font-size: 16px;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .card {
+                width: 45px;
+                height: 63px;
+                font-size: 10px;
+            }
+            
+            .card-suit {
+                font-size: 14px;
+            }
+            
+            .player-cards {
+                gap: -18px;
+            }
+            
+            .opponent-cards {
+                gap: -18px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Connecting to Romanian Septica...</div>
+    </div>
+
+    <div class="game-container">
+        <!-- Connection Status -->
+        <div class="connection-status">
+            <div class="status-dot" id="connection-dot"></div>
+            <span id="connection-text">Connecting...</span>
+        </div>
+
+        <!-- Opponent Area -->
+        <div class="opponent-area">
+            <div class="opponent-info">
+                <div class="score">
+                    <span>Opponent</span>
+                    <span class="score-value" id="opponent-score">0</span>
+                </div>
+            </div>
+            <div class="opponent-cards" id="opponent-cards">
+                <!-- Opponent cards will be added here -->
+            </div>
+        </div>
+
+        <!-- Game Table -->
+        <div class="game-table">
+            <div class="game-status turn-indicator" id="game-status">
+                Connecting...
+            </div>
+
+            <div class="score-display">
+                <div class="score">
+                    <span>Trick</span>
+                    <span class="score-value" id="trick-number">1</span>
+                </div>
+                <div class="score">
+                    <span>Move</span>
+                    <span class="score-value" id="move-number">1</span>
+                </div>
+            </div>
+
+            <div class="table-cards" id="table-cards">
+                <!-- Table cards will be added here -->
+            </div>
+        </div>
+
+        <!-- Player Area -->
+        <div class="player-area">
+            <div class="player-cards" id="player-cards">
+                <!-- Player cards will be added here -->
+            </div>
+            <div class="player-info">
+                <div class="score">
+                    <span>You</span>
+                    <span class="score-value" id="player-score">0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Controls -->
+        <div class="game-controls">
+            <button class="btn" id="join-game-btn">Join Game</button>
+            <button class="btn" id="leave-game-btn" disabled>Leave Game</button>
+            <button class="btn" id="new-game-btn">New Game</button>
+        </div>
+
+        <!-- Multi-tab Info -->
+        <div class="tab-info">
+            Open multiple tabs to test multiplayer
+        </div>
+    </div>
+
+    <script>
+        console.log(`
+🎮 Romanian Septica - Playable Game Interface
+============================================
+🇷🇴 ShuffleCats-style card game interface
+🌐 Multi-tab multiplayer testing ready
+🃏 Click cards in your hand to play them
+
+Instructions:
+• Open multiple browser tabs for multiplayer testing
+• Click "Join Game" to find opponents
+• Click cards in your hand to select and play
+• Watch for your turn indicator
+
+Ready to play Romanian Septica!
+        `);
+
+        class SepticaGame {
+            constructor() {
+                this.client = null;
+                this.gameState = null;
+                this.selectedCard = null;
+                this.isMyTurn = false;
+                this.playerId = null;
+                this.gameId = null;
+                this.playerScore = 0;
+                this.opponentScore = 0;
+                this.isInGame = false;
+                
+                this.initialize();
+            }
+            
+            async initialize() {
+                console.log('🎮 Initializing Septica Game...');
+                
+                // Setup WebSocket client
+                this.setupWebSocketClient();
+                
+                // Setup UI event handlers
+                this.setupUIHandlers();
+                
+                // Auto-connect
+                await this.client.connect();
+                
+                // Hide loading overlay
+                this.hideLoading();
+                
+                console.log('🎮 Septica Game ready!');
+            }
+            
+            setupWebSocketClient() {
+                this.client = new SepticaWebSocketClient();
+                
+                // Set up event handlers
+                this.client.onConnectionChange = (connected) => {
+                    this.updateConnectionStatus(connected);
+                };
+                
+                this.client.onGameStateUpdate = (gameState) => {
+                    this.handleGameStateUpdate(gameState);
+                };
+                
+                this.client.onMessage = (message) => {
+                    console.log('📨 WebSocket message:', message);
+                    this.handleWebSocketMessage(message);
+                };
+                
+                this.client.onError = (error) => {
+                    console.error('❌ WebSocket error:', error);
+                };
+            }
+            
+            setupUIHandlers() {
+                // Game controls
+                document.getElementById('join-game-btn').addEventListener('click', () => {
+                    this.joinGame();
+                });
+                
+                document.getElementById('leave-game-btn').addEventListener('click', () => {
+                    this.leaveGame();
+                });
+                
+                document.getElementById('new-game-btn').addEventListener('click', () => {
+                    this.startNewGame();
+                });
+            }
+            
+            // Game control methods
+            async joinGame() {
+                if (!this.client.isConnected) {
+                    await this.client.connect();
+                }
+                
+                if (this.client.isConnected) {
+                    console.log('🎮 Joining game...');
+                    // Generate or use default game ID for matchmaking (must be valid UUID)
+                    const gameId = this.gameId || crypto.randomUUID();
+                    this.client.joinGame(gameId, 'casual');
+                    this.gameId = gameId;
+                    this.isInGame = true;
+                    this.updateGameControls();
+                    this.updateGameStatus('Joining game...');
+                } else {
+                    console.error('❌ Cannot join game - not connected to server');
+                    this.updateGameStatus('Connection failed');
+                }
+            }
+            
+            leaveGame() {
+                if (this.client.isConnected && this.isInGame) {
+                    console.log('🎮 Leaving game...');
+                    this.client.leaveGame();
+                    this.isInGame = false;
+                    this.gameId = null;
+                    this.updateGameControls();
+                    this.updateGameStatus('Left game');
+                    this.clearCards();
+                }
+            }
+            
+            startNewGame() {
+                console.log('🎮 Starting new single-player demo...');
+                this.playerScore = 0;
+                this.opponentScore = 0;
+                this.isMyTurn = true;
+                this.updateScores();
+                this.updateGameStatus('Your turn');
+                this.createDemoHands();
+            }
+            
+            // Card creation and management
+            createCard(suit, value, faceDown = false) {
+                const card = document.createElement('div');
+                card.className = `card ${faceDown ? 'face-down' : 'face-up'} ${suit}`;
+                
+                if (!faceDown) {
+                    const valueSpan = document.createElement('span');
+                    valueSpan.className = 'card-value';
+                    valueSpan.textContent = this.getCardValueText(value);
+                    
+                    const suitSpan = document.createElement('span');
+                    suitSpan.className = 'card-suit';
+                    suitSpan.textContent = this.getSuitSymbol(suit);
+                    
+                    card.appendChild(valueSpan);
+                    card.appendChild(suitSpan);
+                }
+                
+                card.dataset.suit = suit;
+                card.dataset.value = value;
+                
+                return card;
+            }
+            
+            getCardValueText(value) {
+                const valueMap = {
+                    7: '7', 8: '8', 9: '9', 10: '10',
+                    11: 'J', 12: 'Q', 13: 'K', 14: 'A'
+                };
+                return valueMap[value] || value.toString();
+            }
+            
+            getSuitSymbol(suit) {
+                const symbols = {
+                    'hearts': '♥',
+                    'diamonds': '♦',
+                    'clubs': '♣',
+                    'spades': '♠'
+                };
+                return symbols[suit] || '?';
+            }
+            
+            createDemoHands() {
+                this.clearCards();
+                
+                // Create player hand (like ShuffleCats reference)
+                const playerCards = [
+                    { suit: 'hearts', value: 7 },
+                    { suit: 'diamonds', value: 8 },
+                    { suit: 'clubs', value: 9 },
+                    { suit: 'spades', value: 10 },
+                    { suit: 'hearts', value: 11 }
+                ];
+                
+                const playerContainer = document.getElementById('player-cards');
+                playerCards.forEach(cardData => {
+                    const card = this.createCard(cardData.suit, cardData.value);
+                    card.classList.add('playable');
+                    card.addEventListener('click', () => this.selectCard(card));
+                    playerContainer.appendChild(card);
+                });
+                
+                // Create opponent hand (face down)
+                const opponentContainer = document.getElementById('opponent-cards');
+                for (let i = 0; i < 5; i++) {
+                    const card = this.createCard('spades', 7, true);
+                    opponentContainer.appendChild(card);
+                }
+                
+                // Create table cards (stacked with visible corners)
+                const tableCards = [
+                    { suit: 'diamonds', value: 9 },
+                    { suit: 'clubs', value: 7 }
+                ];
+                
+                const tableContainer = document.getElementById('table-cards');
+                tableCards.forEach(cardData => {
+                    const card = this.createCard(cardData.suit, cardData.value);
+                    tableContainer.appendChild(card);
+                });
+            }
+            
+            selectCard(card) {
+                if (!this.isMyTurn) return;
+                
+                // Clear previous selection
+                if (this.selectedCard) {
+                    this.selectedCard.classList.remove('selected');
+                }
+                
+                this.selectedCard = card;
+                card.classList.add('selected');
+                
+                console.log(`🃏 Selected card: ${this.getCardValueText(card.dataset.value)} of ${card.dataset.suit}`);
+                
+                // Auto-play after 500ms
+                setTimeout(() => {
+                    this.playCard(card);
+                }, 500);
+            }
+            
+            playCard(card) {
+                if (!card || !this.isMyTurn) return;
+                
+                console.log(`🎮 Playing card: ${this.getCardValueText(card.dataset.value)} of ${card.dataset.suit}`);
+                
+                // Move card to table
+                const tableContainer = document.getElementById('table-cards');
+                card.classList.remove('selected', 'playable');
+                card.removeEventListener('click', this.selectCard);
+                tableContainer.appendChild(card);
+                
+                // Clear selection
+                this.selectedCard = null;
+                
+                // Update turn
+                this.isMyTurn = false;
+                this.updateGameStatus("Opponent's turn");
+                
+                // Send move to server if connected
+                if (this.client && this.client.isConnected && this.gameId) {
+                    this.client.playCard(card.dataset.suit, parseInt(card.dataset.value));
+                }
+                
+                // Simulate opponent move in demo mode
+                if (!this.isInGame) {
+                    setTimeout(() => {
+                        this.simulateOpponentMove();
+                    }, 1500);
+                }
+            }
+            
+            simulateOpponentMove() {
+                const opponentCards = document.getElementById('opponent-cards').children;
+                if (opponentCards.length > 0) {
+                    const randomCard = opponentCards[Math.floor(Math.random() * opponentCards.length)];
+                    
+                    // Create a face-up version of opponent card
+                    const suits = ['hearts', 'diamonds', 'clubs', 'spades'];
+                    const values = [7, 8, 9, 10, 11, 12, 13, 14];
+                    const randomSuit = suits[Math.floor(Math.random() * suits.length)];
+                    const randomValue = values[Math.floor(Math.random() * values.length)];
+                    
+                    const playedCard = this.createCard(randomSuit, randomValue);
+                    
+                    // Move to table
+                    const tableContainer = document.getElementById('table-cards');
+                    tableContainer.appendChild(playedCard);
+                    
+                    // Remove opponent card
+                    randomCard.remove();
+                    
+                    // Update turn
+                    this.isMyTurn = true;
+                    this.updateGameStatus('Your turn');
+                    
+                    console.log('🤖 Opponent played a card');
+                }
+            }
+            
+            clearCards() {
+                document.getElementById('player-cards').innerHTML = '';
+                document.getElementById('opponent-cards').innerHTML = '';
+                document.getElementById('table-cards').innerHTML = '';
+            }
+            
+            // UI update methods
+            updateConnectionStatus(connected) {
+                const dot = document.getElementById('connection-dot');
+                const text = document.getElementById('connection-text');
+                
+                if (connected) {
+                    dot.classList.add('connected');
+                    text.textContent = 'Connected';
+                    this.updateGameStatus('Connected - Ready to play');
+                } else {
+                    dot.classList.remove('connected');
+                    text.textContent = 'Disconnected';
+                    this.updateGameStatus('Disconnected');
+                }
+            }
+            
+            updateGameControls() {
+                const joinBtn = document.getElementById('join-game-btn');
+                const leaveBtn = document.getElementById('leave-game-btn');
+                
+                joinBtn.disabled = this.isInGame;
+                leaveBtn.disabled = !this.isInGame;
+            }
+            
+            updateGameStatus(status) {
+                document.getElementById('game-status').textContent = status;
+            }
+            
+            updateScores() {
+                document.getElementById('player-score').textContent = this.playerScore;
+                document.getElementById('opponent-score').textContent = this.opponentScore;
+            }
+            
+            // WebSocket message handling
+            handleGameStateUpdate(gameState) {
+                this.gameState = gameState;
+                console.log('🎮 Game state updated:', gameState);
+                
+                if (gameState) {
+                    // Update scores
+                    if (gameState.scores) {
+                        this.playerScore = gameState.scores.player || 0;
+                        this.opponentScore = gameState.scores.opponent || 0;
+                        this.updateScores();
+                    }
+                    
+                    // Update turn
+                    if (gameState.currentPlayer !== undefined) {
+                        this.isMyTurn = gameState.currentPlayer === 1;
+                        this.updateGameStatus(this.isMyTurn ? 'Your turn' : "Opponent's turn");
+                    }
+                    
+                    // Update cards
+                    if (gameState.playerHand || gameState.tableCards) {
+                        this.updateCardsFromGameState(gameState);
+                    }
+                }
+            }
+            
+            updateCardsFromGameState(gameState) {
+                this.clearCards();
+                
+                // Update player hand
+                if (gameState.playerHand) {
+                    const playerContainer = document.getElementById('player-cards');
+                    gameState.playerHand.forEach(cardData => {
+                        const card = this.createCard(cardData.suit, cardData.value);
+                        card.classList.add('playable');
+                        card.addEventListener('click', () => this.selectCard(card));
+                        playerContainer.appendChild(card);
+                    });
+                }
+                
+                // Update table cards
+                if (gameState.tableCards) {
+                    const tableContainer = document.getElementById('table-cards');
+                    gameState.tableCards.forEach(cardData => {
+                        const card = this.createCard(cardData.suit, cardData.value);
+                        tableContainer.appendChild(card);
+                    });
+                }
+                
+                // Update opponent hand (face down)
+                if (gameState.opponentHandSize) {
+                    const opponentContainer = document.getElementById('opponent-cards');
+                    for (let i = 0; i < gameState.opponentHandSize; i++) {
+                        const card = this.createCard('spades', 7, true);
+                        opponentContainer.appendChild(card);
+                    }
+                }
+            }
+            
+            handleWebSocketMessage(message) {
+                switch (message.type) {
+                    case 'game_state':
+                        this.gameId = message.game_id;
+                        this.updateGameStatus('Game joined');
+                        break;
+                    case 'player_joined':
+                        console.log('👥 Player joined the game');
+                        this.updateGameStatus('Player joined - Game starting');
+                        break;
+                    case 'player_left':
+                        console.log('👥 Player left the game');
+                        this.updateGameStatus('Player left');
+                        break;
+                    case 'game_end':
+                        console.log('🏁 Game ended');
+                        this.isInGame = false;
+                        this.updateGameControls();
+                        this.updateGameStatus('Game ended');
+                        break;
+                    case 'connection_ack':
+                        this.playerId = message.player_id;
+                        console.log('✅ Connected with player ID:', this.playerId);
+                        break;
+                }
+            }
+            
+            hideLoading() {
+                const loadingOverlay = document.getElementById('loading-overlay');
+                loadingOverlay.style.opacity = '0';
+                setTimeout(() => {
+                    loadingOverlay.style.display = 'none';
+                }, 500);
+            }
+            
+            dispose() {
+                if (this.client) {
+                    this.client.disconnect();
+                }
+            }
+        }
+        
+        // Initialize the game when page loads
+        let gameInstance;
+        
+        window.addEventListener('load', () => {
+            gameInstance = new SepticaGame();
+        });
+        
+        // Clean up when page unloads
+        window.addEventListener('beforeunload', () => {
+            if (gameInstance) {
+                gameInstance.dispose();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -16,6 +16,9 @@ class MobileLODSystem {
             critical: 15  // <25 fps: Emergency mode
         };
         
+        // Device-specific optimizations (must be initialized first)
+        this.deviceOptimizations = this.detectDeviceOptimizations();
+        
         // Current LOD state
         this.currentLOD = 'high';
         this.lodSettings = this.getLODSettings();
@@ -24,9 +27,6 @@ class MobileLODSystem {
         this.frameTimeHistory = [];
         this.lastLODUpdate = 0;
         this.lodUpdateInterval = 2000; // Update LOD every 2 seconds
-        
-        // Device-specific optimizations
-        this.deviceOptimizations = this.detectDeviceOptimizations();
         
         console.log('Mobile LOD System initialized:', {
             currentLOD: this.currentLOD,
@@ -44,7 +44,7 @@ class MobileLODSystem {
         const isLowMemory = navigator.deviceMemory && navigator.deviceMemory <= 2;
         const isOldDevice = this.detectOldDevice();
         
-        return {
+        const deviceOpts = {
             isIOS,
             isIOSSafari,
             isLowMemory,
@@ -52,10 +52,14 @@ class MobileLODSystem {
             shouldUseWebGL1: isOldDevice || isLowMemory,
             shouldDisableAntialiasing: isIOS || isLowMemory,
             shouldReduceTextures: isLowMemory || isOldDevice,
-            shouldUseLowPrecision: isIOS || isOldDevice,
-            maxTextureSize: this.getMaxTextureSize(),
-            preferredPixelRatio: this.getPreferredPixelRatio()
+            shouldUseLowPrecision: isIOS || isOldDevice
         };
+        
+        // Add computed values that depend on the above
+        deviceOpts.maxTextureSize = this.getMaxTextureSize(deviceOpts);
+        deviceOpts.preferredPixelRatio = this.getPreferredPixelRatio(deviceOpts);
+        
+        return deviceOpts;
     }
     
     /**
@@ -85,22 +89,28 @@ class MobileLODSystem {
     /**
      * Get optimal texture size for device
      */
-    getMaxTextureSize() {
-        if (this.deviceOptimizations.isLowMemory) return 512;
-        if (this.deviceOptimizations.isOldDevice) return 1024;
-        if (this.deviceOptimizations.isIOS) return 2048;
+    getMaxTextureSize(deviceOpts = null) {
+        const opts = deviceOpts || this.deviceOptimizations;
+        if (!opts) return 2048; // Fallback
+        
+        if (opts.isLowMemory) return 512;
+        if (opts.isOldDevice) return 1024;
+        if (opts.isIOS) return 2048;
         return 4096;
     }
     
     /**
      * Get preferred pixel ratio for device
      */
-    getPreferredPixelRatio() {
+    getPreferredPixelRatio(deviceOpts = null) {
         const devicePixelRatio = window.devicePixelRatio || 1;
+        const opts = deviceOpts || this.deviceOptimizations;
         
-        if (this.deviceOptimizations.isLowMemory) return Math.min(devicePixelRatio, 1);
-        if (this.deviceOptimizations.isOldDevice) return Math.min(devicePixelRatio, 1.5);
-        if (this.deviceOptimizations.isIOS) return Math.min(devicePixelRatio, 2);
+        if (!opts) return Math.min(devicePixelRatio, 2); // Fallback
+        
+        if (opts.isLowMemory) return Math.min(devicePixelRatio, 1);
+        if (opts.isOldDevice) return Math.min(devicePixelRatio, 1.5);
+        if (opts.isIOS) return Math.min(devicePixelRatio, 2);
         
         return Math.min(devicePixelRatio, 2);
     }

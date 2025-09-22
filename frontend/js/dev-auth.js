@@ -20,12 +20,14 @@ class DevAuthManager {
      */
     checkDevelopmentMode() {
         const hostname = window.location.hostname;
+        const port = window.location.port;
         const isDev = hostname === 'localhost' || 
                      hostname === '127.0.0.1' || 
                      hostname.includes('dev') ||
-                     window.location.port === '8001';
+                     port === '8001';
         
-        console.log(`🔧 Development mode: ${isDev ? 'ENABLED' : 'DISABLED'}`);
+        console.log(`🔧 DEBUG: Development mode check - hostname: "${hostname}", port: "${port}"`);
+        console.log(`🔧 DEBUG: Development mode: ${isDev ? 'ENABLED' : 'DISABLED'}`);
         return isDev;
     }
 
@@ -189,17 +191,20 @@ class DevAuthManager {
      */
     async autoConnect(webSocketClient) {
         if (!this.isDevelopment || !webSocketClient) {
+            console.log(`⚠️ DEBUG: Auto-connect skipped - isDev: ${this.isDevelopment}, hasClient: ${!!webSocketClient}`);
             return false;
         }
         
         const wsUrl = this.getWebSocketUrl();
-        console.log(`🚀 Auto-connecting Player ${this.playerNumber} to ${wsUrl}`);
+        console.log(`🚀 DEBUG: Auto-connecting Player ${this.playerNumber} to ${wsUrl}`);
+        console.log(`🔍 DEBUG: Development mode: ${this.isDevelopment}, Player ID: ${this.playerId}`);
         
         try {
             await webSocketClient.connect(wsUrl);
+            console.log(`✅ DEBUG: WebSocket connect() completed successfully`);
             return true;
         } catch (error) {
-            console.error('❌ Auto-connect failed:', error);
+            console.error('❌ DEBUG: Auto-connect failed:', error);
             return false;
         }
     }

@@ -280,6 +280,15 @@ func (c *Client) handleMessage(msg IncomingMessage) {
 			Payload:   playerView,
 		}
 
+	case "join_matchmaking":
+		c.handleJoinMatchmaking(msg)
+
+	case "leave_matchmaking":
+		c.handleLeaveMatchmaking(msg)
+
+	case "matchmaking_status":
+		c.handleMatchmakingStatus(msg)
+
 	case "pong":
 		// Client responded to our heartbeat - just acknowledge, no response needed
 		c.hub.logger.Debug("Received pong from client", "user_id", c.userID)
@@ -316,6 +325,94 @@ func (c *Client) sendError(errorType, message string) {
 		},
 	}
 	c.send <- errorMsg
+}
+
+// handleJoinMatchmaking handles join matchmaking requests
+func (c *Client) handleJoinMatchmaking(msg IncomingMessage) {
+	if msg.Payload == nil {
+		c.sendError("missing_payload", "Queue type and game mode are required")
+		return
+	}
+
+	payloadData, ok := msg.Payload.(map[string]interface{})
+	if !ok {
+		c.sendError("invalid_payload", "Payload must be an object")
+		return
+	}
+
+	queueType, ok := payloadData["queue_type"].(string)
+	if !ok || queueType == "" {
+		c.sendError("invalid_queue_type", "Queue type must be a non-empty string")
+		return
+	}
+
+	gameMode, ok := payloadData["game_mode"].(string)
+	if !ok {
+		gameMode = "septica" // Default game mode
+	}
+
+	// Check if player is already in a game
+	if c.currentGameID != nil {
+		c.sendError("already_in_game", "Cannot join matchmaking while in a game")
+		return
+	}
+
+	// Check if matchmaking service is available
+	if c.hub.matchmakingService == nil {
+		c.sendError("service_unavailable", "Matchmaking service is not available")
+		return
+	}
+
+	// Join matchmaking queue
+	if err := c.hub.matchmakingService.JoinQueue(c.userID, queueType, gameMode); err != nil {
+		c.sendError("matchmaking_join_failed", err.Error())
+		return
+	}
+
+	c.hub.logger.Info("Player joined matchmaking", "user_id", c.userID, "queue_type", queueType, "game_mode", gameMode)
+}
+
+// handleLeaveMatchmaking handles leave matchmaking requests
+func (c *Client) handleLeaveMatchmaking(msg IncomingMessage) {
+	// Check if matchmaking service is available
+	if c.hub.matchmakingService == nil {
+		c.sendError("service_unavailable", "Matchmaking service is not available")
+		return
+	}
+
+	// Leave matchmaking queue
+	if err := c.hub.matchmakingService.LeaveQueue(c.userID); err != nil {
+		c.sendError("matchmaking_leave_failed", err.Error())
+		return
+	}
+
+	c.hub.logger.Info("Player left matchmaking", "user_id", c.userID)
+}
+
+// handleMatchmakingStatus handles matchmaking status requests
+func (c *Client) handleMatchmakingStatus(msg IncomingMessage) {
+	// Check if matchmaking service is available
+	if c.hub.matchmakingService == nil {
+		c.sendError("service_unavailable", "Matchmaking service is not available")
+		return
+	}
+
+	// Get queue status
+	status, err := c.hub.matchmakingService.GetQueueStatus(c.userID)
+	if err != nil {
+		c.sendError("status_retrieval_failed", err.Error())
+		return
+	}
+
+	// Send status response
+	statusMsg := Message{
+		Type:      "matchmaking_status",
+		ID:        uuid.New().String(),
+		PlayerID:  c.userID,
+		Timestamp: time.Now(),
+		Payload:   status,
+	}
+	c.send <- statusMsg
 }
 
 // ServeWS handles websocket requests from the peer

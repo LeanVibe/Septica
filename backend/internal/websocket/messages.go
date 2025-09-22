@@ -29,24 +29,32 @@ type IncomingMessage struct {
 // Connection management messages
 const (
 	// Client -> Server
-	MessageTypePing          = "ping"
-	MessageTypeJoinGame      = "join_game"
-	MessageTypeLeaveGame     = "leave_game"
-	MessageTypePlayCard      = "play_card"
-	MessageTypeGetGameState  = "get_game_state"
-	MessageTypeChatMessage   = "chat_message"
+	MessageTypePing             = "ping"
+	MessageTypeJoinGame         = "join_game"
+	MessageTypeLeaveGame        = "leave_game"
+	MessageTypePlayCard         = "play_card"
+	MessageTypeGetGameState     = "get_game_state"
+	MessageTypeChatMessage      = "chat_message"
+	MessageTypeJoinMatchmaking  = "join_matchmaking"
+	MessageTypeLeaveMatchmaking = "leave_matchmaking"
+	MessageTypeMatchmakingStatus = "matchmaking_status"
 
 	// Server -> Client
-	MessageTypePong           = "pong"
-	MessageTypeConnectionAck  = "connection_ack"
-	MessageTypeError          = "error"
-	MessageTypeGameState      = "game_state"
-	MessageTypeMoveResult     = "move_result"
-	MessageTypePlayerJoined   = "player_joined"
-	MessageTypePlayerLeft     = "player_left"
-	MessageTypeGameEnd        = "game_end"
-	MessageTypeHeartbeat      = "heartbeat"
-	MessageTypeChatReceived   = "chat_received"
+	MessageTypePong                = "pong"
+	MessageTypeConnectionAck       = "connection_ack"
+	MessageTypeError               = "error"
+	MessageTypeGameState           = "game_state"
+	MessageTypeMoveResult          = "move_result"
+	MessageTypePlayerJoined        = "player_joined"
+	MessageTypePlayerLeft          = "player_left"
+	MessageTypeGameEnd             = "game_end"
+	MessageTypeHeartbeat           = "heartbeat"
+	MessageTypeChatReceived        = "chat_received"
+	MessageTypeMatchmakingJoined   = "matchmaking_joined"
+	MessageTypeMatchmakingUpdate   = "matchmaking_update"
+	MessageTypeMatchFound          = "match_found"
+	MessageTypeMatchmakingLeft     = "matchmaking_left"
+	MessageTypeMatchmakingError    = "matchmaking_error"
 
 	// Game state notifications
 	MessageTypeGameStarted    = "game_started"
@@ -75,6 +83,12 @@ const (
 // JoinGamePayload represents the payload for join_game messages
 type JoinGamePayload struct {
 	GameMode string `json:"game_mode,omitempty"` // "ranked", "casual", "custom"
+}
+
+// JoinMatchmakingPayload represents the payload for join_matchmaking messages
+type JoinMatchmakingPayload struct {
+	QueueType string `json:"queue_type"` // "ranked", "casual", "tournament"
+	GameMode  string `json:"game_mode"`  // "septica"
 }
 
 // PlayCardPayload represents the payload for play_card messages
@@ -175,6 +189,41 @@ type HeartbeatPayload struct {
 	ServerTime   time.Time `json:"server_time"`
 	ClientCount  int       `json:"client_count,omitempty"`
 	ActiveGames  int       `json:"active_games,omitempty"`
+}
+
+// MatchFoundPayload represents a match found notification
+type MatchFoundPayload struct {
+	GameID         uuid.UUID `json:"game_id"`
+	OpponentID     uuid.UUID `json:"opponent_id"`
+	OpponentRating int       `json:"opponent_rating"`
+	OpponentName   string    `json:"opponent_name"`
+	WaitTimeMs     int64     `json:"wait_time_ms"`
+}
+
+// MatchmakingUpdatePayload represents matchmaking queue status updates
+type MatchmakingUpdatePayload struct {
+	QueuePosition     int `json:"queue_position"`
+	EstimatedWaitTime int `json:"estimated_wait_time_seconds"`
+	SearchRange       int `json:"search_range"`
+	PlayersInQueue    int `json:"players_in_queue"`
+	WaitTime          int `json:"wait_time_seconds"`
+}
+
+// MatchmakingJoinedPayload represents successful queue join
+type MatchmakingJoinedPayload struct {
+	QueueType string `json:"queue_type"`
+	Message   string `json:"message"`
+}
+
+// MatchmakingLeftPayload represents successful queue leave
+type MatchmakingLeftPayload struct {
+	Message string `json:"message"`
+}
+
+// MatchmakingErrorPayload represents matchmaking errors
+type MatchmakingErrorPayload struct {
+	ErrorType string `json:"error_type"`
+	Message   string `json:"message"`
 }
 
 // Helper functions for creating common messages

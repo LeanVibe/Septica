@@ -11,6 +11,7 @@ import (
 	"septica-backend/internal/database"
 	"septica-backend/internal/game"
 	"septica-backend/internal/handlers"
+	"septica-backend/internal/matchmaking"
 	"septica-backend/internal/websocket"
 	"septica-backend/pkg/config"
 	"septica-backend/pkg/logger"
@@ -50,6 +51,16 @@ func main() {
 	go wsHub.Run()
 	logger.Info("WebSocket hub started")
 
+	// Initialize matchmaking service
+	matchmakingService := matchmaking.NewMatchmakingService(wsHub, gameEngine, db, logger, nil)
+	if err := matchmakingService.Start(); err != nil {
+		logger.Fatal("Failed to start matchmaking service", "error", err)
+	}
+	logger.Info("Matchmaking service started")
+
+	// Set matchmaking service reference in hub
+	wsHub.SetMatchmakingService(matchmakingService)
+
 	// Set up Gin router
 	if cfg.Environment == "production" {
 		gin.SetMode(gin.ReleaseMode)
@@ -63,7 +74,7 @@ func main() {
 	router.Use(CORSMiddleware(cfg))
 
 	// Register routes
-	registerRoutes(router, wsHub, db, logger)
+	registerRoutes(router, wsHub, matchmakingService, db, logger)
 
 	// Create HTTP server
 	server := &http.Server{
@@ -89,6 +100,10 @@ func main() {
 
 	logger.Info("Server shutting down...")
 
+	// Stop matchmaking service first
+	matchmakingService.Stop()
+	logger.Info("Matchmaking service stopped")
+
 	// Give outstanding requests 30 seconds to complete
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
@@ -101,7 +116,7 @@ func main() {
 }
 
 // registerRoutes sets up all application routes
-func registerRoutes(router *gin.Engine, wsHub *websocket.Hub, db *gorm.DB, logger *logger.Logger) {
+func registerRoutes(router *gin.Engine, wsHub *websocket.Hub, matchmakingService *matchmaking.MatchmakingService, db *gorm.DB, logger *logger.Logger) {
 	// Health check endpoint
 	router.GET("/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
@@ -120,6 +135,9 @@ func registerRoutes(router *gin.Engine, wsHub *websocket.Hub, db *gorm.DB, logge
 
 	// Register tournament routes
 	handlers.RegisterTournamentRoutes(v1, db, logger)
+
+	// Register matchmaking routes
+	handlers.RegisterMatchmakingRoutes(v1, matchmakingService, logger)
 
 	// Game management endpoints
 	v1.GET("/games/:id", getGameHandler(logger))
