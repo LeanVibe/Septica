@@ -9,32 +9,38 @@ class PlayableCardInterface {
         this.scene = gameInstance.scene;
         this.camera = gameInstance.camera;
         this.renderer = gameInstance.renderer;
-        
+
         // Game state
         this.playerHand = [];
         this.opponentHand = [];
         this.tableCards = [];
         this.currentPlayer = 1; // 1 = player, 2 = opponent
         this.gameState = null;
-        
+        this.validMoves = [];
+
         // Card dimensions and layout
         this.cardWidth = 0.8;
         this.cardHeight = 1.2;
         this.cardSpacing = 0.15;
         this.handRadius = 3.5;
-        
+
         // UI elements
         this.cardMeshes = new Map();
         this.interactiveCards = [];
         this.hoveredCard = null;
         this.selectedCard = null;
-        
+
         // Materials
         this.cardMaterial = null;
         this.cardBackMaterial = null;
         this.glowMaterial = null;
-        
+
+        // Integration references
+        this.premiumGame = null;
+        this.gameUI = null;
+
         this.initialize();
+        this.initializePremiumIntegration();
     }
     
     initialize() {
@@ -321,27 +327,44 @@ class PlayableCardInterface {
         if (!this.selectedCard) return;
 
         const card = this.selectedCard;
-        console.log(`🎮 Playing Romanian Septica card: ${this.getCardValueText(card.userData.value)} of ${card.userData.suit}`);
+        const cardData = card.userData.cardData || {
+            suit: card.userData.suit,
+            value: card.userData.value,
+            id: card.userData.id
+        };
 
-        // Send move to server first (before UI updates)
-        if (this.game.wsClient && this.game.wsClient.isConnected) {
-            this.game.wsClient.playCard(card.userData.suit, card.userData.value, card.userData.id);
-        } else if (window.gameUI && window.gameUI.wsClient && window.gameUI.wsClient.isConnected) {
-            window.gameUI.wsClient.playCard(card.userData.suit, card.userData.value, card.userData.id);
+        console.log(`🎮 Playing Romanian Septica card: ${this.getCardValueText(cardData.value)} of ${cardData.suit}`);
+
+        try {
+            // Send move to server first (before UI updates)
+            if (this.game.wsClient && this.game.wsClient.isConnected) {
+                this.game.wsClient.playCard(cardData.suit, cardData.value, cardData.id);
+            } else if (window.gameUI && window.gameUI.wsClient && window.gameUI.wsClient.isConnected) {
+                window.gameUI.wsClient.playCard(cardData.suit, cardData.value, cardData.id);
+            } else {
+                throw new Error('No WebSocket connection available');
+            }
+
+            // Animate card to table
+            this.animateCardToTable(card);
+
+            // Disable card interaction until server response
+            this.disableCardInteraction();
+
+            // Show success feedback
+            this.showPlayFeedback('Card played successfully!', 'success');
+
+            console.log('📤 Romanian Septica move sent to server, waiting for response...');
+
+        } catch (error) {
+            console.error('❌ Failed to play card:', error);
+            this.showPlayFeedback('Failed to play card: ' + error.message, 'error');
+            return;
+        } finally {
+            // Clear selection
+            this.clearCardHighlight(card);
+            this.selectedCard = null;
         }
-
-        // Animate card to table
-        this.animateCardToTable(card);
-
-        // Disable card interaction until server response
-        this.disableCardInteraction();
-
-        // Clear selection
-        this.clearCardHighlight(card);
-        this.selectedCard = null;
-
-        // Note: Don't update game state locally - wait for server response
-        console.log('📤 Romanian Septica move sent to server, waiting for response...');
     }
     
     animateCardToTable(card) {
@@ -488,7 +511,7 @@ class PlayableCardInterface {
      * Check if a card is a valid Romanian Septica move
      */
     isValidRomanianSepticaMove(card) {
-        if (!card.userData.cardData) return false;
+        if (!card.userData || !card.userData.cardData) return false;
 
         // Check against valid moves from server
         return this.validMoves.some(validCard =>
@@ -541,6 +564,86 @@ class PlayableCardInterface {
                 card.material.transparent = false;
             }
         });
+    }
+
+    /**
+     * Show play feedback
+     */
+    showPlayFeedback(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `play-feedback ${type}`;
+        notification.textContent = message;
+
+        const colors = {
+            success: '#10b981',
+            error: '#ef4444',
+            info: '#3b82f6'
+        };
+
+        notification.style.cssText = `
+            position: fixed;
+            top: 30%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: ${colors[type] || colors.info};
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: bold;
+            z-index: 1000;
+            animation: fadeInOut 2s ease-in-out;
+        `;
+
+        // Add fade animation if not already present
+        if (!document.querySelector('#playFeedbackStyles')) {
+            const style = document.createElement('style');
+            style.id = 'playFeedbackStyles';
+            style.textContent = `
+                @keyframes fadeInOut {
+                    0% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+                    20% { opacity: 1; transform: translateX(-50%) translateY(0); }
+                    80% { opacity: 1; transform: translateX(-50%) translateY(0); }
+                    100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
+        document.body.appendChild(notification);
+        setTimeout(() => notification.remove(), 2000);
+    }
+
+    /**
+     * Initialize integration with premium game system
+     */
+    initializePremiumIntegration() {
+        // Connect to premium game instance if available
+        if (window.PremiumSepticaGame && window.premiumGame) {
+            this.premiumGame = window.premiumGame;
+
+            // Set up bidirectional communication
+            this.premiumGame.playableInterface = this;
+
+            console.log('🔗 Integrated with Premium Septica Game system');
+        }
+
+        // Connect to existing game UI system
+        if (window.gameUI) {
+            this.gameUI = window.gameUI;
+
+            // Listen for game state updates
+            if (this.gameUI.wsClient) {
+                const originalOnGameStateUpdate = this.gameUI.wsClient.onGameStateUpdate;
+                this.gameUI.wsClient.onGameStateUpdate = (gameState) => {
+                    if (originalOnGameStateUpdate) {
+                        originalOnGameStateUpdate.call(this.gameUI.wsClient, gameState);
+                    }
+                    this.onGameStateUpdate(gameState);
+                };
+            }
+
+            console.log('🔗 Connected to Game UI system');
+        }
     }
 }
 

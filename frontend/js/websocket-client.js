@@ -30,6 +30,9 @@ class SepticaWebSocketClient {
         this.gameId = null;
         this.serverTime = null;
         this.heartbeatIntervalMs = 30000; // 30 seconds default
+
+        // Move tracking
+        this.pendingMove = null;
         
         // Event handlers
         this.onConnectionChange = null;
@@ -405,6 +408,35 @@ class SepticaWebSocketClient {
         const result = this.processMoveResult(message.payload);
         this.log('Romanian Septica move result received', result);
 
+        // Validate against pending move
+        if (this.pendingMove) {
+            const moveLatency = Date.now() - this.pendingMove.timestamp;
+            this.log(`Move completed in ${moveLatency}ms`);
+
+            // Clear pending move
+            this.pendingMove = null;
+        }
+
+        // Enhanced move result processing
+        if (result.valid) {
+            this.log('✅ Move accepted by server');
+
+            if (result.trick_complete) {
+                this.log('🎯 Trick completed!', {
+                    winner: result.trick_winner,
+                    points: result.points_won || 0
+                });
+            }
+
+            if (result.game_complete) {
+                this.log('🏆 Game completed!', {
+                    winner: result.winner_id
+                });
+            }
+        } else {
+            this.logError('❌ Move rejected by server', result.error || 'Unknown error');
+        }
+
         if (this.onMoveResult) {
             this.onMoveResult(result);
         }
@@ -602,6 +634,12 @@ class SepticaWebSocketClient {
             return false;
         }
 
+        // Validate inputs
+        if (!suit || !value) {
+            this.logError('Invalid card data: missing suit or value');
+            return false;
+        }
+
         const payload = {
             suit: suit,
             value: parseInt(value)
@@ -611,8 +649,27 @@ class SepticaWebSocketClient {
             payload.id = cardId;
         }
 
+        // Add client-side validation timestamp
+        payload.client_timestamp = new Date().toISOString();
+
+        // Log the Romanian Septica card play
         this.log(`Playing Romanian Septica card: ${this.getCardDisplayName(suit, value)}`);
-        return this.sendMessage(this.MESSAGE_TYPES.PLAY_CARD, this.gameId, payload);
+
+        // Store the pending move for validation
+        this.pendingMove = {
+            suit: suit,
+            value: parseInt(value),
+            id: cardId,
+            timestamp: Date.now()
+        };
+
+        const success = this.sendMessage(this.MESSAGE_TYPES.PLAY_CARD, this.gameId, payload);
+
+        if (!success) {
+            this.pendingMove = null;
+        }
+
+        return success;
     }
     
     /**

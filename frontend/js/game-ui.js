@@ -49,6 +49,15 @@ class GameUI {
 
         // Initialize Romanian Septica specific features
         this.initializeRomanianSepticaFeatures();
+
+        // Initialize Romanian rules engine
+        if (typeof RomanianSepticaRules !== 'undefined') {
+            this.romanianRules = new RomanianSepticaRules();
+            console.log('🎯 Romanian Septica Rules Engine integrated');
+        }
+
+        // Initialize premium game integration
+        this.premiumGameIntegration = null;
     }
     
     /**
@@ -550,10 +559,13 @@ class GameUI {
             this.update3DUI(gameState);
         }
 
-        // Update premium game integration
+        // Update premium game integration with animations
         if (window.premiumGame && window.premiumGame.handleGameStateUpdate) {
             window.premiumGame.handleGameStateUpdate(gameState);
         }
+
+        // Handle real-time animations based on game state changes
+        this.handleRealTimeAnimations(gameState);
 
         // Update scores with backend format
         const scores = gameState.scores || gameState.playerScores || {};
@@ -1599,6 +1611,387 @@ Performance Status: ${this.getPerformanceStatus()}
             notification.remove();
         }, 5000);
     }
+
+    /**
+     * Handle real-time animations based on game state changes
+     */
+    handleRealTimeAnimations(gameState) {
+        if (!this.currentGameState) {
+            this.currentGameState = gameState;
+            return;
+        }
+
+        const previousState = this.currentGameState;
+
+        // Detect card movements
+        this.animateCardMovements(previousState, gameState);
+
+        // Detect turn changes
+        this.animateTurnChanges(previousState, gameState);
+
+        // Detect trick completions
+        this.animateTrickCompletions(previousState, gameState);
+
+        // Update stored state
+        this.currentGameState = gameState;
+    }
+
+    /**
+     * Animate card movements when cards are played
+     */
+    animateCardMovements(previousState, currentState) {
+        const prevTableCards = previousState.table_cards || [];
+        const currTableCards = currentState.table_cards || [];
+
+        // Check if new cards were added to the table
+        if (currTableCards.length > prevTableCards.length) {
+            const newCards = currTableCards.slice(prevTableCards.length);
+
+            newCards.forEach(card => {
+                this.animateNewCardOnTable(card);
+            });
+        }
+
+        // Check if table was cleared (trick completed)
+        if (currTableCards.length < prevTableCards.length) {
+            this.animateTableClear();
+        }
+    }
+
+    /**
+     * Animate turn changes with visual feedback
+     */
+    animateTurnChanges(previousState, currentState) {
+        const prevTurn = previousState.your_turn;
+        const currTurn = currentState.your_turn;
+
+        if (prevTurn !== currTurn) {
+            if (currTurn) {
+                this.animateYourTurnStart();
+            } else {
+                this.animateOpponentTurnStart();
+            }
+        }
+    }
+
+    /**
+     * Animate trick completions
+     */
+    animateTrickCompletions(previousState, currentState) {
+        const prevTrickNumber = previousState.trick_number || 1;
+        const currTrickNumber = currentState.trick_number || 1;
+
+        if (currTrickNumber > prevTrickNumber) {
+            this.animateTrickComplete(currentState);
+        }
+    }
+
+    /**
+     * Animate new card appearing on table
+     */
+    animateNewCardOnTable(card) {
+        // Create temporary visual for the animation
+        const tableCardsContainer = this.elements.tableCards;
+        if (!tableCardsContainer) return;
+
+        const cardElement = this.createCardElement(card, false);
+        cardElement.style.opacity = '0';
+        cardElement.style.transform = 'scale(0.5) translateY(-50px)';
+        cardElement.style.transition = 'all 0.5s ease-out';
+
+        tableCardsContainer.appendChild(cardElement);
+
+        // Trigger animation
+        setTimeout(() => {
+            cardElement.style.opacity = '1';
+            cardElement.style.transform = 'scale(1) translateY(0)';
+        }, 50);
+
+        // Add card type specific effects
+        if (card.value === 7) {
+            this.addSepticaEffect(cardElement);
+        } else if (card.value === 14 || card.value === 10) {
+            this.addPointCardEffect(cardElement);
+        }
+
+        console.log(`🎴 Card animated onto table: ${this.getCardDisplayName(card)}`);
+    }
+
+    /**
+     * Animate table clearing after trick completion
+     */
+    animateTableClear() {
+        const tableCardsContainer = this.elements.tableCards;
+        if (!tableCardsContainer) return;
+
+        const cards = tableCardsContainer.querySelectorAll('.card');
+
+        cards.forEach((card, index) => {
+            setTimeout(() => {
+                card.style.transition = 'all 0.6s ease-in';
+                card.style.opacity = '0';
+                card.style.transform = 'scale(0.8) rotate(10deg)';
+
+                setTimeout(() => {
+                    if (card.parentNode) {
+                        card.parentNode.removeChild(card);
+                    }
+                }, 600);
+            }, index * 100);
+        });
+
+        console.log('🧹 Table cleared with animation');
+    }
+
+    /**
+     * Animate start of your turn
+     */
+    animateYourTurnStart() {
+        const turnIndicator = this.elements.turnIndicator;
+        if (!turnIndicator) return;
+
+        // Flash effect
+        turnIndicator.style.animation = 'none';
+        setTimeout(() => {
+            turnIndicator.style.animation = 'pulse 1s ease-in-out';
+        }, 10);
+
+        // Show your turn message
+        this.showTemporaryMessage('Rândul tău! Your turn!', 'success');
+
+        // Highlight player hand if available
+        this.highlightPlayerHand(true);
+
+        console.log('👤 Your turn animation triggered');
+    }
+
+    /**
+     * Animate start of opponent turn
+     */
+    animateOpponentTurnStart() {
+        const turnIndicator = this.elements.turnIndicator;
+        if (!turnIndicator) return;
+
+        // Different animation for opponent turn
+        turnIndicator.style.animation = 'none';
+        setTimeout(() => {
+            turnIndicator.style.animation = 'fadeInOut 1.5s ease-in-out';
+        }, 10);
+
+        // Remove player hand highlight
+        this.highlightPlayerHand(false);
+
+        console.log('🤖 Opponent turn animation triggered');
+    }
+
+    /**
+     * Animate trick completion
+     */
+    animateTrickComplete(gameState) {
+        // Create trick completion celebration
+        const celebration = document.createElement('div');
+        celebration.className = 'trick-completion-celebration';
+        celebration.innerHTML = `
+            <div class="celebration-content">
+                <h3>🎯 Runda Completă!</h3>
+                <p>Trick ${gameState.trick_number} finished</p>
+            </div>
+        `;
+
+        celebration.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(59, 130, 246, 0.95);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 15px;
+            z-index: 1000;
+            text-align: center;
+            font-weight: bold;
+            animation: celebrationPop 2s ease-in-out;
+        `;
+
+        document.body.appendChild(celebration);
+
+        setTimeout(() => {
+            celebration.remove();
+        }, 2000);
+
+        console.log(`🎯 Trick ${gameState.trick_number} completion animated`);
+    }
+
+    /**
+     * Add Septica (seven) special effect
+     */
+    addSepticaEffect(cardElement) {
+        cardElement.classList.add('septica-effect');
+
+        // Add golden glow
+        cardElement.style.boxShadow = '0 0 20px #ffd700, 0 0 40px #ffd700';
+        cardElement.style.border = '2px solid #ffd700';
+
+        // Remove effect after animation
+        setTimeout(() => {
+            cardElement.style.boxShadow = '';
+            cardElement.style.border = '';
+            cardElement.classList.remove('septica-effect');
+        }, 2000);
+
+        console.log('✨ Septica effect added');
+    }
+
+    /**
+     * Add point card effect
+     */
+    addPointCardEffect(cardElement) {
+        cardElement.classList.add('point-card-effect');
+
+        // Add blue glow for point cards
+        cardElement.style.boxShadow = '0 0 15px #3b82f6';
+
+        setTimeout(() => {
+            cardElement.style.boxShadow = '';
+            cardElement.classList.remove('point-card-effect');
+        }, 1500);
+
+        console.log('💎 Point card effect added');
+    }
+
+    /**
+     * Highlight player hand for interaction
+     */
+    highlightPlayerHand(enable) {
+        const playerHandContainer = this.elements.playerHand;
+        if (!playerHandContainer) return;
+
+        if (enable) {
+            playerHandContainer.classList.add('interactive-highlight');
+        } else {
+            playerHandContainer.classList.remove('interactive-highlight');
+        }
+    }
+
+    /**
+     * Show temporary message
+     */
+    showTemporaryMessage(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `temporary-message ${type}`;
+        notification.textContent = message;
+
+        const colors = {
+            success: '#10b981',
+            error: '#ef4444',
+            info: '#3b82f6',
+            warning: '#f59e0b'
+        };
+
+        notification.style.cssText = `
+            position: fixed;
+            top: 25%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: ${colors[type] || colors.info};
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: bold;
+            z-index: 1000;
+            animation: messageSlideIn 0.5s ease-out;
+        `;
+
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+            notification.style.animation = 'messageSlideOut 0.5s ease-in';
+            setTimeout(() => notification.remove(), 500);
+        }, 2000);
+    }
+
+    /**
+     * Initialize premium game integration
+     */
+    initializePremiumGameIntegration() {
+        // Connect to premium game if available
+        if (window.PremiumSepticaGame && window.premiumGame) {
+            this.premiumGameIntegration = {
+                game: window.premiumGame,
+                connected: true
+            };
+
+            // Set up bidirectional communication
+            window.premiumGame.gameUI = this;
+
+            console.log('🎮 Premium game integration established');
+        }
+    }
+
+    /**
+     * Add CSS animations if not already present
+     */
+    addAnimationStyles() {
+        if (document.querySelector('#gameAnimationStyles')) return;
+
+        const style = document.createElement('style');
+        style.id = 'gameAnimationStyles';
+        style.textContent = `
+            @keyframes pulse {
+                0% { transform: scale(1); }
+                50% { transform: scale(1.05); }
+                100% { transform: scale(1); }
+            }
+
+            @keyframes fadeInOut {
+                0% { opacity: 0.5; }
+                50% { opacity: 1; }
+                100% { opacity: 0.5; }
+            }
+
+            @keyframes celebrationPop {
+                0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+                20% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
+                80% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+                100% { transform: translate(-50%, -50%) scale(0.9); opacity: 0; }
+            }
+
+            @keyframes messageSlideIn {
+                0% { transform: translateX(-50%) translateY(-20px); opacity: 0; }
+                100% { transform: translateX(-50%) translateY(0); opacity: 1; }
+            }
+
+            @keyframes messageSlideOut {
+                0% { transform: translateX(-50%) translateY(0); opacity: 1; }
+                100% { transform: translateX(-50%) translateY(-20px); opacity: 0; }
+            }
+
+            .interactive-highlight {
+                box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+                border-radius: 8px;
+                transition: box-shadow 0.3s ease;
+            }
+
+            .septica-effect {
+                animation: pulse 0.8s ease-in-out infinite;
+            }
+
+            .point-card-effect {
+                animation: pulse 0.6s ease-in-out 2;
+            }
+        `;
+
+        document.head.appendChild(style);
+    }
+}
+
+// Initialize animation styles when GameUI is loaded
+if (typeof document !== 'undefined') {
+    document.addEventListener('DOMContentLoaded', () => {
+        if (window.GameUI && window.gameUI) {
+            window.gameUI.addAnimationStyles();
+        }
+    });
 }
 
 // Export for global use
