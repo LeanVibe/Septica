@@ -47,7 +47,7 @@ func main() {
 	logger.Info("Game engine initialized")
 
 	// Initialize WebSocket hub
-	wsHub := websocket.NewHub(gameEngine, logger)
+	wsHub := websocket.NewHub(gameEngine, db, logger)
 	go wsHub.Run()
 	logger.Info("WebSocket hub started")
 

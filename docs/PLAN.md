@@ -512,13 +512,25 @@ class UniversalGameStateManager {
 - **ACTION**: Integrate premium frontend with existing WebSocket multiplayer protocol
 - **OUTCOME**: Real-time multiplayer between iOS, Android, and Desktop platforms
 
-### **PHASE B: iOS BACKEND INTEGRATION** 🎯
-**Priority 4 - iOS WebSocket Client (Estimated: 1 week)**
+### **PHASE B: COMPREHENSIVE E2E TESTING & VALIDATION** 🎯 **CURRENT PRIORITY**
+**Priority 4 - Two-Tab Auto-Matchmaking E2E Testing (Estimated: 1 week)**
+- **STATUS**: Backend fixes applied, need comprehensive validation of complete flow
+- **ACTION**: Playwright MCP testing for WebSocket → matchmaking → Romanian Septica gameplay
+- **OUTCOME**: Production-ready validation of entire two-tab auto-matchmaking system
+- **CRITICAL**: Test Romanian Septica rules (7s beat all, same values beat, 8s conditional)
+
+**Priority 5 - Performance & Resilience Testing (Estimated: 1 week)**
+- **STATUS**: Core functionality implemented, need load and stress testing
+- **ACTION**: Multi-context testing, connection resilience, Romanian rule validation
+- **OUTCOME**: Battle-tested multiplayer infrastructure ready for production deployment
+
+### **PHASE C: iOS BACKEND INTEGRATION**
+**Priority 6 - iOS WebSocket Client (Estimated: 1 week)**
 - **STATUS**: Backend fully operational, iOS app comprehensive but standalone
 - **ACTION**: Create SepticaWebSocketClient.swift and game state sync
 - **OUTCOME**: Real-time iOS vs PWA multiplayer Romanian Septica
 
-**Priority 5 - Cross-Platform Testing (Estimated: 1 week)**
+**Priority 7 - Cross-Platform Testing (Estimated: 1 week)**
 - **STATUS**: Individual platforms working, need integration validation
 - **ACTION**: Comprehensive iOS-PWA-Backend integration testing
 - **OUTCOME**: Seamless cross-platform multiplayer experience

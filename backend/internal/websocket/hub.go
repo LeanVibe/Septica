@@ -6,10 +6,12 @@ import (
 	"sync"
 	"time"
 
+	"septica-backend/internal/database"
 	"septica-backend/internal/game"
 	"septica-backend/pkg/logger"
 
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 // Hub maintains active WebSocket connections and manages game sessions
@@ -38,6 +40,9 @@ type Hub struct {
 	// Matchmaking service reference
 	matchmakingService MatchmakingServiceInterface
 
+	// Database connection
+	db *gorm.DB
+
 	// Logger
 	logger *logger.Logger
 
@@ -54,7 +59,7 @@ type MatchmakingServiceInterface interface {
 }
 
 // NewHub creates a new WebSocket hub
-func NewHub(gameEngine *game.Engine, logger *logger.Logger) *Hub {
+func NewHub(gameEngine *game.Engine, db *gorm.DB, logger *logger.Logger) *Hub {
 	return &Hub{
 		clients:     make(map[*Client]bool),
 		userClients: make(map[uuid.UUID]*Client),
@@ -63,6 +68,7 @@ func NewHub(gameEngine *game.Engine, logger *logger.Logger) *Hub {
 		register:    make(chan *Client),
 		unregister:  make(chan *Client),
 		gameEngine:  gameEngine,
+		db:          db,
 		logger:      logger,
 	}
 }
@@ -85,6 +91,9 @@ func (h *Hub) Run() {
 
 // handleRegister processes new client registrations
 func (h *Hub) handleRegister(client *Client) {
+	// Ensure user and player exist in database (outside mutex to avoid blocking)
+	h.ensurePlayerExists(client.userID)
+
 	h.mutex.Lock()
 	defer h.mutex.Unlock()
 
@@ -108,6 +117,60 @@ func (h *Hub) handleRegister(client *Client) {
 	}
 
 	client.send <- ackMsg
+}
+
+// ensurePlayerExists creates user and player records if they don't exist
+func (h *Hub) ensurePlayerExists(userID uuid.UUID) {
+	// Check if user exists
+	var user database.User
+	err := h.db.Where("id = ?", userID).First(&user).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			// Create new user
+			user = database.User{
+				Username: "guest_" + userID.String()[:8],
+				Email:    userID.String() + "@septica.game", // Placeholder email
+				PasswordHash: "guest_password_hash", // Placeholder hash
+				IsActive: true,
+			}
+			user.ID = userID // Set the BaseModel ID
+			if err := h.db.Create(&user).Error; err != nil {
+				h.logger.Error("Failed to create user", "user_id", userID, "error", err)
+				return
+			}
+			h.logger.Info("Created new user", "user_id", userID, "username", user.Username)
+		} else {
+			h.logger.Error("Database error checking user", "user_id", userID, "error", err)
+			return
+		}
+	}
+
+	// Check if player exists
+	var player database.Player
+	err = h.db.Where("user_id = ?", userID).First(&player).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			// Create new player
+			player = database.Player{
+				UserID:   userID,
+				Username: user.Username,
+				Level:    1,
+				XP:       0,
+				Rating:   1000, // Default rating
+				Arena:    1, // Bronze tier
+				Coins:    100,  // Starting coins
+				Gems:     0,
+			}
+			if err := h.db.Create(&player).Error; err != nil {
+				h.logger.Error("Failed to create player", "user_id", userID, "error", err)
+				return
+			}
+			h.logger.Info("Created new player", "user_id", userID, "username", player.Username, "rating", player.Rating)
+		} else {
+			h.logger.Error("Database error checking player", "user_id", userID, "error", err)
+			return
+		}
+	}
 }
 
 // handleUnregister processes client disconnections
