@@ -46,6 +46,9 @@ class GameUI {
         };
         
         this.log('UI initialized');
+
+        // Initialize Romanian Septica specific features
+        this.initializeRomanianSepticaFeatures();
     }
     
     /**
@@ -511,39 +514,63 @@ class GameUI {
      */
     updateGameState(gameState) {
         this.currentGameState = gameState;
-        
+
+        // Handle backend game state format
+        const gameId = gameState.game_id || gameState.gameId;
+        const yourTurn = gameState.your_turn !== undefined ? gameState.your_turn : gameState.yourTurn;
+        const currentPlayerId = gameState.current_player_id || gameState.currentPlayerId;
+        const status = gameState.status || gameState.gameStatus;
+        const trickNumber = gameState.trick_number || gameState.trickNumber || 1;
+        const moveNumber = gameState.move_number || gameState.moveNumber || 1;
+
         // Update game info
-        this.elements.gameId.textContent = gameState.game_id || '-';
-        this.elements.yourTurn.textContent = gameState.your_turn ? 'Yes' : 'No';
-        this.elements.currentPlayer.textContent = gameState.current_player_id || '-';
-        this.elements.gameStatus.textContent = gameState.status || '-';
-        this.elements.trickNumber.textContent = gameState.trick_number || '-';
-        this.elements.moveNumber.textContent = gameState.move_number || '-';
-        
+        this.elements.gameId.textContent = gameId || '-';
+        this.elements.yourTurn.textContent = yourTurn ? 'Yes' : 'No';
+        this.elements.currentPlayer.textContent = currentPlayerId || '-';
+        this.elements.gameStatus.textContent = status || '-';
+        this.elements.trickNumber.textContent = trickNumber;
+        this.elements.moveNumber.textContent = moveNumber;
+
         // Update multiplayer display
         this.updateMultiplayerDisplay(gameState);
-        
+
+        // Handle backend card arrays
+        const tableCards = gameState.table_cards || gameState.tableCards || [];
+        const playerCards = gameState.your_cards || gameState.playerCards || gameState.hand || [];
+        const validMoves = gameState.valid_moves || gameState.validMoves || [];
+
         // Update cards
-        this.displayCards('tableCards', gameState.table_cards || []);
-        this.displayCards('playerHand', gameState.your_cards || [], true);
-        this.displayCards('validMoves', gameState.valid_moves || []);
-        
+        this.displayCards('tableCards', tableCards);
+        this.displayCards('playerHand', playerCards, true);
+        this.displayCards('validMoves', validMoves);
+
         // Update 3D renderer if enabled
         if (this.cardRenderer3D && this.is3DEnabled) {
             this.cardRenderer3D.updateGameState(gameState);
             this.update3DUI(gameState);
         }
-        
-        // Update scores
-        this.displayScores(gameState.scores || {});
-        
+
+        // Update premium game integration
+        if (window.premiumGame && window.premiumGame.handleGameStateUpdate) {
+            window.premiumGame.handleGameStateUpdate(gameState);
+        }
+
+        // Update scores with backend format
+        const scores = gameState.scores || gameState.playerScores || {};
+        this.displayScores(scores);
+
         // Update button states
-        const hasGameId = !!gameState.game_id;
+        const hasGameId = !!(gameId);
         this.elements.leaveGameBtn.disabled = !hasGameId;
         this.elements.getGameStateBtn.disabled = !hasGameId;
-        this.elements.playCardBtn.disabled = !hasGameId || !gameState.your_turn;
-        
+        this.elements.playCardBtn.disabled = !hasGameId || !yourTurn;
+
         this.log('Game state updated', gameState);
+
+        // Notify Romanian Septica rule engine if available
+        if (window.RomanianSepticaEngine && window.RomanianSepticaEngine.updateGameState) {
+            window.RomanianSepticaEngine.updateGameState(gameState);
+        }
     }
     
     /**
@@ -636,25 +663,36 @@ class GameUI {
             this.showError('Cannot play card - not in a game');
             return;
         }
-        
-        if (!this.currentGameState || !this.currentGameState.your_turn) {
+
+        const yourTurn = this.currentGameState ?
+            (this.currentGameState.your_turn !== undefined ? this.currentGameState.your_turn : this.currentGameState.yourTurn) :
+            false;
+
+        if (!this.currentGameState || !yourTurn) {
             this.showError('Not your turn');
             return;
         }
-        
-        // Check if card is valid
-        const validMoves = this.currentGameState.valid_moves || [];
-        const isValid = validMoves.some(validCard => 
-            validCard.suit === card.suit && validCard.value === card.value
-        );
-        
+
+        // Check if card is valid using Romanian Septica rules
+        const validMoves = this.currentGameState.valid_moves || this.currentGameState.validMoves || [];
+        const isValid = this.isValidRomanianSepticaMove(card, validMoves);
+
         if (!isValid) {
-            this.showError('Invalid move');
+            this.showError('Invalid move according to Romanian Septica rules');
             return;
         }
-        
+
+        // Add visual feedback for card play
+        this.animateCardPlay(card);
+
+        // Send to backend
         this.wsClient.playCard(card.suit, card.value, card.id);
         this.logMessage('SENT', 'play_card', card);
+
+        // Disable further card plays until response
+        this.disableCardInteraction();
+
+        this.log(`Playing Romanian Septica card: ${this.getCardDisplayName(card)}`);
     }
     
     /**
@@ -688,20 +726,40 @@ class GameUI {
      */
     handleMoveResult(result) {
         this.log('Move result received', result);
-        
-        if (!result.valid && result.error) {
-            this.showError(`Invalid move: ${result.error}`);
+
+        // Handle backend move result format
+        const isValid = result.valid !== undefined ? result.valid : result.success;
+        const error = result.error || result.message;
+        const trickComplete = result.trick_complete || result.trickComplete;
+        const gameComplete = result.game_complete || result.gameComplete;
+        const winnerId = result.winner_id || result.winnerId;
+
+        if (!isValid && error) {
+            this.showError(`Invalid move: ${error}`);
+            return;
         }
-        
-        if (result.trick_complete) {
+
+        // Show move feedback
+        if (isValid) {
+            this.showMoveSuccess();
+        }
+
+        if (trickComplete) {
             this.log('Trick completed');
+            this.showTrickComplete(result);
         }
-        
-        if (result.game_complete) {
+
+        if (gameComplete) {
             this.log('Game completed');
-            if (result.winner_id) {
-                this.log(`Winner: ${result.winner_id}`);
+            if (winnerId) {
+                this.log(`Winner: ${winnerId}`);
+                this.showGameComplete(winnerId);
             }
+        }
+
+        // Update game state if included in move result
+        if (result.new_game_state || result.gameState) {
+            this.updateGameState(result.new_game_state || result.gameState);
         }
     }
     
@@ -1324,6 +1382,222 @@ Performance Status: ${this.getPerformanceStatus()}
             this.cardRenderer3D = null;
             this.log('3D renderer destroyed');
         }
+    }
+
+    // ===== ROMANIAN SEPTICA SPECIFIC METHODS =====
+
+    /**
+     * Initialize Romanian Septica specific features
+     */
+    initializeRomanianSepticaFeatures() {
+        // Romanian Septica card values (7s are highest, then A, 10, K, Q, J, 9, 8)
+        this.romanianCardHierarchy = {
+            7: 15,   // 7s beat everything (including other 7s by suit priority)
+            14: 14,  // Ace
+            10: 13,  // 10
+            13: 12,  // King
+            12: 11,  // Queen
+            11: 10,  // Jack
+            9: 9,    // 9
+            8: 8     // 8 (weakest, conditional beating)
+        };
+
+        // Suit priority for 7s: spades > hearts > diamonds > clubs
+        this.suitPriority = {
+            'spades': 4,
+            'hearts': 3,
+            'diamonds': 2,
+            'clubs': 1
+        };
+
+        // Point values (only 10s and Aces count for points)
+        this.pointValues = {
+            10: 1,   // 10 = 1 point
+            14: 1    // Ace = 1 point
+        };
+
+        this.log('Romanian Septica rules initialized');
+    }
+
+    /**
+     * Check if a card is a valid Romanian Septica move
+     */
+    isValidRomanianSepticaMove(card, validMoves) {
+        // First check if it's in the valid moves from backend
+        const isInValidMoves = validMoves.some(validCard =>
+            validCard.suit === card.suit && validCard.value === card.value
+        );
+
+        if (!isInValidMoves) {
+            return false;
+        }
+
+        // Additional Romanian Septica rule validation could go here
+        return true;
+    }
+
+    /**
+     * Get display name for a card with Romanian context
+     */
+    getCardDisplayName(card) {
+        const valueName = this.cardValueNames[card.value] || card.value;
+        const suitName = card.suit.charAt(0).toUpperCase() + card.suit.slice(1);
+
+        // Add Romanian context for special cards
+        if (card.value === 7) {
+            return `${valueName} of ${suitName} (Septica - strongest!)`;
+        } else if (card.value === 14 || card.value === 10) {
+            return `${valueName} of ${suitName} (Point card)`;
+        }
+
+        return `${valueName} of ${suitName}`;
+    }
+
+    /**
+     * Animate card play with Romanian style
+     */
+    animateCardPlay(card) {
+        // Add visual feedback for card selection
+        const cardElements = document.querySelectorAll(`[data-suit="${card.suit}"][data-value="${card.value}"]`);
+        cardElements.forEach(cardEl => {
+            cardEl.classList.add('playing');
+            cardEl.style.transform = 'scale(1.1) translateY(-10px)';
+            cardEl.style.transition = 'all 0.3s ease';
+
+            setTimeout(() => {
+                cardEl.style.transform = '';
+                cardEl.classList.remove('playing');
+            }, 600);
+        });
+    }
+
+    /**
+     * Disable card interaction during move processing
+     */
+    disableCardInteraction() {
+        const playerCards = document.querySelectorAll('#playerHand .card.clickable');
+        playerCards.forEach(card => {
+            card.style.pointerEvents = 'none';
+            card.style.opacity = '0.7';
+        });
+
+        // Re-enable after 2 seconds (timeout)
+        setTimeout(() => {
+            this.enableCardInteraction();
+        }, 2000);
+    }
+
+    /**
+     * Enable card interaction
+     */
+    enableCardInteraction() {
+        const playerCards = document.querySelectorAll('#playerHand .card');
+        playerCards.forEach(card => {
+            card.style.pointerEvents = '';
+            card.style.opacity = '';
+        });
+    }
+
+    /**
+     * Show move success feedback
+     */
+    showMoveSuccess() {
+        // Create success notification
+        const notification = document.createElement('div');
+        notification.className = 'move-success-notification';
+        notification.innerHTML = '✅ Card played successfully!';
+        notification.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(16, 185, 129, 0.9);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            z-index: 1000;
+            font-weight: bold;
+        `;
+
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+            notification.remove();
+        }, 2000);
+    }
+
+    /**
+     * Show trick complete notification
+     */
+    showTrickComplete(result) {
+        const trickWinner = result.trick_winner || result.trickWinner;
+        const pointsWon = result.points_won || result.pointsWon || 0;
+
+        const notification = document.createElement('div');
+        notification.className = 'trick-complete-notification';
+        notification.innerHTML = `
+            <div style="font-size: 18px; margin-bottom: 5px;">🎯 Trick Complete!</div>
+            <div>Winner: ${trickWinner === this.wsClient.playerId ? 'You' : 'Opponent'}</div>
+            <div>Points: ${pointsWon}</div>
+        `;
+        notification.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(59, 130, 246, 0.9);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 12px;
+            z-index: 1000;
+            text-align: center;
+            font-weight: bold;
+        `;
+
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+            notification.remove();
+        }, 3000);
+    }
+
+    /**
+     * Show game complete notification
+     */
+    showGameComplete(winnerId) {
+        const isWinner = winnerId === this.wsClient.playerId;
+
+        const notification = document.createElement('div');
+        notification.className = 'game-complete-notification';
+        notification.innerHTML = `
+            <div style="font-size: 24px; margin-bottom: 10px;">${isWinner ? '🏆' : '😔'}</div>
+            <div style="font-size: 20px; margin-bottom: 5px;">
+                ${isWinner ? 'Felicitări! You won!' : 'Game Over - You lost'}
+            </div>
+            <div style="font-size: 14px;">
+                Romanian Septica match completed
+            </div>
+        `;
+        notification.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: ${isWinner ? 'rgba(16, 185, 129, 0.95)' : 'rgba(239, 68, 68, 0.95)'};
+            color: white;
+            padding: 20px 30px;
+            border-radius: 15px;
+            z-index: 1000;
+            text-align: center;
+            font-weight: bold;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        `;
+
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+            notification.remove();
+        }, 5000);
     }
 }
 

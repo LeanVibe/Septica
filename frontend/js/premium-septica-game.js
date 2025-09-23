@@ -588,26 +588,41 @@ class PremiumSepticaGame {
     connectToMultiplayer() {
         if (typeof SepticaWebSocketClient !== 'undefined') {
             this.wsClient = new SepticaWebSocketClient();
-            
-            // Setup message handlers
-            this.wsClient.onGameState = (gameState) => {
+
+            // Setup Romanian Septica specific message handlers
+            this.wsClient.onGameStateUpdate = (gameState) => {
                 this.handleGameStateUpdate(gameState);
             };
-            
+
             this.wsClient.onMoveResult = (result) => {
                 this.handleMoveResult(result);
             };
-            
-            // Try to connect to local development server
-            const serverUrl = 'ws://localhost:8080/ws/connect';
-            this.wsClient.connect(serverUrl)
-                .then(() => {
-                    this.isMultiplayer = true;
-                    console.log('🌐 Connected to multiplayer backend');
-                })
-                .catch(error => {
-                    console.log('🌐 Multiplayer not available, using single-player mode');
-                });
+
+            this.wsClient.onPlayerJoined = (data) => {
+                this.handlePlayerJoined(data);
+            };
+
+            this.wsClient.onMatchFound = (data) => {
+                this.handleMatchFound(data);
+            };
+
+            // Connect to existing WebSocket if GameUI is available
+            if (window.gameUI && window.gameUI.wsClient) {
+                this.wsClient = window.gameUI.wsClient;
+                this.isMultiplayer = this.wsClient.isConnected;
+                console.log('🌐 Connected to existing Romanian Septica backend');
+            } else {
+                // Try to connect to local development server
+                const serverUrl = 'ws://localhost:8080/ws/connect';
+                this.wsClient.connect(serverUrl)
+                    .then(() => {
+                        this.isMultiplayer = true;
+                        console.log('🌐 Connected to Romanian Septica multiplayer backend');
+                    })
+                    .catch(error => {
+                        console.log('🌐 Romanian Septica multiplayer not available, using single-player mode');
+                    });
+            }
         }
     }
     
@@ -615,47 +630,59 @@ class PremiumSepticaGame {
      * Handle game state updates from server
      */
     handleGameStateUpdate(gameState) {
+        console.log('🎮 Premium Septica handling game state update:', gameState);
+
         this.gameState = gameState;
-        this.playerHand = gameState.your_cards || [];
-        this.tableCards = gameState.table_cards || [];
-        this.validMoves = gameState.valid_moves || [];
-        
-        // Update UI
+        this.playerHand = gameState.your_cards || gameState.playerCards || [];
+        this.tableCards = gameState.table_cards || gameState.tableCards || [];
+        this.validMoves = gameState.valid_moves || gameState.validMoves || [];
+
+        // Update UI with Romanian Septica context
         this.updateGameUI();
-        
-        // Update 3D scene
+
+        // Update 3D scene with new game state
         this.update3DGameState();
+
+        // Update Romanian cultural elements
+        this.updateRomanianContextualElements(gameState);
+
+        // Trigger Romanian Septica specific animations
+        this.triggerRomanianSepticaAnimations(gameState);
     }
     
     /**
      * Update 3D scene based on game state
      */
     update3DGameState() {
+        if (!this.scene) return;
+
+        console.log('🎨 Updating 3D scene with Romanian Septica state');
+
         // Clear existing cards
         this.clearTableCards();
-        
-        // Add table cards
+
+        // Add table cards with Romanian styling
         this.tableCards.forEach((cardData, index) => {
             this.addCard3D(cardData, 'table', index);
         });
-        
-        // Update player hand
+
+        // Update player hand with Romanian fan layout
         this.updatePlayerHand3D();
+
+        // Update valid move indicators
+        this.updateValidMoveIndicators();
+
+        // Update Romanian cultural overlay
+        this.updateCulturalOverlay();
     }
     
     /**
-     * Send card play to server
+     * Send card play to server (Romanian Septica specific)
      */
     sendCardPlay(cardData) {
         if (this.wsClient && this.wsClient.isConnected) {
-            this.wsClient.sendMessage({
-                type: 'play_card',
-                payload: {
-                    suit: cardData.suit,
-                    value: cardData.value,
-                    id: cardData.id
-                }
-            });
+            console.log('🎯 Sending Romanian Septica card play:', cardData);
+            this.wsClient.playCard(cardData.suit, cardData.value, cardData.id);
         }
     }
     
@@ -994,8 +1021,162 @@ class PremiumSepticaGame {
         if (this.wsClient) {
             this.wsClient.disconnect();
         }
-        
+
         console.log('🎮 Premium Septica Game disposed');
+    }
+
+    // ===== ROMANIAN SEPTICA GAME STATE INTEGRATION =====
+
+    /**
+     * Clear table cards from 3D scene
+     */
+    clearTableCards() {
+        // Remove all existing table cards from scene
+        const cardsToRemove = [];
+        this.scene.traverse((child) => {
+            if (child.userData && child.userData.cardType === 'table') {
+                cardsToRemove.push(child);
+            }
+        });
+
+        cardsToRemove.forEach(card => {
+            this.scene.remove(card);
+            if (card.geometry) card.geometry.dispose();
+            if (card.material) card.material.dispose();
+        });
+    }
+
+    /**
+     * Add 3D card to scene
+     */
+    addCard3D(cardData, cardType, index) {
+        if (!this.scene) return null;
+
+        // Create card geometry
+        const cardGeometry = new THREE.BoxGeometry(0.8, 1.2, 0.02);
+        const cardMaterial = this.premiumMaterials ?
+            this.premiumMaterials.createCardMaterial(cardData.suit, cardData.value) :
+            new THREE.MeshPhysicalMaterial({ color: 0xffffff });
+
+        const cardMesh = new THREE.Mesh(cardGeometry, cardMaterial);
+
+        // Set position based on card type
+        if (cardType === 'table') {
+            cardMesh.position.set(
+                index * 0.1,  // Slight offset for stacking
+                0,             // Center table
+                index * 0.01   // Z-offset for layering
+            );
+        } else if (cardType === 'player') {
+            // Romanian Septica fan layout
+            const angle = (index - 2) * 0.2; // Fan angle
+            cardMesh.position.set(
+                Math.sin(angle) * 3.5,
+                -2.5,
+                Math.cos(angle) * 3.5 - 3
+            );
+            cardMesh.rotation.y = -angle;
+            cardMesh.rotation.x = Math.PI / 8;
+        }
+
+        // Add card data for interaction
+        cardMesh.userData = {
+            isCard: true,
+            cardType: cardType,
+            cardData: cardData,
+            canPlay: cardType === 'player' && this.isValidMove(cardData)
+        };
+
+        this.scene.add(cardMesh);
+        return cardMesh;
+    }
+
+    /**
+     * Update player hand in 3D
+     */
+    updatePlayerHand3D() {
+        // Clear existing player cards
+        const cardsToRemove = [];
+        this.scene.traverse((child) => {
+            if (child.userData && child.userData.cardType === 'player') {
+                cardsToRemove.push(child);
+            }
+        });
+
+        cardsToRemove.forEach(card => this.scene.remove(card));
+
+        // Add new player cards
+        this.playerHand.forEach((cardData, index) => {
+            this.addCard3D(cardData, 'player', index);
+        });
+    }
+
+    /**
+     * Update game UI
+     */
+    updateGameUI() {
+        if (!this.uiOverlay) return;
+
+        // Update player info
+        const playerName = this.uiOverlay.querySelector('.player-name');
+        const playerScore = this.uiOverlay.querySelector('.player-score');
+        if (playerName && playerScore && this.gameState) {
+            playerScore.textContent = this.gameState.scores ?
+                Object.values(this.gameState.scores)[0] || 0 : 0;
+        }
+
+        // Update turn indicator
+        const turnIndicator = this.uiOverlay.querySelector('.turn-indicator');
+        if (turnIndicator && this.gameState) {
+            turnIndicator.textContent = this.gameState.your_turn ?
+                'Rândul tău' : 'Rândul adversarului';
+        }
+    }
+
+    /**
+     * Handle move result
+     */
+    handleMoveResult(result) {
+        console.log('📋 Romanian Septica move result:', result);
+
+        if (!result.valid) {
+            this.showRomanianMessage('Mutare invalidă!');
+            return;
+        }
+
+        if (result.trick_complete) {
+            const winner = result.trick_winner === this.wsClient.playerId ? 'Tu' : 'Adversarul';
+            this.showRomanianMessage(`${winner} a câștigat runda!`);
+        }
+
+        if (result.game_complete) {
+            const winner = result.winner_id === this.wsClient.playerId ? 'ai câștigat' : 'ai pierdut';
+            this.showRomanianMessage(`Joc terminat - ${winner}!`);
+        }
+    }
+
+    /**
+     * Show Romanian message
+     */
+    showRomanianMessage(message) {
+        const notification = document.createElement('div');
+        notification.className = 'romanian-message';
+        notification.textContent = message;
+        notification.style.cssText = `
+            position: fixed;
+            top: 20%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 215, 0, 0.9);
+            color: #000;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            z-index: 1001;
+        `;
+
+        document.body.appendChild(notification);
+        setTimeout(() => notification.remove(), 3000);
     }
 }
 
@@ -1006,7 +1187,7 @@ class BasicPerformanceManager {
     constructor() {
         this.metrics = { averageFPS: 60 };
     }
-    
+
     updateLOD(qualityLevel) {
         console.log(`📊 Performance level: ${qualityLevel}`);
     }

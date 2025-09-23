@@ -386,10 +386,14 @@ class SepticaWebSocketClient {
     handleGameState(message) {
         if (message.payload) {
             this.gameId = message.game_id || message.payload.game_id;
-            this.log('Game state updated', message.payload);
-            
+
+            // Process Romanian Septica specific game state
+            const gameState = this.processRomanianSepticaGameState(message.payload);
+
+            this.log('Romanian Septica game state updated', gameState);
+
             if (this.onGameStateUpdate) {
-                this.onGameStateUpdate(message.payload);
+                this.onGameStateUpdate(gameState);
             }
         }
     }
@@ -398,10 +402,11 @@ class SepticaWebSocketClient {
      * Handle move result
      */
     handleMoveResult(message) {
-        this.log('Move result received', message.payload);
-        
+        const result = this.processMoveResult(message.payload);
+        this.log('Romanian Septica move result received', result);
+
         if (this.onMoveResult) {
-            this.onMoveResult(message.payload);
+            this.onMoveResult(result);
         }
     }
     
@@ -521,24 +526,24 @@ class SepticaWebSocketClient {
             this.logError('Cannot send message - not connected');
             return false;
         }
-        
+
         const message = {
             type: type,
             id: this.generateMessageId(),
             timestamp: new Date().toISOString()
         };
-        
+
         if (gameId) {
             message.game_id = gameId;
         }
-        
+
         if (payload && Object.keys(payload).length > 0) {
             message.payload = payload;
         }
-        
+
         try {
             this.ws.send(JSON.stringify(message));
-            this.log('Sent message', message);
+            this.log('Sent Romanian Septica message', { type, gameId, payload });
             return true;
         } catch (error) {
             this.logError('Error sending message', error);
@@ -589,23 +594,24 @@ class SepticaWebSocketClient {
     }
     
     /**
-     * Play a card
+     * Play a card (Romanian Septica specific)
      */
     playCard(suit, value, cardId = null) {
         if (!this.gameId) {
             this.logError('No active game');
             return false;
         }
-        
+
         const payload = {
             suit: suit,
             value: parseInt(value)
         };
-        
+
         if (cardId) {
             payload.id = cardId;
         }
-        
+
+        this.log(`Playing Romanian Septica card: ${this.getCardDisplayName(suit, value)}`);
         return this.sendMessage(this.MESSAGE_TYPES.PLAY_CARD, this.gameId, payload);
     }
     
@@ -879,6 +885,135 @@ class SepticaWebSocketClient {
             latencyHistory: [...this.latencyHistory],
             lastUpdate: this.lastLatencyUpdate
         };
+    }
+
+    // ===== ROMANIAN SEPTICA SPECIFIC METHODS =====
+
+    /**
+     * Process Romanian Septica game state from backend
+     */
+    processRomanianSepticaGameState(rawGameState) {
+        // Normalize backend game state format
+        const gameState = {
+            game_id: rawGameState.game_id || rawGameState.gameId,
+            your_turn: rawGameState.your_turn !== undefined ? rawGameState.your_turn : rawGameState.yourTurn,
+            current_player_id: rawGameState.current_player_id || rawGameState.currentPlayerId,
+            status: rawGameState.status || rawGameState.gameStatus || 'playing',
+            trick_number: rawGameState.trick_number || rawGameState.trickNumber || 1,
+            move_number: rawGameState.move_number || rawGameState.moveNumber || 1,
+            table_cards: this.normalizeCards(rawGameState.table_cards || rawGameState.tableCards || []),
+            your_cards: this.normalizeCards(rawGameState.your_cards || rawGameState.playerCards || rawGameState.hand || []),
+            valid_moves: this.normalizeCards(rawGameState.valid_moves || rawGameState.validMoves || []),
+            scores: this.normalizeScores(rawGameState.scores || rawGameState.playerScores || {}),
+            players: rawGameState.players || [],
+            winner_id: rawGameState.winner_id || rawGameState.winnerId
+        };
+
+        // Add Romanian Septica specific metadata
+        if (gameState.table_cards.length > 0) {
+            gameState.last_played_card = gameState.table_cards[gameState.table_cards.length - 1];
+        }
+
+        // Calculate Romanian Septica specific info
+        gameState.total_points_on_table = this.calculatePointsOnTable(gameState.table_cards);
+        gameState.sevens_played = this.countSevensPlayed(gameState.table_cards);
+
+        return gameState;
+    }
+
+    /**
+     * Process move result from backend
+     */
+    processMoveResult(rawResult) {
+        return {
+            valid: rawResult.valid !== undefined ? rawResult.valid : rawResult.success,
+            error: rawResult.error || rawResult.message,
+            trick_complete: rawResult.trick_complete || rawResult.trickComplete,
+            game_complete: rawResult.game_complete || rawResult.gameComplete,
+            winner_id: rawResult.winner_id || rawResult.winnerId,
+            trick_winner: rawResult.trick_winner || rawResult.trickWinner,
+            points_won: rawResult.points_won || rawResult.pointsWon || 0,
+            new_game_state: rawResult.new_game_state || rawResult.gameState
+        };
+    }
+
+    /**
+     * Normalize card format from backend
+     */
+    normalizeCards(cards) {
+        if (!Array.isArray(cards)) return [];
+
+        return cards.map(card => ({
+            suit: card.suit,
+            value: parseInt(card.value),
+            id: card.id || `${card.suit}_${card.value}`
+        }));
+    }
+
+    /**
+     * Normalize scores format from backend
+     */
+    normalizeScores(scores) {
+        if (typeof scores !== 'object' || !scores) return {};
+
+        // Convert to consistent format
+        const normalized = {};
+        Object.keys(scores).forEach(playerId => {
+            normalized[playerId] = parseInt(scores[playerId]) || 0;
+        });
+
+        return normalized;
+    }
+
+    /**
+     * Calculate points on table (only 10s and Aces count in Romanian Septica)
+     */
+    calculatePointsOnTable(tableCards) {
+        return tableCards.reduce((total, card) => {
+            if (card.value === 10 || card.value === 14) { // 10s and Aces
+                return total + 1;
+            }
+            return total;
+        }, 0);
+    }
+
+    /**
+     * Count sevens played (important in Romanian Septica)
+     */
+    countSevensPlayed(tableCards) {
+        return tableCards.filter(card => card.value === 7).length;
+    }
+
+    /**
+     * Get display name for card (Romanian Septica context)
+     */
+    getCardDisplayName(suit, value) {
+        const valueNames = {
+            7: '7', 8: '8', 9: '9', 10: '10',
+            11: 'J', 12: 'Q', 13: 'K', 14: 'A'
+        };
+
+        const valueName = valueNames[value] || value;
+        const suitName = suit.charAt(0).toUpperCase() + suit.slice(1);
+
+        if (value === 7) {
+            return `${valueName} of ${suitName} (Septica!)`;
+        } else if (value === 14 || value === 10) {
+            return `${valueName} of ${suitName} (Point card)`;
+        }
+
+        return `${valueName} of ${suitName}`;
+    }
+
+    /**
+     * Join Romanian Septica specific matchmaking
+     */
+    joinRomanianSepticaMatchmaking(skillLevel = 'beginner') {
+        return this.joinMatchmaking('romanian_septica', {
+            game_mode: 'septica',
+            skill_level: skillLevel,
+            preferred_language: 'romanian'
+        });
     }
 }
 

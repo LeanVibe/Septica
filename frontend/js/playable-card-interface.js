@@ -288,53 +288,60 @@ class PlayableCardInterface {
     }
     
     selectCard(card) {
+        // Check if it's the player's turn
+        if (this.currentPlayer !== 1) {
+            console.log('⚠️ Not your turn - cannot select card');
+            return;
+        }
+
+        // Check if card is valid according to Romanian Septica rules
+        if (!this.isValidRomanianSepticaMove(card)) {
+            console.log('⚠️ Invalid Romanian Septica move');
+            return;
+        }
+
         // Clear previous selection
         if (this.selectedCard) {
             this.clearCardHighlight(this.selectedCard);
         }
-        
+
         this.selectedCard = card;
         this.highlightCard(card, 0xffd700); // Gold selection
-        
+
         // Animate card up slightly
         card.position.y += 0.2;
-        
-        console.log(`🃏 Selected card: ${this.getCardValueText(card.userData.value)} of ${card.userData.suit}`);
-        
+
+        console.log(`🃏 Selected Romanian Septica card: ${this.getCardValueText(card.userData.value)} of ${card.userData.suit}`);
+
         // Enable play button or auto-play after selection
         this.playSelectedCard();
     }
     
     playSelectedCard() {
         if (!this.selectedCard) return;
-        
+
         const card = this.selectedCard;
-        console.log(`🎮 Playing card: ${this.getCardValueText(card.userData.value)} of ${card.userData.suit}`);
-        
+        console.log(`🎮 Playing Romanian Septica card: ${this.getCardValueText(card.userData.value)} of ${card.userData.suit}`);
+
+        // Send move to server first (before UI updates)
+        if (this.game.wsClient && this.game.wsClient.isConnected) {
+            this.game.wsClient.playCard(card.userData.suit, card.userData.value, card.userData.id);
+        } else if (window.gameUI && window.gameUI.wsClient && window.gameUI.wsClient.isConnected) {
+            window.gameUI.wsClient.playCard(card.userData.suit, card.userData.value, card.userData.id);
+        }
+
         // Animate card to table
         this.animateCardToTable(card);
-        
-        // Remove from player hand
-        const index = this.playerHand.indexOf(card);
-        if (index > -1) {
-            this.playerHand.splice(index, 1);
-        }
-        
-        // Add to table
-        this.tableCards.push(card);
-        
+
+        // Disable card interaction until server response
+        this.disableCardInteraction();
+
         // Clear selection
         this.clearCardHighlight(card);
         this.selectedCard = null;
-        
-        // Switch to opponent turn
-        this.currentPlayer = 2;
-        this.updateTurnIndicator();
-        
-        // Send move to server if connected
-        if (this.game.client && this.game.client.isConnected) {
-            this.game.client.playCard(card.userData.suit, card.userData.value);
-        }
+
+        // Note: Don't update game state locally - wait for server response
+        console.log('📤 Romanian Septica move sent to server, waiting for response...');
     }
     
     animateCardToTable(card) {
@@ -424,43 +431,116 @@ class PlayableCardInterface {
     
     updateFromGameState(gameState) {
         if (!gameState) return;
-        
-        console.log('🎮 Updating from game state:', gameState);
-        
+
+        console.log('🎮 Updating Romanian Septica cards from game state:', gameState);
+
+        // Handle backend format normalization
+        const playerHand = gameState.your_cards || gameState.playerHand || [];
+        const tableCards = gameState.table_cards || gameState.tableCards || [];
+        const yourTurn = gameState.your_turn !== undefined ? gameState.your_turn : gameState.yourTurn;
+        const validMoves = gameState.valid_moves || gameState.validMoves || [];
+
+        // Update valid moves for Romanian Septica rules
+        this.validMoves = validMoves;
+
         // Update player hand
-        if (gameState.playerHand) {
+        if (playerHand.length > 0) {
             this.clearAllCards();
-            this.createPlayerHand(gameState.playerHand);
+            this.createPlayerHand(playerHand);
         }
-        
+
         // Update table cards
-        if (gameState.tableCards) {
-            this.createTableCards(gameState.tableCards);
+        if (tableCards.length > 0) {
+            this.createTableCards(tableCards);
         }
-        
-        // Update turn
-        if (gameState.currentPlayer !== undefined) {
-            this.currentPlayer = gameState.currentPlayer;
-            this.updateTurnIndicator();
-        }
-        
+
+        // Update turn with Romanian Septica context
+        this.currentPlayer = yourTurn ? 1 : 2;
+        this.updateTurnIndicator();
+
         // Update opponent hand count
-        if (gameState.opponentHandSize !== undefined) {
-            this.createOpponentHand(gameState.opponentHandSize);
-        }
+        const opponentHandSize = gameState.opponent_hand_size || gameState.opponentHandSize || 5;
+        this.createOpponentHand(opponentHandSize);
+
+        // Update card interactivity based on Romanian Septica rules
+        this.updateCardInteractivity();
+
+        // Re-enable card interaction after server response
+        this.enableCardInteraction();
     }
     
     dispose() {
         // Clean up resources
         this.clearAllCards();
-        
+
         if (this.cardMaterial) this.cardMaterial.dispose();
         if (this.cardBackMaterial) this.cardBackMaterial.dispose();
         if (this.glowMaterial) this.glowMaterial.dispose();
-        
+
         // Remove event listeners
         this.renderer.domElement.removeEventListener('mousemove', this.onMouseMove.bind(this));
         this.renderer.domElement.removeEventListener('click', this.onClick.bind(this));
+    }
+
+    // ===== ROMANIAN SEPTICA SPECIFIC METHODS =====
+
+    /**
+     * Check if a card is a valid Romanian Septica move
+     */
+    isValidRomanianSepticaMove(card) {
+        if (!card.userData.cardData) return false;
+
+        // Check against valid moves from server
+        return this.validMoves.some(validCard =>
+            validCard.suit === card.userData.cardData.suit &&
+            validCard.value === card.userData.cardData.value
+        );
+    }
+
+    /**
+     * Update card interactivity based on Romanian Septica rules
+     */
+    updateCardInteractivity() {
+        this.scene.traverse((child) => {
+            if (child.userData && child.userData.isCard && child.userData.cardType === 'player') {
+                const canPlay = this.currentPlayer === 1 && this.isValidRomanianSepticaMove(child);
+                child.userData.canPlay = canPlay;
+
+                // Update visual indicators
+                if (canPlay) {
+                    child.material.emissive.setHex(0x002200); // Slight green glow
+                } else {
+                    child.material.emissive.setHex(0x000000); // No glow
+                }
+            }
+        });
+    }
+
+    /**
+     * Disable card interaction during move processing
+     */
+    disableCardInteraction() {
+        this.interactiveCards.forEach(card => {
+            card.userData.canPlay = false;
+            if (card.material) {
+                card.material.opacity = 0.5;
+                card.material.transparent = true;
+            }
+        });
+    }
+
+    /**
+     * Enable card interaction
+     */
+    enableCardInteraction() {
+        this.updateCardInteractivity();
+
+        this.interactiveCards.forEach(card => {
+            if (card.material) {
+                card.material.opacity = 1.0;
+                card.material.transparent = false;
+            }
+        });
     }
 }
 

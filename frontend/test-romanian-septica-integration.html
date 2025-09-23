@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Romanian Septica Integration Test</title>
+
+    <!-- Three.js for 3D rendering -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/controls/OrbitControls.js"></script>
+
+    <!-- Game Scripts -->
+    <script src="js/websocket-client.js"></script>
+    <script src="js/game-ui.js"></script>
+    <script src="js/premium-septica-game.js"></script>
+    <script src="js/playable-card-interface.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3a8a 0%, #3730a3 50%, #1e40af 100%);
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .test-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            position: relative;
+        }
+
+        .test-header {
+            background: rgba(0, 0, 0, 0.3);
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .test-title {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #ef4444;
+            transition: background-color 0.3s;
+        }
+
+        .status-dot.connected {
+            background: #10b981;
+        }
+
+        .test-controls {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 15px 20px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .test-btn {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .test-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+        }
+
+        .test-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .game-area {
+            flex: 1;
+            position: relative;
+            display: flex;
+        }
+
+        .threejs-container {
+            flex: 1;
+            position: relative;
+        }
+
+        .game-sidebar {
+            width: 300px;
+            background: rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .sidebar-section {
+            margin-bottom: 20px;
+        }
+
+        .sidebar-title {
+            color: #ffd700;
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .sidebar-content {
+            color: white;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+
+        .game-state-display {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+
+        .card-hand {
+            display: flex;
+            gap: 5px;
+            margin: 10px 0;
+        }
+
+        .card {
+            width: 30px;
+            height: 42px;
+            background: white;
+            border-radius: 4px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 8px;
+            border: 1px solid #ccc;
+        }
+
+        .card.valid {
+            border-color: #10b981;
+            box-shadow: 0 0 5px rgba(16, 185, 129, 0.5);
+        }
+
+        .test-log {
+            background: rgba(0, 0, 0, 0.5);
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            padding: 10px;
+            height: 200px;
+            overflow-y: auto;
+            border-radius: 8px;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(16, 185, 129, 0.9);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            z-index: 1000;
+            font-weight: bold;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .romanian-cultural-indicator {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 215, 0, 0.9);
+            color: #000;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 12px;
+            z-index: 100;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <!-- Test Header -->
+        <div class="test-header">
+            <div class="test-title">🇷🇴 Romanian Septica Integration Test</div>
+            <div class="connection-status">
+                <div class="status-dot" id="connection-dot"></div>
+                <span id="connection-text">Disconnected</span>
+            </div>
+        </div>
+
+        <!-- Test Controls -->
+        <div class="test-controls">
+            <button class="test-btn" id="connect-btn">Connect Backend</button>
+            <button class="test-btn" id="create-game-btn" disabled>Create Game</button>
+            <button class="test-btn" id="join-matchmaking-btn" disabled>Join Matchmaking</button>
+            <button class="test-btn" id="play-test-card-btn" disabled>Play Test Card</button>
+            <button class="test-btn" id="simulate-game-btn" disabled>Simulate Game State</button>
+            <button class="test-btn" id="test-3d-btn" disabled>Test 3D Interface</button>
+        </div>
+
+        <!-- Game Area -->
+        <div class="game-area">
+            <!-- 3D Game Container -->
+            <div class="threejs-container" id="threejs-container">
+                <div class="romanian-cultural-indicator">Septica Românească</div>
+            </div>
+
+            <!-- Game Sidebar -->
+            <div class="game-sidebar">
+                <div class="sidebar-section">
+                    <div class="sidebar-title">Connection Status</div>
+                    <div class="sidebar-content">
+                        <div>Server: <span id="server-url">ws://localhost:8080/ws/connect</span></div>
+                        <div>Player ID: <span id="player-id">-</span></div>
+                        <div>Game ID: <span id="game-id">-</span></div>
+                    </div>
+                </div>
+
+                <div class="sidebar-section">
+                    <div class="sidebar-title">Game State</div>
+                    <div class="game-state-display" id="game-state-display">
+                        <div>Status: <span id="game-status">Not Connected</span></div>
+                        <div>Your Turn: <span id="your-turn">-</span></div>
+                        <div>Trick: <span id="trick-number">-</span></div>
+                        <div>Move: <span id="move-number">-</span></div>
+                    </div>
+                </div>
+
+                <div class="sidebar-section">
+                    <div class="sidebar-title">Your Hand</div>
+                    <div class="card-hand" id="player-hand">
+                        <!-- Cards will be added here -->
+                    </div>
+                </div>
+
+                <div class="sidebar-section">
+                    <div class="sidebar-title">Table Cards</div>
+                    <div class="card-hand" id="table-cards">
+                        <!-- Cards will be added here -->
+                    </div>
+                </div>
+
+                <div class="sidebar-section">
+                    <div class="sidebar-title">Valid Moves</div>
+                    <div class="card-hand" id="valid-moves">
+                        <!-- Cards will be added here -->
+                    </div>
+                </div>
+
+                <div class="sidebar-section">
+                    <div class="sidebar-title">Test Log</div>
+                    <div class="test-log" id="test-log"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dynamic Notification Container -->
+    <div class="notification" id="notification"></div>
+
+    <script>
+        /**
+         * Romanian Septica Integration Test Application
+         */
+        class RomanianSepticaTest {
+            constructor() {
+                this.gameUI = null;
+                this.wsClient = null;
+                this.premiumGame = null;
+                this.cardInterface = null;
+                this.isConnected = false;
+                this.gameState = null;
+
+                this.initialize();
+            }
+
+            async initialize() {
+                this.log('🎮 Initializing Romanian Septica Integration Test...');
+
+                // Initialize UI elements
+                this.initializeElements();
+
+                // Initialize game systems
+                this.initializeGameSystems();
+
+                // Setup event listeners
+                this.setupEventListeners();
+
+                this.log('✅ Romanian Septica Integration Test initialized');
+            }
+
+            initializeElements() {
+                this.elements = {
+                    connectionDot: document.getElementById('connection-dot'),
+                    connectionText: document.getElementById('connection-text'),
+                    connectBtn: document.getElementById('connect-btn'),
+                    createGameBtn: document.getElementById('create-game-btn'),
+                    joinMatchmakingBtn: document.getElementById('join-matchmaking-btn'),
+                    playTestCardBtn: document.getElementById('play-test-card-btn'),
+                    simulateGameBtn: document.getElementById('simulate-game-btn'),
+                    test3DBtn: document.getElementById('test-3d-btn'),
+                    serverUrl: document.getElementById('server-url'),
+                    playerId: document.getElementById('player-id'),
+                    gameId: document.getElementById('game-id'),
+                    gameStatus: document.getElementById('game-status'),
+                    yourTurn: document.getElementById('your-turn'),
+                    trickNumber: document.getElementById('trick-number'),
+                    moveNumber: document.getElementById('move-number'),
+                    playerHand: document.getElementById('player-hand'),
+                    tableCards: document.getElementById('table-cards'),
+                    validMoves: document.getElementById('valid-moves'),
+                    testLog: document.getElementById('test-log'),
+                    notification: document.getElementById('notification')
+                };
+            }
+
+            initializeGameSystems() {
+                try {
+                    // Initialize GameUI
+                    this.gameUI = new GameUI();
+                    window.gameUI = this.gameUI;
+
+                    // Initialize WebSocket client
+                    this.wsClient = new SepticaWebSocketClient();
+                    this.gameUI.setWebSocketClient(this.wsClient);
+
+                    // Setup WebSocket event handlers
+                    this.wsClient.onConnectionChange = (status) => {
+                        this.handleConnectionChange(status);
+                    };
+
+                    this.wsClient.onGameStateUpdate = (gameState) => {
+                        this.handleGameStateUpdate(gameState);
+                    };
+
+                    this.wsClient.onMoveResult = (result) => {
+                        this.handleMoveResult(result);
+                    };
+
+                    // Initialize Premium Game (if container available)
+                    const container = document.getElementById('threejs-container');
+                    if (container && window.PremiumSepticaGame) {
+                        this.premiumGame = new PremiumSepticaGame('threejs-container');
+                        window.premiumGame = this.premiumGame;
+                    }
+
+                    this.log('🎯 Game systems initialized successfully');
+                } catch (error) {
+                    this.log('❌ Error initializing game systems: ' + error.message);
+                }
+            }
+
+            setupEventListeners() {
+                this.elements.connectBtn.addEventListener('click', () => this.testConnection());
+                this.elements.createGameBtn.addEventListener('click', () => this.testCreateGame());
+                this.elements.joinMatchmakingBtn.addEventListener('click', () => this.testJoinMatchmaking());
+                this.elements.playTestCardBtn.addEventListener('click', () => this.testPlayCard());
+                this.elements.simulateGameBtn.addEventListener('click', () => this.testSimulateGameState());
+                this.elements.test3DBtn.addEventListener('click', () => this.test3DInterface());
+            }
+
+            async testConnection() {
+                this.log('🔗 Testing WebSocket connection...');
+                try {
+                    await this.wsClient.connect();
+                    this.log('✅ WebSocket connection successful');
+                    this.showNotification('Connected to Romanian Septica backend!');
+                } catch (error) {
+                    this.log('❌ WebSocket connection failed: ' + error.message);
+                    this.showNotification('Connection failed: ' + error.message, 'error');
+                }
+            }
+
+            async testCreateGame() {
+                this.log('🎲 Testing game creation...');
+                try {
+                    await this.gameUI.handleCreateGame();
+                    this.log('✅ Game creation test completed');
+                } catch (error) {
+                    this.log('❌ Game creation failed: ' + error.message);
+                }
+            }
+
+            async testJoinMatchmaking() {
+                this.log('🔍 Testing matchmaking...');
+                try {
+                    this.wsClient.joinMatchmaking('casual', 'septica');
+                    this.log('✅ Matchmaking join request sent');
+                    this.showNotification('Searching for Romanian Septica opponent...');
+                } catch (error) {
+                    this.log('❌ Matchmaking failed: ' + error.message);
+                }
+            }
+
+            testPlayCard() {
+                this.log('🃏 Testing card play...');
+
+                if (!this.gameState || !this.gameState.your_cards || this.gameState.your_cards.length === 0) {
+                    this.log('❌ No cards available to play');
+                    return;
+                }
+
+                const firstCard = this.gameState.your_cards[0];
+                this.log(`🎯 Playing test card: ${firstCard.value} of ${firstCard.suit}`);
+
+                this.wsClient.playCard(firstCard.suit, firstCard.value, firstCard.id);
+            }
+
+            testSimulateGameState() {
+                this.log('🎭 Simulating Romanian Septica game state...');
+
+                const mockGameState = {
+                    game_id: 'test-game-123',
+                    your_turn: true,
+                    current_player_id: this.wsClient.playerId,
+                    status: 'playing',
+                    trick_number: 2,
+                    move_number: 4,
+                    your_cards: [
+                        { suit: 'hearts', value: 7, id: 'h7' },
+                        { suit: 'diamonds', value: 10, id: 'd10' },
+                        { suit: 'clubs', value: 14, id: 'c14' }
+                    ],
+                    table_cards: [
+                        { suit: 'spades', value: 9, id: 's9' }
+                    ],
+                    valid_moves: [
+                        { suit: 'hearts', value: 7, id: 'h7' }
+                    ],
+                    scores: {},
+                    players: []
+                };
+
+                this.handleGameStateUpdate(mockGameState);
+                this.log('✅ Mock game state applied');
+                this.showNotification('Romanian Septica game state simulated!');
+            }
+
+            test3DInterface() {
+                this.log('🎨 Testing 3D interface...');
+
+                if (!this.premiumGame) {
+                    this.log('❌ 3D interface not available');
+                    return;
+                }
+
+                // Test Romanian region change
+                this.premiumGame.setRomanianRegion('transylvanian');
+                this.log('✅ Changed Romanian region to Transylvanian');
+
+                // Test quality cycling
+                setTimeout(() => {
+                    this.premiumGame.reduceQuality();
+                    this.log('✅ Reduced 3D quality for performance');
+                }, 1000);
+
+                this.showNotification('3D Romanian Septica interface tested!');
+            }
+
+            handleConnectionChange(status) {
+                this.isConnected = status.isConnected;
+
+                // Update UI
+                this.elements.connectionDot.classList.toggle('connected', status.isConnected);
+                this.elements.connectionText.textContent = status.isConnected ? 'Connected' : 'Disconnected';
+
+                // Update player info
+                this.elements.playerId.textContent = status.playerId || '-';
+
+                // Update button states
+                this.elements.connectBtn.disabled = status.isConnected;
+                this.elements.createGameBtn.disabled = !status.isConnected;
+                this.elements.joinMatchmakingBtn.disabled = !status.isConnected;
+                this.elements.simulateGameBtn.disabled = !status.isConnected;
+                this.elements.test3DBtn.disabled = false; // Always available
+
+                this.log(status.isConnected ? '🟢 Connected to backend' : '🔴 Disconnected from backend');
+            }
+
+            handleGameStateUpdate(gameState) {
+                this.gameState = gameState;
+                this.log('📋 Game state updated: ' + JSON.stringify(gameState, null, 2));
+
+                // Update UI elements
+                this.elements.gameId.textContent = gameState.game_id || '-';
+                this.elements.gameStatus.textContent = gameState.status || 'Unknown';
+                this.elements.yourTurn.textContent = gameState.your_turn ? 'Yes' : 'No';
+                this.elements.trickNumber.textContent = gameState.trick_number || '-';
+                this.elements.moveNumber.textContent = gameState.move_number || '-';
+
+                // Update cards display
+                this.displayCards('playerHand', gameState.your_cards || []);
+                this.displayCards('tableCards', gameState.table_cards || []);
+                this.displayCards('validMoves', gameState.valid_moves || []);
+
+                // Enable card play if it's player's turn
+                this.elements.playTestCardBtn.disabled = !gameState.your_turn || !gameState.your_cards || gameState.your_cards.length === 0;
+            }
+
+            handleMoveResult(result) {
+                this.log('🎯 Move result: ' + JSON.stringify(result, null, 2));
+
+                if (result.valid) {
+                    this.showNotification('Card played successfully!');
+                } else {
+                    this.showNotification('Invalid move: ' + (result.error || 'Unknown error'), 'error');
+                }
+            }
+
+            displayCards(containerId, cards) {
+                const container = this.elements[containerId];
+                container.innerHTML = '';
+
+                cards.forEach(card => {
+                    const cardEl = document.createElement('div');
+                    cardEl.className = 'card';
+
+                    // Add valid move indicator
+                    if (containerId === 'validMoves') {
+                        cardEl.classList.add('valid');
+                    }
+
+                    const valueText = this.getCardValueText(card.value);
+                    const suitSymbol = this.getSuitSymbol(card.suit);
+
+                    cardEl.innerHTML = `
+                        <div>${valueText}</div>
+                        <div>${suitSymbol}</div>
+                    `;
+
+                    container.appendChild(cardEl);
+                });
+            }
+
+            getCardValueText(value) {
+                const valueMap = {
+                    7: '7', 8: '8', 9: '9', 10: '10',
+                    11: 'J', 12: 'Q', 13: 'K', 14: 'A'
+                };
+                return valueMap[value] || value.toString();
+            }
+
+            getSuitSymbol(suit) {
+                const symbols = {
+                    'hearts': '♥',
+                    'diamonds': '♦',
+                    'clubs': '♣',
+                    'spades': '♠'
+                };
+                return symbols[suit] || '?';
+            }
+
+            showNotification(message, type = 'success') {
+                const notification = this.elements.notification;
+                notification.textContent = message;
+                notification.className = `notification ${type}`;
+                notification.classList.add('show');
+
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 3000);
+            }
+
+            log(message) {
+                const timestamp = new Date().toLocaleTimeString();
+                const logEntry = `[${timestamp}] ${message}`;
+
+                console.log(logEntry);
+
+                const logContainer = this.elements.testLog;
+                logContainer.innerHTML += logEntry + '\n';
+                logContainer.scrollTop = logContainer.scrollHeight;
+            }
+        }
+
+        // Initialize the test application
+        document.addEventListener('DOMContentLoaded', () => {
+            window.romanianSepticaTest = new RomanianSepticaTest();
+        });
+    </script>
+</body>
+</html>
