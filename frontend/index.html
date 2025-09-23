@@ -530,7 +530,34 @@ Ready for complete auto-matchmaking testing!
             }
             
             setupWebSocketClient() {
+                console.log('🔧 Setting up WebSocket client...');
+
+                // Check if SepticaWebSocketClient is available
+                if (typeof SepticaWebSocketClient === 'undefined') {
+                    console.error('❌ CRITICAL: SepticaWebSocketClient is not defined!');
+                    throw new Error('SepticaWebSocketClient class not loaded');
+                }
+
                 this.client = new SepticaWebSocketClient();
+
+                // Verify the client was created properly
+                if (!this.client) {
+                    console.error('❌ CRITICAL: Failed to create SepticaWebSocketClient instance');
+                    throw new Error('Failed to create WebSocket client');
+                }
+
+                // Check for essential methods
+                const requiredMethods = ['joinMatchmaking', 'leaveMatchmaking', 'playCard', 'connect'];
+                const missingMethods = requiredMethods.filter(method => typeof this.client[method] !== 'function');
+
+                if (missingMethods.length > 0) {
+                    console.error('❌ CRITICAL: Missing methods on WebSocket client:', missingMethods);
+                    console.error('❌ Available methods:', Object.getOwnPropertyNames(this.client.__proto__));
+                    throw new Error(`Missing required methods: ${missingMethods.join(', ')}`);
+                }
+
+                console.log('✅ WebSocket client created successfully with all required methods');
+                console.log('✅ Available methods:', Object.getOwnPropertyNames(this.client.__proto__).filter(name => typeof this.client[name] === 'function'));
                 
                 // Set up event handlers
                 this.client.onConnectionChange = (connected) => {
@@ -615,25 +642,43 @@ Ready for complete auto-matchmaking testing!
 
                 try {
                     console.log('🎮 Starting matchmaking...');
+
+                    // Verify client exists and has required methods
+                    if (!this.client) {
+                        throw new Error('WebSocket client not initialized');
+                    }
+
+                    if (typeof this.client.joinMatchmaking !== 'function') {
+                        console.error('❌ CRITICAL ERROR: this.client.joinMatchmaking is not a function');
+                        console.error('❌ Client object:', this.client);
+                        console.error('❌ Available methods:', Object.getOwnPropertyNames(this.client.constructor.prototype));
+                        throw new Error('joinMatchmaking method not available on WebSocket client');
+                    }
+
+                    console.log('✅ WebSocket client and joinMatchmaking method verified');
+
                     this.isInMatchmaking = true;
                     this.matchmakingStartTime = Date.now();
-                    
+
                     // Show matchmaking overlay
                     this.showMatchmakingOverlay();
-                    
+
                     // Update controls
                     this.updateGameControls();
-                    
-                    // Join matchmaking queue
-                    this.client.joinMatchmaking('casual', 'septica');
-                    
+
+                    // Join matchmaking queue with explicit parameters
+                    console.log('📞 Calling this.client.joinMatchmaking("casual", "septica")...');
+                    const result = this.client.joinMatchmaking('casual', 'septica');
+                    console.log('📞 joinMatchmaking result:', result);
+
                     this.updateGameStatus('Joining matchmaking...');
                 } catch (error) {
                     console.error('❌ Error starting matchmaking:', error);
+                    console.error('❌ Error stack:', error.stack);
                     this.isInMatchmaking = false;
                     this.hideMatchmakingOverlay();
                     this.updateGameControls();
-                    this.updateGameStatus('Matchmaking failed');
+                    this.updateGameStatus(`Matchmaking failed: ${error.message}`);
                 }
             }
 
@@ -644,9 +689,16 @@ Ready for complete auto-matchmaking testing!
 
                 try {
                     console.log('❌ Cancelling matchmaking...');
-                    
+
+                    // Verify client and method exist
+                    if (!this.client || typeof this.client.leaveMatchmaking !== 'function') {
+                        throw new Error('leaveMatchmaking method not available on WebSocket client');
+                    }
+
                     // Leave matchmaking queue
-                    this.client.leaveMatchmaking();
+                    console.log('📞 Calling this.client.leaveMatchmaking()...');
+                    const result = this.client.leaveMatchmaking();
+                    console.log('📞 leaveMatchmaking result:', result);
                     
                     this.isInMatchmaking = false;
                     this.matchmakingStartTime = null;
