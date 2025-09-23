@@ -358,6 +358,158 @@
             font-weight: bold;
         }
 
+        /* Romanian Cultural Elements */
+        .romanian-flag {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 60px;
+            height: 40px;
+            display: flex;
+            border-radius: 4px;
+            overflow: hidden;
+            z-index: 15;
+        }
+
+        .romanian-flag div {
+            flex: 1;
+        }
+
+        .romanian-flag .blue {
+            background: #002b7f;
+        }
+
+        .romanian-flag .yellow {
+            background: #fcd116;
+        }
+
+        .romanian-flag .red {
+            background: #ce1126;
+        }
+
+        /* Romanian Septica Rule Indicators */
+        .romanian-rules-panel {
+            position: absolute;
+            bottom: 60px;
+            right: 10px;
+            width: 250px;
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 12px;
+            padding: 15px;
+            color: white;
+            font-size: 12px;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 215, 0, 0.3);
+            z-index: 20;
+        }
+
+        .rules-title {
+            color: #ffd700;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .rule-item {
+            margin-bottom: 8px;
+            padding: 5px;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .rule-emoji {
+            margin-right: 5px;
+        }
+
+        .romanian-card-highlight {
+            border: 2px solid #ffd700 !important;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.6) !important;
+            animation: romanian-glow 1.5s ease-in-out infinite alternate;
+        }
+
+        @keyframes romanian-glow {
+            from { box-shadow: 0 0 15px rgba(255, 215, 0, 0.6); }
+            to { box-shadow: 0 0 25px rgba(255, 215, 0, 0.9); }
+        }
+
+        .septica-indicator {
+            background: linear-gradient(45deg, #ffd700, #ff6b00);
+            color: black;
+            font-weight: bold;
+            border-radius: 15px;
+            padding: 2px 8px;
+            font-size: 10px;
+            position: absolute;
+            top: -5px;
+            right: -5px;
+        }
+
+        .point-card-indicator {
+            background: linear-gradient(45deg, #3b82f6, #1e40af);
+            color: white;
+            font-weight: bold;
+            border-radius: 15px;
+            padding: 2px 8px;
+            font-size: 10px;
+            position: absolute;
+            top: -5px;
+            right: -5px;
+        }
+
+        /* Romanian Messages */
+        .romanian-message {
+            position: fixed;
+            top: 25%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #ffd700, #ff6b00);
+            color: black;
+            padding: 15px 25px;
+            border-radius: 12px;
+            font-weight: bold;
+            z-index: 1000;
+            animation: romanian-message-slide 0.5s ease-out;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.8);
+        }
+
+        @keyframes romanian-message-slide {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(-20px) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0) scale(1);
+            }
+        }
+
+        .cultural-corner {
+            position: absolute;
+            top: 70px;
+            right: 10px;
+            width: 200px;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 8px;
+            padding: 10px;
+            color: white;
+            font-size: 11px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+        }
+
+        .cultural-title {
+            color: #ffd700;
+            font-weight: bold;
+            margin-bottom: 5px;
+            text-align: center;
+        }
+
+        .cultural-fact {
+            margin-bottom: 5px;
+            line-height: 1.3;
+        }
 
         /* Responsive design */
         @media (max-width: 768px) {
@@ -473,6 +625,47 @@
         <!-- Multi-tab Info -->
         <div class="tab-info">
             Open two tabs: Both click Play → Auto-matched
+        </div>
+
+        <!-- Romanian Flag -->
+        <div class="romanian-flag">
+            <div class="blue"></div>
+            <div class="yellow"></div>
+            <div class="red"></div>
+        </div>
+
+        <!-- Cultural Corner -->
+        <div class="cultural-corner">
+            <div class="cultural-title">🇷🇴 Septica Română</div>
+            <div class="cultural-fact">🎴 Traditional Romanian card game</div>
+            <div class="cultural-fact">🏆 Sevens are strongest cards</div>
+            <div class="cultural-fact">💎 Collect 10s and Aces</div>
+            <div class="cultural-fact">🎯 First to 6 points wins</div>
+        </div>
+
+        <!-- Romanian Rules Panel -->
+        <div class="romanian-rules-panel">
+            <div class="rules-title">🎮 Regulile Septicii</div>
+            <div class="rule-item">
+                <span class="rule-emoji">👑</span>
+                7s beat ALL other cards
+            </div>
+            <div class="rule-item">
+                <span class="rule-emoji">⚡</span>
+                Same values beat each other
+            </div>
+            <div class="rule-item">
+                <span class="rule-emoji">🎯</span>
+                8s beat when table cards % 3 = 0
+            </div>
+            <div class="rule-item">
+                <span class="rule-emoji">💎</span>
+                10s and Aces = 1 point each
+            </div>
+            <div class="rule-item">
+                <span class="rule-emoji">🏆</span>
+                First to 6 points wins
+            </div>
         </div>
     </div>
 
@@ -773,23 +966,37 @@ Ready for complete auto-matchmaking testing!
             createCard(suit, value, faceDown = false) {
                 const card = document.createElement('div');
                 card.className = `card ${faceDown ? 'face-down' : 'face-up'} ${suit}`;
-                
+
                 if (!faceDown) {
                     const valueSpan = document.createElement('span');
                     valueSpan.className = 'card-value';
                     valueSpan.textContent = this.getCardValueText(value);
-                    
+
                     const suitSpan = document.createElement('span');
                     suitSpan.className = 'card-suit';
                     suitSpan.textContent = this.getSuitSymbol(suit);
-                    
+
                     card.appendChild(valueSpan);
                     card.appendChild(suitSpan);
+
+                    // Add Romanian cultural indicators
+                    if (value === 7) {
+                        const indicator = document.createElement('div');
+                        indicator.className = 'septica-indicator';
+                        indicator.textContent = 'SEPTICA';
+                        card.appendChild(indicator);
+                        card.classList.add('romanian-card-highlight');
+                    } else if (value === 10 || value === 14) {
+                        const indicator = document.createElement('div');
+                        indicator.className = 'point-card-indicator';
+                        indicator.textContent = 'PUNCT';
+                        card.appendChild(indicator);
+                    }
                 }
-                
+
                 card.dataset.suit = suit;
                 card.dataset.value = value;
-                
+
                 return card;
             }
             
@@ -872,33 +1079,77 @@ Ready for complete auto-matchmaking testing!
             
             playCard(card) {
                 if (!card || !this.isMyTurn) return;
-                
-                console.log(`🎮 Playing card: ${this.getCardValueText(card.dataset.value)} of ${card.dataset.suit}`);
-                
+
+                const value = parseInt(card.dataset.value);
+                const suit = card.dataset.suit;
+
+                console.log(`🎮 Playing card: ${this.getCardValueText(value)} of ${suit}`);
+
+                // Show Romanian cultural feedback
+                this.showRomanianMessage(card);
+
                 // Move card to table
                 const tableContainer = document.getElementById('table-cards');
                 card.classList.remove('selected', 'playable');
                 card.removeEventListener('click', this.selectCard);
                 tableContainer.appendChild(card);
-                
+
                 // Clear selection
                 this.selectedCard = null;
-                
+
                 // Update turn
                 this.isMyTurn = false;
-                this.updateGameStatus("Opponent's turn");
-                
+                this.updateGameStatus("Rândul adversarului - Opponent's turn");
+
                 // Send move to server if connected
                 if (this.client && this.client.isConnected && this.gameId) {
-                    this.client.playCard(card.dataset.suit, parseInt(card.dataset.value));
+                    this.client.playCard(suit, value);
                 }
-                
+
                 // Simulate opponent move in demo mode
                 if (!this.isInGame) {
                     setTimeout(() => {
                         this.simulateOpponentMove();
                     }, 1500);
                 }
+            }
+
+            showRomanianMessage(card) {
+                const value = parseInt(card.dataset.value);
+                const suit = card.dataset.suit;
+                let message = '';
+
+                if (value === 7) {
+                    message = `🎯 Septica ${this.getSuitSymbol(suit)}! Cea mai puternică carte!`;
+                } else if (value === 14) {
+                    message = `👑 As ${this.getSuitSymbol(suit)}! Carte de punct!`;
+                } else if (value === 10) {
+                    message = `💎 Zece ${this.getSuitSymbol(suit)}! Carte de punct!`;
+                } else if (value === 8) {
+                    message = `⚡ Opt ${this.getSuitSymbol(suit)}! Poate bate dacă sunt 3 cărți pe masă!`;
+                } else {
+                    message = `🎴 ${this.getCardValueText(value)} ${this.getSuitSymbol(suit)} jucat!`;
+                }
+
+                this.displayRomanianMessage(message);
+            }
+
+            displayRomanianMessage(message) {
+                const messageEl = document.createElement('div');
+                messageEl.className = 'romanian-message';
+                messageEl.textContent = message;
+
+                document.body.appendChild(messageEl);
+
+                setTimeout(() => {
+                    messageEl.style.opacity = '0';
+                    messageEl.style.transform = 'translateX(-50%) translateY(-20px) scale(0.9)';
+                    setTimeout(() => {
+                        if (messageEl.parentNode) {
+                            messageEl.parentNode.removeChild(messageEl);
+                        }
+                    }, 500);
+                }, 3000);
             }
             
             simulateOpponentMove() {

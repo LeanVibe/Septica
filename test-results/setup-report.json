@@ -1,0 +1,41 @@
+{
+  "timestamp": "2025-09-23T08:52:04.959Z",
+  "duration": 464,
+  "healthChecks": [
+    {
+      "service": "backend",
+      "status": "unavailable",
+      "port": 8080,
+      "error": "request to http://localhost:8080/health failed, reason: "
+    },
+    {
+      "service": "frontend",
+      "status": "unavailable",
+      "port": 3000,
+      "error": "request to http://localhost:3000/ failed, reason: "
+    },
+    {
+      "service": "websocket",
+      "status": "unavailable",
+      "endpoint": "ws://localhost:8080/ws/connect",
+      "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/\", waiting until \"load\"\u001b[22m\n"
+    },
+    {
+      "service": "database",
+      "status": "unknown",
+      "error": "request to http://localhost:8080/api/health/db failed, reason: "
+    }
+  ],
+  "performanceBaselines": {
+    "setupTime": 352,
+    "backendLatency": -1,
+    "frontendLoadTime": -1,
+    "wsConnectionTime": 0
+  },
+  "readiness": {
+    "backend": false,
+    "frontend": false,
+    "websocket": false,
+    "overall": false
+  }
+}

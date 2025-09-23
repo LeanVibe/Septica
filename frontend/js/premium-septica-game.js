@@ -670,8 +670,11 @@ class PremiumSepticaGame {
     handleGameStateUpdate(gameState) {
         console.log('🎮 Premium Septica handling game state update:', gameState);
 
+        // Store previous state for comparison
+        const previousState = this.gameState;
+
         this.gameState = gameState;
-        this.playerHand = gameState.your_cards || gameState.playerCards || [];
+        this.playerHand = gameState.your_cards || gameState.playerCards || gameState.hand || [];
         this.tableCards = gameState.table_cards || gameState.tableCards || [];
         this.validMoves = gameState.valid_moves || gameState.validMoves || [];
 
@@ -693,6 +696,16 @@ class PremiumSepticaGame {
 
         // Trigger Romanian Septica specific animations
         this.triggerRomanianSepticaAnimations(gameState);
+
+        // Detect and animate state changes
+        if (previousState) {
+            this.animateStateChanges(previousState, gameState);
+        }
+
+        // Update connection to main game UI
+        if (window.gameUI && typeof window.gameUI.updateGameState === 'function') {
+            window.gameUI.updateGameState(gameState);
+        }
     }
     
     /**
@@ -1452,6 +1465,276 @@ class PremiumSepticaGame {
                 overlay.classList.remove('active-turn');
             }
         }
+    }
+
+    /**
+     * Animate state changes between previous and current game state
+     */
+    animateStateChanges(previousState, currentState) {
+        // Animate new cards on table
+        const prevTableCount = (previousState.table_cards || []).length;
+        const currTableCount = (currentState.table_cards || []).length;
+
+        if (currTableCount > prevTableCount) {
+            console.log('🎴 New card(s) played - animating table update');
+            this.animateNewTableCards(previousState.table_cards || [], currentState.table_cards || []);
+        }
+
+        // Animate hand changes
+        const prevHandCount = (previousState.your_cards || []).length;
+        const currHandCount = (currentState.your_cards || []).length;
+
+        if (currHandCount !== prevHandCount) {
+            console.log('🎴 Hand size changed - animating hand update');
+            this.animateHandChanges();
+        }
+
+        // Animate turn changes
+        if (previousState.your_turn !== currentState.your_turn) {
+            console.log('🔄 Turn changed - animating turn indicator');
+            this.animateTurnChange(currentState.your_turn);
+        }
+
+        // Animate trick completion
+        const prevTrickNumber = previousState.trick_number || 1;
+        const currTrickNumber = currentState.trick_number || 1;
+
+        if (currTrickNumber > prevTrickNumber) {
+            console.log('🏆 Trick completed - animating celebration');
+            this.animateTrickCompletion(currentState);
+        }
+
+        // Animate game completion
+        if (currentState.status === 'finished' && previousState.status !== 'finished') {
+            console.log('🎉 Game completed - animating end game');
+            this.animateGameCompletion(currentState);
+        }
+    }
+
+    /**
+     * Animate new cards appearing on table
+     */
+    animateNewTableCards(previousCards, currentCards) {
+        const newCards = currentCards.slice(previousCards.length);
+
+        newCards.forEach((cardData, index) => {
+            console.log(`🎴 Animating new table card: ${this.getCardDisplayName(cardData)}`);
+
+            setTimeout(() => {
+                // Find the 3D card object and animate it
+                this.scene.traverse((child) => {
+                    if (child.userData && child.userData.cardData &&
+                        child.userData.cardData.suit === cardData.suit &&
+                        child.userData.cardData.value === cardData.value &&
+                        child.userData.cardType === 'table') {
+
+                        // Card entrance animation
+                        const originalY = child.position.y;
+                        child.position.y = originalY + 2;
+                        child.scale.set(0.5, 0.5, 0.5);
+
+                        // Animate to final position
+                        if (typeof gsap !== 'undefined') {
+                            gsap.to(child.position, {
+                                y: originalY,
+                                duration: 0.8,
+                                ease: "bounce.out"
+                            });
+                            gsap.to(child.scale, {
+                                x: 1, y: 1, z: 1,
+                                duration: 0.6,
+                                ease: "back.out(1.7)"
+                            });
+                        }
+
+                        // Special effects for special cards
+                        if (cardData.value === 7) {
+                            this.addSepticaEffect3D(child);
+                        } else if (cardData.value === 14 || cardData.value === 10) {
+                            this.addPointCardEffect3D(child);
+                        }
+                    }
+                });
+            }, index * 200);
+        });
+    }
+
+    /**
+     * Animate hand changes
+     */
+    animateHandChanges() {
+        // Re-layout player hand with smooth animation
+        this.scene.traverse((child) => {
+            if (child.userData && child.userData.cardType === 'player') {
+                // Smooth re-positioning animation
+                if (typeof gsap !== 'undefined') {
+                    gsap.to(child.position, {
+                        duration: 0.5,
+                        ease: "power2.out"
+                    });
+                    gsap.to(child.rotation, {
+                        duration: 0.5,
+                        ease: "power2.out"
+                    });
+                }
+            }
+        });
+    }
+
+    /**
+     * Animate turn changes
+     */
+    animateTurnChange(isYourTurn) {
+        if (isYourTurn) {
+            this.showRomanianMessage('Rândul tău! Your turn!');
+
+            // Highlight player cards
+            this.scene.traverse((child) => {
+                if (child.userData && child.userData.isPlayerCard) {
+                    if (child.material && child.material.emissive) {
+                        child.material.emissive.setHex(0x002200); // Green glow
+                    }
+                }
+            });
+        } else {
+            // Remove highlights
+            this.scene.traverse((child) => {
+                if (child.userData && child.userData.isPlayerCard) {
+                    if (child.material && child.material.emissive) {
+                        child.material.emissive.setHex(0x000000); // No glow
+                    }
+                }
+            });
+        }
+    }
+
+    /**
+     * Animate trick completion
+     */
+    animateTrickCompletion(gameState) {
+        this.showRomanianMessage(`Rundă completă! Trick ${gameState.trick_number - 1} finished!`);
+
+        // Clear table with animation
+        setTimeout(() => {
+            this.scene.traverse((child) => {
+                if (child.userData && child.userData.cardType === 'table') {
+                    if (typeof gsap !== 'undefined') {
+                        gsap.to(child.position, {
+                            y: child.position.y - 2,
+                            duration: 0.6,
+                            ease: "power2.in"
+                        });
+                        gsap.to(child.scale, {
+                            x: 0, y: 0, z: 0,
+                            duration: 0.6,
+                            ease: "power2.in",
+                            onComplete: () => {
+                                this.scene.remove(child);
+                            }
+                        });
+                    } else {
+                        this.scene.remove(child);
+                    }
+                }
+            });
+        }, 1000);
+    }
+
+    /**
+     * Animate game completion
+     */
+    animateGameCompletion(gameState) {
+        const isWinner = gameState.winner_id === (this.wsClient ? this.wsClient.playerId : null);
+        const message = isWinner ? '🏆 Felicitări! You won!' : '😔 Game Over! You lost!';
+
+        this.showRomanianMessage(message);
+
+        // Celebration animation for winner
+        if (isWinner) {
+            this.triggerWinnerCelebration();
+        }
+    }
+
+    /**
+     * Add Septica effect to 3D card
+     */
+    addSepticaEffect3D(cardMesh) {
+        if (!cardMesh.material) return;
+
+        // Golden glow effect
+        cardMesh.material.emissive.setHex(0x332200); // Gold emissive
+
+        // Pulsing animation
+        if (typeof gsap !== 'undefined') {
+            gsap.to(cardMesh.material, {
+                emissiveIntensity: 0.3,
+                duration: 0.8,
+                yoyo: true,
+                repeat: 3,
+                ease: "power2.inOut"
+            });
+        }
+
+        console.log('✨ Septica 3D effect applied');
+    }
+
+    /**
+     * Add point card effect to 3D card
+     */
+    addPointCardEffect3D(cardMesh) {
+        if (!cardMesh.material) return;
+
+        // Blue glow effect for point cards
+        cardMesh.material.emissive.setHex(0x001122); // Blue emissive
+
+        // Gentle pulsing
+        if (typeof gsap !== 'undefined') {
+            gsap.to(cardMesh.material, {
+                emissiveIntensity: 0.2,
+                duration: 0.6,
+                yoyo: true,
+                repeat: 2,
+                ease: "power2.inOut"
+            });
+        }
+
+        console.log('💎 Point card 3D effect applied');
+    }
+
+    /**
+     * Trigger winner celebration
+     */
+    triggerWinnerCelebration() {
+        // Particle effect or screen flash
+        if (this.scene) {
+            // Create temporary celebration lights
+            const colors = [0xffd700, 0xff6b6b, 0x4ecdc4, 0x45b7d1];
+
+            for (let i = 0; i < 8; i++) {
+                const light = new THREE.PointLight(colors[i % colors.length], 1, 10);
+                light.position.set(
+                    (Math.random() - 0.5) * 10,
+                    Math.random() * 5,
+                    (Math.random() - 0.5) * 10
+                );
+
+                this.scene.add(light);
+
+                // Animate lights
+                if (typeof gsap !== 'undefined') {
+                    gsap.to(light, {
+                        intensity: 0,
+                        duration: 2,
+                        ease: "power2.out",
+                        onComplete: () => {
+                            this.scene.remove(light);
+                        }
+                    });
+                }
+            }
+        }
+
+        console.log('🎉 Winner celebration triggered');
     }
 }
 

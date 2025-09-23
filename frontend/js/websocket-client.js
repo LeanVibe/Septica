@@ -315,36 +315,42 @@ class SepticaWebSocketClient {
      */
     handleConnectionAck(message) {
         console.log('🔍 DEBUG: handleConnectionAck called with:', message);
-        
+
         try {
+            // Handle both payload and direct properties for backend compatibility
             if (message.payload) {
-                this.playerId = message.player_id;
+                this.playerId = message.payload.player_id || message.player_id;
                 this.sessionId = message.payload.session_id;
-                this.serverTime = new Date(message.payload.server_time);
+                this.serverTime = message.payload.server_time ? new Date(message.payload.server_time) : null;
                 this.heartbeatIntervalMs = message.payload.heartbeat_interval || 30000;
                 this.maxMessageQueue = message.payload.max_message_queue || 100;
-                
-                console.log('🎯 DEBUG: Connection ACK processed successfully', {
-                    playerId: this.playerId,
-                    sessionId: this.sessionId,
-                    heartbeatInterval: this.heartbeatIntervalMs
-                });
-                
-                this.log('Connection acknowledged', {
-                    playerId: this.playerId,
-                    sessionId: this.sessionId,
-                    heartbeatInterval: this.heartbeatIntervalMs
-                });
-                
-                // Start heartbeat
-                console.log('❤️ DEBUG: Starting heartbeat...');
-                this.startHeartbeat();
-                console.log('📡 DEBUG: Notifying connection change...');
-                this.notifyConnectionChange();
-                console.log('✅ DEBUG: handleConnectionAck completed successfully');
             } else {
-                console.log('⚠️ DEBUG: No payload in connection_ack message');
+                // Fallback for direct properties
+                this.playerId = message.player_id;
+                this.sessionId = message.session_id;
+                this.serverTime = message.server_time ? new Date(message.server_time) : null;
+                this.heartbeatIntervalMs = message.heartbeat_interval || 30000;
+                this.maxMessageQueue = message.max_message_queue || 100;
             }
+
+            console.log('🎯 DEBUG: Connection ACK processed successfully', {
+                playerId: this.playerId,
+                sessionId: this.sessionId,
+                heartbeatInterval: this.heartbeatIntervalMs
+            });
+
+            this.log('Connection acknowledged', {
+                playerId: this.playerId,
+                sessionId: this.sessionId,
+                heartbeatInterval: this.heartbeatIntervalMs
+            });
+
+            // Start heartbeat
+            console.log('❤️ DEBUG: Starting heartbeat...');
+            this.startHeartbeat();
+            console.log('📡 DEBUG: Notifying connection change...');
+            this.notifyConnectionChange();
+            console.log('✅ DEBUG: handleConnectionAck completed successfully');
         } catch (error) {
             console.error('💥 DEBUG: Error in handleConnectionAck:', error);
             throw error; // Re-throw to see the error in console
@@ -517,12 +523,18 @@ class SepticaWebSocketClient {
      */
     handleMatchFound(message) {
         this.log('Match found!', message.payload);
-        
+
         // Set the game ID from the match
         if (message.payload && message.payload.game_id) {
             this.gameId = message.payload.game_id;
+
+            // Automatically join the game after match is found
+            setTimeout(() => {
+                this.log('Auto-joining matched game:', this.gameId);
+                this.joinGame(this.gameId, 'septica');
+            }, 500);
         }
-        
+
         if (this.onMatchFound) {
             this.onMatchFound(message.payload);
         }

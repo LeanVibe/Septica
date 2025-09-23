@@ -177,7 +177,7 @@ func (e *Engine) PlayCard(gameID uuid.UUID, playerID uuid.UUID, card Card) (*Mov
 	now := time.Now()
 	game.LastMoveAt = &now
 	
-	// Check if trick is complete (no more valid moves for opponent)
+	// Determine opponent
 	opponentID := game.Player2ID
 	var opponentHand []Card
 	if playerID == game.Player2ID {
@@ -186,10 +186,14 @@ func (e *Engine) PlayCard(gameID uuid.UUID, playerID uuid.UUID, card Card) (*Mov
 	} else {
 		opponentHand = game.Player2Hand
 	}
-	
+
+	// Always switch turn first
+	game.CurrentPlayerID = opponentID
+
+	// Then check if trick is complete (opponent cannot beat the current card)
 	trickComplete := !hasValidMoves(opponentHand, game.TableCards)
 	pointsAwarded := 0
-	
+
 	if trickComplete {
 		// Award points and start new trick
 		pointsAwarded = calculatePoints(game.TableCards)
@@ -198,19 +202,16 @@ func (e *Engine) PlayCard(gameID uuid.UUID, playerID uuid.UUID, card Card) (*Mov
 		} else {
 			game.Player2Score += pointsAwarded
 		}
-		
+
 		// Clear table and start new trick
 		game.TableCards = []Card{}
 		game.TrickNumber++
-		
-		// Winner of trick starts next trick
+
+		// Winner of trick gets the next turn (switch back to the player who won)
 		game.CurrentPlayerID = playerID
-		
+
 		// Deal new cards if deck not empty
 		dealNewCards(game)
-	} else {
-		// Switch to opponent
-		game.CurrentPlayerID = opponentID
 	}
 	
 	// Check if game is complete
@@ -269,26 +270,47 @@ func isValidMove(card Card, tableCards []Card) bool {
 	if len(tableCards) == 0 {
 		return true
 	}
-	
+
 	topCard := tableCards[len(tableCards)-1]
-	
+
 	// Romanian Septica rules:
-	// 1. 7s always beat
+	// 1. 7s always beat everything
 	if card.Value == 7 {
 		return true
 	}
-	
-	// 2. Same value beats
+
+	// 2. Same value beats (with 7s having suit priority)
 	if card.Value == topCard.Value {
+		// If both are 7s, check suit priority (spades > hearts > diamonds > clubs)
+		if card.Value == 7 {
+			return getSuitPriority(card.Suit) > getSuitPriority(topCard.Suit)
+		}
 		return true
 	}
-	
-	// 3. 8s beat when table card count is divisible by 3
-	if card.Value == 8 && len(tableCards)%3 == 0 {
+
+	// 3. 8s beat when table card count is exactly divisible by 3 (non-zero)
+	if card.Value == 8 && len(tableCards) > 0 && len(tableCards)%3 == 0 {
 		return true
 	}
-	
+
 	return false
+}
+
+// getSuitPriority returns the priority value for suits in Romanian Septica
+// spades (4) > hearts (3) > diamonds (2) > clubs (1)
+func getSuitPriority(suit string) int {
+	switch suit {
+	case "spades":
+		return 4
+	case "hearts":
+		return 3
+	case "diamonds":
+		return 2
+	case "clubs":
+		return 1
+	default:
+		return 0
+	}
 }
 
 func hasValidMoves(hand []Card, tableCards []Card) bool {

@@ -533,12 +533,12 @@ class GameUI {
         const moveNumber = gameState.move_number || gameState.moveNumber || 1;
 
         // Update game info
-        this.elements.gameId.textContent = gameId || '-';
-        this.elements.yourTurn.textContent = yourTurn ? 'Yes' : 'No';
-        this.elements.currentPlayer.textContent = currentPlayerId || '-';
-        this.elements.gameStatus.textContent = status || '-';
-        this.elements.trickNumber.textContent = trickNumber;
-        this.elements.moveNumber.textContent = moveNumber;
+        if (this.elements.gameId) this.elements.gameId.textContent = gameId || '-';
+        if (this.elements.yourTurn) this.elements.yourTurn.textContent = yourTurn ? 'Yes' : 'No';
+        if (this.elements.currentPlayer) this.elements.currentPlayer.textContent = currentPlayerId || '-';
+        if (this.elements.gameStatus) this.elements.gameStatus.textContent = status || '-';
+        if (this.elements.trickNumber) this.elements.trickNumber.textContent = trickNumber;
+        if (this.elements.moveNumber) this.elements.moveNumber.textContent = moveNumber;
 
         // Update multiplayer display
         this.updateMultiplayerDisplay(gameState);
@@ -564,6 +564,13 @@ class GameUI {
             window.premiumGame.handleGameStateUpdate(gameState);
         }
 
+        // Re-enable card interaction when it's our turn
+        if (yourTurn) {
+            this.enableCardInteraction();
+        } else {
+            this.disableCardInteraction();
+        }
+
         // Handle real-time animations based on game state changes
         this.handleRealTimeAnimations(gameState);
 
@@ -573,15 +580,20 @@ class GameUI {
 
         // Update button states
         const hasGameId = !!(gameId);
-        this.elements.leaveGameBtn.disabled = !hasGameId;
-        this.elements.getGameStateBtn.disabled = !hasGameId;
-        this.elements.playCardBtn.disabled = !hasGameId || !yourTurn;
+        if (this.elements.leaveGameBtn) this.elements.leaveGameBtn.disabled = !hasGameId;
+        if (this.elements.getGameStateBtn) this.elements.getGameStateBtn.disabled = !hasGameId;
+        if (this.elements.playCardBtn) this.elements.playCardBtn.disabled = !hasGameId || !yourTurn;
 
         this.log('Game state updated', gameState);
 
         // Notify Romanian Septica rule engine if available
         if (window.RomanianSepticaEngine && window.RomanianSepticaEngine.updateGameState) {
             window.RomanianSepticaEngine.updateGameState(gameState);
+        }
+
+        // Update any global game instance if available (for index.html compatibility)
+        if (window.gameInstance && window.gameInstance.handleGameStateUpdate) {
+            window.gameInstance.handleGameStateUpdate(gameState);
         }
     }
     

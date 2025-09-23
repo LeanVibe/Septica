@@ -1,0 +1,1652 @@
+<testsuites id="" name="" tests="18" failures="18" skipped="0" errors="0" time="15.208675999999999">
+<testsuite name="performance/benchmarks.spec.js" timestamp="2025-09-23T08:52:05.088Z" hostname="chromium-desktop" tests="1" failures="1" skipped="0" time="1.174" errors="0">
+<testcase name="Romanian Septica Performance Benchmarks › Card play response time" classname="performance/benchmarks.spec.js" time="1.174">
+<failure message="benchmarks.spec.js:258:7 Card play response time" type="FAILURE">
+<![CDATA[  [chromium-desktop] › performance/benchmarks.spec.js:258:7 › Romanian Septica Performance Benchmarks › Card play response time 
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/
+    Call log:
+      - navigating to "http://localhost:3000/", waiting until "load"
+
+
+      259 |     console.log('🃏 Testing card play response time...');
+      260 |     
+    > 261 |     await page.goto('http://localhost:3000');
+          |                ^
+      262 |     await page.waitForSelector('#connection-text:has-text("Connected")');
+      263 |     
+      264 |     // Start demo game
+        at /Users/bogdan/work/Septica/e2e-tests/performance/benchmarks.spec.js:261:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/performance-benchmarks-Rom-26e76-rks-Card-play-response-time-chromium-desktop/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/performance-benchmarks-Rom-26e76-rks-Card-play-response-time-chromium-desktop/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/performance-benchmarks-Rom-26e76-rks-Card-play-response-time-chromium-desktop/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/performance-benchmarks-Rom-26e76-rks-Card-play-response-time-chromium-desktop/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/performance-benchmarks-Rom-26e76-rks-Card-play-response-time-chromium-desktop/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/
+    Call log:
+      - navigating to "http://localhost:3000/", waiting until "load"
+
+
+      259 |     console.log('🃏 Testing card play response time...');
+      260 |     
+    > 261 |     await page.goto('http://localhost:3000');
+          |                ^
+      262 |     await page.waitForSelector('#connection-text:has-text("Connected")');
+      263 |     
+      264 |     // Start demo game
+        at /Users/bogdan/work/Septica/e2e-tests/performance/benchmarks.spec.js:261:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/performance-benchmarks-Rom-26e76-rks-Card-play-response-time-chromium-desktop-retry1/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/performance-benchmarks-Rom-26e76-rks-Card-play-response-time-chromium-desktop-retry1/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/performance-benchmarks-Rom-26e76-rks-Card-play-response-time-chromium-desktop-retry1/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/performance-benchmarks-Rom-26e76-rks-Card-play-response-time-chromium-desktop-retry1/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/performance-benchmarks-Rom-26e76-rks-Card-play-response-time-chromium-desktop-retry1/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[🃏 Testing card play response time...
+
+[[ATTACHMENT|performance-benchmarks-Rom-26e76-rks-Card-play-response-time-chromium-desktop/test-failed-1.png]]
+
+[[ATTACHMENT|performance-benchmarks-Rom-26e76-rks-Card-play-response-time-chromium-desktop/video.webm]]
+
+[[ATTACHMENT|performance-benchmarks-Rom-26e76-rks-Card-play-response-time-chromium-desktop/error-context.md]]
+
+[[ATTACHMENT|performance-benchmarks-Rom-26e76-rks-Card-play-response-time-chromium-desktop/trace.zip]]
+🃏 Testing card play response time...
+
+[[ATTACHMENT|performance-benchmarks-Rom-26e76-rks-Card-play-response-time-chromium-desktop-retry1/test-failed-1.png]]
+
+[[ATTACHMENT|performance-benchmarks-Rom-26e76-rks-Card-play-response-time-chromium-desktop-retry1/video.webm]]
+
+[[ATTACHMENT|performance-benchmarks-Rom-26e76-rks-Card-play-response-time-chromium-desktop-retry1/error-context.md]]
+
+[[ATTACHMENT|performance-benchmarks-Rom-26e76-rks-Card-play-response-time-chromium-desktop-retry1/trace.zip]]
+]]>
+</system-out>
+</testcase>
+</testsuite>
+<testsuite name="resilience/error-handling.spec.js" timestamp="2025-09-23T08:52:05.088Z" hostname="chromium-desktop" tests="1" failures="1" skipped="0" time="1.407" errors="0">
+<testcase name="Romanian Septica Error Handling and Resilience › Invalid card play rejection" classname="resilience/error-handling.spec.js" time="1.407">
+<failure message="error-handling.spec.js:177:7 Invalid card play rejection" type="FAILURE">
+<![CDATA[  [chromium-desktop] › resilience/error-handling.spec.js:177:7 › Romanian Septica Error Handling and Resilience › Invalid card play rejection 
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/
+    Call log:
+      - navigating to "http://localhost:3000/", waiting until "load"
+
+
+      178 |     console.log('🚫 Testing invalid card play rejection...');
+      179 |     
+    > 180 |     await page.goto('http://localhost:3000');
+          |                ^
+      181 |     await page.waitForSelector('#connection-text:has-text("Connected")');
+      182 |     
+      183 |     // Start demo game
+        at /Users/bogdan/work/Septica/e2e-tests/resilience/error-handling.spec.js:180:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/resilience-error-handling--28d16-Invalid-card-play-rejection-chromium-desktop/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/resilience-error-handling--28d16-Invalid-card-play-rejection-chromium-desktop/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/resilience-error-handling--28d16-Invalid-card-play-rejection-chromium-desktop/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/resilience-error-handling--28d16-Invalid-card-play-rejection-chromium-desktop/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/resilience-error-handling--28d16-Invalid-card-play-rejection-chromium-desktop/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/
+    Call log:
+      - navigating to "http://localhost:3000/", waiting until "load"
+
+
+      178 |     console.log('🚫 Testing invalid card play rejection...');
+      179 |     
+    > 180 |     await page.goto('http://localhost:3000');
+          |                ^
+      181 |     await page.waitForSelector('#connection-text:has-text("Connected")');
+      182 |     
+      183 |     // Start demo game
+        at /Users/bogdan/work/Septica/e2e-tests/resilience/error-handling.spec.js:180:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/resilience-error-handling--28d16-Invalid-card-play-rejection-chromium-desktop-retry1/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/resilience-error-handling--28d16-Invalid-card-play-rejection-chromium-desktop-retry1/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/resilience-error-handling--28d16-Invalid-card-play-rejection-chromium-desktop-retry1/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/resilience-error-handling--28d16-Invalid-card-play-rejection-chromium-desktop-retry1/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/resilience-error-handling--28d16-Invalid-card-play-rejection-chromium-desktop-retry1/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[🚫 Testing invalid card play rejection...
+
+[[ATTACHMENT|resilience-error-handling--28d16-Invalid-card-play-rejection-chromium-desktop/test-failed-1.png]]
+
+[[ATTACHMENT|resilience-error-handling--28d16-Invalid-card-play-rejection-chromium-desktop/video.webm]]
+
+[[ATTACHMENT|resilience-error-handling--28d16-Invalid-card-play-rejection-chromium-desktop/error-context.md]]
+
+[[ATTACHMENT|resilience-error-handling--28d16-Invalid-card-play-rejection-chromium-desktop/trace.zip]]
+🚫 Testing invalid card play rejection...
+
+[[ATTACHMENT|resilience-error-handling--28d16-Invalid-card-play-rejection-chromium-desktop-retry1/test-failed-1.png]]
+
+[[ATTACHMENT|resilience-error-handling--28d16-Invalid-card-play-rejection-chromium-desktop-retry1/video.webm]]
+
+[[ATTACHMENT|resilience-error-handling--28d16-Invalid-card-play-rejection-chromium-desktop-retry1/error-context.md]]
+
+[[ATTACHMENT|resilience-error-handling--28d16-Invalid-card-play-rejection-chromium-desktop-retry1/trace.zip]]
+]]>
+</system-out>
+</testcase>
+</testsuite>
+<testsuite name="rules/romanian-septica-validation.spec.js" timestamp="2025-09-23T08:52:05.088Z" hostname="chromium-desktop" tests="1" failures="1" skipped="0" time="1.209" errors="0">
+<testcase name="Romanian Septica Rule Validation › Card value mapping and display" classname="rules/romanian-septica-validation.spec.js" time="1.209">
+<failure message="romanian-septica-validation.spec.js:72:7 Card value mapping and display" type="FAILURE">
+<![CDATA[  [chromium-desktop] › rules/romanian-septica-validation.spec.js:72:7 › Romanian Septica Rule Validation › Card value mapping and display 
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/
+    Call log:
+      - navigating to "http://localhost:3000/", waiting until "load"
+
+
+      10 |   test.beforeEach(async ({ page }) => {
+      11 |     test.setTimeout(45000);
+    > 12 |     await page.goto('http://localhost:3000');
+         |                ^
+      13 |     await page.waitForSelector('#connection-text:has-text("Connected")', { timeout: 10000 });
+      14 |   });
+      15 |
+        at /Users/bogdan/work/Septica/e2e-tests/rules/romanian-septica-validation.spec.js:12:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/rules-romanian-septica-val-26b05-d-value-mapping-and-display-chromium-desktop/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/rules-romanian-septica-val-26b05-d-value-mapping-and-display-chromium-desktop/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/rules-romanian-septica-val-26b05-d-value-mapping-and-display-chromium-desktop/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/rules-romanian-septica-val-26b05-d-value-mapping-and-display-chromium-desktop/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/rules-romanian-septica-val-26b05-d-value-mapping-and-display-chromium-desktop/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/
+    Call log:
+      - navigating to "http://localhost:3000/", waiting until "load"
+
+
+      10 |   test.beforeEach(async ({ page }) => {
+      11 |     test.setTimeout(45000);
+    > 12 |     await page.goto('http://localhost:3000');
+         |                ^
+      13 |     await page.waitForSelector('#connection-text:has-text("Connected")', { timeout: 10000 });
+      14 |   });
+      15 |
+        at /Users/bogdan/work/Septica/e2e-tests/rules/romanian-septica-validation.spec.js:12:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/rules-romanian-septica-val-26b05-d-value-mapping-and-display-chromium-desktop-retry1/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/rules-romanian-septica-val-26b05-d-value-mapping-and-display-chromium-desktop-retry1/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/rules-romanian-septica-val-26b05-d-value-mapping-and-display-chromium-desktop-retry1/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/rules-romanian-septica-val-26b05-d-value-mapping-and-display-chromium-desktop-retry1/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/rules-romanian-septica-val-26b05-d-value-mapping-and-display-chromium-desktop-retry1/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|rules-romanian-septica-val-26b05-d-value-mapping-and-display-chromium-desktop/test-failed-1.png]]
+
+[[ATTACHMENT|rules-romanian-septica-val-26b05-d-value-mapping-and-display-chromium-desktop/video.webm]]
+
+[[ATTACHMENT|rules-romanian-septica-val-26b05-d-value-mapping-and-display-chromium-desktop/error-context.md]]
+
+[[ATTACHMENT|rules-romanian-septica-val-26b05-d-value-mapping-and-display-chromium-desktop/trace.zip]]
+
+[[ATTACHMENT|rules-romanian-septica-val-26b05-d-value-mapping-and-display-chromium-desktop-retry1/test-failed-1.png]]
+
+[[ATTACHMENT|rules-romanian-septica-val-26b05-d-value-mapping-and-display-chromium-desktop-retry1/video.webm]]
+
+[[ATTACHMENT|rules-romanian-septica-val-26b05-d-value-mapping-and-display-chromium-desktop-retry1/error-context.md]]
+
+[[ATTACHMENT|rules-romanian-septica-val-26b05-d-value-mapping-and-display-chromium-desktop-retry1/trace.zip]]
+]]>
+</system-out>
+</testcase>
+</testsuite>
+<testsuite name="performance/benchmarks.spec.js" timestamp="2025-09-23T08:52:05.088Z" hostname="firefox-desktop" tests="1" failures="1" skipped="0" time="2.347" errors="0">
+<testcase name="Romanian Septica Performance Benchmarks › Card play response time" classname="performance/benchmarks.spec.js" time="2.347">
+<failure message="benchmarks.spec.js:258:7 Card play response time" type="FAILURE">
+<![CDATA[  [firefox-desktop] › performance/benchmarks.spec.js:258:7 › Romanian Septica Performance Benchmarks › Card play response time 
+
+    Error: page.goto: NS_ERROR_CONNECTION_REFUSED
+    Call log:
+      - navigating to "http://localhost:3000/", waiting until "load"
+
+
+      259 |     console.log('🃏 Testing card play response time...');
+      260 |     
+    > 261 |     await page.goto('http://localhost:3000');
+          |                ^
+      262 |     await page.waitForSelector('#connection-text:has-text("Connected")');
+      263 |     
+      264 |     // Start demo game
+        at /Users/bogdan/work/Septica/e2e-tests/performance/benchmarks.spec.js:261:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/performance-benchmarks-Rom-26e76-rks-Card-play-response-time-firefox-desktop/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/performance-benchmarks-Rom-26e76-rks-Card-play-response-time-firefox-desktop/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/performance-benchmarks-Rom-26e76-rks-Card-play-response-time-firefox-desktop/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/performance-benchmarks-Rom-26e76-rks-Card-play-response-time-firefox-desktop/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/performance-benchmarks-Rom-26e76-rks-Card-play-response-time-firefox-desktop/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: page.goto: NS_ERROR_CONNECTION_REFUSED
+    Call log:
+      - navigating to "http://localhost:3000/", waiting until "load"
+
+
+      259 |     console.log('🃏 Testing card play response time...');
+      260 |     
+    > 261 |     await page.goto('http://localhost:3000');
+          |                ^
+      262 |     await page.waitForSelector('#connection-text:has-text("Connected")');
+      263 |     
+      264 |     // Start demo game
+        at /Users/bogdan/work/Septica/e2e-tests/performance/benchmarks.spec.js:261:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/performance-benchmarks-Rom-26e76-rks-Card-play-response-time-firefox-desktop-retry1/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/performance-benchmarks-Rom-26e76-rks-Card-play-response-time-firefox-desktop-retry1/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/performance-benchmarks-Rom-26e76-rks-Card-play-response-time-firefox-desktop-retry1/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/performance-benchmarks-Rom-26e76-rks-Card-play-response-time-firefox-desktop-retry1/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/performance-benchmarks-Rom-26e76-rks-Card-play-response-time-firefox-desktop-retry1/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[🃏 Testing card play response time...
+
+[[ATTACHMENT|performance-benchmarks-Rom-26e76-rks-Card-play-response-time-firefox-desktop/test-failed-1.png]]
+
+[[ATTACHMENT|performance-benchmarks-Rom-26e76-rks-Card-play-response-time-firefox-desktop/video.webm]]
+
+[[ATTACHMENT|performance-benchmarks-Rom-26e76-rks-Card-play-response-time-firefox-desktop/error-context.md]]
+
+[[ATTACHMENT|performance-benchmarks-Rom-26e76-rks-Card-play-response-time-firefox-desktop/trace.zip]]
+🃏 Testing card play response time...
+
+[[ATTACHMENT|performance-benchmarks-Rom-26e76-rks-Card-play-response-time-firefox-desktop-retry1/test-failed-1.png]]
+
+[[ATTACHMENT|performance-benchmarks-Rom-26e76-rks-Card-play-response-time-firefox-desktop-retry1/video.webm]]
+
+[[ATTACHMENT|performance-benchmarks-Rom-26e76-rks-Card-play-response-time-firefox-desktop-retry1/error-context.md]]
+
+[[ATTACHMENT|performance-benchmarks-Rom-26e76-rks-Card-play-response-time-firefox-desktop-retry1/trace.zip]]
+]]>
+</system-out>
+</testcase>
+</testsuite>
+<testsuite name="resilience/error-handling.spec.js" timestamp="2025-09-23T08:52:05.088Z" hostname="firefox-desktop" tests="1" failures="1" skipped="0" time="1.821" errors="0">
+<testcase name="Romanian Septica Error Handling and Resilience › Invalid card play rejection" classname="resilience/error-handling.spec.js" time="1.821">
+<failure message="error-handling.spec.js:177:7 Invalid card play rejection" type="FAILURE">
+<![CDATA[  [firefox-desktop] › resilience/error-handling.spec.js:177:7 › Romanian Septica Error Handling and Resilience › Invalid card play rejection 
+
+    Error: page.goto: NS_ERROR_CONNECTION_REFUSED
+    Call log:
+      - navigating to "http://localhost:3000/", waiting until "load"
+
+
+      178 |     console.log('🚫 Testing invalid card play rejection...');
+      179 |     
+    > 180 |     await page.goto('http://localhost:3000');
+          |                ^
+      181 |     await page.waitForSelector('#connection-text:has-text("Connected")');
+      182 |     
+      183 |     // Start demo game
+        at /Users/bogdan/work/Septica/e2e-tests/resilience/error-handling.spec.js:180:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/resilience-error-handling--28d16-Invalid-card-play-rejection-firefox-desktop/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/resilience-error-handling--28d16-Invalid-card-play-rejection-firefox-desktop/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/resilience-error-handling--28d16-Invalid-card-play-rejection-firefox-desktop/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/resilience-error-handling--28d16-Invalid-card-play-rejection-firefox-desktop/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/resilience-error-handling--28d16-Invalid-card-play-rejection-firefox-desktop/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: page.goto: NS_ERROR_CONNECTION_REFUSED
+    Call log:
+      - navigating to "http://localhost:3000/", waiting until "load"
+
+
+      178 |     console.log('🚫 Testing invalid card play rejection...');
+      179 |     
+    > 180 |     await page.goto('http://localhost:3000');
+          |                ^
+      181 |     await page.waitForSelector('#connection-text:has-text("Connected")');
+      182 |     
+      183 |     // Start demo game
+        at /Users/bogdan/work/Septica/e2e-tests/resilience/error-handling.spec.js:180:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/resilience-error-handling--28d16-Invalid-card-play-rejection-firefox-desktop-retry1/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/resilience-error-handling--28d16-Invalid-card-play-rejection-firefox-desktop-retry1/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/resilience-error-handling--28d16-Invalid-card-play-rejection-firefox-desktop-retry1/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/resilience-error-handling--28d16-Invalid-card-play-rejection-firefox-desktop-retry1/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/resilience-error-handling--28d16-Invalid-card-play-rejection-firefox-desktop-retry1/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[🚫 Testing invalid card play rejection...
+
+[[ATTACHMENT|resilience-error-handling--28d16-Invalid-card-play-rejection-firefox-desktop/test-failed-1.png]]
+
+[[ATTACHMENT|resilience-error-handling--28d16-Invalid-card-play-rejection-firefox-desktop/video.webm]]
+
+[[ATTACHMENT|resilience-error-handling--28d16-Invalid-card-play-rejection-firefox-desktop/error-context.md]]
+
+[[ATTACHMENT|resilience-error-handling--28d16-Invalid-card-play-rejection-firefox-desktop/trace.zip]]
+🚫 Testing invalid card play rejection...
+
+[[ATTACHMENT|resilience-error-handling--28d16-Invalid-card-play-rejection-firefox-desktop-retry1/test-failed-1.png]]
+
+[[ATTACHMENT|resilience-error-handling--28d16-Invalid-card-play-rejection-firefox-desktop-retry1/video.webm]]
+
+[[ATTACHMENT|resilience-error-handling--28d16-Invalid-card-play-rejection-firefox-desktop-retry1/error-context.md]]
+
+[[ATTACHMENT|resilience-error-handling--28d16-Invalid-card-play-rejection-firefox-desktop-retry1/trace.zip]]
+]]>
+</system-out>
+</testcase>
+</testsuite>
+<testsuite name="rules/romanian-septica-validation.spec.js" timestamp="2025-09-23T08:52:05.088Z" hostname="firefox-desktop" tests="1" failures="1" skipped="0" time="2.048" errors="0">
+<testcase name="Romanian Septica Rule Validation › Card value mapping and display" classname="rules/romanian-septica-validation.spec.js" time="2.048">
+<failure message="romanian-septica-validation.spec.js:72:7 Card value mapping and display" type="FAILURE">
+<![CDATA[  [firefox-desktop] › rules/romanian-septica-validation.spec.js:72:7 › Romanian Septica Rule Validation › Card value mapping and display 
+
+    Error: page.goto: NS_ERROR_CONNECTION_REFUSED
+    Call log:
+      - navigating to "http://localhost:3000/", waiting until "load"
+
+
+      10 |   test.beforeEach(async ({ page }) => {
+      11 |     test.setTimeout(45000);
+    > 12 |     await page.goto('http://localhost:3000');
+         |                ^
+      13 |     await page.waitForSelector('#connection-text:has-text("Connected")', { timeout: 10000 });
+      14 |   });
+      15 |
+        at /Users/bogdan/work/Septica/e2e-tests/rules/romanian-septica-validation.spec.js:12:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/rules-romanian-septica-val-26b05-d-value-mapping-and-display-firefox-desktop/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/rules-romanian-septica-val-26b05-d-value-mapping-and-display-firefox-desktop/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/rules-romanian-septica-val-26b05-d-value-mapping-and-display-firefox-desktop/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/rules-romanian-septica-val-26b05-d-value-mapping-and-display-firefox-desktop/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/rules-romanian-septica-val-26b05-d-value-mapping-and-display-firefox-desktop/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: page.goto: NS_ERROR_CONNECTION_REFUSED
+    Call log:
+      - navigating to "http://localhost:3000/", waiting until "load"
+
+
+      10 |   test.beforeEach(async ({ page }) => {
+      11 |     test.setTimeout(45000);
+    > 12 |     await page.goto('http://localhost:3000');
+         |                ^
+      13 |     await page.waitForSelector('#connection-text:has-text("Connected")', { timeout: 10000 });
+      14 |   });
+      15 |
+        at /Users/bogdan/work/Septica/e2e-tests/rules/romanian-septica-validation.spec.js:12:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/rules-romanian-septica-val-26b05-d-value-mapping-and-display-firefox-desktop-retry1/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/rules-romanian-septica-val-26b05-d-value-mapping-and-display-firefox-desktop-retry1/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/rules-romanian-septica-val-26b05-d-value-mapping-and-display-firefox-desktop-retry1/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/rules-romanian-septica-val-26b05-d-value-mapping-and-display-firefox-desktop-retry1/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/rules-romanian-septica-val-26b05-d-value-mapping-and-display-firefox-desktop-retry1/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|rules-romanian-septica-val-26b05-d-value-mapping-and-display-firefox-desktop/test-failed-1.png]]
+
+[[ATTACHMENT|rules-romanian-septica-val-26b05-d-value-mapping-and-display-firefox-desktop/video.webm]]
+
+[[ATTACHMENT|rules-romanian-septica-val-26b05-d-value-mapping-and-display-firefox-desktop/error-context.md]]
+
+[[ATTACHMENT|rules-romanian-septica-val-26b05-d-value-mapping-and-display-firefox-desktop/trace.zip]]
+
+[[ATTACHMENT|rules-romanian-septica-val-26b05-d-value-mapping-and-display-firefox-desktop-retry1/test-failed-1.png]]
+
+[[ATTACHMENT|rules-romanian-septica-val-26b05-d-value-mapping-and-display-firefox-desktop-retry1/video.webm]]
+
+[[ATTACHMENT|rules-romanian-septica-val-26b05-d-value-mapping-and-display-firefox-desktop-retry1/error-context.md]]
+
+[[ATTACHMENT|rules-romanian-septica-val-26b05-d-value-mapping-and-display-firefox-desktop-retry1/trace.zip]]
+]]>
+</system-out>
+</testcase>
+</testsuite>
+<testsuite name="performance/benchmarks.spec.js" timestamp="2025-09-23T08:52:05.088Z" hostname="webkit-desktop" tests="1" failures="1" skipped="0" time="1.183" errors="0">
+<testcase name="Romanian Septica Performance Benchmarks › Card play response time" classname="performance/benchmarks.spec.js" time="1.183">
+<failure message="benchmarks.spec.js:258:7 Card play response time" type="FAILURE">
+<![CDATA[  [webkit-desktop] › performance/benchmarks.spec.js:258:7 › Romanian Septica Performance Benchmarks › Card play response time 
+
+    Error: page.goto: Could not connect to the server.
+    Call log:
+      - navigating to "http://localhost:3000/", waiting until "load"
+
+
+      259 |     console.log('🃏 Testing card play response time...');
+      260 |     
+    > 261 |     await page.goto('http://localhost:3000');
+          |                ^
+      262 |     await page.waitForSelector('#connection-text:has-text("Connected")');
+      263 |     
+      264 |     // Start demo game
+        at /Users/bogdan/work/Septica/e2e-tests/performance/benchmarks.spec.js:261:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/performance-benchmarks-Rom-26e76-rks-Card-play-response-time-webkit-desktop/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/performance-benchmarks-Rom-26e76-rks-Card-play-response-time-webkit-desktop/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/performance-benchmarks-Rom-26e76-rks-Card-play-response-time-webkit-desktop/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/performance-benchmarks-Rom-26e76-rks-Card-play-response-time-webkit-desktop/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: page.goto: Could not connect to the server.
+    Call log:
+      - navigating to "http://localhost:3000/", waiting until "load"
+
+
+      259 |     console.log('🃏 Testing card play response time...');
+      260 |     
+    > 261 |     await page.goto('http://localhost:3000');
+          |                ^
+      262 |     await page.waitForSelector('#connection-text:has-text("Connected")');
+      263 |     
+      264 |     // Start demo game
+        at /Users/bogdan/work/Septica/e2e-tests/performance/benchmarks.spec.js:261:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/performance-benchmarks-Rom-26e76-rks-Card-play-response-time-webkit-desktop-retry1/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/performance-benchmarks-Rom-26e76-rks-Card-play-response-time-webkit-desktop-retry1/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/performance-benchmarks-Rom-26e76-rks-Card-play-response-time-webkit-desktop-retry1/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/performance-benchmarks-Rom-26e76-rks-Card-play-response-time-webkit-desktop-retry1/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[🃏 Testing card play response time...
+
+[[ATTACHMENT|performance-benchmarks-Rom-26e76-rks-Card-play-response-time-webkit-desktop/test-failed-1.png]]
+
+[[ATTACHMENT|performance-benchmarks-Rom-26e76-rks-Card-play-response-time-webkit-desktop/video.webm]]
+
+[[ATTACHMENT|performance-benchmarks-Rom-26e76-rks-Card-play-response-time-webkit-desktop/trace.zip]]
+🃏 Testing card play response time...
+
+[[ATTACHMENT|performance-benchmarks-Rom-26e76-rks-Card-play-response-time-webkit-desktop-retry1/test-failed-1.png]]
+
+[[ATTACHMENT|performance-benchmarks-Rom-26e76-rks-Card-play-response-time-webkit-desktop-retry1/video.webm]]
+
+[[ATTACHMENT|performance-benchmarks-Rom-26e76-rks-Card-play-response-time-webkit-desktop-retry1/trace.zip]]
+]]>
+</system-out>
+</testcase>
+</testsuite>
+<testsuite name="resilience/error-handling.spec.js" timestamp="2025-09-23T08:52:05.088Z" hostname="webkit-desktop" tests="1" failures="1" skipped="0" time="0.829" errors="0">
+<testcase name="Romanian Septica Error Handling and Resilience › Invalid card play rejection" classname="resilience/error-handling.spec.js" time="0.829">
+<failure message="error-handling.spec.js:177:7 Invalid card play rejection" type="FAILURE">
+<![CDATA[  [webkit-desktop] › resilience/error-handling.spec.js:177:7 › Romanian Septica Error Handling and Resilience › Invalid card play rejection 
+
+    Error: page.goto: Could not connect to the server.
+    Call log:
+      - navigating to "http://localhost:3000/", waiting until "load"
+
+
+      178 |     console.log('🚫 Testing invalid card play rejection...');
+      179 |     
+    > 180 |     await page.goto('http://localhost:3000');
+          |                ^
+      181 |     await page.waitForSelector('#connection-text:has-text("Connected")');
+      182 |     
+      183 |     // Start demo game
+        at /Users/bogdan/work/Septica/e2e-tests/resilience/error-handling.spec.js:180:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/resilience-error-handling--28d16-Invalid-card-play-rejection-webkit-desktop/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/resilience-error-handling--28d16-Invalid-card-play-rejection-webkit-desktop/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/resilience-error-handling--28d16-Invalid-card-play-rejection-webkit-desktop/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/resilience-error-handling--28d16-Invalid-card-play-rejection-webkit-desktop/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: page.goto: Could not connect to the server.
+    Call log:
+      - navigating to "http://localhost:3000/", waiting until "load"
+
+
+      178 |     console.log('🚫 Testing invalid card play rejection...');
+      179 |     
+    > 180 |     await page.goto('http://localhost:3000');
+          |                ^
+      181 |     await page.waitForSelector('#connection-text:has-text("Connected")');
+      182 |     
+      183 |     // Start demo game
+        at /Users/bogdan/work/Septica/e2e-tests/resilience/error-handling.spec.js:180:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/resilience-error-handling--28d16-Invalid-card-play-rejection-webkit-desktop-retry1/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/resilience-error-handling--28d16-Invalid-card-play-rejection-webkit-desktop-retry1/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/resilience-error-handling--28d16-Invalid-card-play-rejection-webkit-desktop-retry1/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/resilience-error-handling--28d16-Invalid-card-play-rejection-webkit-desktop-retry1/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[🚫 Testing invalid card play rejection...
+
+[[ATTACHMENT|resilience-error-handling--28d16-Invalid-card-play-rejection-webkit-desktop/test-failed-1.png]]
+
+[[ATTACHMENT|resilience-error-handling--28d16-Invalid-card-play-rejection-webkit-desktop/video.webm]]
+
+[[ATTACHMENT|resilience-error-handling--28d16-Invalid-card-play-rejection-webkit-desktop/trace.zip]]
+🚫 Testing invalid card play rejection...
+
+[[ATTACHMENT|resilience-error-handling--28d16-Invalid-card-play-rejection-webkit-desktop-retry1/test-failed-1.png]]
+
+[[ATTACHMENT|resilience-error-handling--28d16-Invalid-card-play-rejection-webkit-desktop-retry1/video.webm]]
+
+[[ATTACHMENT|resilience-error-handling--28d16-Invalid-card-play-rejection-webkit-desktop-retry1/trace.zip]]
+]]>
+</system-out>
+</testcase>
+</testsuite>
+<testsuite name="rules/romanian-septica-validation.spec.js" timestamp="2025-09-23T08:52:05.088Z" hostname="webkit-desktop" tests="1" failures="1" skipped="0" time="0.837" errors="0">
+<testcase name="Romanian Septica Rule Validation › Card value mapping and display" classname="rules/romanian-septica-validation.spec.js" time="0.837">
+<failure message="romanian-septica-validation.spec.js:72:7 Card value mapping and display" type="FAILURE">
+<![CDATA[  [webkit-desktop] › rules/romanian-septica-validation.spec.js:72:7 › Romanian Septica Rule Validation › Card value mapping and display 
+
+    Error: page.goto: Could not connect to the server.
+    Call log:
+      - navigating to "http://localhost:3000/", waiting until "load"
+
+
+      10 |   test.beforeEach(async ({ page }) => {
+      11 |     test.setTimeout(45000);
+    > 12 |     await page.goto('http://localhost:3000');
+         |                ^
+      13 |     await page.waitForSelector('#connection-text:has-text("Connected")', { timeout: 10000 });
+      14 |   });
+      15 |
+        at /Users/bogdan/work/Septica/e2e-tests/rules/romanian-septica-validation.spec.js:12:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/rules-romanian-septica-val-26b05-d-value-mapping-and-display-webkit-desktop/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/rules-romanian-septica-val-26b05-d-value-mapping-and-display-webkit-desktop/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/rules-romanian-septica-val-26b05-d-value-mapping-and-display-webkit-desktop/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/rules-romanian-septica-val-26b05-d-value-mapping-and-display-webkit-desktop/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: page.goto: Could not connect to the server.
+    Call log:
+      - navigating to "http://localhost:3000/", waiting until "load"
+
+
+      10 |   test.beforeEach(async ({ page }) => {
+      11 |     test.setTimeout(45000);
+    > 12 |     await page.goto('http://localhost:3000');
+         |                ^
+      13 |     await page.waitForSelector('#connection-text:has-text("Connected")', { timeout: 10000 });
+      14 |   });
+      15 |
+        at /Users/bogdan/work/Septica/e2e-tests/rules/romanian-septica-validation.spec.js:12:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/rules-romanian-septica-val-26b05-d-value-mapping-and-display-webkit-desktop-retry1/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/rules-romanian-septica-val-26b05-d-value-mapping-and-display-webkit-desktop-retry1/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/rules-romanian-septica-val-26b05-d-value-mapping-and-display-webkit-desktop-retry1/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/rules-romanian-septica-val-26b05-d-value-mapping-and-display-webkit-desktop-retry1/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|rules-romanian-septica-val-26b05-d-value-mapping-and-display-webkit-desktop/test-failed-1.png]]
+
+[[ATTACHMENT|rules-romanian-septica-val-26b05-d-value-mapping-and-display-webkit-desktop/video.webm]]
+
+[[ATTACHMENT|rules-romanian-septica-val-26b05-d-value-mapping-and-display-webkit-desktop/trace.zip]]
+
+[[ATTACHMENT|rules-romanian-septica-val-26b05-d-value-mapping-and-display-webkit-desktop-retry1/test-failed-1.png]]
+
+[[ATTACHMENT|rules-romanian-septica-val-26b05-d-value-mapping-and-display-webkit-desktop-retry1/video.webm]]
+
+[[ATTACHMENT|rules-romanian-septica-val-26b05-d-value-mapping-and-display-webkit-desktop-retry1/trace.zip]]
+]]>
+</system-out>
+</testcase>
+</testsuite>
+<testsuite name="performance/benchmarks.spec.js" timestamp="2025-09-23T08:52:05.088Z" hostname="mobile-chrome" tests="1" failures="1" skipped="0" time="1.49" errors="0">
+<testcase name="Romanian Septica Performance Benchmarks › Card play response time" classname="performance/benchmarks.spec.js" time="1.49">
+<failure message="benchmarks.spec.js:258:7 Card play response time" type="FAILURE">
+<![CDATA[  [mobile-chrome] › performance/benchmarks.spec.js:258:7 › Romanian Septica Performance Benchmarks › Card play response time 
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/
+    Call log:
+      - navigating to "http://localhost:3000/", waiting until "load"
+
+
+      259 |     console.log('🃏 Testing card play response time...');
+      260 |     
+    > 261 |     await page.goto('http://localhost:3000');
+          |                ^
+      262 |     await page.waitForSelector('#connection-text:has-text("Connected")');
+      263 |     
+      264 |     // Start demo game
+        at /Users/bogdan/work/Septica/e2e-tests/performance/benchmarks.spec.js:261:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/performance-benchmarks-Rom-26e76-rks-Card-play-response-time-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/performance-benchmarks-Rom-26e76-rks-Card-play-response-time-mobile-chrome/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/performance-benchmarks-Rom-26e76-rks-Card-play-response-time-mobile-chrome/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/performance-benchmarks-Rom-26e76-rks-Card-play-response-time-mobile-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/performance-benchmarks-Rom-26e76-rks-Card-play-response-time-mobile-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/
+    Call log:
+      - navigating to "http://localhost:3000/", waiting until "load"
+
+
+      259 |     console.log('🃏 Testing card play response time...');
+      260 |     
+    > 261 |     await page.goto('http://localhost:3000');
+          |                ^
+      262 |     await page.waitForSelector('#connection-text:has-text("Connected")');
+      263 |     
+      264 |     // Start demo game
+        at /Users/bogdan/work/Septica/e2e-tests/performance/benchmarks.spec.js:261:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/performance-benchmarks-Rom-26e76-rks-Card-play-response-time-mobile-chrome-retry1/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/performance-benchmarks-Rom-26e76-rks-Card-play-response-time-mobile-chrome-retry1/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/performance-benchmarks-Rom-26e76-rks-Card-play-response-time-mobile-chrome-retry1/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/performance-benchmarks-Rom-26e76-rks-Card-play-response-time-mobile-chrome-retry1/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/performance-benchmarks-Rom-26e76-rks-Card-play-response-time-mobile-chrome-retry1/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[🃏 Testing card play response time...
+
+[[ATTACHMENT|performance-benchmarks-Rom-26e76-rks-Card-play-response-time-mobile-chrome/test-failed-1.png]]
+
+[[ATTACHMENT|performance-benchmarks-Rom-26e76-rks-Card-play-response-time-mobile-chrome/video.webm]]
+
+[[ATTACHMENT|performance-benchmarks-Rom-26e76-rks-Card-play-response-time-mobile-chrome/error-context.md]]
+
+[[ATTACHMENT|performance-benchmarks-Rom-26e76-rks-Card-play-response-time-mobile-chrome/trace.zip]]
+🃏 Testing card play response time...
+
+[[ATTACHMENT|performance-benchmarks-Rom-26e76-rks-Card-play-response-time-mobile-chrome-retry1/test-failed-1.png]]
+
+[[ATTACHMENT|performance-benchmarks-Rom-26e76-rks-Card-play-response-time-mobile-chrome-retry1/video.webm]]
+
+[[ATTACHMENT|performance-benchmarks-Rom-26e76-rks-Card-play-response-time-mobile-chrome-retry1/error-context.md]]
+
+[[ATTACHMENT|performance-benchmarks-Rom-26e76-rks-Card-play-response-time-mobile-chrome-retry1/trace.zip]]
+]]>
+</system-out>
+</testcase>
+</testsuite>
+<testsuite name="resilience/error-handling.spec.js" timestamp="2025-09-23T08:52:05.088Z" hostname="mobile-chrome" tests="1" failures="1" skipped="0" time="1.091" errors="0">
+<testcase name="Romanian Septica Error Handling and Resilience › Invalid card play rejection" classname="resilience/error-handling.spec.js" time="1.091">
+<failure message="error-handling.spec.js:177:7 Invalid card play rejection" type="FAILURE">
+<![CDATA[  [mobile-chrome] › resilience/error-handling.spec.js:177:7 › Romanian Septica Error Handling and Resilience › Invalid card play rejection 
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/
+    Call log:
+      - navigating to "http://localhost:3000/", waiting until "load"
+
+
+      178 |     console.log('🚫 Testing invalid card play rejection...');
+      179 |     
+    > 180 |     await page.goto('http://localhost:3000');
+          |                ^
+      181 |     await page.waitForSelector('#connection-text:has-text("Connected")');
+      182 |     
+      183 |     // Start demo game
+        at /Users/bogdan/work/Septica/e2e-tests/resilience/error-handling.spec.js:180:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/resilience-error-handling--28d16-Invalid-card-play-rejection-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/resilience-error-handling--28d16-Invalid-card-play-rejection-mobile-chrome/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/resilience-error-handling--28d16-Invalid-card-play-rejection-mobile-chrome/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/resilience-error-handling--28d16-Invalid-card-play-rejection-mobile-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/resilience-error-handling--28d16-Invalid-card-play-rejection-mobile-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/
+    Call log:
+      - navigating to "http://localhost:3000/", waiting until "load"
+
+
+      178 |     console.log('🚫 Testing invalid card play rejection...');
+      179 |     
+    > 180 |     await page.goto('http://localhost:3000');
+          |                ^
+      181 |     await page.waitForSelector('#connection-text:has-text("Connected")');
+      182 |     
+      183 |     // Start demo game
+        at /Users/bogdan/work/Septica/e2e-tests/resilience/error-handling.spec.js:180:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/resilience-error-handling--28d16-Invalid-card-play-rejection-mobile-chrome-retry1/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/resilience-error-handling--28d16-Invalid-card-play-rejection-mobile-chrome-retry1/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/resilience-error-handling--28d16-Invalid-card-play-rejection-mobile-chrome-retry1/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/resilience-error-handling--28d16-Invalid-card-play-rejection-mobile-chrome-retry1/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/resilience-error-handling--28d16-Invalid-card-play-rejection-mobile-chrome-retry1/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[🚫 Testing invalid card play rejection...
+
+[[ATTACHMENT|resilience-error-handling--28d16-Invalid-card-play-rejection-mobile-chrome/test-failed-1.png]]
+
+[[ATTACHMENT|resilience-error-handling--28d16-Invalid-card-play-rejection-mobile-chrome/video.webm]]
+
+[[ATTACHMENT|resilience-error-handling--28d16-Invalid-card-play-rejection-mobile-chrome/error-context.md]]
+
+[[ATTACHMENT|resilience-error-handling--28d16-Invalid-card-play-rejection-mobile-chrome/trace.zip]]
+🚫 Testing invalid card play rejection...
+
+[[ATTACHMENT|resilience-error-handling--28d16-Invalid-card-play-rejection-mobile-chrome-retry1/test-failed-1.png]]
+
+[[ATTACHMENT|resilience-error-handling--28d16-Invalid-card-play-rejection-mobile-chrome-retry1/video.webm]]
+
+[[ATTACHMENT|resilience-error-handling--28d16-Invalid-card-play-rejection-mobile-chrome-retry1/error-context.md]]
+
+[[ATTACHMENT|resilience-error-handling--28d16-Invalid-card-play-rejection-mobile-chrome-retry1/trace.zip]]
+]]>
+</system-out>
+</testcase>
+</testsuite>
+<testsuite name="rules/romanian-septica-validation.spec.js" timestamp="2025-09-23T08:52:05.088Z" hostname="mobile-chrome" tests="1" failures="1" skipped="0" time="1.809" errors="0">
+<testcase name="Romanian Septica Rule Validation › Card value mapping and display" classname="rules/romanian-septica-validation.spec.js" time="1.809">
+<failure message="romanian-septica-validation.spec.js:72:7 Card value mapping and display" type="FAILURE">
+<![CDATA[  [mobile-chrome] › rules/romanian-septica-validation.spec.js:72:7 › Romanian Septica Rule Validation › Card value mapping and display 
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/
+    Call log:
+      - navigating to "http://localhost:3000/", waiting until "load"
+
+
+      10 |   test.beforeEach(async ({ page }) => {
+      11 |     test.setTimeout(45000);
+    > 12 |     await page.goto('http://localhost:3000');
+         |                ^
+      13 |     await page.waitForSelector('#connection-text:has-text("Connected")', { timeout: 10000 });
+      14 |   });
+      15 |
+        at /Users/bogdan/work/Septica/e2e-tests/rules/romanian-septica-validation.spec.js:12:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/rules-romanian-septica-val-26b05-d-value-mapping-and-display-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/rules-romanian-septica-val-26b05-d-value-mapping-and-display-mobile-chrome/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/rules-romanian-septica-val-26b05-d-value-mapping-and-display-mobile-chrome/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/rules-romanian-septica-val-26b05-d-value-mapping-and-display-mobile-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/rules-romanian-septica-val-26b05-d-value-mapping-and-display-mobile-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/
+    Call log:
+      - navigating to "http://localhost:3000/", waiting until "load"
+
+
+      10 |   test.beforeEach(async ({ page }) => {
+      11 |     test.setTimeout(45000);
+    > 12 |     await page.goto('http://localhost:3000');
+         |                ^
+      13 |     await page.waitForSelector('#connection-text:has-text("Connected")', { timeout: 10000 });
+      14 |   });
+      15 |
+        at /Users/bogdan/work/Septica/e2e-tests/rules/romanian-septica-validation.spec.js:12:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/rules-romanian-septica-val-26b05-d-value-mapping-and-display-mobile-chrome-retry1/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/rules-romanian-septica-val-26b05-d-value-mapping-and-display-mobile-chrome-retry1/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/rules-romanian-septica-val-26b05-d-value-mapping-and-display-mobile-chrome-retry1/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/rules-romanian-septica-val-26b05-d-value-mapping-and-display-mobile-chrome-retry1/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/rules-romanian-septica-val-26b05-d-value-mapping-and-display-mobile-chrome-retry1/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|rules-romanian-septica-val-26b05-d-value-mapping-and-display-mobile-chrome/test-failed-1.png]]
+
+[[ATTACHMENT|rules-romanian-septica-val-26b05-d-value-mapping-and-display-mobile-chrome/video.webm]]
+
+[[ATTACHMENT|rules-romanian-septica-val-26b05-d-value-mapping-and-display-mobile-chrome/error-context.md]]
+
+[[ATTACHMENT|rules-romanian-septica-val-26b05-d-value-mapping-and-display-mobile-chrome/trace.zip]]
+
+[[ATTACHMENT|rules-romanian-septica-val-26b05-d-value-mapping-and-display-mobile-chrome-retry1/test-failed-1.png]]
+
+[[ATTACHMENT|rules-romanian-septica-val-26b05-d-value-mapping-and-display-mobile-chrome-retry1/video.webm]]
+
+[[ATTACHMENT|rules-romanian-septica-val-26b05-d-value-mapping-and-display-mobile-chrome-retry1/error-context.md]]
+
+[[ATTACHMENT|rules-romanian-septica-val-26b05-d-value-mapping-and-display-mobile-chrome-retry1/trace.zip]]
+]]>
+</system-out>
+</testcase>
+</testsuite>
+<testsuite name="performance/benchmarks.spec.js" timestamp="2025-09-23T08:52:05.088Z" hostname="mobile-safari" tests="1" failures="1" skipped="0" time="0.796" errors="0">
+<testcase name="Romanian Septica Performance Benchmarks › Card play response time" classname="performance/benchmarks.spec.js" time="0.796">
+<failure message="benchmarks.spec.js:258:7 Card play response time" type="FAILURE">
+<![CDATA[  [mobile-safari] › performance/benchmarks.spec.js:258:7 › Romanian Septica Performance Benchmarks › Card play response time 
+
+    Error: page.goto: Could not connect to the server.
+    Call log:
+      - navigating to "http://localhost:3000/", waiting until "load"
+
+
+      259 |     console.log('🃏 Testing card play response time...');
+      260 |     
+    > 261 |     await page.goto('http://localhost:3000');
+          |                ^
+      262 |     await page.waitForSelector('#connection-text:has-text("Connected")');
+      263 |     
+      264 |     // Start demo game
+        at /Users/bogdan/work/Septica/e2e-tests/performance/benchmarks.spec.js:261:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/performance-benchmarks-Rom-26e76-rks-Card-play-response-time-mobile-safari/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/performance-benchmarks-Rom-26e76-rks-Card-play-response-time-mobile-safari/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/performance-benchmarks-Rom-26e76-rks-Card-play-response-time-mobile-safari/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/performance-benchmarks-Rom-26e76-rks-Card-play-response-time-mobile-safari/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: page.goto: Could not connect to the server.
+    Call log:
+      - navigating to "http://localhost:3000/", waiting until "load"
+
+
+      259 |     console.log('🃏 Testing card play response time...');
+      260 |     
+    > 261 |     await page.goto('http://localhost:3000');
+          |                ^
+      262 |     await page.waitForSelector('#connection-text:has-text("Connected")');
+      263 |     
+      264 |     // Start demo game
+        at /Users/bogdan/work/Septica/e2e-tests/performance/benchmarks.spec.js:261:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/performance-benchmarks-Rom-26e76-rks-Card-play-response-time-mobile-safari-retry1/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/performance-benchmarks-Rom-26e76-rks-Card-play-response-time-mobile-safari-retry1/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/performance-benchmarks-Rom-26e76-rks-Card-play-response-time-mobile-safari-retry1/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/performance-benchmarks-Rom-26e76-rks-Card-play-response-time-mobile-safari-retry1/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[🃏 Testing card play response time...
+
+[[ATTACHMENT|performance-benchmarks-Rom-26e76-rks-Card-play-response-time-mobile-safari/test-failed-1.png]]
+
+[[ATTACHMENT|performance-benchmarks-Rom-26e76-rks-Card-play-response-time-mobile-safari/video.webm]]
+
+[[ATTACHMENT|performance-benchmarks-Rom-26e76-rks-Card-play-response-time-mobile-safari/trace.zip]]
+🃏 Testing card play response time...
+
+[[ATTACHMENT|performance-benchmarks-Rom-26e76-rks-Card-play-response-time-mobile-safari-retry1/test-failed-1.png]]
+
+[[ATTACHMENT|performance-benchmarks-Rom-26e76-rks-Card-play-response-time-mobile-safari-retry1/video.webm]]
+
+[[ATTACHMENT|performance-benchmarks-Rom-26e76-rks-Card-play-response-time-mobile-safari-retry1/trace.zip]]
+]]>
+</system-out>
+</testcase>
+</testsuite>
+<testsuite name="resilience/error-handling.spec.js" timestamp="2025-09-23T08:52:05.088Z" hostname="mobile-safari" tests="1" failures="1" skipped="0" time="0.885" errors="0">
+<testcase name="Romanian Septica Error Handling and Resilience › Invalid card play rejection" classname="resilience/error-handling.spec.js" time="0.885">
+<failure message="error-handling.spec.js:177:7 Invalid card play rejection" type="FAILURE">
+<![CDATA[  [mobile-safari] › resilience/error-handling.spec.js:177:7 › Romanian Septica Error Handling and Resilience › Invalid card play rejection 
+
+    Error: page.goto: Could not connect to the server.
+    Call log:
+      - navigating to "http://localhost:3000/", waiting until "load"
+
+
+      178 |     console.log('🚫 Testing invalid card play rejection...');
+      179 |     
+    > 180 |     await page.goto('http://localhost:3000');
+          |                ^
+      181 |     await page.waitForSelector('#connection-text:has-text("Connected")');
+      182 |     
+      183 |     // Start demo game
+        at /Users/bogdan/work/Septica/e2e-tests/resilience/error-handling.spec.js:180:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/resilience-error-handling--28d16-Invalid-card-play-rejection-mobile-safari/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/resilience-error-handling--28d16-Invalid-card-play-rejection-mobile-safari/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/resilience-error-handling--28d16-Invalid-card-play-rejection-mobile-safari/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/resilience-error-handling--28d16-Invalid-card-play-rejection-mobile-safari/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: page.goto: Could not connect to the server.
+    Call log:
+      - navigating to "http://localhost:3000/", waiting until "load"
+
+
+      178 |     console.log('🚫 Testing invalid card play rejection...');
+      179 |     
+    > 180 |     await page.goto('http://localhost:3000');
+          |                ^
+      181 |     await page.waitForSelector('#connection-text:has-text("Connected")');
+      182 |     
+      183 |     // Start demo game
+        at /Users/bogdan/work/Septica/e2e-tests/resilience/error-handling.spec.js:180:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/resilience-error-handling--28d16-Invalid-card-play-rejection-mobile-safari-retry1/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/resilience-error-handling--28d16-Invalid-card-play-rejection-mobile-safari-retry1/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/resilience-error-handling--28d16-Invalid-card-play-rejection-mobile-safari-retry1/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/resilience-error-handling--28d16-Invalid-card-play-rejection-mobile-safari-retry1/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[🚫 Testing invalid card play rejection...
+
+[[ATTACHMENT|resilience-error-handling--28d16-Invalid-card-play-rejection-mobile-safari/test-failed-1.png]]
+
+[[ATTACHMENT|resilience-error-handling--28d16-Invalid-card-play-rejection-mobile-safari/video.webm]]
+
+[[ATTACHMENT|resilience-error-handling--28d16-Invalid-card-play-rejection-mobile-safari/trace.zip]]
+🚫 Testing invalid card play rejection...
+
+[[ATTACHMENT|resilience-error-handling--28d16-Invalid-card-play-rejection-mobile-safari-retry1/test-failed-1.png]]
+
+[[ATTACHMENT|resilience-error-handling--28d16-Invalid-card-play-rejection-mobile-safari-retry1/video.webm]]
+
+[[ATTACHMENT|resilience-error-handling--28d16-Invalid-card-play-rejection-mobile-safari-retry1/trace.zip]]
+]]>
+</system-out>
+</testcase>
+</testsuite>
+<testsuite name="rules/romanian-septica-validation.spec.js" timestamp="2025-09-23T08:52:05.088Z" hostname="mobile-safari" tests="1" failures="1" skipped="0" time="1.118" errors="0">
+<testcase name="Romanian Septica Rule Validation › Card value mapping and display" classname="rules/romanian-septica-validation.spec.js" time="1.118">
+<failure message="romanian-septica-validation.spec.js:72:7 Card value mapping and display" type="FAILURE">
+<![CDATA[  [mobile-safari] › rules/romanian-septica-validation.spec.js:72:7 › Romanian Septica Rule Validation › Card value mapping and display 
+
+    Error: page.goto: Could not connect to the server.
+    Call log:
+      - navigating to "http://localhost:3000/", waiting until "load"
+
+
+      10 |   test.beforeEach(async ({ page }) => {
+      11 |     test.setTimeout(45000);
+    > 12 |     await page.goto('http://localhost:3000');
+         |                ^
+      13 |     await page.waitForSelector('#connection-text:has-text("Connected")', { timeout: 10000 });
+      14 |   });
+      15 |
+        at /Users/bogdan/work/Septica/e2e-tests/rules/romanian-septica-validation.spec.js:12:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/rules-romanian-septica-val-26b05-d-value-mapping-and-display-mobile-safari/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/rules-romanian-septica-val-26b05-d-value-mapping-and-display-mobile-safari/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/rules-romanian-septica-val-26b05-d-value-mapping-and-display-mobile-safari/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/rules-romanian-septica-val-26b05-d-value-mapping-and-display-mobile-safari/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: page.goto: Could not connect to the server.
+    Call log:
+      - navigating to "http://localhost:3000/", waiting until "load"
+
+
+      10 |   test.beforeEach(async ({ page }) => {
+      11 |     test.setTimeout(45000);
+    > 12 |     await page.goto('http://localhost:3000');
+         |                ^
+      13 |     await page.waitForSelector('#connection-text:has-text("Connected")', { timeout: 10000 });
+      14 |   });
+      15 |
+        at /Users/bogdan/work/Septica/e2e-tests/rules/romanian-septica-validation.spec.js:12:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/rules-romanian-septica-val-26b05-d-value-mapping-and-display-mobile-safari-retry1/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/rules-romanian-septica-val-26b05-d-value-mapping-and-display-mobile-safari-retry1/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/rules-romanian-septica-val-26b05-d-value-mapping-and-display-mobile-safari-retry1/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/rules-romanian-septica-val-26b05-d-value-mapping-and-display-mobile-safari-retry1/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|rules-romanian-septica-val-26b05-d-value-mapping-and-display-mobile-safari/test-failed-1.png]]
+
+[[ATTACHMENT|rules-romanian-septica-val-26b05-d-value-mapping-and-display-mobile-safari/video.webm]]
+
+[[ATTACHMENT|rules-romanian-septica-val-26b05-d-value-mapping-and-display-mobile-safari/trace.zip]]
+
+[[ATTACHMENT|rules-romanian-septica-val-26b05-d-value-mapping-and-display-mobile-safari-retry1/test-failed-1.png]]
+
+[[ATTACHMENT|rules-romanian-septica-val-26b05-d-value-mapping-and-display-mobile-safari-retry1/video.webm]]
+
+[[ATTACHMENT|rules-romanian-septica-val-26b05-d-value-mapping-and-display-mobile-safari-retry1/trace.zip]]
+]]>
+</system-out>
+</testcase>
+</testsuite>
+<testsuite name="performance/benchmarks.spec.js" timestamp="2025-09-23T08:52:05.088Z" hostname="dual-chrome-contexts" tests="1" failures="1" skipped="0" time="0.977" errors="0">
+<testcase name="Romanian Septica Performance Benchmarks › Card play response time" classname="performance/benchmarks.spec.js" time="0.977">
+<failure message="benchmarks.spec.js:258:7 Card play response time" type="FAILURE">
+<![CDATA[  [dual-chrome-contexts] › performance/benchmarks.spec.js:258:7 › Romanian Septica Performance Benchmarks › Card play response time 
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/
+    Call log:
+      - navigating to "http://localhost:3000/", waiting until "load"
+
+
+      259 |     console.log('🃏 Testing card play response time...');
+      260 |     
+    > 261 |     await page.goto('http://localhost:3000');
+          |                ^
+      262 |     await page.waitForSelector('#connection-text:has-text("Connected")');
+      263 |     
+      264 |     // Start demo game
+        at /Users/bogdan/work/Septica/e2e-tests/performance/benchmarks.spec.js:261:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/performance-benchmarks-Rom-26e76-rks-Card-play-response-time-dual-chrome-contexts/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/performance-benchmarks-Rom-26e76-rks-Card-play-response-time-dual-chrome-contexts/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/performance-benchmarks-Rom-26e76-rks-Card-play-response-time-dual-chrome-contexts/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/performance-benchmarks-Rom-26e76-rks-Card-play-response-time-dual-chrome-contexts/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/performance-benchmarks-Rom-26e76-rks-Card-play-response-time-dual-chrome-contexts/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/
+    Call log:
+      - navigating to "http://localhost:3000/", waiting until "load"
+
+
+      259 |     console.log('🃏 Testing card play response time...');
+      260 |     
+    > 261 |     await page.goto('http://localhost:3000');
+          |                ^
+      262 |     await page.waitForSelector('#connection-text:has-text("Connected")');
+      263 |     
+      264 |     // Start demo game
+        at /Users/bogdan/work/Septica/e2e-tests/performance/benchmarks.spec.js:261:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/performance-benchmarks-Rom-26e76-rks-Card-play-response-time-dual-chrome-contexts-retry1/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/performance-benchmarks-Rom-26e76-rks-Card-play-response-time-dual-chrome-contexts-retry1/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/performance-benchmarks-Rom-26e76-rks-Card-play-response-time-dual-chrome-contexts-retry1/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/performance-benchmarks-Rom-26e76-rks-Card-play-response-time-dual-chrome-contexts-retry1/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/performance-benchmarks-Rom-26e76-rks-Card-play-response-time-dual-chrome-contexts-retry1/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[🃏 Testing card play response time...
+
+[[ATTACHMENT|performance-benchmarks-Rom-26e76-rks-Card-play-response-time-dual-chrome-contexts/test-failed-1.png]]
+
+[[ATTACHMENT|performance-benchmarks-Rom-26e76-rks-Card-play-response-time-dual-chrome-contexts/video.webm]]
+
+[[ATTACHMENT|performance-benchmarks-Rom-26e76-rks-Card-play-response-time-dual-chrome-contexts/error-context.md]]
+
+[[ATTACHMENT|performance-benchmarks-Rom-26e76-rks-Card-play-response-time-dual-chrome-contexts/trace.zip]]
+🃏 Testing card play response time...
+
+[[ATTACHMENT|performance-benchmarks-Rom-26e76-rks-Card-play-response-time-dual-chrome-contexts-retry1/test-failed-1.png]]
+
+[[ATTACHMENT|performance-benchmarks-Rom-26e76-rks-Card-play-response-time-dual-chrome-contexts-retry1/video.webm]]
+
+[[ATTACHMENT|performance-benchmarks-Rom-26e76-rks-Card-play-response-time-dual-chrome-contexts-retry1/error-context.md]]
+
+[[ATTACHMENT|performance-benchmarks-Rom-26e76-rks-Card-play-response-time-dual-chrome-contexts-retry1/trace.zip]]
+]]>
+</system-out>
+</testcase>
+</testsuite>
+<testsuite name="resilience/error-handling.spec.js" timestamp="2025-09-23T08:52:05.088Z" hostname="dual-chrome-contexts" tests="1" failures="1" skipped="0" time="0.825" errors="0">
+<testcase name="Romanian Septica Error Handling and Resilience › Invalid card play rejection" classname="resilience/error-handling.spec.js" time="0.825">
+<failure message="error-handling.spec.js:177:7 Invalid card play rejection" type="FAILURE">
+<![CDATA[  [dual-chrome-contexts] › resilience/error-handling.spec.js:177:7 › Romanian Septica Error Handling and Resilience › Invalid card play rejection 
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/
+    Call log:
+      - navigating to "http://localhost:3000/", waiting until "load"
+
+
+      178 |     console.log('🚫 Testing invalid card play rejection...');
+      179 |     
+    > 180 |     await page.goto('http://localhost:3000');
+          |                ^
+      181 |     await page.waitForSelector('#connection-text:has-text("Connected")');
+      182 |     
+      183 |     // Start demo game
+        at /Users/bogdan/work/Septica/e2e-tests/resilience/error-handling.spec.js:180:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/resilience-error-handling--28d16-Invalid-card-play-rejection-dual-chrome-contexts/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/resilience-error-handling--28d16-Invalid-card-play-rejection-dual-chrome-contexts/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/resilience-error-handling--28d16-Invalid-card-play-rejection-dual-chrome-contexts/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/resilience-error-handling--28d16-Invalid-card-play-rejection-dual-chrome-contexts/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/resilience-error-handling--28d16-Invalid-card-play-rejection-dual-chrome-contexts/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/
+    Call log:
+      - navigating to "http://localhost:3000/", waiting until "load"
+
+
+      178 |     console.log('🚫 Testing invalid card play rejection...');
+      179 |     
+    > 180 |     await page.goto('http://localhost:3000');
+          |                ^
+      181 |     await page.waitForSelector('#connection-text:has-text("Connected")');
+      182 |     
+      183 |     // Start demo game
+        at /Users/bogdan/work/Septica/e2e-tests/resilience/error-handling.spec.js:180:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/resilience-error-handling--28d16-Invalid-card-play-rejection-dual-chrome-contexts-retry1/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/resilience-error-handling--28d16-Invalid-card-play-rejection-dual-chrome-contexts-retry1/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/resilience-error-handling--28d16-Invalid-card-play-rejection-dual-chrome-contexts-retry1/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/resilience-error-handling--28d16-Invalid-card-play-rejection-dual-chrome-contexts-retry1/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/resilience-error-handling--28d16-Invalid-card-play-rejection-dual-chrome-contexts-retry1/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[🚫 Testing invalid card play rejection...
+
+[[ATTACHMENT|resilience-error-handling--28d16-Invalid-card-play-rejection-dual-chrome-contexts/test-failed-1.png]]
+
+[[ATTACHMENT|resilience-error-handling--28d16-Invalid-card-play-rejection-dual-chrome-contexts/video.webm]]
+
+[[ATTACHMENT|resilience-error-handling--28d16-Invalid-card-play-rejection-dual-chrome-contexts/error-context.md]]
+
+[[ATTACHMENT|resilience-error-handling--28d16-Invalid-card-play-rejection-dual-chrome-contexts/trace.zip]]
+🚫 Testing invalid card play rejection...
+
+[[ATTACHMENT|resilience-error-handling--28d16-Invalid-card-play-rejection-dual-chrome-contexts-retry1/test-failed-1.png]]
+
+[[ATTACHMENT|resilience-error-handling--28d16-Invalid-card-play-rejection-dual-chrome-contexts-retry1/video.webm]]
+
+[[ATTACHMENT|resilience-error-handling--28d16-Invalid-card-play-rejection-dual-chrome-contexts-retry1/error-context.md]]
+
+[[ATTACHMENT|resilience-error-handling--28d16-Invalid-card-play-rejection-dual-chrome-contexts-retry1/trace.zip]]
+]]>
+</system-out>
+</testcase>
+</testsuite>
+<testsuite name="rules/romanian-septica-validation.spec.js" timestamp="2025-09-23T08:52:05.088Z" hostname="dual-chrome-contexts" tests="1" failures="1" skipped="0" time="0.98" errors="0">
+<testcase name="Romanian Septica Rule Validation › Card value mapping and display" classname="rules/romanian-septica-validation.spec.js" time="0.98">
+<failure message="romanian-septica-validation.spec.js:72:7 Card value mapping and display" type="FAILURE">
+<![CDATA[  [dual-chrome-contexts] › rules/romanian-septica-validation.spec.js:72:7 › Romanian Septica Rule Validation › Card value mapping and display 
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/
+    Call log:
+      - navigating to "http://localhost:3000/", waiting until "load"
+
+
+      10 |   test.beforeEach(async ({ page }) => {
+      11 |     test.setTimeout(45000);
+    > 12 |     await page.goto('http://localhost:3000');
+         |                ^
+      13 |     await page.waitForSelector('#connection-text:has-text("Connected")', { timeout: 10000 });
+      14 |   });
+      15 |
+        at /Users/bogdan/work/Septica/e2e-tests/rules/romanian-septica-validation.spec.js:12:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/rules-romanian-septica-val-26b05-d-value-mapping-and-display-dual-chrome-contexts/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/rules-romanian-septica-val-26b05-d-value-mapping-and-display-dual-chrome-contexts/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/rules-romanian-septica-val-26b05-d-value-mapping-and-display-dual-chrome-contexts/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/rules-romanian-septica-val-26b05-d-value-mapping-and-display-dual-chrome-contexts/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/rules-romanian-septica-val-26b05-d-value-mapping-and-display-dual-chrome-contexts/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/
+    Call log:
+      - navigating to "http://localhost:3000/", waiting until "load"
+
+
+      10 |   test.beforeEach(async ({ page }) => {
+      11 |     test.setTimeout(45000);
+    > 12 |     await page.goto('http://localhost:3000');
+         |                ^
+      13 |     await page.waitForSelector('#connection-text:has-text("Connected")', { timeout: 10000 });
+      14 |   });
+      15 |
+        at /Users/bogdan/work/Septica/e2e-tests/rules/romanian-septica-validation.spec.js:12:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/rules-romanian-septica-val-26b05-d-value-mapping-and-display-dual-chrome-contexts-retry1/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/rules-romanian-septica-val-26b05-d-value-mapping-and-display-dual-chrome-contexts-retry1/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/rules-romanian-septica-val-26b05-d-value-mapping-and-display-dual-chrome-contexts-retry1/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/rules-romanian-septica-val-26b05-d-value-mapping-and-display-dual-chrome-contexts-retry1/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/rules-romanian-septica-val-26b05-d-value-mapping-and-display-dual-chrome-contexts-retry1/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|rules-romanian-septica-val-26b05-d-value-mapping-and-display-dual-chrome-contexts/test-failed-1.png]]
+
+[[ATTACHMENT|rules-romanian-septica-val-26b05-d-value-mapping-and-display-dual-chrome-contexts/video.webm]]
+
+[[ATTACHMENT|rules-romanian-septica-val-26b05-d-value-mapping-and-display-dual-chrome-contexts/error-context.md]]
+
+[[ATTACHMENT|rules-romanian-septica-val-26b05-d-value-mapping-and-display-dual-chrome-contexts/trace.zip]]
+
+[[ATTACHMENT|rules-romanian-septica-val-26b05-d-value-mapping-and-display-dual-chrome-contexts-retry1/test-failed-1.png]]
+
+[[ATTACHMENT|rules-romanian-septica-val-26b05-d-value-mapping-and-display-dual-chrome-contexts-retry1/video.webm]]
+
+[[ATTACHMENT|rules-romanian-septica-val-26b05-d-value-mapping-and-display-dual-chrome-contexts-retry1/error-context.md]]
+
+[[ATTACHMENT|rules-romanian-septica-val-26b05-d-value-mapping-and-display-dual-chrome-contexts-retry1/trace.zip]]
+]]>
+</system-out>
+</testcase>
+</testsuite>
+</testsuites>

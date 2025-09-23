@@ -29,7 +29,7 @@ export default defineConfig({
   // Reporter configuration
   reporter: [
     ['html', { 
-      outputFolder: 'test-results/playwright-report',
+      outputFolder: 'test-results/html-report',
       open: 'never'
     }],
     ['json', { 
@@ -123,21 +123,21 @@ export default defineConfig({
     },
   ],
 
-  // Development server configuration
-  webServer: [
-    {
-      command: 'cd frontend && python3 -m http.server 3000',
-      port: 3000,
-      timeout: 30000,
-      reuseExistingServer: !process.env.CI,
-    },
-    {
-      command: 'DATABASE_URL="postgres://septica:septica@localhost:5433/septica?sslmode=disable" ./backend/server',
-      port: 8080,
-      timeout: 30000,
-      reuseExistingServer: !process.env.CI,
-    }
-  ],
+  // Development server configuration (disabled - using existing servers)
+  // webServer: [
+  //   {
+  //     command: 'cd frontend && python3 -m http.server 3000',
+  //     port: 3000,
+  //     timeout: 30000,
+  //     reuseExistingServer: !process.env.CI,
+  //   },
+  //   {
+  //     command: 'DATABASE_URL="postgres://septica:septica@localhost:5433/septica?sslmode=disable" ./backend/server',
+  //     port: 8080,
+  //     timeout: 30000,
+  //     reuseExistingServer: !process.env.CI,
+  //   }
+  // ],
 
   // Test result output
   outputDir: 'test-results',

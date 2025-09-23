@@ -1,0 +1,64 @@
+{
+  "timestamp": "2025-09-23T08:52:19.674Z",
+  "duration": {
+    "setup": 464,
+    "tests": 14714,
+    "teardown": 1,
+    "total": 15179
+  },
+  "infrastructure": {
+    "backend": false,
+    "frontend": false,
+    "websocket": false,
+    "overall": false
+  },
+  "performance": {
+    "setupTime": 352,
+    "backendLatency": -1,
+    "frontendLoadTime": -1,
+    "wsConnectionTime": 0
+  },
+  "testExecution": {
+    "total": 0,
+    "passed": 0,
+    "failed": 0,
+    "skipped": 0,
+    "flaky": 0
+  },
+  "categories": {
+    "infrastructure": {
+      "passed": 0,
+      "failed": 0,
+      "skipped": 0
+    },
+    "matchmaking": {
+      "passed": 0,
+      "failed": 0,
+      "skipped": 0
+    },
+    "rules": {
+      "passed": 0,
+      "failed": 0,
+      "skipped": 0
+    },
+    "performance": {
+      "passed": 0,
+      "failed": 0,
+      "skipped": 0
+    },
+    "resilience": {
+      "passed": 0,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "criticalIssues": [],
+  "recommendations": [
+    "🔴 NEEDS WORK: System requires significant improvements",
+    "🛠️ Major issues must be resolved",
+    "⏱️ Delay production deployment",
+    "🖥️ Backend server issues detected - check connectivity and health",
+    "🌐 Frontend server issues detected - verify static file serving",
+    "📡 WebSocket connectivity issues - check backend WebSocket handler"
+  ]
+}

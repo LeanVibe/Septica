@@ -350,30 +350,347 @@ test.describe('Romanian Septica Rule Validation', () => {
 
   test('Cultural authenticity markers', async ({ page }) => {
     console.log('🇷🇴 Verifying Romanian cultural authenticity...');
-    
+
     // Check page title and game branding
     const title = await page.title();
     expect(title).toMatch(/Romanian Septica/i);
-    
+
     // Check for Romanian game terminology
     const pageContent = await page.content();
     expect(pageContent).toMatch(/Romanian Septica/i);
-    
+
     // Verify game follows traditional 2-player format
     const playerArea = await page.locator('.player-area').isVisible();
     const opponentArea = await page.locator('.opponent-area').isVisible();
-    
+
     expect(playerArea).toBe(true);
     expect(opponentArea).toBe(true);
-    
+
     // Check for traditional scoring (showing both players)
     const playerScoreVisible = await page.locator('#player-score').isVisible();
     const opponentScoreVisible = await page.locator('#opponent-score').isVisible();
-    
+
     expect(playerScoreVisible).toBe(true);
     expect(opponentScoreVisible).toBe(true);
-    
+
     console.log('✅ Romanian cultural authenticity confirmed');
+  });
+
+  test('Comprehensive cultural authenticity validation', async ({ page }) => {
+    console.log('🇷🇴 Comprehensive Romanian cultural authenticity validation...');
+
+    await page.goto('http://localhost:3000');
+    await page.waitForSelector('#connection-text:has-text("Connected")');
+
+    const culturalValidation = await page.evaluate(() => {
+      const results = [];
+
+      // Test 1: Romanian terminology and language
+      const pageText = document.body.innerText.toLowerCase();
+      const romanianTerms = [
+        'romanian septica',
+        'septica',
+        'tricks',
+        'points'
+      ];
+
+      const foundTerms = romanianTerms.filter(term => pageText.includes(term));
+      results.push({
+        aspect: 'Romanian terminology usage',
+        authentic: foundTerms.length >= 2,
+        details: `Found terms: ${foundTerms.join(', ')} (${foundTerms.length}/${romanianTerms.length})`
+      });
+
+      // Test 2: Traditional game structure
+      const gameElements = {
+        playerCards: !!document.querySelector('#player-cards'),
+        opponentCards: !!document.querySelector('#opponent-cards, .opponent-area'),
+        tableCards: !!document.querySelector('#table-cards'),
+        scoreDisplay: !!document.querySelector('#player-score'),
+        trickCounter: !!document.querySelector('#trick-number'),
+        moveCounter: !!document.querySelector('#move-number')
+      };
+
+      const structureScore = Object.values(gameElements).filter(exists => exists).length;
+      results.push({
+        aspect: 'Traditional Romanian Septica game structure',
+        authentic: structureScore >= 5,
+        details: `${structureScore}/6 traditional elements present`
+      });
+
+      // Test 3: Card display and interaction
+      const cardElements = document.querySelectorAll('.card');
+      const hasCards = cardElements.length > 0;
+
+      let cardAttributesValid = false;
+      if (hasCards) {
+        // Check if cards have proper Romanian card attributes
+        const sampleCard = cardElements[0];
+        const hasValueAttr = sampleCard.hasAttribute('data-value') || sampleCard.querySelector('.card-value');
+        const hasSuitAttr = sampleCard.hasAttribute('data-suit') || sampleCard.className.includes('hearts') ||
+                          sampleCard.className.includes('diamonds') || sampleCard.className.includes('clubs') ||
+                          sampleCard.className.includes('spades');
+        cardAttributesValid = hasValueAttr && hasSuitAttr;
+      }
+
+      results.push({
+        aspect: 'Romanian card representation',
+        authentic: hasCards && cardAttributesValid,
+        details: `${cardElements.length} cards found, attributes valid: ${cardAttributesValid}`
+      });
+
+      // Test 4: Point system representation
+      const scoreElements = document.querySelectorAll('#player-score, #opponent-score, .score');
+      const hasScoring = scoreElements.length >= 2;
+
+      results.push({
+        aspect: 'Traditional Romanian scoring system',
+        authentic: hasScoring,
+        details: `${scoreElements.length} score elements found`
+      });
+
+      // Test 5: Visual design authenticity
+      const designElements = {
+        cardStyling: !!document.querySelector('.card'),
+        gameBoard: !!document.querySelector('.game-board, .game-container'),
+        romanianColors: document.body.style.backgroundColor ||
+                       getComputedStyle(document.body).backgroundColor ||
+                       'default',
+        traditionalLayout: !!document.querySelector('.player-area')
+      };
+
+      const designScore = Object.entries(designElements).filter(([key, value]) =>
+        key !== 'romanianColors' && value
+      ).length;
+
+      results.push({
+        aspect: 'Traditional Romanian game visual design',
+        authentic: designScore >= 3,
+        details: `${designScore}/3 design elements present`
+      });
+
+      // Test 6: Game flow authenticity
+      const gameFlow = {
+        turnBasedPlay: !!document.querySelector('#game-status'),
+        trickTaking: !!document.querySelector('#trick-number'),
+        handManagement: !!document.querySelector('#player-cards'),
+        immediatePlay: !pageText.includes('timer') && !pageText.includes('blitz') // Romanian Septica is not timed
+      };
+
+      const flowScore = Object.values(gameFlow).filter(present => present).length;
+      results.push({
+        aspect: 'Authentic Romanian Septica game flow',
+        authentic: flowScore >= 3,
+        details: `${flowScore}/4 authentic flow elements present`
+      });
+
+      return results;
+    });
+
+    console.log('Romanian cultural authenticity validation results:');
+    let overallScore = 0;
+
+    culturalValidation.forEach(result => {
+      const status = result.authentic ? '✅ AUTHENTIC' : '❌ NON-AUTHENTIC';
+      console.log(`  ${result.aspect}: ${status}`);
+      console.log(`    ${result.details}`);
+
+      if (result.authentic) overallScore++;
+
+      // Each aspect should be authentic for true Romanian Septica
+      expect(result.authentic).toBe(true);
+    });
+
+    const authenticityPercentage = Math.round((overallScore / culturalValidation.length) * 100);
+
+    console.log(`\n🏆 OVERALL CULTURAL AUTHENTICITY: ${authenticityPercentage}%`);
+
+    if (authenticityPercentage >= 90) {
+      console.log('🟢 EXCELLENT: Highly authentic Romanian Septica implementation');
+    } else if (authenticityPercentage >= 70) {
+      console.log('🟡 GOOD: Mostly authentic with minor cultural elements missing');
+    } else {
+      console.log('🔴 NEEDS IMPROVEMENT: Significant cultural authenticity issues');
+    }
+
+    // Overall authenticity should be high for a truly Romanian game
+    expect(authenticityPercentage).toBeGreaterThanOrEqual(80);
+
+    console.log('✅ Comprehensive cultural authenticity validation completed');
+  });
+
+  test('Romanian card naming and terminology validation', async ({ page }) => {
+    console.log('🃏 Validating Romanian card naming conventions...');
+
+    await page.goto('http://localhost:3000');
+    await page.waitForSelector('#connection-text:has-text("Connected")');
+
+    // Start demo game to access cards
+    if (await page.locator('#new-game-btn').isVisible()) {
+      await page.click('#new-game-btn');
+      await page.waitForTimeout(1000);
+    }
+
+    const cardNamingValidation = await page.evaluate(() => {
+      const results = [];
+
+      // Test card value representation
+      function testCardValueNaming() {
+        // Romanian Septica traditional card values and their representations
+        const romanianCardValues = {
+          7: ['7', 'Seven', 'Șapte'],
+          8: ['8', 'Eight', 'Opt'],
+          9: ['9', 'Nine', 'Nouă'],
+          10: ['10', 'Ten', 'Zece'],
+          11: ['J', 'Jack', 'Valet', 'Băiat'],
+          12: ['Q', 'Queen', 'Damă'],
+          13: ['K', 'King', 'Rege'],
+          14: ['A', 'Ace', 'As']
+        };
+
+        let validNaming = true;
+        let foundValues = [];
+
+        // Check visible card values
+        const cardValueElements = document.querySelectorAll('.card-value, [data-value]');
+
+        cardValueElements.forEach(element => {
+          const valueText = element.textContent || element.getAttribute('data-value');
+          if (valueText) {
+            foundValues.push(valueText.trim());
+          }
+        });
+
+        // Validate that found values match Romanian conventions
+        foundValues.forEach(value => {
+          const numValue = parseInt(value) ||
+                          (value === 'J' ? 11 : value === 'Q' ? 12 : value === 'K' ? 13 : value === 'A' ? 14 : null);
+
+          if (numValue && (numValue < 7 || numValue > 14)) {
+            validNaming = false;
+          }
+        });
+
+        return {
+          valid: validNaming,
+          foundValues: foundValues,
+          expectedRange: '7-14 (7,8,9,10,J,Q,K,A)'
+        };
+      }
+
+      const valueNaming = testCardValueNaming();
+      results.push({
+        test: 'Romanian card value naming (7-A only)',
+        passed: valueNaming.valid,
+        details: `Found values: ${valueNaming.foundValues.join(', ')} | Expected: ${valueNaming.expectedRange}`
+      });
+
+      // Test suit representation
+      function testSuitNaming() {
+        const suitElements = document.querySelectorAll('.card[class*="hearts"], .card[class*="diamonds"], .card[class*="clubs"], .card[class*="spades"]');
+        const suitClasses = Array.from(suitElements).map(el => el.className);
+
+        const foundSuits = [];
+        ['hearts', 'diamonds', 'clubs', 'spades'].forEach(suit => {
+          if (suitClasses.some(className => className.includes(suit))) {
+            foundSuits.push(suit);
+          }
+        });
+
+        return {
+          valid: foundSuits.length === 4,
+          foundSuits: foundSuits,
+          allSuitsPresent: foundSuits.length === 4
+        };
+      }
+
+      const suitNaming = testSuitNaming();
+      results.push({
+        test: 'Traditional card suit representation',
+        passed: suitNaming.valid,
+        details: `Found suits: ${suitNaming.foundSuits.join(', ')} (${suitNaming.foundSuits.length}/4)`
+      });
+
+      // Test game terminology
+      function testGameTerminology() {
+        const pageText = document.body.innerText.toLowerCase();
+
+        const romanianTerms = {
+          essential: ['trick', 'tricks', 'points', 'score'],
+          preferred: ['septica', 'romanian', 'hand', 'table'],
+          forbidden: ['poker', 'blackjack', 'bridge', 'casino'] // These shouldn't appear in Romanian Septica
+        };
+
+        const foundEssential = romanianTerms.essential.filter(term => pageText.includes(term));
+        const foundPreferred = romanianTerms.preferred.filter(term => pageText.includes(term));
+        const foundForbidden = romanianTerms.forbidden.filter(term => pageText.includes(term));
+
+        return {
+          essential: foundEssential,
+          preferred: foundPreferred,
+          forbidden: foundForbidden,
+          valid: foundEssential.length >= 2 && foundPreferred.length >= 2 && foundForbidden.length === 0
+        };
+      }
+
+      const terminology = testGameTerminology();
+      results.push({
+        test: 'Authentic Romanian Septica terminology',
+        passed: terminology.valid,
+        details: `Essential: ${terminology.essential.join(', ')} | Preferred: ${terminology.preferred.join(', ')} | Forbidden: ${terminology.forbidden.join(', ')}`
+      });
+
+      // Test numerical representations
+      function testNumericalAccuracy() {
+        const scoreElements = document.querySelectorAll('#player-score, #opponent-score, .score');
+        const trickElements = document.querySelectorAll('#trick-number, .trick-count');
+        const moveElements = document.querySelectorAll('#move-number, .move-count');
+
+        let validScores = true;
+        let validCounts = true;
+
+        // Scores should be 0-8 (max points in Romanian Septica)
+        scoreElements.forEach(element => {
+          const score = parseInt(element.textContent || '0');
+          if (score < 0 || score > 8) {
+            validScores = false;
+          }
+        });
+
+        // Tricks should be reasonable (1-16 max in theory)
+        trickElements.forEach(element => {
+          const trick = parseInt(element.textContent || '1');
+          if (trick < 1 || trick > 16) {
+            validCounts = false;
+          }
+        });
+
+        return {
+          validScores: validScores,
+          validCounts: validCounts,
+          scoreCount: scoreElements.length,
+          trickCount: trickElements.length
+        };
+      }
+
+      const numerical = testNumericalAccuracy();
+      results.push({
+        test: 'Romanian Septica numerical accuracy',
+        passed: numerical.validScores && numerical.validCounts,
+        details: `Scores valid: ${numerical.validScores}, Counts valid: ${numerical.validCounts}`
+      });
+
+      return results;
+    });
+
+    console.log('Romanian card naming and terminology validation:');
+    cardNamingValidation.forEach(result => {
+      console.log(`  ${result.test}: ${result.passed ? '✅' : '❌'}`);
+      console.log(`    ${result.details}`);
+      expect(result.passed).toBe(true);
+    });
+
+    console.log('✅ Romanian card naming and terminology validation completed');
   });
 
   test('32-card deck validation', async ({ page }) => {

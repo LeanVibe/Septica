@@ -1,0 +1,1159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Romanian Septica - Two Tab Integration Test</title>
+
+    <!-- Include Three.js for 3D rendering -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
+    <!-- Core game scripts -->
+    <script src="js/websocket-client.js"></script>
+    <script src="js/game-ui.js"></script>
+    <script src="js/romanian-septica-rules.js"></script>
+    <script src="js/premium-card-material.js"></script>
+    <script src="js/romanian-ambient-lighting.js"></script>
+    <script src="js/premium-card-animations.js"></script>
+    <script src="js/premium-septica-game.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3a8a 0%, #3730a3 50%, #1e40af 100%);
+            height: 100vh;
+            overflow: hidden;
+            color: white;
+        }
+
+        .test-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            position: relative;
+        }
+
+        /* Header */
+        .test-header {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            text-align: center;
+            border-bottom: 2px solid rgba(255, 215, 0, 0.3);
+        }
+
+        .test-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ffd700;
+            margin-bottom: 5px;
+        }
+
+        .test-subtitle {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        /* Main Content */
+        .test-content {
+            display: flex;
+            flex: 1;
+            gap: 20px;
+            padding: 20px;
+        }
+
+        /* Connection Panel */
+        .connection-panel {
+            width: 300px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .panel-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #ffd700;
+            text-align: center;
+        }
+
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #dc2626;
+            transition: background-color 0.3s;
+        }
+
+        .status-indicator.connected {
+            background: #16a34a;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(59, 130, 246, 0.8);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 10px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .btn:hover {
+            background: rgba(59, 130, 246, 1);
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn.btn-success {
+            background: rgba(16, 185, 129, 0.8);
+        }
+
+        .btn.btn-success:hover {
+            background: rgba(16, 185, 129, 1);
+        }
+
+        .btn.btn-danger {
+            background: rgba(239, 68, 68, 0.8);
+        }
+
+        .btn.btn-danger:hover {
+            background: rgba(239, 68, 68, 1);
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 12px;
+        }
+
+        .info-label {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .info-value {
+            color: #ffd700;
+            font-weight: 500;
+        }
+
+        /* Game Area */
+        .game-area {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .game-status-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .game-status-text {
+            font-size: 16px;
+            font-weight: bold;
+            color: #ffd700;
+        }
+
+        .game-info {
+            display: flex;
+            gap: 20px;
+            font-size: 14px;
+        }
+
+        .game-info-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .game-info-label {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 12px;
+        }
+
+        .game-info-value {
+            color: #ffd700;
+            font-weight: bold;
+        }
+
+        /* 3D Canvas */
+        .threejs-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        /* Cards Display */
+        .cards-container {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            z-index: 5;
+        }
+
+        .cards-section {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            backdrop-filter: blur(10px);
+        }
+
+        .cards-title {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #ffd700;
+        }
+
+        .cards-display {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .card {
+            width: 40px;
+            height: 56px;
+            border-radius: 6px;
+            background: white;
+            border: 1px solid #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .card.clickable:hover {
+            transform: translateY(-5px) scale(1.1);
+            z-index: 10;
+            box-shadow: 0 5px 15px rgba(255, 215, 0, 0.5);
+        }
+
+        .card.valid-move {
+            border-color: #16a34a;
+            box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+        }
+
+        .card.hearts, .card.diamonds {
+            color: #dc2626;
+        }
+
+        .card.clubs, .card.spades {
+            color: #000;
+        }
+
+        .card-value {
+            font-size: 8px;
+            margin: 2px;
+        }
+
+        .card-suit {
+            font-size: 12px;
+            margin: 2px;
+        }
+
+        /* Log Panel */
+        .log-panel {
+            width: 300px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .log-content {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            overflow-y: auto;
+            max-height: 400px;
+            margin-bottom: 15px;
+        }
+
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 3px 6px;
+            border-radius: 4px;
+        }
+
+        .log-entry.info {
+            color: #60a5fa;
+        }
+
+        .log-entry.success {
+            color: #34d399;
+        }
+
+        .log-entry.error {
+            color: #f87171;
+        }
+
+        .log-entry.warning {
+            color: #fbbf24;
+        }
+
+        .log-timestamp {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 9px;
+        }
+
+        /* Instructions */
+        .instructions {
+            background: rgba(255, 215, 0, 0.1);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .instructions h3 {
+            color: #ffd700;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .instructions ol {
+            margin-left: 20px;
+            color: rgba(255, 255, 255, 0.9);
+            line-height: 1.6;
+        }
+
+        .instructions li {
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        /* Overlays */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(30, 58, 138, 0.9);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+
+        .overlay.hidden {
+            display: none;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid #ffd700;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .overlay-text {
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .overlay-details {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 14px;
+            text-align: center;
+            line-height: 1.5;
+        }
+
+        /* Romanian Cultural Elements */
+        .romanian-flag {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 60px;
+            height: 40px;
+            display: flex;
+            border-radius: 4px;
+            overflow: hidden;
+            z-index: 15;
+        }
+
+        .romanian-flag div {
+            flex: 1;
+        }
+
+        .romanian-flag .blue {
+            background: #002b7f;
+        }
+
+        .romanian-flag .yellow {
+            background: #fcd116;
+        }
+
+        .romanian-flag .red {
+            background: #ce1126;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .test-content {
+                flex-direction: column;
+            }
+
+            .connection-panel,
+            .log-panel {
+                width: 100%;
+                max-width: 600px;
+                margin: 0 auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="overlay">
+        <div class="spinner"></div>
+        <div class="overlay-text">Initializing Romanian Septica</div>
+        <div class="overlay-details">Connecting to multiplayer backend...</div>
+    </div>
+
+    <!-- Matchmaking Overlay -->
+    <div id="matchmaking-overlay" class="overlay hidden">
+        <div class="spinner"></div>
+        <div class="overlay-text" id="matchmaking-status">Searching for opponent...</div>
+        <div class="overlay-details" id="matchmaking-details">
+            <div>Queue position: <span id="queue-position">-</span></div>
+            <div>Wait time: <span id="wait-time">0s</span></div>
+            <div>Players in queue: <span id="players-in-queue">-</span></div>
+        </div>
+    </div>
+
+    <div class="test-container">
+        <!-- Romanian Flag -->
+        <div class="romanian-flag">
+            <div class="blue"></div>
+            <div class="yellow"></div>
+            <div class="red"></div>
+        </div>
+
+        <!-- Header -->
+        <div class="test-header">
+            <div class="test-title">🇷🇴 Romanian Septica - Two Tab Integration Test</div>
+            <div class="test-subtitle">Complete multiplayer testing environment with 3D graphics and Romanian cultural authenticity</div>
+        </div>
+
+        <!-- Instructions -->
+        <div class="instructions">
+            <h3>🎮 Two-Tab Testing Instructions</h3>
+            <ol>
+                <li><strong>Tab 1:</strong> Click "Join Matchmaking" → Wait in queue</li>
+                <li><strong>Tab 2:</strong> Open this same page → Click "Join Matchmaking" → Auto-matched!</li>
+                <li><strong>Game Play:</strong> Click cards to play (only valid moves highlighted)</li>
+                <li><strong>Romanian Rules:</strong> 7s beat all cards, 10s and Aces score points</li>
+                <li><strong>Victory:</strong> First to collect most point cards wins!</li>
+            </ol>
+        </div>
+
+        <!-- Main Content -->
+        <div class="test-content">
+            <!-- Connection Panel -->
+            <div class="connection-panel">
+                <div class="panel-title">🌐 Connection</div>
+
+                <div class="connection-status">
+                    <div class="status-indicator" id="connection-indicator"></div>
+                    <span id="connection-text">Connecting...</span>
+                </div>
+
+                <div class="info-item">
+                    <span class="info-label">Player ID:</span>
+                    <span class="info-value" id="player-id">-</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Game ID:</span>
+                    <span class="info-value" id="game-id">-</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Server Time:</span>
+                    <span class="info-value" id="server-time">-</span>
+                </div>
+
+                <button class="btn btn-success" id="join-matchmaking-btn">🎯 Join Matchmaking</button>
+                <button class="btn btn-danger" id="leave-matchmaking-btn" disabled>❌ Cancel Matchmaking</button>
+                <button class="btn" id="leave-game-btn" disabled>🚪 Leave Game</button>
+                <button class="btn" id="ping-btn">📡 Ping Server</button>
+                <button class="btn" id="demo-cards-btn">🃏 Demo Cards</button>
+            </div>
+
+            <!-- Game Area -->
+            <div class="game-area">
+                <div class="game-status-bar">
+                    <div class="game-status-text" id="game-status">Welcome to Romanian Septica</div>
+                    <div class="game-info">
+                        <div class="game-info-item">
+                            <span class="game-info-label">Trick</span>
+                            <span class="game-info-value" id="trick-number">1</span>
+                        </div>
+                        <div class="game-info-item">
+                            <span class="game-info-label">Move</span>
+                            <span class="game-info-value" id="move-number">1</span>
+                        </div>
+                        <div class="game-info-item">
+                            <span class="game-info-label">Your Score</span>
+                            <span class="game-info-value" id="player-score">0</span>
+                        </div>
+                        <div class="game-info-item">
+                            <span class="game-info-label">Opponent</span>
+                            <span class="game-info-value" id="opponent-score">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3D Canvas Container -->
+                <div class="threejs-container" id="threejs-container">
+                    <!-- 3D content will be rendered here -->
+                </div>
+
+                <!-- Cards Display -->
+                <div class="cards-container">
+                    <div class="cards-section">
+                        <div class="cards-title">🃏 Your Hand</div>
+                        <div class="cards-display" id="player-cards">
+                            <!-- Player cards will be added here -->
+                        </div>
+                    </div>
+                    <div class="cards-section">
+                        <div class="cards-title">🎯 Table Cards</div>
+                        <div class="cards-display" id="table-cards">
+                            <!-- Table cards will be added here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Log Panel -->
+            <div class="log-panel">
+                <div class="panel-title">📋 Event Log</div>
+                <div class="log-content" id="log-content">
+                    <!-- Log entries will be added here -->
+                </div>
+                <button class="btn" id="clear-log-btn">🗑️ Clear Log</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        console.log(`
+🇷🇴 Romanian Septica - Two Tab Integration Test
+============================================
+Complete multiplayer environment for testing the full flow:
+• WebSocket connection and matchmaking
+• Real-time game state synchronization
+• Romanian Septica rules implementation
+• 3D card rendering and animations
+• Cultural authenticity preservation
+
+Instructions:
+1. Open two tabs of this page
+2. Both tabs click "Join Matchmaking"
+3. Tabs will auto-match and start playing
+4. Test complete card game flow
+
+Ready for comprehensive integration testing!
+        `);
+
+        class IntegrationTestApp {
+            constructor() {
+                this.wsClient = null;
+                this.gameUI = null;
+                this.premiumGame = null;
+                this.gameState = null;
+                this.isInMatchmaking = false;
+                this.isInGame = false;
+                this.matchmakingStartTime = null;
+
+                this.initialize();
+            }
+
+            async initialize() {
+                console.log('🧪 Initializing Integration Test App...');
+
+                try {
+                    // Setup WebSocket client
+                    this.setupWebSocketClient();
+
+                    // Setup game UI
+                    this.setupGameUI();
+
+                    // Setup 3D premium game
+                    await this.setupPremiumGame();
+
+                    // Setup event handlers
+                    this.setupEventHandlers();
+
+                    // Auto-connect
+                    await this.wsClient.connect();
+
+                    // Hide loading overlay
+                    this.hideLoadingOverlay();
+
+                    this.log('✅ Integration test app initialized successfully', 'success');
+
+                } catch (error) {
+                    console.error('❌ Failed to initialize integration test app:', error);
+                    this.log(`❌ Initialization failed: ${error.message}`, 'error');
+                    this.hideLoadingOverlay();
+                }
+            }
+
+            setupWebSocketClient() {
+                this.wsClient = new SepticaWebSocketClient();
+
+                // Connection events
+                this.wsClient.onConnectionChange = (status) => {
+                    this.updateConnectionStatus(status);
+                    if (status.isConnected) {
+                        this.log('🌐 Connected to Romanian Septica backend', 'success');
+                    } else {
+                        this.log('🔴 Disconnected from backend', 'error');
+                    }
+                };
+
+                // Game state events
+                this.wsClient.onGameStateUpdate = (gameState) => {
+                    this.handleGameStateUpdate(gameState);
+                };
+
+                this.wsClient.onMoveResult = (result) => {
+                    this.handleMoveResult(result);
+                };
+
+                // Matchmaking events
+                this.wsClient.onMatchmakingJoined = (data) => {
+                    this.log('🎯 Joined matchmaking queue', 'info');
+                    this.isInMatchmaking = true;
+                    this.matchmakingStartTime = Date.now();
+                    this.showMatchmakingOverlay();
+                    this.updateButtons();
+                };
+
+                this.wsClient.onMatchmakingUpdate = (data) => {
+                    this.log(`📊 Matchmaking update: ${JSON.stringify(data)}`, 'info');
+                    this.updateMatchmakingDisplay(data);
+                };
+
+                this.wsClient.onMatchFound = (data) => {
+                    this.log('🎉 Match found! Auto-joining game...', 'success');
+                    this.handleMatchFound(data);
+                };
+
+                this.wsClient.onMatchmakingLeft = (data) => {
+                    this.log('👋 Left matchmaking queue', 'info');
+                    this.isInMatchmaking = false;
+                    this.hideMatchmakingOverlay();
+                    this.updateButtons();
+                };
+
+                this.wsClient.onMatchmakingError = (error) => {
+                    this.log(`❌ Matchmaking error: ${error.message || 'Unknown error'}`, 'error');
+                    this.isInMatchmaking = false;
+                    this.hideMatchmakingOverlay();
+                    this.updateButtons();
+                };
+
+                // General message handling
+                this.wsClient.onMessage = (message) => {
+                    this.log(`📨 ${message.type}: ${JSON.stringify(message.payload || {})}`, 'info');
+                };
+
+                this.wsClient.onError = (error) => {
+                    this.log(`❌ WebSocket error: ${error.message || error}`, 'error');
+                };
+            }
+
+            setupGameUI() {
+                this.gameUI = new GameUI();
+                this.gameUI.setWebSocketClient(this.wsClient);
+
+                // Override some methods for integration testing
+                this.gameUI.updateGameState = (gameState) => {
+                    this.handleGameStateUpdate(gameState);
+                };
+
+                console.log('🎮 Game UI integrated');
+            }
+
+            async setupPremiumGame() {
+                try {
+                    // Initialize premium 3D game
+                    this.premiumGame = new PremiumSepticaGame('threejs-container');
+
+                    // Connect to WebSocket client
+                    this.premiumGame.wsClient = this.wsClient;
+                    this.premiumGame.isMultiplayer = true;
+
+                    // Set up bidirectional communication
+                    this.premiumGame.gameUI = this;
+
+                    console.log('🎨 Premium 3D game integrated');
+
+                } catch (error) {
+                    console.warn('⚠️ Premium 3D game not available:', error);
+                    this.log('⚠️ Running in 2D mode - 3D features disabled', 'warning');
+                }
+            }
+
+            setupEventHandlers() {
+                // Matchmaking controls
+                document.getElementById('join-matchmaking-btn').addEventListener('click', () => {
+                    this.joinMatchmaking();
+                });
+
+                document.getElementById('leave-matchmaking-btn').addEventListener('click', () => {
+                    this.leaveMatchmaking();
+                });
+
+                document.getElementById('leave-game-btn').addEventListener('click', () => {
+                    this.leaveGame();
+                });
+
+                document.getElementById('ping-btn').addEventListener('click', () => {
+                    this.pingServer();
+                });
+
+                document.getElementById('demo-cards-btn').addEventListener('click', () => {
+                    this.showDemoCards();
+                });
+
+                document.getElementById('clear-log-btn').addEventListener('click', () => {
+                    this.clearLog();
+                });
+            }
+
+            // Connection management
+            updateConnectionStatus(status) {
+                const indicator = document.getElementById('connection-indicator');
+                const text = document.getElementById('connection-text');
+
+                if (status.isConnected) {
+                    indicator.classList.add('connected');
+                    text.textContent = 'Connected';
+                } else {
+                    indicator.classList.remove('connected');
+                    text.textContent = 'Disconnected';
+                }
+
+                // Update info displays
+                document.getElementById('player-id').textContent = status.playerId || '-';
+                document.getElementById('server-time').textContent = status.serverTime ?
+                    status.serverTime.toLocaleTimeString() : '-';
+
+                this.updateButtons();
+            }
+
+            updateButtons() {
+                const joinBtn = document.getElementById('join-matchmaking-btn');
+                const leaveMatchmakingBtn = document.getElementById('leave-matchmaking-btn');
+                const leaveGameBtn = document.getElementById('leave-game-btn');
+                const pingBtn = document.getElementById('ping-btn');
+
+                const isConnected = this.wsClient && this.wsClient.isConnected;
+
+                joinBtn.disabled = !isConnected || this.isInMatchmaking || this.isInGame;
+                leaveMatchmakingBtn.disabled = !this.isInMatchmaking;
+                leaveGameBtn.disabled = !this.isInGame;
+                pingBtn.disabled = !isConnected;
+            }
+
+            // Matchmaking management
+            async joinMatchmaking() {
+                if (!this.wsClient.isConnected) {
+                    await this.wsClient.connect();
+                }
+
+                try {
+                    this.log('🎯 Joining Romanian Septica matchmaking...', 'info');
+                    this.wsClient.joinMatchmaking('casual', 'septica');
+                } catch (error) {
+                    this.log(`❌ Failed to join matchmaking: ${error.message}`, 'error');
+                }
+            }
+
+            async leaveMatchmaking() {
+                try {
+                    this.log('❌ Leaving matchmaking queue...', 'info');
+                    this.wsClient.leaveMatchmaking();
+                } catch (error) {
+                    this.log(`❌ Failed to leave matchmaking: ${error.message}`, 'error');
+                }
+            }
+
+            handleMatchFound(matchData) {
+                this.isInMatchmaking = false;
+                this.isInGame = true;
+                this.hideMatchmakingOverlay();
+
+                if (matchData.game_id) {
+                    document.getElementById('game-id').textContent = matchData.game_id;
+                    this.updateGameStatus('Match found! Starting game...');
+                }
+
+                this.updateButtons();
+                this.log(`🎉 Matched with opponent! Game ID: ${matchData.game_id}`, 'success');
+            }
+
+            leaveGame() {
+                if (this.wsClient.isConnected && this.isInGame) {
+                    this.wsClient.leaveGame();
+                    this.isInGame = false;
+                    this.updateButtons();
+                    this.updateGameStatus('Left game');
+                    this.clearCards();
+                    this.log('🚪 Left the game', 'info');
+                }
+            }
+
+            // Game state management
+            handleGameStateUpdate(gameState) {
+                this.gameState = gameState;
+
+                console.log('🎮 Game state updated:', gameState);
+
+                // Update UI displays
+                this.updateGameInfo(gameState);
+                this.updateCards(gameState);
+
+                // Update premium 3D game
+                if (this.premiumGame && this.premiumGame.handleGameStateUpdate) {
+                    this.premiumGame.handleGameStateUpdate(gameState);
+                }
+
+                this.log(`🎮 Game state: Trick ${gameState.trick_number || 1}, Your turn: ${gameState.your_turn}`, 'info');
+            }
+
+            handleMoveResult(result) {
+                if (result.valid) {
+                    this.log('✅ Move accepted by server', 'success');
+                    if (result.trick_complete) {
+                        this.log('🎯 Trick completed!', 'success');
+                    }
+                    if (result.game_complete) {
+                        this.log('🏆 Game completed!', 'success');
+                        this.isInGame = false;
+                        this.updateButtons();
+                    }
+                } else {
+                    this.log(`❌ Invalid move: ${result.error || 'Unknown error'}`, 'error');
+                }
+            }
+
+            updateGameInfo(gameState) {
+                if (gameState.trick_number) {
+                    document.getElementById('trick-number').textContent = gameState.trick_number;
+                }
+                if (gameState.move_number) {
+                    document.getElementById('move-number').textContent = gameState.move_number;
+                }
+
+                if (gameState.scores) {
+                    const playerScore = Object.values(gameState.scores)[0] || 0;
+                    const opponentScore = Object.values(gameState.scores)[1] || 0;
+                    document.getElementById('player-score').textContent = playerScore;
+                    document.getElementById('opponent-score').textContent = opponentScore;
+                }
+
+                // Update status
+                if (gameState.your_turn !== undefined) {
+                    const status = gameState.your_turn ? 'Rândul tău! Your turn!' : 'Rândul adversarului - Opponent\'s turn';
+                    this.updateGameStatus(status);
+                }
+            }
+
+            updateCards(gameState) {
+                // Update player hand
+                const playerCards = gameState.your_cards || gameState.playerCards || gameState.hand || [];
+                const validMoves = gameState.valid_moves || gameState.validMoves || [];
+                this.displayCards('player-cards', playerCards, true, validMoves, gameState.your_turn);
+
+                // Update table cards
+                const tableCards = gameState.table_cards || gameState.tableCards || [];
+                this.displayCards('table-cards', tableCards, false);
+            }
+
+            displayCards(containerId, cards, clickable = false, validMoves = [], yourTurn = false) {
+                const container = document.getElementById(containerId);
+                container.innerHTML = '';
+
+                cards.forEach(cardData => {
+                    const card = this.createCard(cardData, clickable, validMoves, yourTurn);
+                    container.appendChild(card);
+                });
+            }
+
+            createCard(cardData, clickable = false, validMoves = [], yourTurn = false) {
+                const card = document.createElement('div');
+                card.className = `card ${cardData.suit}`;
+
+                if (clickable && yourTurn) {
+                    card.classList.add('clickable');
+
+                    // Check if it's a valid move
+                    const isValidMove = validMoves.some(validCard =>
+                        validCard.suit === cardData.suit && validCard.value === cardData.value
+                    );
+
+                    if (isValidMove) {
+                        card.classList.add('valid-move');
+                    }
+
+                    // Add click handler
+                    card.addEventListener('click', () => {
+                        if (isValidMove) {
+                            this.playCard(cardData);
+                        } else {
+                            this.log(`❌ Invalid move: ${this.getCardName(cardData)} cannot be played`, 'error');
+                        }
+                    });
+                }
+
+                // Card content
+                const valueSpan = document.createElement('span');
+                valueSpan.className = 'card-value';
+                valueSpan.textContent = this.getCardValueText(cardData.value);
+
+                const suitSpan = document.createElement('span');
+                suitSpan.className = 'card-suit';
+                suitSpan.textContent = this.getSuitSymbol(cardData.suit);
+
+                card.appendChild(valueSpan);
+                card.appendChild(suitSpan);
+
+                return card;
+            }
+
+            playCard(cardData) {
+                if (!this.wsClient.isConnected || !this.isInGame) {
+                    this.log('❌ Cannot play card - not in game', 'error');
+                    return;
+                }
+
+                this.log(`🎯 Playing card: ${this.getCardName(cardData)}`, 'info');
+                this.wsClient.playCard(cardData.suit, cardData.value, cardData.id);
+            }
+
+            getCardName(cardData) {
+                const valueText = this.getCardValueText(cardData.value);
+                const suitText = cardData.suit;
+                return `${valueText} of ${suitText}`;
+            }
+
+            getCardValueText(value) {
+                const valueMap = {
+                    7: '7', 8: '8', 9: '9', 10: '10',
+                    11: 'J', 12: 'Q', 13: 'K', 14: 'A'
+                };
+                return valueMap[value] || value.toString();
+            }
+
+            getSuitSymbol(suit) {
+                const symbols = {
+                    'hearts': '♥',
+                    'diamonds': '♦',
+                    'clubs': '♣',
+                    'spades': '♠'
+                };
+                return symbols[suit] || '?';
+            }
+
+            // Demo functionality
+            showDemoCards() {
+                const demoGameState = {
+                    your_cards: [
+                        { suit: 'hearts', value: 7, id: 'h7' },
+                        { suit: 'diamonds', value: 8, id: 'd8' },
+                        { suit: 'clubs', value: 9, id: 'c9' },
+                        { suit: 'spades', value: 10, id: 's10' },
+                        { suit: 'hearts', value: 11, id: 'h11' }
+                    ],
+                    table_cards: [
+                        { suit: 'diamonds', value: 9, id: 'd9' },
+                        { suit: 'clubs', value: 7, id: 'c7' }
+                    ],
+                    valid_moves: [
+                        { suit: 'hearts', value: 7, id: 'h7' },
+                        { suit: 'clubs', value: 9, id: 'c9' }
+                    ],
+                    your_turn: true,
+                    trick_number: 3,
+                    move_number: 5,
+                    scores: { player: 2, opponent: 1 }
+                };
+
+                this.handleGameStateUpdate(demoGameState);
+                this.updateGameStatus('Demo mode - Your turn to play');
+                this.log('🃏 Demo cards displayed', 'info');
+            }
+
+            clearCards() {
+                document.getElementById('player-cards').innerHTML = '';
+                document.getElementById('table-cards').innerHTML = '';
+            }
+
+            // Utility methods
+            pingServer() {
+                if (this.wsClient.isConnected) {
+                    this.wsClient.ping();
+                    this.log('📡 Ping sent to server', 'info');
+                } else {
+                    this.log('❌ Cannot ping - not connected', 'error');
+                }
+            }
+
+            updateGameStatus(status) {
+                document.getElementById('game-status').textContent = status;
+            }
+
+            // Overlay management
+            showMatchmakingOverlay() {
+                document.getElementById('matchmaking-overlay').classList.remove('hidden');
+                this.updateMatchmakingDisplay();
+            }
+
+            hideMatchmakingOverlay() {
+                document.getElementById('matchmaking-overlay').classList.add('hidden');
+            }
+
+            hideLoadingOverlay() {
+                const overlay = document.getElementById('loading-overlay');
+                overlay.style.opacity = '0';
+                setTimeout(() => {
+                    overlay.classList.add('hidden');
+                }, 500);
+            }
+
+            updateMatchmakingDisplay(data = null) {
+                if (!this.isInMatchmaking) return;
+
+                const waitTime = this.matchmakingStartTime ?
+                    Math.floor((Date.now() - this.matchmakingStartTime) / 1000) : 0;
+
+                document.getElementById('wait-time').textContent = waitTime + 's';
+
+                if (data) {
+                    document.getElementById('queue-position').textContent = data.queue_position || '-';
+                    document.getElementById('players-in-queue').textContent = data.players_in_queue || '-';
+
+                    if (data.estimated_wait_time_seconds) {
+                        document.getElementById('matchmaking-status').textContent =
+                            `Searching... (Est. ${data.estimated_wait_time_seconds}s)`;
+                    }
+                }
+
+                // Update every second
+                if (this.isInMatchmaking) {
+                    setTimeout(() => this.updateMatchmakingDisplay(), 1000);
+                }
+            }
+
+            // Logging
+            log(message, type = 'info') {
+                const logContent = document.getElementById('log-content');
+                const entry = document.createElement('div');
+                entry.className = `log-entry ${type}`;
+
+                const timestamp = new Date().toLocaleTimeString();
+                entry.innerHTML = `
+                    <span class="log-timestamp">[${timestamp}]</span> ${message}
+                `;
+
+                logContent.appendChild(entry);
+                logContent.scrollTop = logContent.scrollHeight;
+
+                console.log(`[${timestamp}] ${message}`);
+            }
+
+            clearLog() {
+                document.getElementById('log-content').innerHTML = '';
+                this.log('📋 Log cleared', 'info');
+            }
+        }
+
+        // Initialize the integration test app
+        let testApp;
+
+        window.addEventListener('load', () => {
+            testApp = new IntegrationTestApp();
+        });
+
+        // Clean up when page unloads
+        window.addEventListener('beforeunload', () => {
+            if (testApp && testApp.wsClient) {
+                testApp.wsClient.disconnect();
+            }
+        });
+    </script>
+</body>
+</html>
