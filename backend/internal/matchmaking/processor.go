@@ -127,63 +127,64 @@ func (s *MatchmakingService) findBestMatch(player *QueueEntry, candidates []*Que
 func (s *MatchmakingService) createMatch(player1, player2 *QueueEntry, queueType string) error {
 	// Create game using existing game engine
 	gameState := s.gameEngine.CreateGame(player1.PlayerID, player2.PlayerID)
-	
+
 	// Calculate wait times
 	player1WaitTime := time.Since(player1.QueuedAt)
 	player2WaitTime := time.Since(player2.QueuedAt)
-	
+
 	// Get player information from database
 	player1Info, err := s.getPlayerInfo(player1.PlayerID)
 	if err != nil {
 		return err
 	}
-	
+
 	player2Info, err := s.getPlayerInfo(player2.PlayerID)
 	if err != nil {
 		return err
 	}
-	
+
 	// Send match found messages to both players
 	s.sendMatchFound(player1.PlayerID, gameState.ID, player2.PlayerID, player2.Rating, player2Info.Username, player1WaitTime)
 	s.sendMatchFound(player2.PlayerID, gameState.ID, player1.PlayerID, player1.Rating, player1Info.Username, player2WaitTime)
-	
+
 	// Auto-join both players to the game via WebSocket hub
 	if err := s.hub.JoinGame(player1.PlayerID, gameState.ID); err != nil {
 		s.logger.Error("Failed to auto-join player1 to game", "error", err, "player_id", player1.PlayerID, "game_id", gameState.ID)
 	}
-	
+
 	if err := s.hub.JoinGame(player2.PlayerID, gameState.ID); err != nil {
 		s.logger.Error("Failed to auto-join player2 to game", "error", err, "player_id", player2.PlayerID, "game_id", gameState.ID)
 	}
-	
+
 	// Update database queue entries as matched
 	s.db.Where("player_id IN (?, ?) AND is_active = true", player1.PlayerID, player2.PlayerID).
 		Update("is_active", false)
-	
+
 	// Create game record in database with matchmaking context
+	// CRITICAL FIX: Use the actual Player.ID from database, not userID
 	dbGame := &database.Game{
-		Player1ID:            player1.PlayerID,
-		Player2ID:            player2.PlayerID,
+		Player1ID:            player1Info.ID, // Use actual Player.ID
+		Player2ID:            player2Info.ID, // Use actual Player.ID
 		Status:               "in_progress",
 		GameMode:             queueType,
 		Player1RatingBefore:  player1.Rating,
 		Player2RatingBefore:  player2.Rating,
 		StartedAt:            &gameState.CreatedAt,
 	}
-	
+
 	// Set the game ID to match the engine's game ID
 	dbGame.ID = gameState.ID
 	if err := s.db.Create(dbGame).Error; err != nil {
 		s.logger.Error("Failed to create game record in database", "error", err, "game_id", gameState.ID)
 		// Continue anyway, as the game exists in the engine
 	}
-	
+
 	s.logger.Info("Match created and players auto-joined",
 		"game_id", gameState.ID,
 		"player1_id", player1.PlayerID,
 		"player2_id", player2.PlayerID,
 		"queue_type", queueType)
-	
+
 	return nil
 }
 
@@ -196,9 +197,12 @@ func (s *MatchmakingService) cleanupExpiredEntries() {
 				// Remove from queue
 				queue.Remove(entry.PlayerID)
 				
-				// Update database
-				s.db.Where("player_id = ? AND is_active = true", entry.PlayerID).
-					Update("is_active", false)
+				// Update database - need to get Player.ID for the UserID
+				var player database.Player
+				if err := s.db.Where("user_id = ?", entry.PlayerID).First(&player).Error; err == nil {
+					s.db.Where("player_id = ? AND is_active = true", player.ID).
+						Update("is_active", false)
+				}
 				
 				// Send timeout message to player
 				s.sendMatchmakingTimeout(entry.PlayerID)
@@ -433,10 +437,14 @@ func (s *MatchmakingService) saveQueuesToDatabase() {
 	for _, queue := range s.queues {
 		entries := queue.GetAll()
 		for _, entry := range entries {
-			s.db.Where("player_id = ? AND is_active = true", entry.PlayerID).
-				Update("is_active", false)
+			// Get Player.ID for the UserID
+			var player database.Player
+			if err := s.db.Where("user_id = ?", entry.PlayerID).First(&player).Error; err == nil {
+				s.db.Where("player_id = ? AND is_active = true", player.ID).
+					Update("is_active", false)
+			}
 		}
 	}
-	
+
 	s.logger.Info("Saved queue state to database")
 }

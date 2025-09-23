@@ -108,17 +108,21 @@ class SepticaWebSocketClient {
     /**
      * Connect to WebSocket server
      */
-    async connect(url = 'ws://localhost:8080/ws/connect') {
+    async connect(url = 'ws://localhost:8082/ws/connect') {
         try {
             if (this.ws && this.ws.readyState === WebSocket.OPEN) {
                 this.log('Already connected');
                 return;
             }
             
-            // Generate user_id if not already set, or get from localStorage for silent signin
+            // Generate unique user_id for each connection/tab (for proper two-tab testing)
             if (!this.playerId) {
-                this.playerId = localStorage.getItem('septica_user_id') || crypto.randomUUID();
-                localStorage.setItem('septica_user_id', this.playerId);
+                // Create proper UUID format that backend expects
+                // Each tab gets a unique UUID for isolation
+                this.playerId = crypto.randomUUID();
+                // Store in sessionStorage instead of localStorage to isolate tabs
+                sessionStorage.setItem('septica_session_id', this.playerId);
+                console.log('🔑 Generated unique player ID:', this.playerId);
             }
             
             // Add user_id parameter to WebSocket URL
@@ -235,9 +239,93 @@ class SepticaWebSocketClient {
      */
     handleMessage(event) {
         try {
-            const message = JSON.parse(event.data);
+            // Handle case where multiple messages are concatenated
+            const data = event.data.toString();
+            const messages = this.splitMessages(data);
+
+            for (const messageData of messages) {
+                if (messageData.trim()) {
+                    this.processMessage(messageData);
+                }
+            }
+        } catch (error) {
+            this.logError('Error handling message', error);
+        }
+    }
+
+    /**
+     * Split concatenated JSON messages
+     */
+    splitMessages(data) {
+        const messages = [];
+        let remaining = data;
+
+        while (remaining.trim()) {
+            try {
+                // Try to find a complete JSON object
+                let depth = 0;
+                let inString = false;
+                let escaped = false;
+                let messageEnd = -1;
+
+                for (let i = 0; i < remaining.length; i++) {
+                    const char = remaining[i];
+
+                    if (escaped) {
+                        escaped = false;
+                        continue;
+                    }
+
+                    if (char === '\\') {
+                        escaped = true;
+                        continue;
+                    }
+
+                    if (char === '"' && !escaped) {
+                        inString = !inString;
+                        continue;
+                    }
+
+                    if (!inString) {
+                        if (char === '{') {
+                            depth++;
+                        } else if (char === '}') {
+                            depth--;
+                            if (depth === 0) {
+                                messageEnd = i + 1;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                if (messageEnd > 0) {
+                    messages.push(remaining.substring(0, messageEnd));
+                    remaining = remaining.substring(messageEnd);
+                } else {
+                    // Couldn't find complete message, might be incomplete
+                    if (remaining.trim()) {
+                        messages.push(remaining);
+                    }
+                    break;
+                }
+            } catch (error) {
+                this.logError('Error splitting messages', error);
+                break;
+            }
+        }
+
+        return messages;
+    }
+
+    /**
+     * Process a single message
+     */
+    processMessage(messageData) {
+        try {
+            const message = JSON.parse(messageData);
             this.log('Received message', message);
-            
+
             // Handle specific message types
             switch (message.type) {
                 case this.MESSAGE_TYPES.CONNECTION_ACK:

@@ -271,8 +271,9 @@ func (s *MatchmakingService) JoinQueue(playerID uuid.UUID, queueType, gameMode s
 	queue.Add(entry)
 	
 	// Save to database
+	// CRITICAL FIX: Use actual Player.ID for foreign key, not UserID
 	dbEntry := &database.MatchmakingQueue{
-		PlayerID:    playerID,
+		PlayerID:    player.ID, // Use Player.ID from database, not UserID
 		QueueType:   queueType,
 		Rating:      player.Rating,
 		QueuedAt:    entry.QueuedAt,
@@ -313,10 +314,13 @@ func (s *MatchmakingService) LeaveQueue(playerID uuid.UUID) error {
 		return ErrPlayerNotInQueue
 	}
 	
-	// Remove from database
-	if err := s.db.Where("player_id = ? AND is_active = true", playerID).
-		Update("is_active", false).Error; err != nil {
-		s.logger.Error("Failed to update queue entry in database", "error", err, "player_id", playerID)
+	// Remove from database - need to get Player.ID for the UserID
+	var player database.Player
+	if err := s.db.Where("user_id = ?", playerID).First(&player).Error; err == nil {
+		if err := s.db.Where("player_id = ? AND is_active = true", player.ID).
+			Update("is_active", false).Error; err != nil {
+			s.logger.Error("Failed to update queue entry in database", "error", err, "player_id", player.ID)
+		}
 	}
 	
 	// Send confirmation to player
