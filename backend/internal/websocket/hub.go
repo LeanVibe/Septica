@@ -3,6 +3,7 @@ package websocket
 import (
 	"encoding/json"
 	"errors"
+	"math/rand"
 	"sync"
 	"time"
 
@@ -14,6 +15,14 @@ import (
 	"gorm.io/gorm"
 )
 
+// AIClientInterface defines the interface for AI WebSocket clients
+type AIClientInterface interface {
+	SendMessage(message Message) error
+	IsAlive() bool
+	GetUserID() uuid.UUID
+	GetSessionID() uuid.UUID
+}
+
 // Hub maintains active WebSocket connections and manages game sessions
 type Hub struct {
 	// Registered clients
@@ -21,6 +30,9 @@ type Hub struct {
 
 	// Client connections by user ID for quick lookup
 	userClients map[uuid.UUID]*Client
+
+	// AI clients by user ID for AI player support
+	aiClients map[uuid.UUID]AIClientInterface
 
 	// Game sessions - maps game ID to slice of clients
 	gameClients map[uuid.UUID][]*Client
@@ -47,6 +59,9 @@ type Hub struct {
 	// Logger
 	logger *logger.Logger
 
+	// Random number generator for AI system
+	randGen *rand.Rand
+
 	// Mutex for thread-safe operations
 	mutex sync.RWMutex
 }
@@ -64,6 +79,7 @@ func NewHub(gameEngine *game.Engine, authenticEngine *game.AuthenticEngine, db *
 	return &Hub{
 		clients:         make(map[*Client]bool),
 		userClients:     make(map[uuid.UUID]*Client),
+		aiClients:       make(map[uuid.UUID]AIClientInterface),
 		gameClients:     make(map[uuid.UUID][]*Client),
 		broadcast:       make(chan []byte),
 		register:        make(chan *Client),
@@ -72,6 +88,7 @@ func NewHub(gameEngine *game.Engine, authenticEngine *game.AuthenticEngine, db *
 		authenticEngine: authenticEngine,
 		db:              db,
 		logger:          logger,
+		randGen:         rand.New(rand.NewSource(time.Now().UnixNano())),
 	}
 }
 
@@ -638,17 +655,206 @@ func (h *Hub) SetMatchmakingService(service MatchmakingServiceInterface) {
 func (h *Hub) SendToPlayer(playerID uuid.UUID, message Message) error {
 	h.mutex.RLock()
 	defer h.mutex.RUnlock()
-	
+
+	// Try regular client first
 	client, exists := h.userClients[playerID]
-	if !exists {
-		return ErrClientNotFound
+	if exists {
+		select {
+		case client.send <- message:
+			return nil
+		default:
+			h.logger.Warn("Failed to send message to client - channel full", "user_id", playerID)
+			return errors.New("client channel full")
+		}
 	}
-	
-	select {
-	case client.send <- message:
-		return nil
+
+	// Try AI client if regular client not found
+	aiClient, aiExists := h.aiClients[playerID]
+	if aiExists {
+		return aiClient.SendMessage(message)
+	}
+
+	return ErrClientNotFound
+}
+
+// AI CLIENT MANAGEMENT METHODS
+
+// RegisterAIClient registers an AI client with the hub
+func (h *Hub) RegisterAIClient(userID uuid.UUID, sessionID uuid.UUID, aiClient AIClientInterface) error {
+	h.mutex.Lock()
+	defer h.mutex.Unlock()
+
+	// Ensure AI player exists in database
+	h.ensurePlayerExists(userID)
+
+	h.aiClients[userID] = aiClient
+
+	h.logger.Info("AI client registered", "user_id", userID, "session_id", sessionID)
+
+	return nil
+}
+
+// UnregisterAIClient removes an AI client from the hub
+func (h *Hub) UnregisterAIClient(userID uuid.UUID) {
+	h.mutex.Lock()
+	defer h.mutex.Unlock()
+
+	if _, exists := h.aiClients[userID]; exists {
+		delete(h.aiClients, userID)
+		h.logger.Info("AI client unregistered", "user_id", userID)
+	}
+}
+
+// HandleAIMessage processes messages from AI clients
+func (h *Hub) HandleAIMessage(userID uuid.UUID, message Message) error {
+	h.logger.Debug("Handling AI message", "user_id", userID, "message_type", message.Type)
+
+	switch message.Type {
+	case "join_matchmaking":
+		return h.handleAIJoinMatchmaking(userID, message)
+	case "player_move":
+		return h.handleAIPlayerMove(userID, message)
+	case "player_ready":
+		return h.handleAIPlayerReady(userID, message)
 	default:
-		h.logger.Warn("Failed to send message to client - channel full", "user_id", playerID)
-		return errors.New("client channel full")
+		h.logger.Debug("Unknown AI message type", "type", message.Type, "user_id", userID)
+		return nil
 	}
+}
+
+// handleAIJoinMatchmaking processes AI matchmaking requests
+func (h *Hub) handleAIJoinMatchmaking(userID uuid.UUID, message Message) error {
+	if h.matchmakingService == nil {
+		return errors.New("matchmaking service not available")
+	}
+
+	data := message.Payload
+	if data == nil {
+		return errors.New("missing message payload")
+	}
+
+	queueType, _ := data["queue_type"].(string)
+	gameMode, _ := data["game_mode"].(string)
+
+	if queueType == "" {
+		queueType = "ranked"
+	}
+	if gameMode == "" {
+		gameMode = "septica"
+	}
+
+	err := h.matchmakingService.JoinQueue(userID, queueType, gameMode)
+	if err != nil {
+		h.logger.Error("AI failed to join matchmaking queue", "error", err, "user_id", userID)
+		return err
+	}
+
+	h.logger.Info("AI joined matchmaking queue", "user_id", userID, "queue_type", queueType, "game_mode", gameMode)
+	return nil
+}
+
+// handleAIPlayerMove processes AI player moves
+func (h *Hub) handleAIPlayerMove(userID uuid.UUID, message Message) error {
+	if message.GameID == nil {
+		return errors.New("missing game_id in AI move")
+	}
+
+	data := message.Payload
+	if data == nil {
+		return errors.New("missing move data")
+	}
+
+	moveType, _ := data["type"].(string)
+	if moveType == "PLAY_CARD" {
+		cardData, ok := data["card"].(map[string]interface{})
+		if !ok {
+			return errors.New("invalid card data")
+		}
+
+		suit, _ := cardData["suit"].(string)
+		value, ok := cardData["value"].(float64)
+		if !ok {
+			// Try int conversion
+			if intValue, intOk := cardData["value"].(int); intOk {
+				value = float64(intValue)
+			} else {
+				return errors.New("invalid card value")
+			}
+		}
+
+		card := game.Card{
+			Suit:  suit,
+			Value: int(value),
+			ID:    uuid.New().String(),
+		}
+
+		return h.HandleGameMove(userID, *message.GameID, card)
+	} else if moveType == "PASS" {
+		// Handle pass action for authentic engine
+		authenticGame, err := h.authenticEngine.GetGame(*message.GameID)
+		if err == nil && authenticGame != nil {
+			action := game.AuthenticPlayerAction{
+				Type:     "PASS",
+				PlayerID: userID,
+			}
+
+			result, err := h.authenticEngine.ProcessAction(*message.GameID, action)
+			if err != nil {
+				return err
+			}
+
+			// Broadcast result if valid
+			if result.Valid && result.UpdatedState != nil {
+				h.broadcastAuthenticGameState(*message.GameID, result.UpdatedState)
+			}
+		}
+	}
+
+	return nil
+}
+
+// handleAIPlayerReady processes AI ready notifications
+func (h *Hub) handleAIPlayerReady(userID uuid.UUID, message Message) error {
+	h.logger.Info("AI player ready", "user_id", userID, "game_id", message.GameID)
+
+	// Broadcast to other players that AI is ready
+	if message.GameID != nil {
+		readyMessage := Message{
+			Type:      "player_ready",
+			ID:        uuid.New().String(),
+			GameID:    message.GameID,
+			PlayerID:  userID,
+			Timestamp: time.Now(),
+			Payload: map[string]interface{}{
+				"player_id": userID,
+				"status":    "ready",
+				"is_ai":     true,
+			},
+		}
+
+		h.broadcastToGame(*message.GameID, readyMessage)
+	}
+
+	return nil
+}
+
+// GetMatchmakingQueueStats returns statistics about matchmaking queues
+func (h *Hub) GetMatchmakingQueueStats() map[string]interface{} {
+	// This would be implemented by the matchmaking service
+	// For now, return empty stats
+	if h.matchmakingService == nil {
+		return make(map[string]interface{})
+	}
+
+	// In a real implementation, we would get this data from the matchmaking service
+	// For now, return empty stats - this will be enhanced when matchmaking service
+	// provides queue statistics
+	return make(map[string]interface{})
+}
+
+// GetRandomFloat64 returns a random float64 between 0 and 1
+func (h *Hub) GetRandomFloat64() float64 {
+	h.mutex.Lock()
+	defer h.mutex.Unlock()
+	return h.randGen.Float64()
 }

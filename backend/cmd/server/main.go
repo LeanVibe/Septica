@@ -8,6 +8,7 @@ import (
 	"syscall"
 	"time"
 
+	"septica-backend/internal/ai"
 	"septica-backend/internal/database"
 	"septica-backend/internal/game"
 	"septica-backend/internal/handlers"
@@ -36,11 +37,15 @@ func main() {
 	}
 	logger.Info("Database connected successfully")
 
-	// Run database migrations
-	if err := database.Migrate(db); err != nil {
-		logger.Fatal("Failed to run database migrations", "error", err)
+	// Run database migrations (temporarily bypassed for testing)
+	if os.Getenv("SKIP_MIGRATIONS") != "true" {
+		if err := database.Migrate(db); err != nil {
+			logger.Fatal("Failed to run database migrations", "error", err)
+		}
+		logger.Info("Database migrations completed")
+	} else {
+		logger.Info("Database migrations skipped (SKIP_MIGRATIONS=true)")
 	}
-	logger.Info("Database migrations completed")
 
 	// Initialize game engines
 	gameEngine := game.NewEngine()
@@ -61,6 +66,13 @@ func main() {
 
 	// Set matchmaking service reference in hub
 	wsHub.SetMatchmakingService(matchmakingService)
+
+	// Initialize AI matchmaking manager
+	aiMatchmakingManager := ai.NewAIMatchmakingManager(wsHub, db, logger)
+	if err := aiMatchmakingManager.Start(); err != nil {
+		logger.Fatal("Failed to start AI matchmaking manager", "error", err)
+	}
+	logger.Info("AI matchmaking manager started")
 
 	// Set up Gin router
 	if cfg.Environment == "production" {
@@ -101,7 +113,11 @@ func main() {
 
 	logger.Info("Server shutting down...")
 
-	// Stop matchmaking service first
+	// Stop AI matchmaking manager first
+	aiMatchmakingManager.Stop()
+	logger.Info("AI matchmaking manager stopped")
+
+	// Stop matchmaking service
 	matchmakingService.Stop()
 	logger.Info("Matchmaking service stopped")
 
