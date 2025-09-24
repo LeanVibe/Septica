@@ -1,0 +1,134 @@
+{
+  "project_name": "Septica Backend",
+  "description": "Romanian Septica multiplayer card game backend with AI matchmaking",
+  "version": "1.0.0",
+  "language": "Go",
+  "framework": "Gin",
+
+  "architecture": {
+    "type": "websocket_multiplayer_backend",
+    "patterns": ["hub_spoke", "ai_integration", "matchmaking_service"],
+    "database": "PostgreSQL with GORM",
+    "websockets": "gorilla/websocket",
+    "ai_system": "integrated_ai_players"
+  },
+
+  "key_directories": {
+    "cmd/server/": "Main server entry point and configuration",
+    "internal/ai/": "AI player system with matchmaking integration",
+    "internal/game/": "Game logic engines (legacy + authentic Romanian Septica)",
+    "internal/websocket/": "WebSocket hub and connection management",
+    "internal/matchmaking/": "Matchmaking service and queue management",
+    "internal/database/": "Database models and migrations",
+    "internal/handlers/": "HTTP API handlers and routes",
+    "pkg/": "Shared packages (config, logger)",
+    "tests/": "E2E test infrastructure with Playwright"
+  },
+
+  "core_components": {
+    "websocket_hub": {
+      "file": "internal/websocket/hub.go",
+      "description": "Central WebSocket connection manager",
+      "key_methods": ["RegisterAIClient", "HandleAIMessage", "GetMatchmakingQueueStats"]
+    },
+    "ai_matchmaking_manager": {
+      "file": "internal/ai/ai_matchmaking_manager.go",
+      "description": "Deploys AI players when humans wait >10s",
+      "key_features": ["romanian_names", "difficulty_levels", "queue_monitoring"]
+    },
+    "ai_player": {
+      "file": "internal/ai/ai_player.go",
+      "description": "Romanian Septica AI with strategic decision making",
+      "difficulties": ["easy", "medium", "hard"]
+    },
+    "ai_websocket_client": {
+      "file": "internal/ai/ai_websocket_client.go",
+      "description": "Virtual WebSocket client for AI players"
+    },
+    "game_engines": {
+      "authentic": "internal/game/authentic_game_engine.go",
+      "legacy": "internal/game/game_engine.go",
+      "description": "Romanian Septica game logic with authentic rules"
+    },
+    "matchmaking_service": {
+      "file": "internal/matchmaking/matchmaking_service.go",
+      "description": "Player queue management and match creation"
+    }
+  },
+
+  "api_endpoints": {
+    "websocket": "ws://localhost:PORT/ws",
+    "health": "GET /health",
+    "matchmaking": "POST /api/v1/matchmaking/*",
+    "tournaments": "POST /api/v1/tournaments/*",
+    "games": "GET|POST /api/v1/games/*"
+  },
+
+  "configuration": {
+    "default_port": 8085,
+    "database_url": "ENV: DATABASE_URL",
+    "ai_activation_timeout": "10 seconds",
+    "max_concurrent_ai": 10,
+    "supported_origins": ["http://localhost:3000"]
+  },
+
+  "romanian_septica_rules": {
+    "description": "Traditional Romanian card game",
+    "key_rules": [
+      "7s always beat any cards on table",
+      "Same value beats (10 vs 10, Queen vs Queen)",
+      "8s beat when table card count % 3 == 0",
+      "Point cards: 10s and Aces worth 1 point each",
+      "First to 11 points wins"
+    ]
+  },
+
+  "ai_system_features": {
+    "deployment_trigger": "Human player waits >10 seconds",
+    "naming_convention": "Romanian names + difficulty suffix",
+    "difficulties": {
+      "easy": "Incepator suffix, 40% optimal plays",
+      "medium": "Mediu suffix, 60% optimal plays",
+      "hard": "Expert suffix, 80% optimal plays"
+    },
+    "strategic_elements": [
+      "Point card collection priority",
+      "Seven aggressiveness factor",
+      "Eight timing optimization",
+      "Card counting and endgame strategy"
+    ]
+  },
+
+  "testing_infrastructure": {
+    "e2e_tests": "tests/ directory with Playwright",
+    "ai_e2e_script": "test-ai-e2e.js (Puppeteer fallback)",
+    "test_commands": [
+      "go test ./...",
+      "cd tests && npm test",
+      "node test-ai-e2e.js"
+    ]
+  },
+
+  "development_workflow": {
+    "start_backend": "go run cmd/server/main.go",
+    "start_frontend": "python3 -m http.server 3000 --directory frontend",
+    "environment_variables": [
+      "PORT=8085",
+      "DATABASE_URL",
+      "SKIP_MIGRATIONS=true"
+    ]
+  },
+
+  "dependencies": {
+    "core": [
+      "github.com/gin-gonic/gin",
+      "github.com/gorilla/websocket",
+      "gorm.io/gorm",
+      "github.com/google/uuid"
+    ],
+    "dev": [
+      "puppeteer (Node.js)",
+      "@playwright/test"
+    ]
+  }
+}
