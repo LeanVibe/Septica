@@ -30,7 +30,7 @@ mkdir -p "${TEST_RESULTS_DIR}"
 echo -e "${YELLOW}📋 Pre-flight checks...${NC}"
 
 # Check if servers are running
-echo "🔍 Checking backend server (port 8080)..."
+echo "🔍 Checking backend server (port 8082)..."
 if curl -s -f "${BACKEND_URL}/health" > /dev/null; then
     echo -e "✅ Backend server is ${GREEN}running${NC}"
 else
