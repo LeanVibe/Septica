@@ -15,6 +15,9 @@
     
     <!-- Game Scripts -->
     <script src="js/websocket-client.js"></script>
+    <!-- Romanian Septica Game Scripts -->
+    <script src="js/game-ui.js"></script>
+    <script src="js/app.js"></script>
     
     <style>
         * {
@@ -536,6 +539,470 @@
                 max-width: 200px;
             }
         }
+
+        /* ===== AUTHENTIC ROMANIAN SEPTICA OBJECTION PANEL STYLES ===== */
+
+        .objection-panel {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: objectionPanelShow 0.4s ease-out;
+        }
+
+        .objection-backdrop {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+        }
+
+        .objection-content {
+            position: relative;
+            background: linear-gradient(135deg, #1e3a8a, #3730a3);
+            border: 3px solid #ffd700;
+            border-radius: 20px;
+            padding: 25px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 30px rgba(255, 215, 0, 0.3);
+            color: white;
+            animation: objectionContentSlide 0.5s ease-out;
+        }
+
+        .objection-header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(255, 215, 0, 0.3);
+        }
+
+        .romanian-flag-colors {
+            display: flex;
+            height: 4px;
+            margin-bottom: 15px;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .flag-stripe {
+            flex: 1;
+        }
+
+        .flag-stripe.blue { background: #002B7F; }
+        .flag-stripe.yellow { background: #FFD600; }
+        .flag-stripe.red { background: #CE1126; }
+
+        .objection-title {
+            color: #ffd700;
+            font-size: 22px;
+            font-weight: bold;
+            margin: 10px 0;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .last-card-display {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        .played-card-info {
+            color: #ffd700;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .objection-body {
+            text-align: center;
+        }
+
+        .objection-question {
+            font-size: 18px;
+            margin-bottom: 25px;
+            color: #e0e7ff;
+        }
+
+        .romanian-text {
+            color: #ffd700;
+            font-weight: bold;
+            font-style: italic;
+        }
+
+        .objection-actions {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-bottom: 25px;
+        }
+
+        .btn-objection {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            border-radius: 15px;
+            border: 2px solid transparent;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 140px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-objection::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn-objection:hover::before {
+            left: 100%;
+        }
+
+        .btn-object {
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+            border-color: #ffd700;
+            color: white;
+        }
+
+        .btn-object:hover {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            transform: scale(1.05);
+            box-shadow: 0 8px 25px rgba(220, 38, 38, 0.4);
+        }
+
+        .btn-pass {
+            background: linear-gradient(135deg, #059669, #047857);
+            border-color: #6b7280;
+            color: white;
+        }
+
+        .btn-pass:hover {
+            background: linear-gradient(135deg, #10b981, #059669);
+            transform: scale(1.05);
+            box-shadow: 0 8px 25px rgba(5, 150, 105, 0.4);
+        }
+
+        .btn-icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        .btn-text strong {
+            display: block;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+
+        .btn-text small {
+            font-size: 11px;
+            opacity: 0.8;
+        }
+
+        .valid-objections {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+        }
+
+        .objections-header {
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .objection-cards {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .objection-card {
+            width: 40px;
+            height: 56px;
+            border-radius: 6px;
+            border: 2px solid #ffd700;
+            background: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #000;
+        }
+
+        .objection-card:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(255, 215, 0, 0.5);
+        }
+
+        .cultural-context {
+            margin-bottom: 20px;
+            padding: 12px;
+            background: rgba(255, 215, 0, 0.1);
+            border-radius: 8px;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+        }
+
+        .cultural-tip {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+        }
+
+        .tip-icon {
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .objection-timer {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .timer-circle {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(255, 215, 0, 0.3);
+            border-top: 4px solid #ffd700;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            animation: timerRotate 30s linear;
+        }
+
+        .timer-text {
+            font-size: 18px;
+            font-weight: bold;
+            color: #ffd700;
+        }
+
+        /* ===== MULTI-PLAYER LAYOUT STYLES ===== */
+
+        .multiplayer-panel {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 12px;
+            padding: 15px;
+            color: white;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 215, 0, 0.3);
+            min-width: 280px;
+        }
+
+        .three-player-layout, .four-player-layout {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .player-position {
+            display: flex;
+            align-items: center;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+        }
+
+        .player-info-multi {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            width: 100%;
+        }
+
+        .player-name {
+            font-weight: bold;
+            color: #ffd700;
+            font-size: 14px;
+        }
+
+        .card-count {
+            font-size: 12px;
+            color: #e0e7ff;
+        }
+
+        .score {
+            font-size: 13px;
+            color: #10b981;
+        }
+
+        .team-display {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            margin-bottom: 15px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+
+        .team {
+            flex: 1;
+            text-align: center;
+        }
+
+        .team-header {
+            margin: 0 0 8px 0;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .team1 .team-header { color: #3b82f6; }
+        .team2 .team-header { color: #ef4444; }
+
+        .team-players {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+
+        .team-player {
+            color: #e0e7ff;
+        }
+
+        .team-connector {
+            color: #ffd700;
+            font-weight: bold;
+        }
+
+        .team-score {
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .team1 .team-score { color: #3b82f6; }
+        .team2 .team-score { color: #ef4444; }
+
+        .vs-indicator {
+            font-size: 20px;
+            font-weight: bold;
+            color: #ffd700;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .four-player-positions {
+            margin-top: 10px;
+        }
+
+        .player-4 {
+            background: rgba(255, 68, 68, 0.2);
+            border: 1px solid rgba(255, 68, 68, 0.3);
+        }
+
+        /* ===== ANIMATIONS ===== */
+
+        @keyframes objectionPanelShow {
+            from {
+                opacity: 0;
+                backdrop-filter: blur(0px);
+            }
+            to {
+                opacity: 1;
+                backdrop-filter: blur(8px);
+            }
+        }
+
+        @keyframes objectionContentSlide {
+            from {
+                opacity: 0;
+                transform: translateY(-30px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        @keyframes timerRotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* ===== DEMO BUTTON STYLES ===== */
+
+        .btn-accent {
+            background: linear-gradient(135deg, #7c3aed, #5b21b6);
+            color: white;
+            border: 2px solid #ffd700;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 5px;
+        }
+
+        .btn-accent:hover {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(124, 58, 237, 0.4);
+        }
+
+        /* ===== RESPONSIVE DESIGN ===== */
+
+        @media (max-width: 600px) {
+            .objection-content {
+                margin: 20px;
+                padding: 20px;
+                width: calc(100% - 40px);
+            }
+
+            .objection-actions {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .btn-objection {
+                min-width: unset;
+                width: 100%;
+            }
+
+            .multiplayer-panel {
+                position: relative;
+                top: unset;
+                right: unset;
+                margin: 10px auto;
+                max-width: 300px;
+            }
+
+            .team-display {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -601,6 +1068,140 @@
             </div>
         </div>
 
+        <!-- Authentic Romanian Septica Objection Panel -->
+        <div id="objectionPanel" class="objection-panel" style="display: none;">
+            <div class="objection-backdrop"></div>
+            <div class="objection-content">
+                <!-- Romanian Cultural Header -->
+                <div class="objection-header">
+                    <div class="romanian-flag-colors">
+                        <div class="flag-stripe blue"></div>
+                        <div class="flag-stripe yellow"></div>
+                        <div class="flag-stripe red"></div>
+                    </div>
+                    <h3 class="objection-title">🎯 Objection Decision / Decizie Tăiere</h3>
+                    <div class="last-card-display">
+                        Opponent played: <span id="lastCardDisplay" class="played-card-info"></span>
+                    </div>
+                </div>
+
+                <!-- Objection Decision Content -->
+                <div class="objection-body">
+                    <p class="objection-question">
+                        🃏 <span class="romanian-text">Vrei să tai?</span> (Do you want to object?)
+                    </p>
+
+                    <!-- Decision Buttons -->
+                    <div class="objection-actions">
+                        <button id="objectBtn" class="btn-objection btn-object">
+                            <div class="btn-icon">🃏</div>
+                            <div class="btn-text">
+                                <strong>OBJECT / TAI</strong>
+                                <small>Play a card to beat</small>
+                            </div>
+                        </button>
+                        <button id="passBtn" class="btn-objection btn-pass">
+                            <div class="btn-icon">✋</div>
+                            <div class="btn-text">
+                                <strong>PASS / TRECI</strong>
+                                <small>Let opponent take cards</small>
+                            </div>
+                        </button>
+                    </div>
+
+                    <!-- Valid Objection Cards Display -->
+                    <div id="validObjections" class="valid-objections">
+                        <div class="objections-header">
+                            <span class="romanian-text">Cărți valabile pentru tăiere:</span>
+                            <small>(Valid cards for objection)</small>
+                        </div>
+                        <div class="objection-cards" id="objectionCards">
+                            <!-- Valid objection cards will be displayed here -->
+                        </div>
+                    </div>
+
+                    <!-- Cultural Context -->
+                    <div class="cultural-context">
+                        <div class="cultural-tip">
+                            <span class="tip-icon">💡</span>
+                            <span class="tip-text">
+                                <span class="romanian-text">Șapte</span> (7) beats all cards!
+                                Save for valuable <span class="romanian-text">10s și Ași</span> (10s & Aces)
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Timer Display -->
+                    <div class="objection-timer">
+                        <div class="timer-circle">
+                            <span class="timer-text">
+                                <span id="objectionTimer">30</span>s
+                            </span>
+                        </div>
+                        <small class="romanian-text">Timp rămas</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Multi-Player Display Panel -->
+        <div id="multiPlayerPanel" class="multiplayer-panel" style="display: none;">
+            <!-- 3 Player Layout -->
+            <div id="threePlayerLayout" class="three-player-layout">
+                <div class="opponent-1 player-position">
+                    <div id="player2Info" class="player-info-multi">
+                        <span id="player2Name" class="player-name">Player 2</span>
+                        <span id="player2Cards" class="card-count">4 cards</span>
+                        <span id="player2Score" class="score">0 points</span>
+                    </div>
+                </div>
+                <div class="opponent-2 player-position">
+                    <div id="player3Info" class="player-info-multi">
+                        <span id="player3Name" class="player-name">Player 3</span>
+                        <span id="player3Cards" class="card-count">4 cards</span>
+                        <span id="player3Score" class="score">0 points</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4 Player Team Layout -->
+            <div id="fourPlayerLayout" class="four-player-layout">
+                <!-- Team Display -->
+                <div id="teamDisplay" class="team-display">
+                    <div class="team team1">
+                        <h4 class="team-header">🔵 <span class="romanian-text">Echipa</span> 1</h4>
+                        <div class="team-players">
+                            <span class="team-player" id="team1Player1">You</span>
+                            <span class="team-connector">+</span>
+                            <span class="team-player" id="team1Player2">Player 3</span>
+                        </div>
+                        <div class="team-score">Score: <span id="team1Score">0</span></div>
+                    </div>
+
+                    <div class="vs-indicator">VS</div>
+
+                    <div class="team team2">
+                        <h4 class="team-header">🔴 <span class="romanian-text">Echipa</span> 2</h4>
+                        <div class="team-players">
+                            <span class="team-player" id="team2Player1">Player 2</span>
+                            <span class="team-connector">+</span>
+                            <span class="team-player" id="team2Player2">Player 4</span>
+                        </div>
+                        <div class="team-score">Score: <span id="team2Score">0</span></div>
+                    </div>
+                </div>
+
+                <!-- Individual Player Info for 4-player -->
+                <div class="four-player-positions">
+                    <div id="player4Info" class="player-info-multi player-4">
+                        <span id="player4Name" class="player-name">Player 4</span>
+                        <span id="player4Cards" class="card-count">4 cards</span>
+                        <span id="player4Score" class="score">0 points</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Player Area -->
         <div class="player-area">
             <div class="player-cards" id="player-cards">
@@ -620,6 +1221,8 @@
             <button class="btn btn-secondary" id="cancel-matchmaking-btn" disabled>Cancel</button>
             <button class="btn btn-secondary" id="leave-game-btn" disabled>Leave Game</button>
             <button class="btn btn-secondary" id="new-game-btn">Demo Cards</button>
+            <!-- Romanian Septica Objection Demo -->
+            <button class="btn btn-accent" id="demo-objection-btn">🎯 Demo Objection</button>
         </div>
 
         <!-- Multi-tab Info -->
@@ -1359,11 +1962,127 @@ Ready for complete auto-matchmaking testing!
         
         // Initialize the game when page loads
         let gameInstance;
-        
+
         window.addEventListener('load', () => {
             gameInstance = new ConsolidatedSepticaGame();
         });
-        
+
+        // ===== ROMANIAN SEPTICA OBJECTION SYSTEM DEMO =====
+
+        // Demo functionality for testing authentic Romanian Septica objection system
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🎯 Authentic Romanian Septica Objection System Demo Loaded');
+
+            // Add demo objection button handler
+            const demoObjectionBtn = document.getElementById('demo-objection-btn');
+            if (demoObjectionBtn) {
+                demoObjectionBtn.addEventListener('click', function() {
+                    console.log('🎯 Demo objection panel triggered');
+                    showFallbackObjectionDemo();
+                });
+            }
+
+            // Fallback demo for testing the objection panel
+            function showFallbackObjectionDemo() {
+                const objectionPanel = document.getElementById('objectionPanel');
+                if (objectionPanel) {
+                    // Show the panel
+                    objectionPanel.style.display = 'flex';
+
+                    // Set demo data
+                    const lastCardDisplay = document.getElementById('lastCardDisplay');
+                    if (lastCardDisplay) {
+                        lastCardDisplay.textContent = '10 de Inimi ♥️ (Punct!)';
+                    }
+
+                    // Start demo timer
+                    const timer = document.getElementById('objectionTimer');
+                    if (timer) {
+                        let timeLeft = 30;
+                        timer.textContent = timeLeft;
+
+                        const interval = setInterval(() => {
+                            timeLeft--;
+                            timer.textContent = Math.max(0, timeLeft);
+                            if (timeLeft <= 0) {
+                                clearInterval(interval);
+                                objectionPanel.style.display = 'none';
+                                showRomanianMessageDemo('⏰ Timpul a expirat! (Time expired!)', 'pass');
+                            }
+                        }, 1000);
+
+                        // Store interval for cleanup
+                        objectionPanel.setAttribute('data-timer-interval', interval);
+                    }
+
+                    console.log('🎯 Objection demo panel shown');
+                }
+            }
+
+            // Add event listeners to objection buttons
+            const objectBtn = document.getElementById('objectBtn');
+            const passBtn = document.getElementById('passBtn');
+
+            if (objectBtn) {
+                objectBtn.addEventListener('click', function() {
+                    console.log('🃏 Demo: Player chose to OBJECT');
+                    hideObjectionPanelDemo();
+                    showRomanianMessageDemo('🃏 Ai ales să tai!<br><small>(You chose to object!)</small>', 'object');
+                });
+            }
+
+            if (passBtn) {
+                passBtn.addEventListener('click', function() {
+                    console.log('✋ Demo: Player chose to PASS');
+                    hideObjectionPanelDemo();
+                    showRomanianMessageDemo('✋ Ai ales să treci!<br><small>(You chose to pass!)</small>', 'pass');
+                });
+            }
+
+            // Hide objection panel and cleanup timer
+            function hideObjectionPanelDemo() {
+                const objectionPanel = document.getElementById('objectionPanel');
+                if (objectionPanel) {
+                    // Clear timer if running
+                    const intervalId = objectionPanel.getAttribute('data-timer-interval');
+                    if (intervalId) {
+                        clearInterval(parseInt(intervalId));
+                        objectionPanel.removeAttribute('data-timer-interval');
+                    }
+
+                    objectionPanel.style.display = 'none';
+                }
+            }
+
+            // Romanian message demo function
+            function showRomanianMessageDemo(message, type) {
+                const messageEl = document.createElement('div');
+                messageEl.className = 'romanian-message';
+                messageEl.innerHTML = message;
+
+                // Style based on type
+                if (type === 'object') {
+                    messageEl.style.background = 'linear-gradient(135deg, #dc2626, #b91c1c)';
+                } else if (type === 'pass') {
+                    messageEl.style.background = 'linear-gradient(135deg, #059669, #047857)';
+                } else if (type === 'round-complete') {
+                    messageEl.style.background = 'linear-gradient(135deg, #7c3aed, #5b21b6)';
+                }
+
+                document.body.appendChild(messageEl);
+
+                // Auto-remove after 3 seconds
+                setTimeout(() => {
+                    if (messageEl.parentNode) {
+                        messageEl.parentNode.removeChild(messageEl);
+                    }
+                }, 3000);
+            }
+
+            console.log('✅ Romanian Septica objection demo system ready');
+            console.log('Click "🎯 Demo Objection" button to test the objection panel!');
+        });
+
         // Clean up when page unloads
         window.addEventListener('beforeunload', () => {
             if (gameInstance) {

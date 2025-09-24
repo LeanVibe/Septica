@@ -47,6 +47,10 @@ class SepticaWebSocketClient {
         this.onMatchFound = null;
         this.onMatchmakingLeft = null;
         this.onMatchmakingError = null;
+        // Authentic Romanian Septica event handlers
+        this.onObjectionWait = null;
+        this.onRoundComplete = null;
+        this.onAuthenticStateUpdate = null;
         
         // Message types (matching backend constants)
         this.MESSAGE_TYPES = {
@@ -60,7 +64,10 @@ class SepticaWebSocketClient {
             JOIN_MATCHMAKING: 'join_matchmaking',
             LEAVE_MATCHMAKING: 'leave_matchmaking',
             MATCHMAKING_STATUS: 'matchmaking_status',
-            
+            // Authentic Romanian Septica - Client -> Server
+            PASS: 'pass',
+            OBJECT: 'object',
+
             // Server -> Client
             PONG: 'pong',
             CONNECTION_ACK: 'connection_ack',
@@ -81,7 +88,11 @@ class SepticaWebSocketClient {
             TRICK_COMPLETE: 'trick_complete',
             PLAYER_TURN: 'player_turn',
             GAME_PAUSED: 'game_paused',
-            GAME_RESUMED: 'game_resumed'
+            GAME_RESUMED: 'game_resumed',
+            // Authentic Romanian Septica - Server -> Client
+            OBJECTION_WAIT: 'objection_wait',
+            ROUND_COMPLETE: 'round_complete',
+            AUTHENTIC_STATE: 'authentic_state'
         };
         
         this.ERROR_TYPES = {
@@ -383,7 +394,20 @@ class SepticaWebSocketClient {
                 case this.MESSAGE_TYPES.MATCHMAKING_ERROR:
                     this.handleMatchmakingError(message);
                     break;
-                    
+
+                // Authentic Romanian Septica message handlers
+                case this.MESSAGE_TYPES.OBJECTION_WAIT:
+                    this.handleObjectionWait(message);
+                    break;
+
+                case this.MESSAGE_TYPES.ROUND_COMPLETE:
+                    this.handleRoundComplete(message);
+                    break;
+
+                case this.MESSAGE_TYPES.AUTHENTIC_STATE:
+                    this.handleAuthenticState(message);
+                    break;
+
                 default:
                     this.log('Unknown message type', message.type);
             }
@@ -1171,6 +1195,61 @@ class SepticaWebSocketClient {
             skill_level: skillLevel,
             preferred_language: 'romanian'
         });
+    }
+
+    // ===== AUTHENTIC ROMANIAN SEPTICA OBJECTION-BASED SYSTEM =====
+
+    /**
+     * Send pass action - Player chooses NOT to object
+     */
+    sendPass() {
+        return this.sendMessage(this.MESSAGE_TYPES.PASS, this.gameId, {
+            timestamp: Date.now()
+        });
+    }
+
+    /**
+     * Send objection with a card - Player chooses to object and plays a card
+     */
+    sendObjection(suit, value) {
+        return this.sendMessage(this.MESSAGE_TYPES.OBJECT, this.gameId, {
+            suit: suit,
+            value: value,
+            timestamp: Date.now()
+        });
+    }
+
+    /**
+     * Handle objection wait message - Show objection decision UI
+     */
+    handleObjectionWait(message) {
+        this.log('Objection Wait', message.payload);
+
+        if (this.onObjectionWait) {
+            this.onObjectionWait(message.payload);
+        }
+    }
+
+    /**
+     * Handle round complete message - Show round results
+     */
+    handleRoundComplete(message) {
+        this.log('Round Complete', message.payload);
+
+        if (this.onRoundComplete) {
+            this.onRoundComplete(message.payload);
+        }
+    }
+
+    /**
+     * Handle authentic game state message - Enhanced state for objection-based gameplay
+     */
+    handleAuthenticState(message) {
+        this.log('Authentic State Update', message.payload);
+
+        if (this.onAuthenticStateUpdate) {
+            this.onAuthenticStateUpdate(message.payload);
+        }
     }
 }
 

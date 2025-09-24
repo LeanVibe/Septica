@@ -547,3 +547,102 @@ func TestAuthenticEngine_GetValidMoves(t *testing.T) {
 	assert.True(t, canObjectWith7)
 	assert.True(t, canObjectWith10)
 }
+
+// COMPREHENSIVE ROMANIAN SEPTICA RULE VALIDATION TESTS
+
+// TestAuthenticEngine_RomanianWildCardRules tests authentic Romanian wild card rules
+func TestAuthenticEngine_RomanianWildCardRules(t *testing.T) {
+	tests := []struct {
+		name           string
+		playedCard     Card
+		objectionCard  Card
+		gameMode       AuthenticGameMode
+		expectedResult bool
+		description    string
+	}{
+		// 7s are ALWAYS wild in all game modes
+		{
+			name:           "7 of hearts beats 10 of spades",
+			playedCard:     Card{Suit: "spades", Value: 10},
+			objectionCard:  Card{Suit: "hearts", Value: 7},
+			gameMode:       ModeTwoPlayer,
+			expectedResult: true,
+			description:    "Seven is wild card in Romanian Septica",
+		},
+		{
+			name:           "7 of clubs beats Ace of diamonds",
+			playedCard:     Card{Suit: "diamonds", Value: 14},
+			objectionCard:  Card{Suit: "clubs", Value: 7},
+			gameMode:       ModeFourPlayer,
+			expectedResult: true,
+			description:    "Seven beats even Aces",
+		},
+		// 8s are wild ONLY in 3-player variant
+		{
+			name:           "8 is wild in 3-player mode",
+			playedCard:     Card{Suit: "hearts", Value: 13},
+			objectionCard:  Card{Suit: "spades", Value: 8},
+			gameMode:       ModeThreePlayer,
+			expectedResult: true,
+			description:    "Eight is wild only in 3-player variant",
+		},
+		{
+			name:           "8 is NOT wild in 2-player mode",
+			playedCard:     Card{Suit: "hearts", Value: 13},
+			objectionCard:  Card{Suit: "spades", Value: 8},
+			gameMode:       ModeTwoPlayer,
+			expectedResult: false,
+			description:    "Eight is NOT wild in 2-player mode",
+		},
+		{
+			name:           "8 is NOT wild in 4-player mode",
+			playedCard:     Card{Suit: "hearts", Value: 13},
+			objectionCard:  Card{Suit: "spades", Value: 8},
+			gameMode:       ModeFourPlayer,
+			expectedResult: false,
+			description:    "Eight is NOT wild in 4-player mode",
+		},
+		// Same rank beating (authentic Romanian rule)
+		{
+			name:           "King beats King (same rank rule)",
+			playedCard:     Card{Suit: "hearts", Value: 13},
+			objectionCard:  Card{Suit: "spades", Value: 13},
+			gameMode:       ModeTwoPlayer,
+			expectedResult: true,
+			description:    "Same rank can beat in Romanian Septica",
+		},
+		{
+			name:           "Ace beats Ace (same rank rule)",
+			playedCard:     Card{Suit: "diamonds", Value: 14},
+			objectionCard:  Card{Suit: "clubs", Value: 14},
+			gameMode:       ModeFourPlayer,
+			expectedResult: true,
+			description:    "Aces can beat each other",
+		},
+		// Invalid objections
+		{
+			name:           "9 cannot beat 10 (different ranks)",
+			playedCard:     Card{Suit: "hearts", Value: 10},
+			objectionCard:  Card{Suit: "spades", Value: 9},
+			gameMode:       ModeTwoPlayer,
+			expectedResult: false,
+			description:    "Different ranks cannot beat unless wild",
+		},
+		{
+			name:           "Queen cannot beat Jack (different ranks)",
+			playedCard:     Card{Suit: "clubs", Value: 11},
+			objectionCard:  Card{Suit: "diamonds", Value: 12},
+			gameMode:       ModeFourPlayer,
+			expectedResult: false,
+			description:    "Higher value doesn't automatically win",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			engine := NewAuthenticEngine()
+			result := engine.CanObjectToCard(tt.playedCard, tt.objectionCard, tt.gameMode)
+			assert.Equal(t, tt.expectedResult, result, tt.description)
+		})
+	}
+}

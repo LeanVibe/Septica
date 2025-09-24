@@ -155,7 +155,32 @@ class GameUI {
         this.elements.rendererStatsBtn = document.getElementById('rendererStatsBtn');
         this.elements.fpsCounter = document.getElementById('fpsCounter');
         this.elements.renderStats = document.getElementById('renderStats');
-        
+
+        // Authentic Romanian Septica Objection Elements
+        this.elements.objectionPanel = document.getElementById('objectionPanel');
+        this.elements.objectBtn = document.getElementById('objectBtn');
+        this.elements.passBtn = document.getElementById('passBtn');
+        this.elements.lastCardDisplay = document.getElementById('lastCardDisplay');
+        this.elements.objectionTimer = document.getElementById('objectionTimer');
+        this.elements.objectionCards = document.getElementById('objectionCards');
+        this.elements.validObjections = document.getElementById('validObjections');
+
+        // Multi-Player Elements
+        this.elements.multiPlayerPanel = document.getElementById('multiPlayerPanel');
+        this.elements.threePlayerLayout = document.getElementById('threePlayerLayout');
+        this.elements.fourPlayerLayout = document.getElementById('fourPlayerLayout');
+        this.elements.teamDisplay = document.getElementById('teamDisplay');
+        this.elements.player3Info = document.getElementById('player3Info');
+        this.elements.player3Name = document.getElementById('player3Name');
+        this.elements.player3Cards = document.getElementById('player3Cards');
+        this.elements.player3Score = document.getElementById('player3Score');
+        this.elements.player4Info = document.getElementById('player4Info');
+        this.elements.player4Name = document.getElementById('player4Name');
+        this.elements.player4Cards = document.getElementById('player4Cards');
+        this.elements.player4Score = document.getElementById('player4Score');
+        this.elements.team1Score = document.getElementById('team1Score');
+        this.elements.team2Score = document.getElementById('team2Score');
+
         // Initialize 3D renderer if container exists
         if (this.elements.threejsContainer) {
             this.initialize3DRenderer();
@@ -201,6 +226,14 @@ class GameUI {
         if (this.elements.rendererStatsBtn) {
             this.elements.rendererStatsBtn.addEventListener('click', () => this.showRendererStats());
         }
+
+        // Authentic Romanian Septica Objection events
+        if (this.elements.objectBtn) {
+            this.elements.objectBtn.addEventListener('click', () => this.handleObjection());
+        }
+        if (this.elements.passBtn) {
+            this.elements.passBtn.addEventListener('click', () => this.handlePass());
+        }
         
         // Keyboard shortcuts
         document.addEventListener('keydown', (e) => this.handleKeydown(e));
@@ -245,13 +278,18 @@ class GameUI {
      */
     setWebSocketClient(client) {
         this.wsClient = client;
-        
+
         // Set up event handlers
         client.onConnectionChange = (status) => this.updateConnectionStatus(status);
         client.onGameStateUpdate = (gameState) => this.updateGameState(gameState);
         client.onMoveResult = (result) => this.handleMoveResult(result);
         client.onError = (error) => this.showError(error.message || 'Unknown error');
         client.onMessage = (message) => this.logMessage('RECEIVED', message.type, message);
+
+        // Authentic Romanian Septica objection-based event handlers
+        client.onObjectionWait = (payload) => this.showObjectionDecision(payload);
+        client.onRoundComplete = (payload) => this.showRoundComplete(payload);
+        client.onAuthenticStateUpdate = (payload) => this.updateAuthenticGameState(payload);
     }
     
     /**
@@ -1938,6 +1976,395 @@ Performance Status: ${this.getPerformanceStatus()}
 
             console.log('🎮 Premium game integration established');
         }
+    }
+
+    // ===== AUTHENTIC ROMANIAN SEPTICA OBJECTION-BASED SYSTEM METHODS =====
+
+    /**
+     * Show objection decision panel when waiting for player's objection decision
+     */
+    showObjectionDecision(payload) {
+        console.log('🎯 Objection decision required', payload);
+
+        // Update last card display
+        if (payload.lastPlayedCard && this.elements.lastCardDisplay) {
+            const cardName = this.getCardDisplayNameRomanian(
+                payload.lastPlayedCard.suit,
+                payload.lastPlayedCard.value
+            );
+            this.elements.lastCardDisplay.textContent = cardName;
+        }
+
+        // Display valid objection cards
+        this.displayValidObjectionCards(payload.validObjections || []);
+
+        // Start objection timer
+        this.startObjectionTimer(payload.timeLimit || 30);
+
+        // Show objection panel with Romanian animation
+        if (this.elements.objectionPanel) {
+            this.elements.objectionPanel.style.display = 'flex';
+
+            // Add Romanian entrance animation
+            this.playRomanianObjectionSound();
+        }
+
+        this.log(`🎯 Objection decision shown - ${payload.validObjections?.length || 0} valid cards`);
+    }
+
+    /**
+     * Handle objection button click - Player chooses to object
+     */
+    handleObjection() {
+        // Hide objection panel first
+        this.hideObjectionPanel();
+
+        // For now, we'll just show the valid objection cards
+        // In a real implementation, this would wait for player to select a card
+        console.log('🃏 Player chose to OBJECT');
+
+        // Show message with Romanian cultural flair
+        this.showRomanianMessage('🃏 Ai ales să tai! (You chose to object!)', 'object');
+
+        this.log('Player selected OBJECTION');
+
+        // TODO: Show card selection interface for objection
+        // For demo purposes, we'll send the first valid card
+        this.showObjectionCardSelection();
+    }
+
+    /**
+     * Handle pass button click - Player chooses NOT to object
+     */
+    handlePass() {
+        // Hide objection panel
+        this.hideObjectionPanel();
+
+        // Send pass message to server
+        if (this.wsClient) {
+            this.wsClient.sendPass();
+            this.logMessage('SENT', 'pass', { timestamp: Date.now() });
+        }
+
+        // Show message with Romanian cultural flair
+        this.showRomanianMessage('✋ Ai ales să treci! (You chose to pass!)', 'pass');
+
+        console.log('✋ Player chose to PASS');
+        this.log('Player selected PASS - cards go to opponent');
+    }
+
+    /**
+     * Hide objection panel
+     */
+    hideObjectionPanel() {
+        if (this.elements.objectionPanel) {
+            this.elements.objectionPanel.style.display = 'none';
+        }
+        this.clearObjectionTimer();
+    }
+
+    /**
+     * Display valid objection cards in the panel
+     */
+    displayValidObjectionCards(validCards) {
+        if (!this.elements.objectionCards) return;
+
+        this.elements.objectionCards.innerHTML = '';
+
+        validCards.forEach((card, index) => {
+            const cardElement = document.createElement('div');
+            cardElement.className = 'objection-card';
+            cardElement.innerHTML = `
+                <div class="card-value">${this.cardValueNames[card.value]}</div>
+                <div class="card-suit" style="color: ${this.cardSuitColors[card.suit]}">
+                    ${this.cardSuits[card.suit]}
+                </div>
+            `;
+
+            // Add click handler to select this card for objection
+            cardElement.addEventListener('click', () => {
+                this.selectObjectionCard(card);
+            });
+
+            this.elements.objectionCards.appendChild(cardElement);
+        });
+
+        // Show/hide valid objections section
+        if (this.elements.validObjections) {
+            this.elements.validObjections.style.display = validCards.length > 0 ? 'block' : 'none';
+        }
+    }
+
+    /**
+     * Handle selection of a specific card for objection
+     */
+    selectObjectionCard(card) {
+        console.log('🃏 Selected objection card:', card);
+
+        // Send objection with selected card to server
+        if (this.wsClient) {
+            this.wsClient.sendObjection(card.suit, card.value);
+            this.logMessage('SENT', 'object', { suit: card.suit, value: card.value });
+        }
+
+        // Hide objection panel
+        this.hideObjectionPanel();
+
+        // Show Romanian success message
+        const cardName = this.getCardDisplayNameRomanian(card.suit, card.value);
+        this.showRomanianMessage(`🃏 Ai jucat ${cardName}! (You played ${cardName}!)`, 'object-success');
+
+        this.log(`Objection played with ${cardName}`);
+    }
+
+    /**
+     * Start objection timer countdown
+     */
+    startObjectionTimer(seconds) {
+        this.clearObjectionTimer();
+
+        let timeLeft = seconds;
+        if (this.elements.objectionTimer) {
+            this.elements.objectionTimer.textContent = timeLeft;
+        }
+
+        this.objectionTimerInterval = setInterval(() => {
+            timeLeft--;
+
+            if (this.elements.objectionTimer) {
+                this.elements.objectionTimer.textContent = Math.max(0, timeLeft);
+            }
+
+            // Auto-pass when time expires
+            if (timeLeft <= 0) {
+                console.log('⏰ Objection time expired - auto-passing');
+                this.handlePass();
+            }
+        }, 1000);
+    }
+
+    /**
+     * Clear objection timer
+     */
+    clearObjectionTimer() {
+        if (this.objectionTimerInterval) {
+            clearInterval(this.objectionTimerInterval);
+            this.objectionTimerInterval = null;
+        }
+    }
+
+    /**
+     * Show objection card selection interface
+     */
+    showObjectionCardSelection() {
+        // This would normally show a card selection interface
+        // For now, we'll just show a message
+        this.showRomanianMessage('🃏 Alege o carte pentru tăiere! (Choose a card to object!)', 'select-card');
+    }
+
+    /**
+     * Handle round complete notification
+     */
+    showRoundComplete(payload) {
+        console.log('🏆 Round completed', payload);
+
+        // Show who collected the cards
+        let message = '🏆 Rundă completă! (Round complete!)';
+        if (payload.collectorPlayerID) {
+            const isCurrentPlayer = payload.collectorPlayerID === this.wsClient?.playerId;
+            if (isCurrentPlayer) {
+                message += '\n🎉 Ai câștigat această rundă! (You won this round!)';
+            } else {
+                message += '\n😔 Adversarul a câștigat runda (Opponent won the round)';
+            }
+        }
+
+        if (payload.pointsAwarded > 0) {
+            message += `\n💎 Puncte câștigate: ${payload.pointsAwarded}`;
+        }
+
+        this.showRomanianMessage(message, 'round-complete');
+
+        // Update scores if provided
+        if (payload.updatedScores) {
+            this.updateScoreDisplay(payload.updatedScores);
+        }
+
+        this.log(`Round completed - ${payload.pointsAwarded} points awarded`);
+    }
+
+    /**
+     * Update authentic game state for objection-based gameplay
+     */
+    updateAuthenticGameState(payload) {
+        console.log('🎯 Authentic game state update', payload);
+
+        // Update multi-player display if needed
+        if (payload.playerCount > 2) {
+            this.updateMultiPlayerDisplay(payload);
+        }
+
+        // Handle special authentic game states
+        if (payload.waitingForObjection) {
+            this.showObjectionDecision(payload);
+        } else {
+            this.hideObjectionPanel();
+        }
+
+        // Update game state normally
+        this.updateGameState(payload);
+    }
+
+    /**
+     * Update multi-player display for 3-4 players
+     */
+    updateMultiPlayerDisplay(gameState) {
+        if (!gameState.players || gameState.players.length <= 2) {
+            // Hide multi-player panel for 2-player games
+            if (this.elements.multiPlayerPanel) {
+                this.elements.multiPlayerPanel.style.display = 'none';
+            }
+            return;
+        }
+
+        // Show multi-player panel
+        if (this.elements.multiPlayerPanel) {
+            this.elements.multiPlayerPanel.style.display = 'block';
+        }
+
+        const playerCount = gameState.players.length;
+
+        if (playerCount === 3) {
+            this.show3PlayerLayout(gameState.players);
+        } else if (playerCount === 4) {
+            this.show4PlayerLayout(gameState.players);
+        }
+    }
+
+    /**
+     * Show 3-player layout
+     */
+    show3PlayerLayout(players) {
+        if (this.elements.threePlayerLayout) {
+            this.elements.threePlayerLayout.style.display = 'flex';
+        }
+        if (this.elements.fourPlayerLayout) {
+            this.elements.fourPlayerLayout.style.display = 'none';
+        }
+
+        // Update player 2 info
+        if (players[1] && this.elements.player2Name) {
+            this.elements.player2Name.textContent = players[1].name || 'Player 2';
+            this.elements.player2Cards.textContent = `${players[1].handSize || 4} cards`;
+            this.elements.player2Score.textContent = `${players[1].score || 0} points`;
+        }
+
+        // Update player 3 info
+        if (players[2] && this.elements.player3Name) {
+            this.elements.player3Name.textContent = players[2].name || 'Player 3';
+            this.elements.player3Cards.textContent = `${players[2].handSize || 4} cards`;
+            this.elements.player3Score.textContent = `${players[2].score || 0} points`;
+        }
+    }
+
+    /**
+     * Show 4-player team layout
+     */
+    show4PlayerLayout(players) {
+        if (this.elements.threePlayerLayout) {
+            this.elements.threePlayerLayout.style.display = 'none';
+        }
+        if (this.elements.fourPlayerLayout) {
+            this.elements.fourPlayerLayout.style.display = 'flex';
+        }
+
+        // Update team scores (Team 1: Players 1+3, Team 2: Players 2+4)
+        const team1Score = (players[0]?.score || 0) + (players[2]?.score || 0);
+        const team2Score = (players[1]?.score || 0) + (players[3]?.score || 0);
+
+        if (this.elements.team1Score) {
+            this.elements.team1Score.textContent = team1Score;
+        }
+        if (this.elements.team2Score) {
+            this.elements.team2Score.textContent = team2Score;
+        }
+
+        // Update individual player info
+        if (players[3] && this.elements.player4Name) {
+            this.elements.player4Name.textContent = players[3].name || 'Player 4';
+            this.elements.player4Cards.textContent = `${players[3].handSize || 4} cards`;
+            this.elements.player4Score.textContent = `${players[3].score || 0} points`;
+        }
+    }
+
+    /**
+     * Get Romanian card display name with cultural context
+     */
+    getCardDisplayNameRomanian(suit, value) {
+        const suitNamesRomanian = {
+            'hearts': 'Inimi ♥️',
+            'diamonds': 'Rombe ♦️',
+            'clubs': 'Treflă ♣️',
+            'spades': 'Pică ♠️'
+        };
+
+        const valueNamesRomanian = {
+            7: '7 (Șapte)',
+            8: '8 (Opt)',
+            9: '9 (Nouă)',
+            10: '10 (Zece)',
+            11: 'J (Valet)',
+            12: 'Q (Damă)',
+            13: 'K (Rege)',
+            14: 'A (As)'
+        };
+
+        const valueName = valueNamesRomanian[value] || value;
+        const suitName = suitNamesRomanian[suit] || suit;
+
+        if (value === 7) {
+            return `${valueName} de ${suitName} (Septica!)`;
+        } else if (value === 14 || value === 10) {
+            return `${valueName} de ${suitName} (Punct!)`;
+        }
+
+        return `${valueName} de ${suitName}`;
+    }
+
+    /**
+     * Show Romanian cultural messages
+     */
+    showRomanianMessage(message, type = 'info') {
+        // Create message element
+        const messageEl = document.createElement('div');
+        messageEl.className = 'romanian-message';
+        messageEl.innerHTML = message.replace(/\n/g, '<br>');
+
+        // Add type-specific styling
+        if (type === 'object') {
+            messageEl.style.background = 'linear-gradient(135deg, #dc2626, #b91c1c)';
+        } else if (type === 'pass') {
+            messageEl.style.background = 'linear-gradient(135deg, #059669, #047857)';
+        } else if (type === 'round-complete') {
+            messageEl.style.background = 'linear-gradient(135deg, #7c3aed, #5b21b6)';
+        }
+
+        document.body.appendChild(messageEl);
+
+        // Auto-remove after 3 seconds
+        setTimeout(() => {
+            if (messageEl.parentNode) {
+                messageEl.parentNode.removeChild(messageEl);
+            }
+        }, 3000);
+    }
+
+    /**
+     * Play Romanian objection sound effect (placeholder)
+     */
+    playRomanianObjectionSound() {
+        // This would play an authentic Romanian card game sound
+        console.log('🎵 Romanian objection sound effect played');
     }
 
     /**
