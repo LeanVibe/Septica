@@ -258,12 +258,35 @@ func (c *Client) handleMessage(msg IncomingMessage) {
 			c.sendError("move_failed", err.Error())
 		}
 
+	case "pass":
+		if c.currentGameID == nil {
+			c.sendError("not_in_game", "You must be in a game to pass")
+			return
+		}
+		c.handlePassAction(msg)
+
 	case "get_game_state":
 		if c.currentGameID == nil {
 			c.sendError("not_in_game", "You are not currently in a game")
 			return
 		}
 
+		// Try authentic engine first
+		authenticGame, authenticErr := c.hub.authenticEngine.GetGame(*c.currentGameID)
+		if authenticErr == nil {
+			playerView := c.hub.createAuthenticPlayerView(authenticGame, c.userID)
+			c.send <- Message{
+				Type:      "game_state",
+				ID:        uuid.New().String(),
+				PlayerID:  c.userID,
+				GameID:    c.currentGameID,
+				Timestamp: time.Now(),
+				Payload:   playerView,
+			}
+			return
+		}
+
+		// Fallback to legacy engine
 		gameState, err := c.hub.gameEngine.GetGame(*c.currentGameID)
 		if err != nil {
 			c.sendError("game_not_found", "Game not found")
@@ -387,6 +410,55 @@ func (c *Client) handleLeaveMatchmaking(msg IncomingMessage) {
 	}
 
 	c.hub.logger.Info("Player left matchmaking", "user_id", c.userID)
+}
+
+// handlePassAction handles player passing (not objecting) in authentic Septica
+func (c *Client) handlePassAction(msg IncomingMessage) {
+	// Create pass action for authentic engine
+	action := game.AuthenticPlayerAction{
+		Type:     "PASS",
+		PlayerID: c.userID,
+		Card:     nil,
+	}
+
+	result, err := c.hub.authenticEngine.ProcessAction(*c.currentGameID, action)
+	if err != nil {
+		c.sendError("pass_failed", err.Error())
+		return
+	}
+
+	// Send move result to the player
+	moveResult := Message{
+		Type:      "move_result",
+		ID:        uuid.New().String(),
+		PlayerID:  c.userID,
+		GameID:    c.currentGameID,
+		Timestamp: time.Now(),
+		Payload: map[string]interface{}{
+			"valid":                result.Valid,
+			"error":                result.Error,
+			"round_complete":       result.RoundComplete,
+			"game_complete":        result.GameComplete,
+			"winner_id":            result.WinnerID,
+			"winning_team":         result.WinningTeam,
+			"points_awarded":       result.PointsAwarded,
+			"collector_player_id":  result.CollectorPlayerID,
+			"objection_phase":      result.ObjectionPhase,
+			"next_player_id":       result.NextPlayerID,
+			"action_type":          "pass",
+		},
+	}
+	c.send <- moveResult
+
+	// If action was valid, broadcast game state update to all players in the game
+	if result.Valid && result.UpdatedState != nil {
+		c.hub.broadcastAuthenticGameState(*c.currentGameID, result.UpdatedState)
+	}
+
+	// If game is complete, handle game end
+	if result.GameComplete {
+		c.hub.handleGameEnd(*c.currentGameID, result.WinnerID)
+	}
 }
 
 // handleMatchmakingStatus handles matchmaking status requests

@@ -136,11 +136,12 @@ func (q *MatchmakingQueue) Size() int {
 
 // MatchmakingService manages player matchmaking queues
 type MatchmakingService struct {
-	hub        *websocket.Hub
-	gameEngine *game.Engine
-	db         *gorm.DB
-	logger     *logger.Logger
-	config     *MatchmakingConfig
+	hub               *websocket.Hub
+	gameEngine        *game.Engine
+	authenticEngine   *game.AuthenticEngine
+	db               *gorm.DB
+	logger           *logger.Logger
+	config           *MatchmakingConfig
 	
 	// In-memory queue management
 	queues     map[string]*MatchmakingQueue // key: queue_type
@@ -154,20 +155,21 @@ type MatchmakingService struct {
 }
 
 // NewMatchmakingService creates a new matchmaking service
-func NewMatchmakingService(hub *websocket.Hub, gameEngine *game.Engine, db *gorm.DB, logger *logger.Logger, config *MatchmakingConfig) *MatchmakingService {
+func NewMatchmakingService(hub *websocket.Hub, gameEngine *game.Engine, authenticEngine *game.AuthenticEngine, db *gorm.DB, logger *logger.Logger, config *MatchmakingConfig) *MatchmakingService {
 	if config == nil {
 		config = DefaultConfig()
 	}
-	
+
 	service := &MatchmakingService{
-		hub:        hub,
-		gameEngine: gameEngine,
-		db:         db,
-		logger:     logger,
-		config:     config,
-		queues:     make(map[string]*MatchmakingQueue),
-		stopChan:   make(chan bool),
-		running:    false,
+		hub:               hub,
+		gameEngine:        gameEngine,
+		authenticEngine:   authenticEngine,
+		db:               db,
+		logger:           logger,
+		config:           config,
+		queues:           make(map[string]*MatchmakingQueue),
+		stopChan:         make(chan bool),
+		running:          false,
 	}
 	
 	// Initialize queues for different game modes

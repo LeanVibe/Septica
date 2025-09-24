@@ -34,8 +34,9 @@ type Hub struct {
 	// Unregister requests from clients
 	unregister chan *Client
 
-	// Game engine for validating moves
-	gameEngine *game.Engine
+	// Game engines for validating moves
+	gameEngine      *game.Engine
+	authenticEngine *game.AuthenticEngine
 
 	// Matchmaking service reference
 	matchmakingService MatchmakingServiceInterface
@@ -59,17 +60,18 @@ type MatchmakingServiceInterface interface {
 }
 
 // NewHub creates a new WebSocket hub
-func NewHub(gameEngine *game.Engine, db *gorm.DB, logger *logger.Logger) *Hub {
+func NewHub(gameEngine *game.Engine, authenticEngine *game.AuthenticEngine, db *gorm.DB, logger *logger.Logger) *Hub {
 	return &Hub{
-		clients:     make(map[*Client]bool),
-		userClients: make(map[uuid.UUID]*Client),
-		gameClients: make(map[uuid.UUID][]*Client),
-		broadcast:   make(chan []byte),
-		register:    make(chan *Client),
-		unregister:  make(chan *Client),
-		gameEngine:  gameEngine,
-		db:          db,
-		logger:      logger,
+		clients:         make(map[*Client]bool),
+		userClients:     make(map[uuid.UUID]*Client),
+		gameClients:     make(map[uuid.UUID][]*Client),
+		broadcast:       make(chan []byte),
+		register:        make(chan *Client),
+		unregister:      make(chan *Client),
+		gameEngine:      gameEngine,
+		authenticEngine: authenticEngine,
+		db:              db,
+		logger:          logger,
 	}
 }
 
@@ -294,7 +296,14 @@ func (h *Hub) LeaveGame(userID uuid.UUID, gameID uuid.UUID) error {
 
 // HandleGameMove processes a game move and broadcasts the result
 func (h *Hub) HandleGameMove(userID uuid.UUID, gameID uuid.UUID, card game.Card) error {
-	// Validate the move using the game engine
+	// First try authentic engine
+	authenticGame, authenticErr := h.authenticEngine.GetGame(gameID)
+	if authenticErr == nil {
+		// Handle authentic Septica move
+		return h.handleAuthenticMove(userID, gameID, card, authenticGame)
+	}
+
+	// Fallback to legacy engine
 	result, err := h.gameEngine.PlayCard(gameID, userID, card)
 	if err != nil {
 		return err
@@ -332,6 +341,139 @@ func (h *Hub) HandleGameMove(userID uuid.UUID, gameID uuid.UUID, card game.Card)
 	}
 
 	return nil
+}
+
+// handleAuthenticMove processes authentic Septica moves
+func (h *Hub) handleAuthenticMove(userID uuid.UUID, gameID uuid.UUID, card game.Card, gameState *game.AuthenticGameState) error {
+	// Create authentic card from websocket card
+	authenticCard := game.Card{
+		Suit:  card.Suit,
+		Value: card.Value,
+		ID:    card.ID,
+	}
+
+	// Process the move
+	action := game.AuthenticPlayerAction{
+		Type:     "PLAY_CARD",
+		PlayerID: userID,
+		Card:     &authenticCard,
+	}
+
+	result, err := h.authenticEngine.ProcessAction(gameID, action)
+	if err != nil {
+		return err
+	}
+
+	// Send move result to the player
+	client, exists := h.userClients[userID]
+	if exists {
+		moveResult := Message{
+			Type:      "move_result",
+			ID:        uuid.New().String(),
+			PlayerID:  userID,
+			GameID:    &gameID,
+			Timestamp: time.Now(),
+			Payload: map[string]interface{}{
+				"valid":                result.Valid,
+				"error":                result.Error,
+				"round_complete":       result.RoundComplete,
+				"game_complete":        result.GameComplete,
+				"winner_id":            result.WinnerID,
+				"winning_team":         result.WinningTeam,
+				"points_awarded":       result.PointsAwarded,
+				"collector_player_id":  result.CollectorPlayerID,
+				"objection_phase":      result.ObjectionPhase,
+				"next_player_id":       result.NextPlayerID,
+			},
+		}
+		client.send <- moveResult
+	}
+
+	// If move was valid, broadcast game state update to all players in the game
+	if result.Valid && result.UpdatedState != nil {
+		h.broadcastAuthenticGameState(gameID, result.UpdatedState)
+	}
+
+	// If game is complete, handle game end
+	if result.GameComplete {
+		h.handleGameEnd(gameID, result.WinnerID)
+	}
+
+	return nil
+}
+
+// broadcastAuthenticGameState sends updated authentic game state to all players
+func (h *Hub) broadcastAuthenticGameState(gameID uuid.UUID, gameState *game.AuthenticGameState) {
+	clients, exists := h.gameClients[gameID]
+	if !exists {
+		return
+	}
+
+	for _, client := range clients {
+		// Get player-specific view for authentic Septica
+		playerView := h.createAuthenticPlayerView(gameState, client.userID)
+
+		stateMessage := Message{
+			Type:      "game_state",
+			ID:        uuid.New().String(),
+			PlayerID:  client.userID,
+			GameID:    &gameID,
+			Timestamp: time.Now(),
+			Payload:   playerView,
+		}
+
+		select {
+		case client.send <- stateMessage:
+		default:
+			h.logger.Warn("Failed to send authentic game state to client", "user_id", client.userID)
+		}
+	}
+}
+
+// createAuthenticPlayerView creates a game state view for authentic Septica
+func (h *Hub) createAuthenticPlayerView(gameState *game.AuthenticGameState, playerID uuid.UUID) map[string]interface{} {
+	// Get player's hand
+	playerHand := gameState.PlayerHands[playerID]
+
+	// Count other players' cards
+	var opponentCardCounts []int
+	for _, otherPlayerID := range gameState.Players {
+		if otherPlayerID != playerID {
+			opponentCardCounts = append(opponentCardCounts, len(gameState.PlayerHands[otherPlayerID]))
+		}
+	}
+
+	// Get valid moves for this player
+	validMoves, _ := h.authenticEngine.GetValidMoves(gameState.ID, playerID)
+
+	// Create scores map
+	scores := make(map[string]int)
+	for _, pID := range gameState.Players {
+		scores[pID.String()] = gameState.PlayerScores[pID]
+	}
+
+	return map[string]interface{}{
+		"game_id":                gameState.ID,
+		"current_player_id":      gameState.CurrentPlayerID,
+		"your_turn":              gameState.CurrentPlayerID == playerID,
+		"your_cards":             playerHand,
+		"opponent_card_counts":   opponentCardCounts,
+		"table_cards":            gameState.TableCards,
+		"valid_moves":            validMoves,
+		"scores":                 scores,
+		"round_number":           gameState.RoundNumber,
+		"move_number":            gameState.MoveNumber,
+		"sequence_number":        gameState.SequenceNumber,
+		"status":                 gameState.Status,
+		"game_mode":              gameState.GameMode,
+		"waiting_for_objection":  gameState.WaitingForObjection,
+		"last_played_card":       gameState.LastPlayedCard,
+		"last_player_id":         gameState.LastPlayerID,
+		"teams":                  gameState.Teams,
+		"team_scores":            gameState.TeamScores,
+		"wild_eights":            gameState.WildEights,
+		"can_pass":               gameState.WaitingForObjection && gameState.CurrentPlayerID == playerID,
+	}
 }
 
 // broadcastToGame sends a message to all clients in a specific game

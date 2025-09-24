@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"septica-backend/internal/database"
+	"septica-backend/internal/game"
 	"septica-backend/internal/websocket"
 
 	"github.com/google/uuid"
@@ -125,8 +126,12 @@ func (s *MatchmakingService) findBestMatch(player *QueueEntry, candidates []*Que
 
 // createMatch creates a game between two matched players
 func (s *MatchmakingService) createMatch(player1, player2 *QueueEntry, queueType string) error {
-	// Create game using existing game engine
-	gameState := s.gameEngine.CreateGame(player1.PlayerID, player2.PlayerID)
+	// Create game using authentic engine for Romanian Septica
+	playerIDs := []uuid.UUID{player1.PlayerID, player2.PlayerID}
+	gameState, err := s.authenticEngine.CreateGame(playerIDs, game.ModeTwoPlayer)
+	if err != nil {
+		return err
+	}
 
 	// Calculate wait times
 	player1WaitTime := time.Since(player1.QueuedAt)
@@ -155,6 +160,9 @@ func (s *MatchmakingService) createMatch(player1, player2 *QueueEntry, queueType
 	if err := s.hub.JoinGame(player2.PlayerID, gameState.ID); err != nil {
 		s.logger.Error("Failed to auto-join player2 to game", "error", err, "player_id", player2.PlayerID, "game_id", gameState.ID)
 	}
+
+	// CRITICAL FIX: Broadcast initial game state to both players
+	s.broadcastAuthenticGameState(gameState)
 
 	// Update database queue entries as matched
 	s.db.Where("player_id IN (?, ?) AND is_active = true", player1.PlayerID, player2.PlayerID).
@@ -392,6 +400,75 @@ func (s *MatchmakingService) getPlayerInfo(playerID uuid.UUID) (*database.Player
 		return nil, err
 	}
 	return &player, nil
+}
+
+// broadcastAuthenticGameState sends initial game state to all players using authentic Septica format
+func (s *MatchmakingService) broadcastAuthenticGameState(gameState *game.AuthenticGameState) {
+	for _, playerID := range gameState.Players {
+		playerView := s.createAuthenticPlayerView(gameState, playerID)
+
+		stateMessage := websocket.Message{
+			Type:      "game_state",
+			ID:        uuid.New().String(),
+			PlayerID:  playerID,
+			GameID:    &gameState.ID,
+			Timestamp: time.Now(),
+			Payload:   playerView,
+		}
+
+		if err := s.hub.SendToPlayer(playerID, stateMessage); err != nil {
+			s.logger.Error("Failed to send initial game state to player",
+				"player_id", playerID, "game_id", gameState.ID, "error", err)
+		} else {
+			s.logger.Info("Sent initial game state to player",
+				"player_id", playerID, "game_id", gameState.ID, "status", gameState.Status)
+		}
+	}
+}
+
+// createAuthenticPlayerView creates a game state view for authentic Septica
+func (s *MatchmakingService) createAuthenticPlayerView(gameState *game.AuthenticGameState, playerID uuid.UUID) map[string]interface{} {
+	// Get player's hand
+	playerHand := gameState.PlayerHands[playerID]
+
+	// Count other players' cards
+	var opponentCardCounts []int
+	for _, otherPlayerID := range gameState.Players {
+		if otherPlayerID != playerID {
+			opponentCardCounts = append(opponentCardCounts, len(gameState.PlayerHands[otherPlayerID]))
+		}
+	}
+
+	// Get valid moves for this player
+	validMoves, _ := s.authenticEngine.GetValidMoves(gameState.ID, playerID)
+
+	// Create scores map
+	scores := make(map[string]int)
+	for _, pID := range gameState.Players {
+		scores[pID.String()] = gameState.PlayerScores[pID]
+	}
+
+	return map[string]interface{}{
+		"game_id":                gameState.ID,
+		"current_player_id":      gameState.CurrentPlayerID,
+		"your_turn":              gameState.CurrentPlayerID == playerID,
+		"your_cards":             playerHand,
+		"opponent_card_counts":   opponentCardCounts,
+		"table_cards":            gameState.TableCards,
+		"valid_moves":            validMoves,
+		"scores":                 scores,
+		"round_number":           gameState.RoundNumber,
+		"move_number":            gameState.MoveNumber,
+		"sequence_number":        gameState.SequenceNumber,
+		"status":                 gameState.Status,
+		"game_mode":              gameState.GameMode,
+		"waiting_for_objection":  gameState.WaitingForObjection,
+		"last_played_card":       gameState.LastPlayedCard,
+		"last_player_id":         gameState.LastPlayerID,
+		"teams":                  gameState.Teams,
+		"team_scores":            gameState.TeamScores,
+		"wild_eights":           gameState.WildEights,
+	}
 }
 
 func abs(x int) int {

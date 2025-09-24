@@ -42,17 +42,18 @@ func main() {
 	}
 	logger.Info("Database migrations completed")
 
-	// Initialize game engine
+	// Initialize game engines
 	gameEngine := game.NewEngine()
-	logger.Info("Game engine initialized")
+	authenticEngine := game.NewAuthenticEngine()
+	logger.Info("Game engines initialized (legacy + authentic)")
 
-	// Initialize WebSocket hub
-	wsHub := websocket.NewHub(gameEngine, db, logger)
+	// Initialize WebSocket hub with both engines
+	wsHub := websocket.NewHub(gameEngine, authenticEngine, db, logger)
 	go wsHub.Run()
 	logger.Info("WebSocket hub started")
 
-	// Initialize matchmaking service
-	matchmakingService := matchmaking.NewMatchmakingService(wsHub, gameEngine, db, logger, nil)
+	// Initialize matchmaking service with both engines
+	matchmakingService := matchmaking.NewMatchmakingService(wsHub, gameEngine, authenticEngine, db, logger, nil)
 	if err := matchmakingService.Start(); err != nil {
 		logger.Fatal("Failed to start matchmaking service", "error", err)
 	}
