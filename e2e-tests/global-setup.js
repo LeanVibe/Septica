@@ -16,20 +16,20 @@ async function globalSetup() {
     // 1. Backend Health Check
     console.log('🔍 Checking backend health...');
     try {
-      const backendResponse = await fetch('http://localhost:8080/health', { 
-        timeout: 5000 
+      const backendResponse = await fetch('http://localhost:8082/health', {
+        timeout: 5000
       });
       
       if (backendResponse.ok) {
         console.log('✅ Backend server is healthy');
-        healthChecks.push({ service: 'backend', status: 'healthy', port: 8080 });
+        healthChecks.push({ service: 'backend', status: 'healthy', port: 8082 });
       } else {
         console.log('❌ Backend server returned non-200 status:', backendResponse.status);
-        healthChecks.push({ service: 'backend', status: 'unhealthy', port: 8080, error: `HTTP ${backendResponse.status}` });
+        healthChecks.push({ service: 'backend', status: 'unhealthy', port: 8082, error: `HTTP ${backendResponse.status}` });
       }
     } catch (error) {
       console.log('❌ Backend server is not responding:', error.message);
-      healthChecks.push({ service: 'backend', status: 'unavailable', port: 8080, error: error.message });
+      healthChecks.push({ service: 'backend', status: 'unavailable', port: 8082, error: error.message });
     }
     
     // 2. Frontend Availability Check

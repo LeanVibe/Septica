@@ -71,11 +71,13 @@ type PlayerStatistics struct {
 	TricksWon       int `gorm:"default:0" json:"tricks_won"`
 }
 
-// Game represents a game session between two players
+// Game represents a game session between players (2-4 players supported)
 type Game struct {
 	BaseModel
-	Player1ID uuid.UUID `gorm:"type:uuid;not null" json:"player1_id"`
-	Player2ID uuid.UUID `gorm:"type:uuid;not null" json:"player2_id"`
+	Player1ID uuid.UUID  `gorm:"type:uuid;not null" json:"player1_id"`
+	Player2ID uuid.UUID  `gorm:"type:uuid;not null" json:"player2_id"`
+	Player3ID *uuid.UUID `gorm:"type:uuid" json:"player3_id,omitempty"`        // For 3-4 player games
+	Player4ID *uuid.UUID `gorm:"type:uuid" json:"player4_id,omitempty"`        // For 4 player games
 	
 	// Tournament context
 	TournamentID       *uuid.UUID `gorm:"type:uuid" json:"tournament_id"`
@@ -86,12 +88,19 @@ type Game struct {
 	// Game state
 	Status       string    `gorm:"default:'waiting'" json:"status"` // waiting, in_progress, completed, abandoned
 	WinnerID     *uuid.UUID `gorm:"type:uuid" json:"winner_id"`
+	WinningTeam  *string   `json:"winning_team,omitempty"`          // "team1", "team2" for 4-player games
 	Player1Score int       `gorm:"default:0" json:"player1_score"`
 	Player2Score int       `gorm:"default:0" json:"player2_score"`
+	Player3Score *int      `json:"player3_score,omitempty"`         // For 3-4 player games
+	Player4Score *int      `json:"player4_score,omitempty"`         // For 4 player games
+	Team1Score   *int      `json:"team1_score,omitempty"`           // For 4-player team mode
+	Team2Score   *int      `json:"team2_score,omitempty"`           // For 4-player team mode
 	IsMars       bool      `gorm:"default:false" json:"is_mars"`
 	
 	// Game metadata
 	GameMode         string     `gorm:"default:'ranked'" json:"game_mode"` // ranked, casual, tournament, swiss
+	AuthenticMode    string     `json:"authentic_mode,omitempty"`          // "2_player", "3_player", "4_player" for authentic Septica
+	UseAuthenticRules bool      `gorm:"default:false" json:"use_authentic_rules"`
 	StartedAt        *time.Time `json:"started_at"`
 	EndedAt          *time.Time `json:"ended_at"`
 	DurationMs       int64      `gorm:"default:0" json:"duration_ms"`
@@ -99,23 +108,33 @@ type Game struct {
 	TrickCount       int        `gorm:"default:0" json:"trick_count"`
 	
 	// Rating context (captured at game start)
-	Player1RatingBefore int `json:"player1_rating_before"`
-	Player2RatingBefore int `json:"player2_rating_before"`
+	Player1RatingBefore int  `json:"player1_rating_before"`
+	Player2RatingBefore int  `json:"player2_rating_before"`
+	Player3RatingBefore *int `json:"player3_rating_before,omitempty"`  // For 3-4 player games
+	Player4RatingBefore *int `json:"player4_rating_before,omitempty"`  // For 4 player games
 	Player1RatingAfter  *int `json:"player1_rating_after"`
 	Player2RatingAfter  *int `json:"player2_rating_after"`
-	
+	Player3RatingAfter  *int `json:"player3_rating_after,omitempty"`
+	Player4RatingAfter  *int `json:"player4_rating_after,omitempty"`
+
 	// Rating changes
-	Player1RatingChange int `gorm:"default:0" json:"player1_rating_change"`
-	Player2RatingChange int `gorm:"default:0" json:"player2_rating_change"`
+	Player1RatingChange int  `gorm:"default:0" json:"player1_rating_change"`
+	Player2RatingChange int  `gorm:"default:0" json:"player2_rating_change"`
+	Player3RatingChange *int `json:"player3_rating_change,omitempty"`
+	Player4RatingChange *int `json:"player4_rating_change,omitempty"`
 	
 	// Game quality metrics
-	AverageTimeBetweenMoves float64 `gorm:"default:0" json:"average_time_between_moves"`
-	Player1AverageTimePerMove float64 `gorm:"default:0" json:"player1_average_time_per_move"`
-	Player2AverageTimePerMove float64 `gorm:"default:0" json:"player2_average_time_per_move"`
+	AverageTimeBetweenMoves   float64  `gorm:"default:0" json:"average_time_between_moves"`
+	Player1AverageTimePerMove float64  `gorm:"default:0" json:"player1_average_time_per_move"`
+	Player2AverageTimePerMove float64  `gorm:"default:0" json:"player2_average_time_per_move"`
+	Player3AverageTimePerMove *float64 `json:"player3_average_time_per_move,omitempty"`
+	Player4AverageTimePerMove *float64 `json:"player4_average_time_per_move,omitempty"`
 	
 	// Relationships
 	Player1         Player             `gorm:"foreignKey:Player1ID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT;" json:"player1,omitempty"`
 	Player2         Player             `gorm:"foreignKey:Player2ID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT;" json:"player2,omitempty"`
+	Player3         *Player            `gorm:"foreignKey:Player3ID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT;" json:"player3,omitempty"`
+	Player4         *Player            `gorm:"foreignKey:Player4ID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT;" json:"player4,omitempty"`
 	Winner          *Player            `gorm:"foreignKey:WinnerID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"winner,omitempty"`
 	Tournament      *Tournament        `gorm:"foreignKey:TournamentID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"tournament,omitempty"`
 	TournamentBracket *TournamentBracket `gorm:"foreignKey:TournamentBracketID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"tournament_bracket,omitempty"`
@@ -128,13 +147,21 @@ type GameMove struct {
 	GameID         uuid.UUID `gorm:"type:uuid;not null" json:"game_id"`
 	PlayerID       uuid.UUID `gorm:"type:uuid;not null" json:"player_id"`
 	MoveNumber     int       `gorm:"not null" json:"move_number"`
-	CardSuit       string    `gorm:"not null" json:"card_suit"`
-	CardValue      int       `gorm:"not null" json:"card_value"`
+	CardSuit       string    `json:"card_suit,omitempty"`         // Nullable for PASS moves
+	CardValue      int       `json:"card_value,omitempty"`        // Nullable for PASS moves
 	TableCardCount int       `gorm:"not null" json:"table_card_count"`
 	TrickNumber    int       `gorm:"not null" json:"trick_number"`
 	IsWinningMove  bool      `gorm:"default:false" json:"is_winning_move"`
 	TimeTakenMs    int64     `gorm:"default:0" json:"time_taken_ms"`
-	
+
+	// Authentic Septica specific fields
+	MoveType           string     `gorm:"default:'PLAY_CARD'" json:"move_type"`     // "PLAY_CARD", "PASS"
+	IsObjection        bool       `gorm:"default:false" json:"is_objection"`       // Was this an objection move
+	ObjectedCardSuit   *string    `json:"objected_card_suit,omitempty"`           // Card being objected to
+	ObjectedCardValue  *int       `json:"objected_card_value,omitempty"`          // Card being objected to
+	RoundComplete      bool       `gorm:"default:false" json:"round_complete"`     // Did this move complete the round
+	PointsAwarded      int        `gorm:"default:0" json:"points_awarded"`        // Points gained from this move
+
 	// Relationships
 	Game   Game   `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"game,omitempty"`
 	Player Player `gorm:"foreignKey:PlayerID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT;" json:"player,omitempty"`

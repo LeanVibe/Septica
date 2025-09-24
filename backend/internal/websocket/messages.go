@@ -33,6 +33,7 @@ const (
 	MessageTypeJoinGame         = "join_game"
 	MessageTypeLeaveGame        = "leave_game"
 	MessageTypePlayCard         = "play_card"
+	MessageTypePass             = "pass"              // New: Player chooses not to object
 	MessageTypeGetGameState     = "get_game_state"
 	MessageTypeChatMessage      = "chat_message"
 	MessageTypeJoinMatchmaking  = "join_matchmaking"
@@ -45,6 +46,8 @@ const (
 	MessageTypeError               = "error"
 	MessageTypeGameState           = "game_state"
 	MessageTypeMoveResult          = "move_result"
+	MessageTypeObjectionWait       = "objection_wait"    // New: Waiting for objection decision
+	MessageTypeRoundComplete       = "round_complete"    // New: Round ended
 	MessageTypePlayerJoined        = "player_joined"
 	MessageTypePlayerLeft          = "player_left"
 	MessageTypeGameEnd             = "game_end"
@@ -58,7 +61,7 @@ const (
 
 	// Game state notifications
 	MessageTypeGameStarted    = "game_started"
-	MessageTypeTrickComplete  = "trick_complete"
+	MessageTypeTrickComplete  = "trick_complete"  // Legacy - kept for backward compatibility
 	MessageTypePlayerTurn     = "player_turn"
 	MessageTypeGamePaused     = "game_paused"
 	MessageTypeGameResumed    = "game_resumed"
@@ -118,6 +121,16 @@ type GameStatePayload struct {
 	MoveNumber         int       `json:"move_number"`
 	SequenceNumber     int       `json:"sequence_number"`
 	Status             string    `json:"status"`
+
+	// Authentic Septica extensions
+	WaitingForObjection bool       `json:"waiting_for_objection,omitempty"`
+	LastPlayedCard     *Card       `json:"last_played_card,omitempty"`
+	LastPlayerID       *uuid.UUID  `json:"last_player_id,omitempty"`
+	GameMode           string      `json:"game_mode,omitempty"`           // "2_player", "3_player", "4_player"
+	Teams              [][]uuid.UUID `json:"teams,omitempty"`              // For 4-player team mode
+	TeamScores         map[string]int `json:"team_scores,omitempty"`       // "team1", "team2"
+	CanPass            bool        `json:"can_pass,omitempty"`            // Can player pass (not object)
+	ObjectionTimeout   int         `json:"objection_timeout,omitempty"`   // Seconds remaining
 }
 
 // Card represents a playing card in message payloads
@@ -224,6 +237,44 @@ type MatchmakingLeftPayload struct {
 type MatchmakingErrorPayload struct {
 	ErrorType string `json:"error_type"`
 	Message   string `json:"message"`
+}
+
+// Authentic Septica specific payloads
+
+// PassPayload represents a player passing (not objecting)
+type PassPayload struct {
+	// Empty payload - the pass action is conveyed by the message type
+}
+
+// ObjectionWaitPayload represents server waiting for objection decision
+type ObjectionWaitPayload struct {
+	WaitingPlayerID    uuid.UUID `json:"waiting_player_id"`
+	LastPlayedCard     Card      `json:"last_played_card"`
+	LastPlayerID       uuid.UUID `json:"last_player_id"`
+	ValidObjections    []Card    `json:"valid_objections"`    // Cards that can beat
+	TimeoutSeconds     int       `json:"timeout_seconds"`
+	CanPass            bool      `json:"can_pass"`
+}
+
+// RoundCompletePayload represents a completed round in authentic Septica
+type RoundCompletePayload struct {
+	RoundNumber       int        `json:"round_number"`
+	CollectorPlayerID uuid.UUID  `json:"collector_player_id"`
+	CollectorTeam     *string    `json:"collector_team,omitempty"`  // "team1", "team2" for 4-player
+	PointsAwarded     int        `json:"points_awarded"`
+	CardsCollected    []Card     `json:"cards_collected"`
+	WasObjected       bool       `json:"was_objected"`
+	ObjectionCard     *Card      `json:"objection_card,omitempty"`
+	UpdatedScores     map[string]int `json:"updated_scores"`
+	UpdatedTeamScores map[string]int `json:"updated_team_scores,omitempty"`
+	NextPlayerID      uuid.UUID  `json:"next_player_id"`
+}
+
+// JoinAuthenticGamePayload represents joining an authentic Septica game
+type JoinAuthenticGamePayload struct {
+	GameMode      string `json:"game_mode"`       // "2_player", "3_player", "4_player"
+	UseAuthentic  bool   `json:"use_authentic"`   // Use authentic rules vs legacy
+	TeamPlay      bool   `json:"team_play"`       // For 4-player mode
 }
 
 // Helper functions for creating common messages
