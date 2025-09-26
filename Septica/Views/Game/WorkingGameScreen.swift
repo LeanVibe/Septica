@@ -319,11 +319,18 @@ struct WorkingGameScreen: View {
                     )
                 )
             
-            // Instructions
-            Text("Apasă pentru a selecta • Apasă din nou pentru a juca")
-                .font(.caption2)
-                .foregroundColor(.white.opacity(0.7))
-                .multilineTextAlignment(.center)
+            // Dynamic instructions based on game state
+            if selectedCard != nil {
+                Text("Cartea selectată • Folosește butoanele de jos pentru a juca")
+                    .font(.caption2)
+                    .foregroundColor(RomanianColors.goldAccent.opacity(0.9))
+                    .multilineTextAlignment(.center)
+            } else {
+                Text("Selectează o carte din mâna ta")
+                    .font(.caption2)
+                    .foregroundColor(.white.opacity(0.7))
+                    .multilineTextAlignment(.center)
+            }
             
             // Player cards with proper fanning and tap-to-select-tap-to-play
             if let humanPlayer = gameViewModel.humanPlayer {
@@ -334,13 +341,8 @@ struct WorkingGameScreen: View {
                     onCardTapped: { card in
                         if gameViewModel.validMoves.contains(card) {
                             withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                                if selectedCard?.id == card.id {
-                                    // Tap again to play - classic card game interaction
-                                    playCard(card)
-                                } else {
-                                    // First tap to select
-                                    selectedCard = card
-                                }
+                                // Tap to select card (use action buttons to play)
+                                selectedCard = card
                             }
                         }
                     }
@@ -348,44 +350,131 @@ struct WorkingGameScreen: View {
                 .frame(height: 170) // Increased to accommodate proper card height (143) + fanning space
             }
             
-            // Pass button for skipping turn - only when no playable moves or specific game conditions
-            if shouldShowPassButton {
-                HStack {
-                    Spacer()
-                    
+            // Game Action Controls - Professional Romanian interface
+            gameActionControlsArea
+        }
+    }
+    
+    // MARK: - Game Action Controls
+
+    private var gameActionControlsArea: some View {
+        VStack(spacing: 12) {
+            // Action buttons area
+            if gameViewModel.isHumanPlayerTurn {
+                HStack(spacing: 16) {
+                    // Play Selected Card button
                     Button(action: {
-                        // Handle pass action - skip turn in Romanian Septica
-                        gameViewModel.gameState.skipCurrentPlayer()
+                        if let card = selectedCard {
+                            playCard(card)
+                        }
                     }) {
-                        HStack(spacing: 8) {
-                            Image(systemName: "hand.raised.fill")
-                            Text("Treci")
+                        HStack(spacing: 10) {
+                            Image(systemName: selectedCard != nil ? "hand.draw" : "hand.raised.slash")
+                            Text(selectedCard != nil ? "Joacă Cartea" : "Selectează Cartea")
                                 .font(.headline.weight(.semibold))
                         }
                         .foregroundColor(.white)
-                        .padding(.horizontal, 20)
-                        .padding(.vertical, 12)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
                         .background(
                             LinearGradient(
-                                colors: [
-                                    RomanianColors.primaryRed.opacity(0.8),
-                                    RomanianColors.primaryRed
+                                colors: selectedCard != nil ? [
+                                    RomanianColors.countrysideGreen,
+                                    RomanianColors.countrysideGreen.opacity(0.8)
+                                ] : [
+                                    Color.gray.opacity(0.6),
+                                    Color.gray.opacity(0.4)
                                 ],
                                 startPoint: .top,
                                 endPoint: .bottom
                             )
                         )
                         .clipShape(RoundedRectangle(cornerRadius: 12))
-                        .shadow(color: RomanianColors.primaryRed.opacity(0.4), radius: 6, x: 0, y: 3)
+                        .shadow(
+                            color: selectedCard != nil ? RomanianColors.countrysideGreen.opacity(0.4) : Color.gray.opacity(0.2),
+                            radius: selectedCard != nil ? 6 : 3,
+                            x: 0,
+                            y: 3
+                        )
                     }
-                    
-                    Spacer()
+                    .disabled(selectedCard == nil)
+
+                    // Pass Turn button (always available during player's turn)
+                    if shouldShowPassButton {
+                        Button(action: {
+                            selectedCard = nil // Clear selection
+                            gameViewModel.gameState.skipCurrentPlayer()
+                        }) {
+                            HStack(spacing: 8) {
+                                Image(systemName: "arrow.turn.down.right")
+                                Text("Treci")
+                                    .font(.headline.weight(.semibold))
+                            }
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 14)
+                            .background(
+                                LinearGradient(
+                                    colors: [
+                                        RomanianColors.primaryRed.opacity(0.8),
+                                        RomanianColors.primaryRed
+                                    ],
+                                    startPoint: .top,
+                                    endPoint: .bottom
+                                )
+                            )
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                            .shadow(color: RomanianColors.primaryRed.opacity(0.4), radius: 6, x: 0, y: 3)
+                        }
+                    }
                 }
-                .padding(.horizontal)
+                .padding(.horizontal, 20)
+
+                // Selected card indicator with Romanian styling
+                if let card = selectedCard {
+                    HStack(spacing: 8) {
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundColor(RomanianColors.goldAccent)
+                        Text("Cartea selectată: \(card.displayValue)\(card.suit.symbol)")
+                            .font(.caption.weight(.medium))
+                            .foregroundColor(RomanianColors.goldAccent)
+                        Spacer()
+                        Button("Anulează") {
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                selectedCard = nil
+                            }
+                        }
+                        .font(.caption.weight(.medium))
+                        .foregroundColor(RomanianColors.primaryRed.opacity(0.8))
+                    }
+                    .padding(.horizontal, 24)
+                    .padding(.vertical, 8)
+                    .background(
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(Color.black.opacity(0.4))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(RomanianColors.goldAccent.opacity(0.3), lineWidth: 1)
+                            )
+                    )
+                    .padding(.horizontal, 20)
+                }
+            } else {
+                // Opponent's turn indicator
+                HStack(spacing: 8) {
+                    ProgressView()
+                        .progressViewStyle(CircularProgressViewStyle(tint: RomanianColors.goldAccent))
+                        .scaleEffect(0.8)
+                    Text("Rândul adversarului...")
+                        .font(.headline.weight(.medium))
+                        .foregroundColor(.white.opacity(0.8))
+                }
+                .padding(.vertical, 16)
             }
         }
+        .padding(.bottom, 20)
     }
-    
+
     // MARK: - Game Menu Overlay
     
     private var gameMenuOverlay: some View {
