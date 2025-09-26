@@ -1013,7 +1013,7 @@ enum CardSize {
     }
 
     var height: CGFloat {
-        width * 1.3  // Slightly less tall ratio for better mobile display
+        width * 1.4  // Traditional playing card ratio (2:3 ≈ 0.67, so height/width = 1.5, adjusted to 1.4 for mobile)
     }
     
     var cornerRadius: CGFloat {

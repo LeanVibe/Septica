@@ -198,7 +198,7 @@ struct WorkingGameScreen: View {
                                     endPoint: .bottomTrailing
                                 )
                             )
-                            .frame(width: 55, height: 72) // 55 * 1.3 ≈ 72 (consistent proportions)
+                            .frame(width: 55, height: 77) // 55 * 1.4 = 77 (traditional card proportions)
                             .overlay(
                                 Text("♦")
                                     .font(.title2)
@@ -298,7 +298,7 @@ struct WorkingGameScreen: View {
                     }
                 }
             }
-            .frame(width: 380, height: 140) // Adjusted for proper compact card height (117) + fanning space
+            .frame(width: 380, height: 150) // Adjusted for proper compact card height (126) + fanning space
         }
     }
 
@@ -348,7 +348,7 @@ struct WorkingGameScreen: View {
                         }
                     }
                 )
-                .frame(height: 170) // Increased to accommodate proper card height (143) + fanning space
+                .frame(height: 180) // Increased to accommodate proper card height (154) + fanning space
             }
         }
     }
@@ -687,7 +687,7 @@ struct SimpleCardView: View {
                         lineWidth: isSelected ? 2.5 : 1
                     )
             }
-            .frame(width: 75, height: 98) // 75 * 1.3 = 97.5 ≈ 98 (proper card aspect ratio)
+            .frame(width: 75, height: 105) // 75 * 1.4 = 105 (proper traditional card aspect ratio)
             .scaleEffect(isSelected ? 1.05 : 1.0)
             .shadow(
                 color: isSelected ? RomanianColors.goldAccent.opacity(0.4) : Color.black.opacity(0.15),
