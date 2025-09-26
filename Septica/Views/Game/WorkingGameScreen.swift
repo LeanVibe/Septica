@@ -297,7 +297,7 @@ struct WorkingGameScreen: View {
                     }
                 }
             }
-            .frame(width: 380, height: 200)
+            .frame(width: 380, height: 140) // Adjusted for proper compact card height (117) + fanning space
         }
     }
 
@@ -345,7 +345,7 @@ struct WorkingGameScreen: View {
                         }
                     }
                 )
-                .frame(height: 140)
+                .frame(height: 170) // Increased to accommodate proper card height (143) + fanning space
             }
             
             // Pass button for skipping turn - only when no playable moves or specific game conditions
@@ -696,7 +696,7 @@ struct FannedTableCardsView: View {
                     .zIndex(Double(index))
                 }
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+            .frame(maxWidth: .infinity, alignment: .bottom) // Removed maxHeight to prevent card stretching
         }
     }
 }
@@ -753,7 +753,7 @@ struct FannedCardHandView: View {
                     .animation(.spring(response: 0.4, dampingFraction: 0.8), value: isSelected)
                 }
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+            .frame(maxWidth: .infinity, alignment: .bottom) // Removed maxHeight to prevent card stretching
         }
     }
 }
