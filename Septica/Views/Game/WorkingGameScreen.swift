@@ -530,44 +530,84 @@ struct SimpleCardView: View {
     
     var body: some View {
         VStack(spacing: 4) {
-            // Simplified card view for better interaction
-            RoundedRectangle(cornerRadius: 8)
-                .fill(
-                    LinearGradient(
-                        colors: [
-                            Color.white,
-                            Color.white.opacity(0.95)
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-                .frame(width: 60, height: 84)
-                .overlay(
-                    VStack(spacing: 2) {
-                        Text(card.displayValue)
-                            .font(.headline.weight(.bold))
-                            .foregroundColor(card.suit.color)
-                        
-                        Text(card.suit.symbol)
-                            .font(.title2)
-                            .foregroundColor(card.suit.color)
-                    }
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 8)
-                        .stroke(
-                            isSelected ? RomanianColors.goldAccent : Color.gray.opacity(0.3),
-                            lineWidth: isSelected ? 3 : 1
+            // Professional playing card design
+            ZStack {
+                // Card background with premium look
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                Color.white,
+                                Color.white.opacity(0.98),
+                                Color.white.opacity(0.95),
+                                Color.white.opacity(0.97)
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
                         )
-                )
-                .scaleEffect(isSelected ? 1.1 : 1.0)
-                .shadow(
-                    color: isSelected ? RomanianColors.goldAccent.opacity(0.5) : Color.black.opacity(0.2),
-                    radius: isSelected ? 8 : 4,
-                    x: 0,
-                    y: isSelected ? 4 : 2
-                )
+                    )
+                    .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
+                    .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
+
+                // Card content with proper playing card layout
+                VStack(spacing: 2) {
+                    HStack {
+                        VStack(spacing: 1) {
+                            Text(card.displayValue)
+                                .font(.system(size: 12, weight: .bold, design: .rounded))
+                                .foregroundColor(card.suit.color)
+                            Text(card.suit.symbol)
+                                .font(.system(size: 10))
+                                .foregroundColor(card.suit.color)
+                        }
+                        Spacer()
+                    }
+                    .padding(.horizontal, 4)
+                    .padding(.top, 4)
+
+                    Spacer()
+
+                    // Center suit symbol
+                    Text(card.suit.symbol)
+                        .font(.system(size: 28, weight: .bold))
+                        .foregroundColor(card.suit.color.opacity(0.8))
+
+                    Spacer()
+
+                    HStack {
+                        Spacer()
+                        VStack(spacing: 1) {
+                            Text(card.suit.symbol)
+                                .font(.system(size: 10))
+                                .foregroundColor(card.suit.color)
+                                .rotationEffect(.degrees(180))
+                            Text(card.displayValue)
+                                .font(.system(size: 12, weight: .bold, design: .rounded))
+                                .foregroundColor(card.suit.color)
+                                .rotationEffect(.degrees(180))
+                        }
+                    }
+                    .padding(.horizontal, 4)
+                    .padding(.bottom, 4)
+                }
+
+                // Professional border
+                RoundedRectangle(cornerRadius: 8)
+                    .stroke(
+                        isSelected
+                            ? LinearGradient(colors: [RomanianColors.goldAccent, RomanianColors.primaryYellow], startPoint: .topLeading, endPoint: .bottomTrailing)
+                            : LinearGradient(colors: [Color.gray.opacity(0.3), Color.gray.opacity(0.2)], startPoint: .topLeading, endPoint: .bottomTrailing),
+                        lineWidth: isSelected ? 2.5 : 1
+                    )
+            }
+            .frame(width: 60, height: 84) // 60 * 1.4 = 84 (proper card aspect ratio)
+            .scaleEffect(isSelected ? 1.05 : 1.0)
+            .shadow(
+                color: isSelected ? RomanianColors.goldAccent.opacity(0.4) : Color.black.opacity(0.15),
+                radius: isSelected ? 6 : 3,
+                x: 0,
+                y: isSelected ? 3 : 2
+            )
                 .onTapGesture {
                     onTap()
                 }

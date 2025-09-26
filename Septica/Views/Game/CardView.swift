@@ -1005,15 +1005,15 @@ enum CardSize {
     
     var width: CGFloat {
         switch self {
-        case .small: return 85      // Wider for better visibility
-        case .compact: return 100   // ShuffleCats-style width
-        case .normal: return 120    // Standard game cards
-        case .large: return 180     // For detailed view
+        case .small: return 60      // Proper small cards
+        case .compact: return 75    // Compact table cards
+        case .normal: return 85     // Standard hand cards
+        case .large: return 120     // Large detailed cards
         }
     }
-    
+
     var height: CGFloat {
-        width * 1.25  // Changed from 1.35 to 1.25 for wider aspect ratio like ShuffleCats
+        width * 1.4  // Standard playing card aspect ratio (2:3 ratio)
     }
     
     var cornerRadius: CGFloat {
