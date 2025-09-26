@@ -18,7 +18,7 @@ struct WorkingGameScreen: View {
     @StateObject private var dialogueSystem = RomanianDialogueSystem()
     
     // Navigation manager for proper menu navigation
-    @EnvironmentObject private var navigationManager: NavigationManager
+    @EnvironmentObject private var navigationManager: SimpleNavigationManager
     
     init(gameState: GameState) {
         self._gameViewModel = StateObject(wrappedValue: GameViewModel(gameState: gameState))

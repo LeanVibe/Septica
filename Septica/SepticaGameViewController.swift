@@ -18,9 +18,21 @@ class SepticaGameViewController: UIViewController {
     }
     
     private func setupMainMenu() {
-        // Create SwiftUI main menu view with navigation system
+        // Create environment objects required by the app
+        let navigationManager = SimpleNavigationManager()
+        let accessibilityManager = AccessibilityManager()
+        let hapticManager = HapticManager()
+        let audioManager = AudioManager()
+        let animationManager = AnimationManager()
+
+        // Create SwiftUI main menu view with all environment objects
         let mainMenuView = MainMenuView()
-        
+            .environmentObject(navigationManager)
+            .environmentObject(accessibilityManager)
+            .environmentObject(hapticManager)
+            .environmentObject(audioManager)
+            .environmentObject(animationManager)
+
         // Wrap in UIHostingController
         let hostingController = UIHostingController(rootView: mainMenuView)
         
@@ -49,4 +61,5 @@ class SepticaGameViewController: UIViewController {
     override var preferredScreenEdgesDeferringSystemGestures: UIRectEdge {
         return .all
     }
+
 }

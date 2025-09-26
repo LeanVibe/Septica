@@ -20,7 +20,14 @@ struct GameSetupView: View {
                     .font(.headline)
                     .foregroundColor(.secondary)
 
-                NavigationLink(destination: WorkingGameScreen(gameState: createGameState())) {
+                NavigationLink(destination:
+                    WorkingGameScreen(gameState: createGameState())
+                        .environmentObject(SimpleNavigationManager())
+                        .environmentObject(AccessibilityManager())
+                        .environmentObject(HapticManager())
+                        .environmentObject(AudioManager())
+                        .environmentObject(AnimationManager())
+                ) {
                     HStack {
                         Image(systemName: "play.fill")
                         Text("Începe Jocul")
