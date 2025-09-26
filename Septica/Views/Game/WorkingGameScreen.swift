@@ -103,16 +103,27 @@ struct WorkingGameScreen: View {
                 endPoint: .bottomTrailing
             )
             
-            // Subtle Romanian pattern overlay
+            // Romanian café atmospheric lighting
             RadialGradient(
                 colors: [
-                    RomanianColors.goldAccent.opacity(0.05),
+                    RomanianColors.goldAccent.opacity(0.08), // Warmer center lighting
                     Color.clear,
-                    RomanianColors.primaryYellow.opacity(0.03)
+                    RomanianColors.primaryYellow.opacity(0.04)
                 ],
                 center: .center,
-                startRadius: 100,
-                endRadius: 400
+                startRadius: 80,
+                endRadius: 450
+            )
+
+            // Warm café ambiance overlay
+            LinearGradient(
+                colors: [
+                    Color(red: 0.8, green: 0.6, blue: 0.3).opacity(0.08), // Warm candlelight
+                    Color.clear,
+                    Color(red: 0.9, green: 0.7, blue: 0.4).opacity(0.06)  // Soft Romanian gold
+                ],
+                startPoint: .topTrailing,
+                endPoint: .bottomLeading
             )
         }
     }
