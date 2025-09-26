@@ -197,7 +197,7 @@ struct WorkingGameScreen: View {
                                     endPoint: .bottomTrailing
                                 )
                             )
-                            .frame(width: 45, height: 63)
+                            .frame(width: 55, height: 72) // 55 * 1.3 ≈ 72 (consistent proportions)
                             .overlay(
                                 Text("♦")
                                     .font(.title2)
@@ -600,7 +600,7 @@ struct SimpleCardView: View {
                         lineWidth: isSelected ? 2.5 : 1
                     )
             }
-            .frame(width: 60, height: 84) // 60 * 1.4 = 84 (proper card aspect ratio)
+            .frame(width: 75, height: 98) // 75 * 1.3 = 97.5 ≈ 98 (proper card aspect ratio)
             .scaleEffect(isSelected ? 1.05 : 1.0)
             .shadow(
                 color: isSelected ? RomanianColors.goldAccent.opacity(0.4) : Color.black.opacity(0.15),

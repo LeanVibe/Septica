@@ -1005,15 +1005,15 @@ enum CardSize {
     
     var width: CGFloat {
         switch self {
-        case .small: return 60      // Proper small cards
-        case .compact: return 75    // Compact table cards
-        case .normal: return 85     // Standard hand cards
-        case .large: return 120     // Large detailed cards
+        case .small: return 75      // Wider small cards
+        case .compact: return 90    // Wider compact table cards
+        case .normal: return 110    // Wider standard hand cards
+        case .large: return 150     // Wider large detailed cards
         }
     }
 
     var height: CGFloat {
-        width * 1.4  // Standard playing card aspect ratio (2:3 ratio)
+        width * 1.3  // Slightly less tall ratio for better mobile display
     }
     
     var cornerRadius: CGFloat {
