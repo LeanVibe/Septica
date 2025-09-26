@@ -33,23 +33,24 @@ struct WorkingGameScreen: View {
                 VStack(spacing: 16) {
                     // Top status bar
                     gameStatusBar
-                    
+
                     Spacer()
-                    
+
                     // Opponent area with Romanian styling
                     opponentArea
-                    
+
                     Spacer()
-                    
+
                     // Game table with Romanian ornate frame
                     gameTableArea
-                    
+
                     Spacer()
-                    
+
                     // Player hand with Romanian styling
                     playerHandArea
-                    
-                    Spacer(minLength: 20)
+
+                    // Game Action Controls - Professional Romanian interface
+                    gameActionControlsArea
                 }
                 .padding()
                 
@@ -349,9 +350,6 @@ struct WorkingGameScreen: View {
                 )
                 .frame(height: 170) // Increased to accommodate proper card height (143) + fanning space
             }
-            
-            // Game Action Controls - Professional Romanian interface
-            gameActionControlsArea
         }
     }
     
