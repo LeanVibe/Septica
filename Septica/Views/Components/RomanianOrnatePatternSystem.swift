@@ -279,39 +279,41 @@ struct OrnateRomanianTableSurface: View {
             // Base felt texture surface
             RoundedRectangle(cornerRadius: 20)
                 .fill(
-                    ZStack {
-                        // Felt texture background
+                    RadialGradient(
+                        colors: [
+                            Color(red: 0.13, green: 0.33, blue: 0.53),
+                            Color(red: 0.10, green: 0.25, blue: 0.45),
+                            Color(red: 0.08, green: 0.20, blue: 0.38)
+                        ],
+                        center: .center,
+                        startRadius: 30,
+                        endRadius: max(size.width, size.height) * 0.6
+                    )
+                )
+                .overlay(
+                    Group {
                         if let feltTexture = UIImage(named: "felt_texture") {
                             Image(uiImage: feltTexture)
                                 .resizable()
                                 .aspectRatio(contentMode: .fill)
-                                .clipped()
                         } else {
-                            // Fallback rich felt-like gradient
-                            RadialGradient(
-                                colors: [
-                                    Color(red: 0.13, green: 0.33, blue: 0.53),
-                                    Color(red: 0.10, green: 0.25, blue: 0.45),
-                                    Color(red: 0.08, green: 0.20, blue: 0.38)
-                                ],
-                                center: .center,
-                                startRadius: 30,
-                                endRadius: max(size.width, size.height) * 0.6
-                            )
+                            Color.clear
                         }
-                        
-                        // Rich overlay gradient for depth
-                        RadialGradient(
-                            colors: [
-                                RomanianColors.tableGreen.opacity(0.4),
-                                RomanianColors.tableGreen.opacity(0.6),
-                                Color(red: 0.05, green: 0.2, blue: 0.05).opacity(0.8)
-                            ],
-                            center: .center,
-                            startRadius: 30,
-                            endRadius: max(size.width, size.height) * 0.6
-                        )
                     }
+                    .clipShape(RoundedRectangle(cornerRadius: 20))
+                )
+                .overlay(
+                    RadialGradient(
+                        colors: [
+                            RomanianColors.tableGreen.opacity(0.4),
+                            RomanianColors.tableGreen.opacity(0.6),
+                            Color(red: 0.05, green: 0.2, blue: 0.05).opacity(0.8)
+                        ],
+                        center: .center,
+                        startRadius: 30,
+                        endRadius: max(size.width, size.height) * 0.6
+                    )
+                    .clipShape(RoundedRectangle(cornerRadius: 20))
                 )
             
             // Ornate border pattern

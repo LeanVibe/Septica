@@ -1,0 +1,1287 @@
+Command line invocation:
+    /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild -project Septica.xcodeproj -scheme Septica -configuration Debug -destination "platform=iOS Simulator,name=iPhone 16 Pro" build
+
+2025-09-26 09:02:55.555 xcodebuild[67363:231585170] [MT] IDERunDestination: Supported platforms for the buildables in the current scheme is empty.
+/var/run/com.apple.security.cryptexd/mnt/com.apple.MobileAsset.MetalToolchain-v17.1.324.0.NHdUCa/Metal.xctoolchain:1:1: warning: failed to load toolchain: toolchain 'com.apple.dt.toolchain.Metal.32023' already registered from /Users/bogdan/Library/Developer/Toolchains/Metal.xctoolchain
+ComputePackagePrebuildTargetDependencyGraph
+
+Prepare packages
+
+CreateBuildRequest
+
+SendProjectDescription
+
+CreateBuildOperation
+
+ComputeTargetDependencyGraph
+note: Building targets in dependency order
+note: Target dependency graph (1 target)
+    Target 'Septica' in project 'Septica' (no dependencies)
+
+GatherProvisioningInputs
+
+CreateBuildDescription
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -v -E -dM -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.0.sdk -x c -c /dev/null
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/usr/bin/ibtool --version --output-format xml1
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/usr/bin/actool --print-asset-tag-combinations --output-format xml1 /Users/bogdan/work/Septica/Septica/Assets.xcassets
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/usr/bin/actool --version --output-format xml1
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc --version
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ld -version_details
+
+Build description signature: e427fc10062024e3479d540544181ec8
+Build description path: /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/XCBuildData/e427fc10062024e3479d540544181ec8.xcbuilddata
+ClangStatCache /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang-stat-cache /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.0.sdk /Users/bogdan/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/iphonesimulator26.0-23A339-3885c01c3e6b6a337905948deab2002e26257891a6c027eb51374368541b8346.sdkstatcache
+    cd /Users/bogdan/work/Septica/Septica.xcodeproj
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang-stat-cache /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.0.sdk -o /Users/bogdan/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/iphonesimulator26.0-23A339-3885c01c3e6b6a337905948deab2002e26257891a6c027eb51374368541b8346.sdkstatcache
+
+ProcessInfoPlistFile /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Products/Debug-iphonesimulator/Septica.app/Info.plist /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/empty-Septica.plist (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    builtin-infoPlistUtility /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/empty-Septica.plist -producttype com.apple.product-type.application -genpkginfo /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Products/Debug-iphonesimulator/Septica.app/PkgInfo -expandbuildsettings -format binary -platform iphonesimulator -additionalcontentfile /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/Base.lproj/LaunchScreen-SBPartialInfo.plist -additionalcontentfile /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/Base.lproj/Main-SBPartialInfo.plist -additionalcontentfile /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/assetcatalog_generated_info.plist -o /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Products/Debug-iphonesimulator/Septica.app/Info.plist
+
+SwiftDriver Septica normal arm64 com.apple.xcode.tools.swift.compiler (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    builtin-SwiftDriver -- /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name Septica -Onone -enforce-exclusivity\=checked @/Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/Objects-normal/arm64/Septica.SwiftFileList -DDEBUG -default-isolation\=MainActor -enable-bare-slash-regex -enable-upcoming-feature MemberImportVisibility -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.0.sdk -target arm64-apple-ios18.0-simulator -g -module-cache-path /Users/bogdan/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -Xfrontend -serialize-debugging-options -profile-coverage-mapping -profile-generate -enable-testing -index-store-path /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Index.noindex/DataStore -Xcc -D_LIBCPP_HARDENING_MODE\=_LIBCPP_HARDENING_MODE_DEBUG -swift-version 5 -I /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Products/Debug-iphonesimulator -F /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Products/Debug-iphonesimulator -emit-localized-strings -emit-localized-strings-path /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/Objects-normal/arm64 -c -j16 -enable-batch-mode -incremental -Xcc -ivfsstatcache -Xcc /Users/bogdan/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/iphonesimulator26.0-23A339-3885c01c3e6b6a337905948deab2002e26257891a6c027eb51374368541b8346.sdkstatcache -output-file-map /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/Objects-normal/arm64/Septica-OutputFileMap.json -use-frontend-parseable-output -save-temps -no-color-diagnostics -explicit-module-build -module-cache-path /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -clang-scanner-module-cache-path /Users/bogdan/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -sdk-module-cache-path /Users/bogdan/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -serialize-diagnostics -emit-dependencies -emit-module -emit-module-path /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/Objects-normal/arm64/Septica.swiftmodule -validate-clang-modules-once -clang-build-session-file /Users/bogdan/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Session.modulevalidation -Xcc -I/Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/swift-overrides.hmap -emit-const-values -Xfrontend -const-gather-protocols-file -Xfrontend /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/Objects-normal/arm64/Septica_const_extract_protocols.json -Xcc -iquote -Xcc /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/Septica-generated-files.hmap -Xcc -I/Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/Septica-own-target-headers.hmap -Xcc -I/Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/Septica-all-target-headers.hmap -Xcc -iquote -Xcc /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/Septica-project-headers.hmap -Xcc -I/Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Products/Debug-iphonesimulator/include -Xcc -I/Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/DerivedSources-normal/arm64 -Xcc -I/Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/DerivedSources/arm64 -Xcc -I/Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/DerivedSources -Xcc -DDEBUG\=1 -emit-objc-header -emit-objc-header-path /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/Objects-normal/arm64/Septica-Swift.h -import-objc-header /Users/bogdan/work/Septica/Septica/ShaderTypes.h -working-directory /Users/bogdan/work/Septica -experimental-emit-module-separately -disable-cmo
+
+SwiftGeneratePch normal arm64 Compiling\ bridging\ header (in target 'Septica' from project 'Septica')
+
+SwiftDriverJobDiscovery normal arm64 Compiling bridging header (in target 'Septica' from project 'Septica')
+
+SwiftEmitModule normal arm64 Emitting\ module\ for\ Septica (in target 'Septica' from project 'Septica')
+
+EmitSwiftModule normal arm64 (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 Compiling\ StatisticsView.swift,\ RenderingSettingsView.swift,\ AppDelegate.swift,\ GameViewController.swift,\ Renderer.swift,\ SepticaGameViewController.swift,\ GeneratedAssetSymbols.swift /Users/bogdan/work/Septica/Septica/Views/Menu/StatisticsView.swift /Users/bogdan/work/Septica/Septica/Views/Settings/RenderingSettingsView.swift /Users/bogdan/work/Septica/Septica/AppDelegate.swift /Users/bogdan/work/Septica/Septica/GameViewController.swift /Users/bogdan/work/Septica/Septica/Renderer.swift /Users/bogdan/work/Septica/Septica/SepticaGameViewController.swift /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/DerivedSources/GeneratedAssetSymbols.swift (in target 'Septica' from project 'Septica')
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Menu/StatisticsView.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Settings/RenderingSettingsView.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/AppDelegate.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/GameViewController.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Renderer.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/SepticaGameViewController.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/DerivedSources/GeneratedAssetSymbols.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 Compiling\ PremiumGameScreen.swift,\ ProfessionalCard.swift,\ ProfessionalCardView.swift,\ RomanianArenaBackgroundView.swift,\ RomanianCulturalPatternView.swift,\ ShuffleCatsGameScreenExtensions.swift,\ ShuffleCatsInspiredGameScreen.swift,\ SpecialCardEffects.swift /Users/bogdan/work/Septica/Septica/Views/Game/PremiumGameScreen.swift /Users/bogdan/work/Septica/Septica/Views/Game/ProfessionalCard.swift /Users/bogdan/work/Septica/Septica/Views/Game/ProfessionalCardView.swift /Users/bogdan/work/Septica/Septica/Views/Game/RomanianArenaBackgroundView.swift /Users/bogdan/work/Septica/Septica/Views/Game/RomanianCulturalPatternView.swift /Users/bogdan/work/Septica/Septica/Views/Game/ShuffleCatsGameScreenExtensions.swift /Users/bogdan/work/Septica/Septica/Views/Game/ShuffleCatsInspiredGameScreen.swift /Users/bogdan/work/Septica/Septica/Views/Game/SpecialCardEffects.swift (in target 'Septica' from project 'Septica')
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Game/PremiumGameScreen.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Game/ProfessionalCard.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Game/ProfessionalCardView.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Game/RomanianArenaBackgroundView.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Game/RomanianCulturalPatternView.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Game/ShuffleCatsGameScreenExtensions.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Game/ShuffleCatsInspiredGameScreen.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Game/SpecialCardEffects.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 Compiling\ WorkingGameScreen.swift,\ PrivacyPolicyView.swift,\ GameResultsView.swift,\ GameSetupView.swift,\ MainMenuView.swift,\ RulesView.swift,\ SettingsView.swift /Users/bogdan/work/Septica/Septica/Views/Game/WorkingGameScreen.swift /Users/bogdan/work/Septica/Septica/Views/Legal/PrivacyPolicyView.swift /Users/bogdan/work/Septica/Septica/Views/Menu/GameResultsView.swift /Users/bogdan/work/Septica/Septica/Views/Menu/GameSetupView.swift /Users/bogdan/work/Septica/Septica/Views/Menu/MainMenuView.swift /Users/bogdan/work/Septica/Septica/Views/Menu/RulesView.swift /Users/bogdan/work/Septica/Septica/Views/Menu/SettingsView.swift (in target 'Septica' from project 'Septica')
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Game/WorkingGameScreen.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Legal/PrivacyPolicyView.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Menu/GameResultsView.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Menu/GameSetupView.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Menu/MainMenuView.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Menu/RulesView.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Menu/SettingsView.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 Compiling\ RomanianPlayerAvatarView.swift,\ ShuffleCatsStyleDragSystem.swift,\ RomanianPatternIntegration.swift,\ AdvancedEffectsIntegration.swift,\ AdvancedVisualEffectsIntegration.swift,\ CardVisualEffectsSystem.swift,\ ShuffleCatsQualityEnhancements.swift,\ CardView.swift /Users/bogdan/work/Septica/Septica/Views/Components/RomanianPlayerAvatarView.swift /Users/bogdan/work/Septica/Septica/Views/Components/ShuffleCatsStyleDragSystem.swift /Users/bogdan/work/Septica/Septica/Views/Cultural/RomanianPatternIntegration.swift /Users/bogdan/work/Septica/Septica/Views/Effects/AdvancedEffectsIntegration.swift /Users/bogdan/work/Septica/Septica/Views/Effects/AdvancedVisualEffectsIntegration.swift /Users/bogdan/work/Septica/Septica/Views/Effects/CardVisualEffectsSystem.swift /Users/bogdan/work/Septica/Septica/Views/Enhancements/ShuffleCatsQualityEnhancements.swift /Users/bogdan/work/Septica/Septica/Views/Game/CardView.swift (in target 'Septica' from project 'Septica')
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Components/RomanianPlayerAvatarView.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Components/ShuffleCatsStyleDragSystem.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Cultural/RomanianPatternIntegration.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Effects/AdvancedEffectsIntegration.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Effects/AdvancedVisualEffectsIntegration.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Effects/CardVisualEffectsSystem.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Enhancements/ShuffleCatsQualityEnhancements.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Game/CardView.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 Compiling\ RomanianTournamentManager.swift,\ TournamentDataModels.swift,\ Array+Chunked.swift,\ GameViewModel.swift,\ GameViewModelAnalyticsIntegration.swift,\ AchievementView.swift,\ AchievementNotificationView.swift,\ CulturalInsightsView.swift /Users/bogdan/work/Septica/Septica/Services/Tournament/RomanianTournamentManager.swift /Users/bogdan/work/Septica/Septica/Services/Tournament/TournamentDataModels.swift /Users/bogdan/work/Septica/Septica/Utilities/Array+Chunked.swift /Users/bogdan/work/Septica/Septica/ViewModels/GameViewModel.swift /Users/bogdan/work/Septica/Septica/ViewModels/GameViewModelAnalyticsIntegration.swift /Users/bogdan/work/Septica/Septica/Views/Achievement/AchievementView.swift /Users/bogdan/work/Septica/Septica/Views/Achievements/AchievementNotificationView.swift /Users/bogdan/work/Septica/Septica/Views/Analytics/CulturalInsightsView.swift (in target 'Septica' from project 'Septica')
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Services/Tournament/RomanianTournamentManager.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Services/Tournament/TournamentDataModels.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Utilities/Array+Chunked.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/ViewModels/GameViewModel.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/ViewModels/GameViewModelAnalyticsIntegration.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Achievement/AchievementView.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Achievements/AchievementNotificationView.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Analytics/CulturalInsightsView.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 Compiling\ GameBoardView.swift,\ GameResultView.swift,\ GameStatusView.swift,\ GameTableView.swift,\ OpponentHandView.swift,\ OrganizedGameTableView.swift,\ PlayerHandView.swift,\ PremiumCardEffects.swift /Users/bogdan/work/Septica/Septica/Views/Game/GameBoardView.swift /Users/bogdan/work/Septica/Septica/Views/Game/GameResultView.swift /Users/bogdan/work/Septica/Septica/Views/Game/GameStatusView.swift /Users/bogdan/work/Septica/Septica/Views/Game/GameTableView.swift /Users/bogdan/work/Septica/Septica/Views/Game/OpponentHandView.swift /Users/bogdan/work/Septica/Septica/Views/Game/OrganizedGameTableView.swift /Users/bogdan/work/Septica/Septica/Views/Game/PlayerHandView.swift /Users/bogdan/work/Septica/Septica/Views/Game/PremiumCardEffects.swift (in target 'Septica' from project 'Septica')
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Game/GameBoardView.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Game/GameResultView.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Game/GameStatusView.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Game/GameTableView.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Game/OpponentHandView.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Game/OrganizedGameTableView.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Game/PlayerHandView.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Game/PremiumCardEffects.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 Compiling\ GameEndCelebrationSystem.swift,\ RomanianCulturalIntelligence.swift,\ MultiplayerIntegration.swift,\ MultiplayerService.swift,\ NetworkCoordinator.swift,\ NetworkManager.swift,\ WebSocketMessage.swift,\ EnhancedPlayerProfileManager.swift /Users/bogdan/work/Septica/Septica/Services/GameEnd/GameEndCelebrationSystem.swift /Users/bogdan/work/Septica/Septica/Services/Intelligence/RomanianCulturalIntelligence.swift /Users/bogdan/work/Septica/Septica/Services/Network/MultiplayerIntegration.swift /Users/bogdan/work/Septica/Septica/Services/Network/MultiplayerService.swift /Users/bogdan/work/Septica/Septica/Services/Network/NetworkCoordinator.swift /Users/bogdan/work/Septica/Septica/Services/Network/NetworkManager.swift /Users/bogdan/work/Septica/Septica/Services/Network/WebSocketMessage.swift /Users/bogdan/work/Septica/Septica/Services/Profile/EnhancedPlayerProfileManager.swift (in target 'Septica' from project 'Septica')
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Services/GameEnd/GameEndCelebrationSystem.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Services/Intelligence/RomanianCulturalIntelligence.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Services/Network/MultiplayerIntegration.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Services/Network/MultiplayerService.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Services/Network/NetworkCoordinator.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Services/Network/NetworkManager.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Services/Network/WebSocketMessage.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Services/Profile/EnhancedPlayerProfileManager.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 Compiling\ GameStateCloudKitIntegration.swift,\ OfflineSyncQueue.swift,\ PlayerProfileService.swift,\ RewardChestService.swift,\ RomanianStrategyAnalyzer.swift,\ SepticaCloudKitManager.swift,\ RomanianCulturalContentLibrary.swift,\ RomanianDialogueSystem.swift /Users/bogdan/work/Septica/Septica/Services/CloudKit/GameStateCloudKitIntegration.swift /Users/bogdan/work/Septica/Septica/Services/CloudKit/OfflineSyncQueue.swift /Users/bogdan/work/Septica/Septica/Services/CloudKit/PlayerProfileService.swift /Users/bogdan/work/Septica/Septica/Services/CloudKit/RewardChestService.swift /Users/bogdan/work/Septica/Septica/Services/CloudKit/RomanianStrategyAnalyzer.swift /Users/bogdan/work/Septica/Septica/Services/CloudKit/SepticaCloudKitManager.swift /Users/bogdan/work/Septica/Septica/Services/Culture/RomanianCulturalContentLibrary.swift /Users/bogdan/work/Septica/Septica/Services/Dialogue/RomanianDialogueSystem.swift (in target 'Septica' from project 'Septica')
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Services/CloudKit/GameStateCloudKitIntegration.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Services/CloudKit/OfflineSyncQueue.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Services/CloudKit/PlayerProfileService.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Services/CloudKit/RewardChestService.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Services/CloudKit/RomanianStrategyAnalyzer.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Services/CloudKit/SepticaCloudKitManager.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Services/Culture/RomanianCulturalContentLibrary.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Services/Dialogue/RomanianDialogueSystem.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 Compiling\ TextureCache.swift,\ RendererExtensions.swift,\ AchievementCelebrationManager.swift,\ AchievementCelebrationSystem.swift,\ AchievementDataModels.swift,\ EnhancedRomanianAchievementRegistry.swift,\ RomanianAchievementSystem.swift,\ RomanianCulturalAchievementManager.swift /Users/bogdan/work/Septica/Septica/Rendering/Professional/TextureCache.swift /Users/bogdan/work/Septica/Septica/Rendering/RendererExtensions.swift /Users/bogdan/work/Septica/Septica/Services/Achievement/AchievementCelebrationManager.swift /Users/bogdan/work/Septica/Septica/Services/Achievement/AchievementCelebrationSystem.swift /Users/bogdan/work/Septica/Septica/Services/Achievement/AchievementDataModels.swift /Users/bogdan/work/Septica/Septica/Services/Achievement/EnhancedRomanianAchievementRegistry.swift /Users/bogdan/work/Septica/Septica/Services/Achievement/RomanianAchievementSystem.swift /Users/bogdan/work/Septica/Septica/Services/Achievement/RomanianCulturalAchievementManager.swift (in target 'Septica' from project 'Septica')
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Rendering/Professional/TextureCache.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Rendering/RendererExtensions.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Services/Achievement/AchievementCelebrationManager.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Services/Achievement/AchievementCelebrationSystem.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Services/Achievement/AchievementDataModels.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Services/Achievement/EnhancedRomanianAchievementRegistry.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Services/Achievement/RomanianAchievementSystem.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Services/Achievement/RomanianCulturalAchievementManager.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 Compiling\ Advanced3DTransform.swift,\ AdvancedLightingSystem.swift,\ EnhancedMaterialSystem.swift,\ GeometryCache.swift,\ LightingEnvironment.swift,\ MaterialEffect.swift,\ ProfessionalCardRenderer.swift,\ ProfessionalRenderingSupport.swift /Users/bogdan/work/Septica/Septica/Rendering/Professional/Advanced3DTransform.swift /Users/bogdan/work/Septica/Septica/Rendering/Professional/AdvancedLightingSystem.swift /Users/bogdan/work/Septica/Septica/Rendering/Professional/EnhancedMaterialSystem.swift /Users/bogdan/work/Septica/Septica/Rendering/Professional/GeometryCache.swift /Users/bogdan/work/Septica/Septica/Rendering/Professional/LightingEnvironment.swift /Users/bogdan/work/Septica/Septica/Rendering/Professional/MaterialEffect.swift /Users/bogdan/work/Septica/Septica/Rendering/Professional/ProfessionalCardRenderer.swift /Users/bogdan/work/Septica/Septica/Rendering/Professional/ProfessionalRenderingSupport.swift (in target 'Septica' from project 'Septica')
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Rendering/Professional/Advanced3DTransform.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Rendering/Professional/AdvancedLightingSystem.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Rendering/Professional/EnhancedMaterialSystem.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Rendering/Professional/GeometryCache.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Rendering/Professional/LightingEnvironment.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Rendering/Professional/MaterialEffect.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Rendering/Professional/ProfessionalCardRenderer.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Rendering/Professional/ProfessionalRenderingSupport.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 Compiling\ TraditionalGameplayMilestoneTracker.swift,\ CardCollectionMasteryEngine.swift,\ CulturalAuthenticityScoring.swift,\ CulturalEngagementTracker.swift,\ GameStateAnalyticsIntegration.swift,\ PerformanceAnalyticsManager.swift,\ RomanianCulturalAnalytics.swift,\ StatisticsCloudKitManager.swift /Users/bogdan/work/Septica/Septica/Services/Achievement/TraditionalGameplayMilestoneTracker.swift /Users/bogdan/work/Septica/Septica/Services/Analytics/CardCollectionMasteryEngine.swift /Users/bogdan/work/Septica/Septica/Services/Analytics/CulturalAuthenticityScoring.swift /Users/bogdan/work/Septica/Septica/Services/Analytics/CulturalEngagementTracker.swift /Users/bogdan/work/Septica/Septica/Services/Analytics/GameStateAnalyticsIntegration.swift /Users/bogdan/work/Septica/Septica/Services/Analytics/PerformanceAnalyticsManager.swift /Users/bogdan/work/Septica/Septica/Services/Analytics/RomanianCulturalAnalytics.swift /Users/bogdan/work/Septica/Septica/Services/Analytics/StatisticsCloudKitManager.swift (in target 'Septica' from project 'Septica')
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Services/Achievement/TraditionalGameplayMilestoneTracker.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Services/Analytics/CardCollectionMasteryEngine.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Services/Analytics/CulturalAuthenticityScoring.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Services/Analytics/CulturalEngagementTracker.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Services/Analytics/GameStateAnalyticsIntegration.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Services/Analytics/PerformanceAnalyticsManager.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Services/Analytics/RomanianCulturalAnalytics.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Services/Analytics/StatisticsCloudKitManager.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 Compiling\ AudioManager.swift,\ ErrorManager.swift,\ HapticManager.swift,\ ManagerCoordinator.swift,\ NavigationManager.swift,\ Card.swift,\ Deck.swift,\ GameRules.swift /Users/bogdan/work/Septica/Septica/Managers/AudioManager.swift /Users/bogdan/work/Septica/Septica/Managers/ErrorManager.swift /Users/bogdan/work/Septica/Septica/Managers/HapticManager.swift /Users/bogdan/work/Septica/Septica/Managers/ManagerCoordinator.swift /Users/bogdan/work/Septica/Septica/Managers/NavigationManager.swift /Users/bogdan/work/Septica/Septica/Models/Core/Card.swift /Users/bogdan/work/Septica/Septica/Models/Core/Deck.swift /Users/bogdan/work/Septica/Septica/Models/Core/GameRules.swift (in target 'Septica' from project 'Septica')
+Failed frontend command:
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swift-frontend -frontend -c -filelist /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/Objects-normal/arm64/sources-1 -primary-file /Users/bogdan/work/Septica/Septica/Managers/AudioManager.swift -primary-file /Users/bogdan/work/Septica/Septica/Managers/ErrorManager.swift -primary-file /Users/bogdan/work/Septica/Septica/Managers/HapticManager.swift -primary-file /Users/bogdan/work/Septica/Septica/Managers/ManagerCoordinator.swift -primary-file /Users/bogdan/work/Septica/Septica/Managers/NavigationManager.swift -primary-file /Users/bogdan/work/Septica/Septica/Models/Core/Card.swift -primary-file /Users/bogdan/work/Septica/Septica/Models/Core/Deck.swift -primary-file /Users/bogdan/work/Septica/Septica/Models/Core/GameRules.swift -supplementary-output-file-map /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/Objects-normal/arm64/supplementaryOutputs-2 -emit-localized-strings -emit-localized-strings-path /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/Objects-normal/arm64 -target arm64-apple-ios18.0-simulator -module-can-import-version DeveloperToolsSupport 23.0.4 23.0.4 -module-can-import-version Metal 370.63 370.63.0 -module-can-import-version SwiftUI 7.0.84.1 7.0.84 -module-can-import-version UIKit 9088.1.113 9088.1.113 -load-resolved-plugin /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/lib/swift/host/plugins/libFoundationMacros.dylib\#/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/swift-plugin-server\#FoundationMacros -load-resolved-plugin /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/lib/swift/host/plugins/libObservationMacros.dylib\#/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/swift-plugin-server\#ObservationMacros -load-resolved-plugin /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/lib/swift/host/plugins/libPreviewsMacros.dylib\#/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/swift-plugin-server\#PreviewsMacros -load-resolved-plugin /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/lib/swift/host/plugins/libSwiftMacros.dylib\#/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/swift-plugin-server\#SwiftMacros -load-resolved-plugin /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/lib/swift/host/plugins/libSwiftUIMacros.dylib\#/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/swift-plugin-server\#SwiftUIMacros -disable-implicit-swift-modules -Xcc -fno-implicit-modules -Xcc -fno-implicit-module-maps -explicit-swift-module-map-file /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/Objects-normal/arm64/Septica-dependencies-1.json -Xllvm -aarch64-use-tbi -enable-objc-interop -sdk /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.0.sdk -I /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Products/Debug-iphonesimulator -F /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Products/Debug-iphonesimulator -no-color-diagnostics -Xcc -fno-color-diagnostics -enable-testing -g -debug-info-format\=dwarf -dwarf-version\=5 -module-cache-path /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -profile-generate -profile-coverage-mapping -swift-version 5 -enforce-exclusivity\=checked -Onone -D DEBUG -serialize-debugging-options -const-gather-protocols-file /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/Objects-normal/arm64/Septica_const_extract_protocols.json -enable-upcoming-feature MemberImportVisibility -enable-experimental-feature DebugDescriptionMacro -enable-bare-slash-regex -default-isolation\=MainActor -empty-abi-descriptor -validate-clang-modules-once -clang-build-session-file /Users/bogdan/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Session.modulevalidation -Xcc -working-directory -Xcc /Users/bogdan/work/Septica -enable-anonymous-context-mangled-names -file-compilation-dir /Users/bogdan/work/Septica -Xcc -D_LIBCPP_HARDENING_MODE\=_LIBCPP_HARDENING_MODE_DEBUG -Xcc -ivfsstatcache -Xcc /Users/bogdan/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/iphonesimulator26.0-23A339-3885c01c3e6b6a337905948deab2002e26257891a6c027eb51374368541b8346.sdkstatcache -Xcc -I/Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/swift-overrides.hmap -Xcc -iquote -Xcc /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/Septica-generated-files.hmap -Xcc -I/Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/Septica-own-target-headers.hmap -Xcc -I/Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/Septica-all-target-headers.hmap -Xcc -iquote -Xcc /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/Septica-project-headers.hmap -Xcc -I/Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Products/Debug-iphonesimulator/include -Xcc -I/Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/DerivedSources-normal/arm64 -Xcc -I/Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/DerivedSources/arm64 -Xcc -I/Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/DerivedSources -Xcc -DDEBUG\=1 -import-objc-header /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/Objects-normal/arm64/Septica-primary-Bridging-header.pch -no-auto-bridging-header-chaining -module-name Septica -frontend-parseable-output -disable-clang-spi -target-sdk-version 26.0 -target-sdk-name iphonesimulator26.0 -clang-target arm64-apple-ios26.0-simulator -in-process-plugin-server-path /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/libSwiftInProcPluginServer.dylib -o /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/Objects-normal/arm64/AudioManager.o -o /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/Objects-normal/arm64/ErrorManager.o -o /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/Objects-normal/arm64/HapticManager.o -o /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/Objects-normal/arm64/ManagerCoordinator.o -o /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/Objects-normal/arm64/NavigationManager.o -o /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/Objects-normal/arm64/Card.o -o /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/Objects-normal/arm64/Deck.o -o /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/Objects-normal/arm64/GameRules.o -index-unit-output-path /Septica.build/Debug-iphonesimulator/Septica.build/Objects-normal/arm64/AudioManager.o -index-unit-output-path /Septica.build/Debug-iphonesimulator/Septica.build/Objects-normal/arm64/ErrorManager.o -index-unit-output-path /Septica.build/Debug-iphonesimulator/Septica.build/Objects-normal/arm64/HapticManager.o -index-unit-output-path /Septica.build/Debug-iphonesimulator/Septica.build/Objects-normal/arm64/ManagerCoordinator.o -index-unit-output-path /Septica.build/Debug-iphonesimulator/Septica.build/Objects-normal/arm64/NavigationManager.o -index-unit-output-path /Septica.build/Debug-iphonesimulator/Septica.build/Objects-normal/arm64/Card.o -index-unit-output-path /Septica.build/Debug-iphonesimulator/Septica.build/Objects-normal/arm64/Deck.o -index-unit-output-path /Septica.build/Debug-iphonesimulator/Septica.build/Objects-normal/arm64/GameRules.o -index-store-path /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Index.noindex/DataStore -index-system-modules
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Managers/AudioManager.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+/Users/bogdan/work/Septica/Septica/Managers/AudioManager.swift:99:14: warning: capture of 'self' in a closure that outlives deinit; this is an error in the Swift 6 language mode
+        Task { @MainActor in
+             ^
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Managers/ErrorManager.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Managers/HapticManager.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Managers/ManagerCoordinator.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+/Users/bogdan/work/Septica/Septica/Managers/ManagerCoordinator.swift:125:57: error: argument passed to call that takes no arguments
+        self.playerProfileService = PlayerProfileService(
+                                                        ^
+                                                        
+/Users/bogdan/work/Septica/Septica/Managers/ManagerCoordinator.swift:133:67: error: argument passed to call that takes no arguments
+        self.culturalAchievementSystem = CulturalAchievementSystem(
+                                                                  ^
+                                                                  
+/Users/bogdan/work/Septica/Septica/Managers/ManagerCoordinator.swift:141:53: error: argument passed to call that takes no arguments
+        self.rewardChestService = RewardChestService(
+                                                    ^
+                                                    
+/Users/bogdan/work/Septica/Septica/Managers/ManagerCoordinator.swift:148:71: error: argument passed to call that takes no arguments
+        self.cloudKitSyncEngine = CloudKitSyncEngine(cloudKitManager: cloudKitManager)
+                                                    ~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Managers/ManagerCoordinator.swift:219:26: error: value of type 'SepticaCloudKitManager' has no member '$syncStatus'
+        cloudKitManager?.$syncStatus
+        ~~~~~~~~~~~~~~~~ ^~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Managers/ManagerCoordinator.swift:227:26: error: value of type 'SepticaCloudKitManager' has no member '$conflictsRequiringAttention'
+        cloudKitManager?.$conflictsRequiringAttention
+        ~~~~~~~~~~~~~~~~ ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Managers/ManagerCoordinator.swift:228:33: error: cannot infer type of closure parameter 'conflicts' without a type annotation
+            .sink { [weak self] conflicts in
+                                ^
+/Users/bogdan/work/Septica/Septica/Managers/ManagerCoordinator.swift:321:29: error: value of type 'CloudKitSyncEngine' has no member 'pauseSyncOperations'
+        cloudKitSyncEngine?.pauseSyncOperations()
+        ~~~~~~~~~~~~~~~~~~~ ^~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Managers/ManagerCoordinator.swift:341:32: error: value of type 'SepticaCloudKitManager' has no member 'syncStatus'
+        switch cloudKitManager.syncStatus {
+               ~~~~~~~~~~~~~~~ ^~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Managers/ManagerCoordinator.swift:355:47: error: value of type 'CloudKitSyncEngine' has no member 'syncProgress'
+        let syncProgress = cloudKitSyncEngine.syncProgress
+                           ~~~~~~~~~~~~~~~~~~ ^~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Managers/ManagerCoordinator.swift:365:32: error: value of type 'CloudKitSyncEngine' has no member 'pauseSyncOperations'
+            cloudKitSyncEngine.pauseSyncOperations()
+            ~~~~~~~~~~~~~~~~~~ ^~~~~~~~~~~~~~~~~~~
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Managers/NavigationManager.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Models/Core/Card.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Models/Core/Deck.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Models/Core/GameRules.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 Compiling\ GameState.swift,\ Player.swift,\ CulturalTypes.swift,\ BatteryOptimizationManager.swift,\ MetalPerformanceMonitor.swift,\ PerformanceMonitor.swift,\ PerformanceValidation.swift,\ CardRenderer.swift /Users/bogdan/work/Septica/Septica/Models/Core/GameState.swift /Users/bogdan/work/Septica/Septica/Models/Core/Player.swift /Users/bogdan/work/Septica/Septica/Models/Shared/CulturalTypes.swift /Users/bogdan/work/Septica/Septica/Performance/BatteryOptimizationManager.swift /Users/bogdan/work/Septica/Septica/Performance/MetalPerformanceMonitor.swift /Users/bogdan/work/Septica/Septica/Performance/PerformanceMonitor.swift /Users/bogdan/work/Septica/Septica/Performance/PerformanceValidation.swift /Users/bogdan/work/Septica/Septica/Rendering/Metal/CardRenderer.swift (in target 'Septica' from project 'Septica')
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Models/Core/GameState.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Models/Core/Player.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Models/Shared/CulturalTypes.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Performance/BatteryOptimizationManager.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Performance/MetalPerformanceMonitor.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Performance/PerformanceMonitor.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Performance/PerformanceValidation.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Rendering/Metal/CardRenderer.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 Compiling\ TraditionalPatternRecognition.swift,\ TraditionalStrategyAnalyzer.swift,\ CloudKitDataModels.swift,\ CloudKitErrorHandler.swift,\ CloudKitIntegrationValidator.swift,\ CloudKitRecordManager.swift,\ FluidCardInteractionSync.swift,\ FluidCardInteractionVisuals.swift /Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalPatternRecognition.swift /Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift /Users/bogdan/work/Septica/Septica/Services/CloudKit/CloudKitDataModels.swift /Users/bogdan/work/Septica/Septica/Services/CloudKit/CloudKitErrorHandler.swift /Users/bogdan/work/Septica/Septica/Services/CloudKit/CloudKitIntegrationValidator.swift /Users/bogdan/work/Septica/Septica/Services/CloudKit/CloudKitRecordManager.swift /Users/bogdan/work/Septica/Septica/Services/CloudKit/FluidCardInteractionSync.swift /Users/bogdan/work/Septica/Septica/Services/CloudKit/FluidCardInteractionVisuals.swift (in target 'Septica' from project 'Septica')
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalPatternRecognition.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:29:42: error: cannot find type 'HybridStrategy' in scope
+    @Published var hybridOpportunities: [HybridStrategy] = []
+                                         ^~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:30:47: error: cannot find type 'StrategyRecommendation' in scope
+    @Published var strategicRecommendations: [StrategyRecommendation] = []
+                                              ^~~~~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:37:44: error: cannot find type 'AdaptationSuggestion' in scope
+    @Published var adaptationSuggestions: [AdaptationSuggestion] = []
+                                           ^~~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:47:38: error: cannot find type 'GameHistoryAnalyzer' in scope
+    private var gameHistoryAnalyzer: GameHistoryAnalyzer
+                                     ^~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:48:40: error: cannot find type 'PlayerBehaviorTracker' in scope
+    private var playerBehaviorTracker: PlayerBehaviorTracker
+                                       ^~~~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:49:43: error: cannot find type 'StrategicContextAnalyzer' in scope
+    private var strategicContextAnalyzer: StrategicContextAnalyzer
+                                          ^~~~~~~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:54:36: error: cannot find type 'ModernStrategy' in scope
+    private var modernStrategies: [ModernStrategy] = []
+                                   ^~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:55:40: error: cannot find type 'StrategyCombination' in scope
+    private var strategyCombinations: [StrategyCombination] = []
+                                       ^~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:56:35: error: cannot find type 'CulturalStrategyContext' in scope
+    private var culturalContext: [CulturalStrategyContext] = []
+                                  ^~~~~~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:60:34: error: cannot find type 'AnalysisPerformanceMetrics' in scope
+    private var analysisMetrics: AnalysisPerformanceMetrics
+                                 ^~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:61:37: error: cannot find type 'PredictionAccuracy' in scope
+    private var predictionAccuracy: PredictionAccuracy
+                                    ^~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:345:108: error: cannot find type 'EffectivenessAnalysis' in scope
+    private func analyzeEffectiveness(_ strategies: [DetectedStrategy], context: AnalysisContext) async -> EffectivenessAnalysis {
+                                                                                                           ^~~~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:367:118: error: cannot find type 'StrategyRecommendation' in scope
+    private func generateRecommendations(_ context: AnalysisContext, effectiveness: EffectivenessAnalysis) async -> [StrategyRecommendation] {
+                                                                                                                     ^~~~~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:367:85: error: cannot find type 'EffectivenessAnalysis' in scope
+    private func generateRecommendations(_ context: AnalysisContext, effectiveness: EffectivenessAnalysis) async -> [StrategyRecommendation] {
+                                                                                    ^~~~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:395:114: error: cannot find type 'HybridStrategy' in scope
+    private func identifyHybridOpportunities(_ context: AnalysisContext, detected: [DetectedStrategy]) async -> [HybridStrategy] {
+                                                                                                                 ^~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:441:58: error: cannot find type 'ModernStrategy' in scope
+    private func evaluateModernStrategyMatch(_ strategy: ModernStrategy, context: AnalysisContext) -> Float {
+                                                         ^~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:475:58: error: cannot find type 'ModernStrategy' in scope
+    private func calculateModernOptimization(_ strategy: ModernStrategy, context: AnalysisContext) -> Float {
+                                                         ^~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:504:128: error: cannot find type 'StrategyRecommendation' in scope
+    private func generateCulturalLearningRecommendations(_ context: AnalysisContext, effectiveness: EffectivenessAnalysis) -> [StrategyRecommendation] {
+                                                                                                                               ^~~~~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:504:101: error: cannot find type 'EffectivenessAnalysis' in scope
+    private func generateCulturalLearningRecommendations(_ context: AnalysisContext, effectiveness: EffectivenessAnalysis) -> [StrategyRecommendation] {
+                                                                                                    ^~~~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:545:131: error: cannot find type 'HybridStrategy' in scope
+    private func createHybridStrategy(traditional: DetectedStrategy, modern: DetectedStrategy, context: AnalysisContext) async -> HybridStrategy? {
+                                                                                                                                  ^~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:572:117: error: cannot find type 'HybridStrategy' in scope
+    private func identifyRegionalCombinations(_ strategies: [DetectedStrategy], context: AnalysisContext) async -> [HybridStrategy] {
+                                                                                                                    ^~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:623:33: error: cannot find type 'StrategyAnalysisReport' in scope
+    func getAnalysisReport() -> StrategyAnalysisReport {
+                                ^~~~~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:657:49: error: cannot find type 'StrategyCondition' in scope
+    private func evaluateCondition(_ condition: StrategyCondition, context: AnalysisContext) -> Bool {
+                                                ^~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:686:80: error: cannot find type 'TraditionalPatternType' in scope
+    private func getPatternFromMove(_ move: GameMove, gameState: GameState) -> TraditionalPatternType {
+                                                                               ^~~~~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:698:75: error: cannot find type 'ContextualFactor' in scope
+    private func extractContextualFactors(_ context: AnalysisContext) -> [ContextualFactor] {
+                                                                          ^~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:727:40: error: cannot find type 'ModernStrategyMLModel' in scope
+    private var modernStrategyMLModel: ModernStrategyMLModel {
+                                       ^~~~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:769:40: error: cannot find type 'TraditionalPatternRecognitionDelegate' in scope
+extension TraditionalStrategyAnalyzer: TraditionalPatternRecognitionDelegate {
+                                       ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:770:38: error: cannot find type 'TraditionalPattern' in scope
+    func didDetectPattern(_ pattern: TraditionalPattern) {
+                                     ^~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:776:52: error: cannot find type 'TraditionalPattern' in scope
+    private func processDetectedPattern(_ pattern: TraditionalPattern) async {
+                                                   ^~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:792:31: error: cannot find type 'HybridStrategy' in scope
+    let hybridOpportunities: [HybridStrategy]
+                              ^~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:793:27: error: cannot find type 'StrategyRecommendation' in scope
+    let recommendations: [StrategyRecommendation]
+                          ^~~~~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:801:25: error: cannot find type 'ModernStrategy' in scope
+    let modernStrategy: ModernStrategy?
+                        ^~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:804:23: error: cannot find type 'StrategyPrediction' in scope
+    let aiPrediction: StrategyPrediction?
+                      ^~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:814:25: error: cannot find type 'PlayerBehavior' in scope
+    let playerBehavior: PlayerBehavior
+                        ^~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:815:29: error: cannot find type 'StrategicSituation' in scope
+    let strategicSituation: StrategicSituation
+                            ^~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:825:56: error: cannot find type 'StrategyPrediction' in scope
+    func predict(_ context: AnalysisContext) async -> [StrategyPrediction] { return [] }
+                                                       ^~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:830:27: error: cannot find type 'HistoricalGameData' in scope
+    func train(with data: HistoricalGameData) async {}
+                          ^~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:833:88: error: cannot find type 'EffectivenessComparison' in scope
+    func compare(traditional: Float, modern: Float, context: AnalysisContext) async -> EffectivenessComparison { return EffectivenessComparison() }
+                                                                                       ^~~~~~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:839:31: error: cannot find type 'CulturalStrategyContext' in scope
+    func train(with context: [CulturalStrategyContext]) async {}
+                              ^~~~~~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:840:106: error: cannot find type 'StrategyAdaptation' in scope
+    func generateAdaptations(_ context: AnalysisContext, effectiveness: EffectivenessAnalysis) async -> [StrategyAdaptation] { return [] }
+                                                                                                         ^~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:840:73: error: cannot find type 'EffectivenessAnalysis' in scope
+    func generateAdaptations(_ context: AnalysisContext, effectiveness: EffectivenessAnalysis) async -> [StrategyAdaptation] { return [] }
+                                                                        ^~~~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:75:36: error: cannot find 'GameHistoryAnalyzer' in scope
+        self.gameHistoryAnalyzer = GameHistoryAnalyzer()
+                                   ^~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:76:38: error: cannot find 'PlayerBehaviorTracker' in scope
+        self.playerBehaviorTracker = PlayerBehaviorTracker()
+                                     ^~~~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:77:41: error: cannot find 'StrategicContextAnalyzer' in scope
+        self.strategicContextAnalyzer = StrategicContextAnalyzer()
+                                        ^~~~~~~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:80:32: error: cannot find 'AnalysisPerformanceMetrics' in scope
+        self.analysisMetrics = AnalysisPerformanceMetrics()
+                               ^~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:81:35: error: cannot find 'PredictionAccuracy' in scope
+        self.predictionAccuracy = PredictionAccuracy()
+                                  ^~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:92:28: error: value of type 'TraditionalPatternRecognition' has no member 'delegate'
+        patternRecognition.delegate = self
+        ~~~~~~~~~~~~~~~~~~ ^~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:115:32: error: cannot find 'MoldovanSevenStrategy' in scope
+                    .moldovan: MoldovanSevenStrategy(),
+                               ^~~~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:116:37: error: cannot find 'TransylvanianSevenStrategy' in scope
+                    .transylvanian: TransylvanianSevenStrategy(),
+                                    ^~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:117:34: error: cannot find 'WallachianSevenStrategy' in scope
+                    .wallachian: WallachianSevenStrategy()
+                                 ^~~~~~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:134:32: error: cannot find 'MoldovanEightStrategy' in scope
+                    .moldovan: MoldovanEightStrategy(),
+                               ^~~~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:135:37: error: cannot find 'TransylvanianEightStrategy' in scope
+                    .transylvanian: TransylvanianEightStrategy()
+                                    ^~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:152:32: error: cannot find 'MoldovanPointStrategy' in scope
+                    .moldovan: MoldovanPointStrategy(),
+                               ^~~~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:153:37: error: cannot find 'TransylvanianPointStrategy' in scope
+                    .transylvanian: TransylvanianPointStrategy(),
+                                    ^~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:154:34: error: cannot find 'WallachianPointStrategy' in scope
+                    .wallachian: WallachianPointStrategy()
+                                 ^~~~~~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:171:32: error: cannot find 'AuthenticMoldovanPatience' in scope
+                    .moldovan: AuthenticMoldovanPatience()
+                               ^~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:188:37: error: cannot find 'AuthenticTransylvanianEfficiency' in scope
+                    .transylvanian: AuthenticTransylvanianEfficiency()
+                                    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:205:34: error: cannot find 'AuthenticWallachianRhythm' in scope
+                    .wallachian: AuthenticWallachianRhythm()
+                                 ^~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:103:13: error: cannot convert value of type 'TraditionalStrategy?' to expected element type 'Array<TraditionalStrategy>.ArrayLiteralElement' (aka 'TraditionalStrategy')
+            TraditionalStrategy(
+            ^
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:122:13: error: cannot convert value of type 'TraditionalStrategy?' to expected element type 'Array<TraditionalStrategy>.ArrayLiteralElement' (aka 'TraditionalStrategy')
+            TraditionalStrategy(
+            ^
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:140:13: error: cannot convert value of type 'TraditionalStrategy?' to expected element type 'Array<TraditionalStrategy>.ArrayLiteralElement' (aka 'TraditionalStrategy')
+            TraditionalStrategy(
+            ^
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:159:13: error: cannot convert value of type 'TraditionalStrategy?' to expected element type 'Array<TraditionalStrategy>.ArrayLiteralElement' (aka 'TraditionalStrategy')
+            TraditionalStrategy(
+            ^
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:176:13: error: cannot convert value of type 'TraditionalStrategy?' to expected element type 'Array<TraditionalStrategy>.ArrayLiteralElement' (aka 'TraditionalStrategy')
+            TraditionalStrategy(
+            ^
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:193:13: error: cannot convert value of type 'TraditionalStrategy?' to expected element type 'Array<TraditionalStrategy>.ArrayLiteralElement' (aka 'TraditionalStrategy')
+            TraditionalStrategy(
+            ^
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:103:32: error: extra arguments at positions #1, #2, #3, #4, #5, #6, #7, #8, #9, #10, #11 in call
+            TraditionalStrategy(
+                               ^
+Septica.TraditionalStrategy.init:2:10: note: 'init(rawValue:)' declared here
+internal init?(rawValue: String)}
+         ^
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:104:17: error: missing argument for parameter 'rawValue' in call
+                id: "classic_seven_cut",
+                ^
+                rawValue: <#String#>, 
+Septica.TraditionalStrategy.init:2:10: note: 'init(rawValue:)' declared here
+internal init?(rawValue: String)}
+         ^
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:107:34: error: cannot infer contextual base in reference to member 'traditional'
+                culturalOrigin: .traditional,
+                                ~^~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:110:38: error: cannot infer contextual base in reference to member 'sevenWildUsage'
+                recognitionPattern: .sevenWildUsage,
+                                    ~^~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:111:31: error: reference to member 'opponentHighValue' cannot be resolved without a contextual type
+                conditions: [.opponentHighValue, .defensivePosition],
+                              ^
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:111:51: error: reference to member 'defensivePosition' cannot be resolved without a contextual type
+                conditions: [.opponentHighValue, .defensivePosition],
+                                                  ^
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:112:35: error: cannot infer contextual base in reference to member 'cardAdvantage'
+                expectedOutcome: .cardAdvantage,
+                                 ~^~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:113:30: error: cannot infer contextual base in reference to member 'intermediate'
+                difficulty: .intermediate,
+                            ~^~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:115:22: error: reference to member 'moldovan' cannot be resolved without a contextual type
+                    .moldovan: MoldovanSevenStrategy(),
+                     ^
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:116:22: error: reference to member 'transylvanian' cannot be resolved without a contextual type
+                    .transylvanian: TransylvanianSevenStrategy(),
+                     ^
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:117:22: error: reference to member 'wallachian' cannot be resolved without a contextual type
+                    .wallachian: WallachianSevenStrategy()
+                     ^
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:122:32: error: extra arguments at positions #1, #2, #3, #4, #5, #6, #7, #8, #9, #10, #11 in call
+            TraditionalStrategy(
+                               ^
+Septica.TraditionalStrategy.init:2:10: note: 'init(rawValue:)' declared here
+internal init?(rawValue: String)}
+         ^
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:123:17: error: missing argument for parameter 'rawValue' in call
+                id: "eight_timing_mastery",
+                ^
+                rawValue: <#String#>, 
+Septica.TraditionalStrategy.init:2:10: note: 'init(rawValue:)' declared here
+internal init?(rawValue: String)}
+         ^
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:126:34: error: cannot infer contextual base in reference to member 'traditional'
+                culturalOrigin: .traditional,
+                                ~^~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:129:38: error: cannot infer contextual base in reference to member 'eightTimingRule'
+                recognitionPattern: .eightTimingRule,
+                                    ~^~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:130:31: error: reference to member 'cardCountRule' cannot be resolved without a contextual type
+                conditions: [.cardCountRule, .mathematicalTiming],
+                              ^
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:130:47: error: reference to member 'mathematicalTiming' cannot be resolved without a contextual type
+                conditions: [.cardCountRule, .mathematicalTiming],
+                                              ^
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:131:35: error: cannot infer contextual base in reference to member 'trickWin'
+                expectedOutcome: .trickWin,
+                                 ~^~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:132:30: error: cannot infer contextual base in reference to member 'advanced'
+                difficulty: .advanced,
+                            ~^~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:134:22: error: reference to member 'moldovan' cannot be resolved without a contextual type
+                    .moldovan: MoldovanEightStrategy(),
+                     ^
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:135:22: error: reference to member 'transylvanian' cannot be resolved without a contextual type
+                    .transylvanian: TransylvanianEightStrategy()
+                     ^
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:140:32: error: extra arguments at positions #1, #2, #3, #4, #5, #6, #7, #8, #9, #10, #11 in call
+            TraditionalStrategy(
+                               ^
+Septica.TraditionalStrategy.init:2:10: note: 'init(rawValue:)' declared here
+internal init?(rawValue: String)}
+         ^
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:141:17: error: missing argument for parameter 'rawValue' in call
+                id: "point_hunting_mastery",
+                ^
+                rawValue: <#String#>, 
+Septica.TraditionalStrategy.init:2:10: note: 'init(rawValue:)' declared here
+internal init?(rawValue: String)}
+         ^
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:144:34: error: cannot infer contextual base in reference to member 'traditional'
+                culturalOrigin: .traditional,
+                                ~^~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:147:38: error: cannot infer contextual base in reference to member 'pointCardFocus'
+                recognitionPattern: .pointCardFocus,
+                                    ~^~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:148:31: error: reference to member 'pointOpportunity' cannot be resolved without a contextual type
+                conditions: [.pointOpportunity, .aggressivePosition],
+                              ^
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:148:50: error: reference to member 'aggressivePosition' cannot be resolved without a contextual type
+                conditions: [.pointOpportunity, .aggressivePosition],
+                                                 ^
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:149:35: error: cannot infer contextual base in reference to member 'scoreAdvantage'
+                expectedOutcome: .scoreAdvantage,
+                                 ~^~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:150:30: error: cannot infer contextual base in reference to member 'intermediate'
+                difficulty: .intermediate,
+                            ~^~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:152:22: error: reference to member 'moldovan' cannot be resolved without a contextual type
+                    .moldovan: MoldovanPointStrategy(),
+                     ^
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:153:22: error: reference to member 'transylvanian' cannot be resolved without a contextual type
+                    .transylvanian: TransylvanianPointStrategy(),
+                     ^
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:154:22: error: reference to member 'wallachian' cannot be resolved without a contextual type
+                    .wallachian: WallachianPointStrategy()
+                     ^
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:159:32: error: extra arguments at positions #1, #2, #3, #4, #5, #6, #7, #8, #9, #10, #11 in call
+            TraditionalStrategy(
+                               ^
+Septica.TraditionalStrategy.init:2:10: note: 'init(rawValue:)' declared here
+internal init?(rawValue: String)}
+         ^
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:160:17: error: missing argument for parameter 'rawValue' in call
+                id: "moldovan_patience",
+                ^
+                rawValue: <#String#>, 
+Septica.TraditionalStrategy.init:2:10: note: 'init(rawValue:)' declared here
+internal init?(rawValue: String)}
+         ^
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:163:34: error: cannot infer contextual base in reference to member 'regional'
+                culturalOrigin: .regional(.moldovan),
+                                ~^~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:163:44: error: cannot infer contextual base in reference to member 'moldovan'
+                culturalOrigin: .regional(.moldovan),
+                                          ~^~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:166:38: error: cannot infer contextual base in reference to member 'defensivePattern'
+                recognitionPattern: .defensivePattern,
+                                    ~^~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:167:31: error: reference to member 'defensiveOpportunity' cannot be resolved without a contextual type
+                conditions: [.defensiveOpportunity, .longTermThinking],
+                              ^
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:167:54: error: reference to member 'longTermThinking' cannot be resolved without a contextual type
+                conditions: [.defensiveOpportunity, .longTermThinking],
+                                                     ^
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:168:35: error: cannot infer contextual base in reference to member 'positionalAdvantage'
+                expectedOutcome: .positionalAdvantage,
+                                 ~^~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:169:30: error: cannot infer contextual base in reference to member 'beginner'
+                difficulty: .beginner,
+                            ~^~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:171:22: error: reference to member 'moldovan' cannot be resolved without a contextual type
+                    .moldovan: AuthenticMoldovanPatience()
+                     ^
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:176:32: error: extra arguments at positions #1, #2, #3, #4, #5, #6, #7, #8, #9, #10, #11 in call
+            TraditionalStrategy(
+                               ^
+Septica.TraditionalStrategy.init:2:10: note: 'init(rawValue:)' declared here
+internal init?(rawValue: String)}
+         ^
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:177:17: error: missing argument for parameter 'rawValue' in call
+                id: "transylvanian_efficiency",
+                ^
+                rawValue: <#String#>, 
+Septica.TraditionalStrategy.init:2:10: note: 'init(rawValue:)' declared here
+internal init?(rawValue: String)}
+         ^
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:180:34: error: cannot infer contextual base in reference to member 'regional'
+                culturalOrigin: .regional(.transylvanian),
+                                ~^~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:180:44: error: cannot infer contextual base in reference to member 'transylvanian'
+                culturalOrigin: .regional(.transylvanian),
+                                          ~^~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:183:38: error: cannot infer contextual base in reference to member 'directPlayPattern'
+                recognitionPattern: .directPlayPattern,
+                                    ~^~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:184:31: error: reference to member 'immediateValue' cannot be resolved without a contextual type
+                conditions: [.immediateValue, .clearPath],
+                              ^
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:184:48: error: reference to member 'clearPath' cannot be resolved without a contextual type
+                conditions: [.immediateValue, .clearPath],
+                                               ^
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:185:35: error: cannot infer contextual base in reference to member 'quickWin'
+                expectedOutcome: .quickWin,
+                                 ~^~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:186:30: error: cannot infer contextual base in reference to member 'intermediate'
+                difficulty: .intermediate,
+                            ~^~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:188:22: error: reference to member 'transylvanian' cannot be resolved without a contextual type
+                    .transylvanian: AuthenticTransylvanianEfficiency()
+                     ^
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:193:32: error: extra arguments at positions #1, #2, #3, #4, #5, #6, #7, #8, #9, #10, #11 in call
+            TraditionalStrategy(
+                               ^
+Septica.TraditionalStrategy.init:2:10: note: 'init(rawValue:)' declared here
+internal init?(rawValue: String)}
+         ^
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:194:17: error: missing argument for parameter 'rawValue' in call
+                id: "wallachian_rhythm",
+                ^
+                rawValue: <#String#>, 
+Septica.TraditionalStrategy.init:2:10: note: 'init(rawValue:)' declared here
+internal init?(rawValue: String)}
+         ^
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:197:34: error: cannot infer contextual base in reference to member 'regional'
+                culturalOrigin: .regional(.wallachian),
+                                ~^~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:197:44: error: cannot infer contextual base in reference to member 'wallachian'
+                culturalOrigin: .regional(.wallachian),
+                                          ~^~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:200:38: error: cannot infer contextual base in reference to member 'rhythmDisruption'
+                recognitionPattern: .rhythmDisruption,
+                                    ~^~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:201:31: error: reference to member 'rhythmOpportunity' cannot be resolved without a contextual type
+                conditions: [.rhythmOpportunity, .adaptivePosition],
+                              ^
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:201:51: error: reference to member 'adaptivePosition' cannot be resolved without a contextual type
+                conditions: [.rhythmOpportunity, .adaptivePosition],
+                                                  ^
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:202:35: error: cannot infer contextual base in reference to member 'controlAdvantage'
+                expectedOutcome: .controlAdvantage,
+                                 ~^~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:203:30: error: cannot infer contextual base in reference to member 'advanced'
+                difficulty: .advanced,
+                            ~^~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:205:22: error: reference to member 'wallachian' cannot be resolved without a contextual type
+                    .wallachian: AuthenticWallachianRhythm()
+                     ^
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:210:31: error: reference to property 'traditionalStrategies' in closure requires explicit use of 'self' to make capture semantics explicit
+        logger.info("Loaded \(traditionalStrategies.count) traditional Romanian strategies")
+                              ^
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:210:31: note: reference 'self.' explicitly
+        logger.info("Loaded \(traditionalStrategies.count) traditional Romanian strategies")
+                              ^
+                              self.
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:216:13: error: cannot find 'CulturalStrategyContext' in scope
+            CulturalStrategyContext(
+            ^~~~~~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:223:13: error: cannot find 'CulturalStrategyContext' in scope
+            CulturalStrategyContext(
+            ^~~~~~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:230:13: error: cannot find 'CulturalStrategyContext' in scope
+            CulturalStrategyContext(
+            ^~~~~~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:316:81: error: value of type 'TraditionalStrategy' has no member 'id'
+                    aiPrediction: predictions.first { $0.strategyId == strategy.id },
+                                                                       ~~~~~~~~ ^~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:368:31: error: cannot find type 'StrategyRecommendation' in scope
+        var recommendations: [StrategyRecommendation] = []
+                              ^~~~~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:374:34: error: cannot find 'StrategyRecommendation' in scope
+            let recommendation = StrategyRecommendation(
+                                 ^~~~~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:396:29: error: cannot find type 'HybridStrategy' in scope
+        var opportunities: [HybridStrategy] = []
+                            ^~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:423:35: error: value of type 'TraditionalStrategy' has no member 'conditions'
+        for condition in strategy.conditions {
+                         ~~~~~~~~ ^~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:430:21: error: value of type 'TraditionalStrategy' has no member 'recognitionPattern'
+        if strategy.recognitionPattern == getPatternFromMove(context.move, gameState: context.gameState) {
+           ~~~~~~~~ ^~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:450:25: error: value of type 'TraditionalStrategy' has no member 'culturalOrigin'
+        switch strategy.culturalOrigin {
+               ~~~~~~~~ ^~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:455:16: error: cannot find 'isRegionalContextMatch' in scope
+            if isRegionalContextMatch(region, context: context) {
+               ^~~~~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:465:31: error: value of type 'TraditionalStrategy' has no member 'effectiveness'
+        alignment *= strategy.effectiveness
+                     ~~~~~~~~ ^~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:468:12: error: cannot find 'hasHistoricalRelevance' in scope
+        if hasHistoricalRelevance(strategy, context: context) {
+           ^~~~~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:481:31: error: cannot convert value of type 'String' to expected argument type 'Float'
+        return (contextualFit + efficiencyScore + innovationFactor) / 3.0
+                              ^
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:505:31: error: cannot find type 'StrategyRecommendation' in scope
+        var recommendations: [StrategyRecommendation] = []
+                              ^~~~~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:509:36: error: cannot find 'StrategyRecommendation' in scope
+            recommendations.append(StrategyRecommendation(
+                                   ^~~~~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:510:24: error: cannot infer contextual base in reference to member 'culturalLearning'
+                type: .culturalLearning,
+                      ~^~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:516:44: error: cannot infer contextual base in reference to member 'intermediate'
+                implementationDifficulty: .intermediate,
+                                          ~^~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:526:33: error: cannot find 'identifyUnexploredRegionalStyles' in scope
+        let unexploredRegions = identifyUnexploredRegionalStyles(context)
+                                ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:528:36: error: cannot find 'StrategyRecommendation' in scope
+            recommendations.append(StrategyRecommendation(
+                                   ^~~~~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:533:34: error: cannot find 'getRegionalCulturalContext' in scope
+                culturalContext: getRegionalCulturalContext(region),
+                                 ^~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:536:38: error: cannot find 'getRegionalLearningSuggestions' in scope
+                learningSuggestions: getRegionalLearningSuggestions(region)
+                                     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:529:24: error: cannot infer contextual base in reference to member 'regionalExploration'
+                type: .regionalExploration,
+                      ~^~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:535:44: error: cannot infer contextual base in reference to member 'beginner'
+                implementationDifficulty: .beginner,
+                                          ~^~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:550:35: error: cannot find 'checkHybridCompatibility' in scope
+        let compatibility = await checkHybridCompatibility(traditional: traditionalStrategy, modern: modernStrategy, context: context)
+                                  ^~~~~~~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:555:41: error: cannot find 'calculateHybridEffectiveness' in scope
+        let hybridEffectiveness = await calculateHybridEffectiveness(traditional: traditionalStrategy, modern: modernStrategy, context: context)
+                                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:558:36: error: cannot find 'generateHybridImplementation' in scope
+        let implementation = await generateHybridImplementation(traditional: traditionalStrategy, modern: modernStrategy)
+                                   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:573:28: error: cannot find type 'HybridStrategy' in scope
+        var combinations: [HybridStrategy] = []
+                           ^~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:577:32: error: value of type 'TraditionalStrategy' has no member 'culturalOrigin'
+            strategy.strategy?.culturalOrigin
+            ~~~~~~~~~~~~~~~~~~ ^~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:584:38: error: cannot find 'createRegionalCombination' in scope
+                   let combo = await createRegionalCombination(strategies1, strategies2, context: context) {
+                                     ^~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:612:37: error: cannot find 'calculateEffectivenessFromResult' in scope
+                let effectiveness = calculateEffectivenessFromResult(strategy, result: result)
+                                    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:613:17: error: cannot find 'updateTraditionalStrategyEffectiveness' in scope
+                updateTraditionalStrategyEffectiveness(strategy.id, effectiveness: effectiveness)
+                ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:613:65: error: value of type 'TraditionalStrategy' has no member 'id'
+                updateTraditionalStrategyEffectiveness(strategy.id, effectiveness: effectiveness)
+                                                       ~~~~~~~~ ^~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:617:37: error: cannot find 'calculateEffectivenessFromResult' in scope
+                let effectiveness = calculateEffectivenessFromResult(modernStrategy, result: result)
+                                    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:618:17: error: cannot find 'updateModernStrategyEffectiveness' in scope
+                updateModernStrategyEffectiveness(modernStrategy.id, effectiveness: effectiveness)
+                ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:672:20: error: cannot find 'hasDefensiveOpportunity' in scope
+            return hasDefensiveOpportunity(context)
+                   ^~~~~~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:674:20: error: cannot find 'requiresLongTermThinking' in scope
+            return requiresLongTermThinking(context)
+                   ^~~~~~~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:676:20: error: cannot find 'hasImmediateValueOpportunity' in scope
+            return hasImmediateValueOpportunity(context)
+                   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:678:20: error: cannot find 'hasClearPath' in scope
+            return hasClearPath(context)
+                   ^~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:680:20: error: cannot find 'hasRhythmDisruptionOpportunity' in scope
+            return hasRhythmDisruptionOpportunity(context)
+                   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:682:20: error: cannot find 'requiresAdaptiveResponse' in scope
+            return requiresAdaptiveResponse(context)
+                   ^~~~~~~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:699:23: error: cannot find type 'ContextualFactor' in scope
+        var factors: [ContextualFactor] = []
+                      ^~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:702:24: error: cannot find 'ContextualFactor' in scope
+        factors.append(ContextualFactor(
+                       ^~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:703:20: error: cannot infer contextual base in reference to member 'gamePhase'
+            type: .gamePhase,
+                  ~^~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:709:25: error: cannot find 'calculateScoreDifference' in scope
+        let scoreDiff = calculateScoreDifference(context.gameState)
+                        ^~~~~~~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:710:24: error: cannot find 'ContextualFactor' in scope
+        factors.append(ContextualFactor(
+                       ^~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:711:20: error: cannot infer contextual base in reference to member 'scoreDifference'
+            type: .scoreDifference,
+                  ~^~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:717:28: error: cannot find 'calculateHandStrength' in scope
+        let handStrength = calculateHandStrength(context.gameState)
+                           ^~~~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:718:24: error: cannot find 'ContextualFactor' in scope
+        factors.append(ContextualFactor(
+                       ^~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:719:20: error: cannot infer contextual base in reference to member 'handStrength'
+            type: .handStrength,
+                  ~^~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift:761:25: error: value of type 'TraditionalStrategy' has no member 'effectiveness'
+        return strategy.effectiveness * 0.8 // Simplified calculation
+               ~~~~~~~~ ^~~~~~~~~~~~~
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Services/CloudKit/CloudKitDataModels.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/CloudKitDataModels.swift:7:8: error: invalid redeclaration of 'GameSessionSummary'
+struct GameSessionSummary: Identifiable {
+       ^
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/GameStateCloudKitIntegration.swift:493:8: note: 'GameSessionSummary' previously declared here
+struct GameSessionSummary: Identifiable {
+       ^
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/GameStateCloudKitIntegration.swift:493:8: note: 'GameSessionSummary' previously declared here
+struct GameSessionSummary: Identifiable {
+       ^
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Services/CloudKit/CloudKitErrorHandler.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Services/CloudKit/CloudKitIntegrationValidator.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Services/CloudKit/CloudKitRecordManager.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Services/CloudKit/FluidCardInteractionSync.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/FluidCardInteractionSync.swift:578:16: warning: value 'cardState' was defined but never used; consider replacing with boolean test
+        if let cardState = cardStates[cardId] {
+           ~~~~^~~~~~~~~~~~
+                                              != nil
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/FluidCardInteractionSync.swift:628:13: warning: initialization of immutable value 'intensity' was never used; consider replacing with assignment to '_' or removing it
+        let intensity = adjustIntensityForAge(pattern.intensity, ageGroup: ageGroup)
+        ~~~~^~~~~~~~~
+        _
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Services/CloudKit/FluidCardInteractionVisuals.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/FluidCardInteractionVisuals.swift:263:54: error: cannot find type 'CulturalAchievement' in scope
+    func showRomanianCulturalEffect(achievementType: CulturalAchievement, intensity: Float) {
+                                                     ^~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/FluidCardInteractionVisuals.swift:279:52: error: cannot find type 'RomanianArena' in scope
+    func showArenaProgressionCelebration(newArena: RomanianArena, previousArena: RomanianArena) {
+                                                   ^~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/FluidCardInteractionVisuals.swift:279:82: error: cannot find type 'RomanianArena' in scope
+    func showArenaProgressionCelebration(newArena: RomanianArena, previousArena: RomanianArena) {
+                                                                                 ^~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/FluidCardInteractionVisuals.swift:378:53: error: cannot find type 'CulturalAchievement' in scope
+    private func selectFolkPattern(for achievement: CulturalAchievement) -> FluidFolkPattern {
+                                                    ^~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/FluidCardInteractionVisuals.swift:391:64: error: cannot find type 'CulturalAchievement' in scope
+    private func getRomanianTraditionalColors(for achievement: CulturalAchievement) -> [RomanianColor] {
+                                                               ^~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/FluidCardInteractionVisuals.swift:402:57: error: cannot find type 'CulturalAchievement' in scope
+    private func getCulturalSoundTrack(for achievement: CulturalAchievement) -> CulturalSoundType? {
+                                                        ^~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/FluidCardInteractionVisuals.swift:427:52: error: cannot find type 'RomanianArena' in scope
+    private func getArenaVisualElements(for arena: RomanianArena) -> [ArenaVisualElement] {
+                                                   ^~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/FluidCardInteractionVisuals.swift:440:43: error: cannot find type 'RomanianArena' in scope
+    private func getArenaMusic(for arena: RomanianArena) -> AudioManager.BackgroundMusic? {
+                                          ^~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/FluidCardInteractionVisuals.swift:549:26: error: cannot find type 'CulturalAchievement' in scope
+    let achievementType: CulturalAchievement
+                         ^~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/FluidCardInteractionVisuals.swift:570:19: error: cannot find type 'RomanianArena' in scope
+    let newArena: RomanianArena?
+                  ^~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/FluidCardInteractionVisuals.swift:571:24: error: cannot find type 'RomanianArena' in scope
+    let previousArena: RomanianArena?
+                       ^~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/FluidCardInteractionVisuals.swift:181:24: error: value of type 'CulturalAchievementSystem' has no member 'recordCulturalAction'
+        culturalSystem.recordCulturalAction("seven_wild_played")
+        ~~~~~~~~~~~~~~ ^~~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/FluidCardInteractionVisuals.swift:228:24: error: value of type 'CulturalAchievementSystem' has no member 'recordCulturalAction'
+        culturalSystem.recordCulturalAction("last_trick_celebration")
+        ~~~~~~~~~~~~~~ ^~~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/FluidCardInteractionVisuals.swift:281:31: error: cannot infer contextual base in reference to member 'arenaProgression'
+            celebrationType: .arenaProgression,
+                             ~^~~~~~~~~~~~~~~~
+
+SwiftCompile normal arm64 Compiling\ RomanianTraditionalAI.swift,\ GameController.swift,\ SepticaErrorHandling.swift,\ ContentRatingManager.swift,\ PrivacyPolicyManager.swift,\ TermsOfServiceManager.swift,\ AccessibilityManager.swift,\ AnimationManager.swift /Users/bogdan/work/Septica/Septica/AI/RomanianTraditionalAI.swift /Users/bogdan/work/Septica/Septica/Controllers/GameController.swift /Users/bogdan/work/Septica/Septica/ErrorHandling/SepticaErrorHandling.swift /Users/bogdan/work/Septica/Septica/Legal/ContentRatingManager.swift /Users/bogdan/work/Septica/Septica/Legal/PrivacyPolicyManager.swift /Users/bogdan/work/Septica/Septica/Legal/TermsOfServiceManager.swift /Users/bogdan/work/Septica/Septica/Managers/AccessibilityManager.swift /Users/bogdan/work/Septica/Septica/Managers/AnimationManager.swift (in target 'Septica' from project 'Septica')
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/AI/RomanianTraditionalAI.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Controllers/GameController.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/ErrorHandling/SepticaErrorHandling.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Legal/ContentRatingManager.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Legal/PrivacyPolicyManager.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Legal/TermsOfServiceManager.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Managers/AccessibilityManager.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Managers/AnimationManager.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 Compiling\ DropZoneView.swift,\ RomanianCharacterAvatarView.swift,\ RomanianCharacterReactionOverlay.swift,\ RomanianCharacterSelectionView.swift,\ RomanianCharacterSystem.swift,\ RomanianColors.swift,\ RomanianGameZoneFrames.swift,\ RomanianOrnatePatternSystem.swift /Users/bogdan/work/Septica/Septica/Views/Components/DropZoneView.swift /Users/bogdan/work/Septica/Septica/Views/Components/RomanianCharacterAvatarView.swift /Users/bogdan/work/Septica/Septica/Views/Components/RomanianCharacterReactionOverlay.swift /Users/bogdan/work/Septica/Septica/Views/Components/RomanianCharacterSelectionView.swift /Users/bogdan/work/Septica/Septica/Views/Components/RomanianCharacterSystem.swift /Users/bogdan/work/Septica/Septica/Views/Components/RomanianColors.swift /Users/bogdan/work/Septica/Septica/Views/Components/RomanianGameZoneFrames.swift /Users/bogdan/work/Septica/Septica/Views/Components/RomanianOrnatePatternSystem.swift (in target 'Septica' from project 'Septica')
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Components/DropZoneView.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Components/RomanianCharacterAvatarView.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Components/RomanianCharacterReactionOverlay.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Components/RomanianCharacterSelectionView.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Components/RomanianCharacterSystem.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Components/RomanianColors.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Components/RomanianGameZoneFrames.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Components/RomanianOrnatePatternSystem.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftDriverJobDiscovery normal arm64 Compiling GameEndCelebrationSystem.swift, RomanianCulturalIntelligence.swift, MultiplayerIntegration.swift, MultiplayerService.swift, NetworkCoordinator.swift, NetworkManager.swift, WebSocketMessage.swift, EnhancedPlayerProfileManager.swift (in target 'Septica' from project 'Septica')
+
+warning: Skipping duplicate build file in Compile Sources build phase: /Users/bogdan/work/Septica/Septica/Services/CloudKit/SepticaCloudKitManager.swift (in target 'Septica' from project 'Septica')
+** BUILD FAILED **
+
+
+The following build commands failed:
+	SwiftCompile normal arm64 Compiling\ AudioManager.swift,\ ErrorManager.swift,\ HapticManager.swift,\ ManagerCoordinator.swift,\ NavigationManager.swift,\ Card.swift,\ Deck.swift,\ GameRules.swift /Users/bogdan/work/Septica/Septica/Managers/AudioManager.swift /Users/bogdan/work/Septica/Septica/Managers/ErrorManager.swift /Users/bogdan/work/Septica/Septica/Managers/HapticManager.swift /Users/bogdan/work/Septica/Septica/Managers/ManagerCoordinator.swift /Users/bogdan/work/Septica/Septica/Managers/NavigationManager.swift /Users/bogdan/work/Septica/Septica/Models/Core/Card.swift /Users/bogdan/work/Septica/Septica/Models/Core/Deck.swift /Users/bogdan/work/Septica/Septica/Models/Core/GameRules.swift (in target 'Septica' from project 'Septica')
+	SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Managers/ManagerCoordinator.swift (in target 'Septica' from project 'Septica')
+	SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift (in target 'Septica' from project 'Septica')
+	SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Services/CloudKit/CloudKitDataModels.swift (in target 'Septica' from project 'Septica')
+	SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Services/CloudKit/FluidCardInteractionVisuals.swift (in target 'Septica' from project 'Septica')
+	Building project Septica with scheme Septica and configuration Debug
+(6 failures)

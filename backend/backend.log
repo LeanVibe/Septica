@@ -1,0 +1,16 @@
+2025/09/25 18:52:45 [INFO] Starting Septica backend server environment=development port=8080
+2025/09/25 18:52:45 [INFO] Database connected successfully
+
+2025/09/25 18:52:45 [32m/Users/bogdan/work/Septica/backend/internal/database/database.go:52
+[0m[33m[20.023ms] [34;1m[rows:1][0m SELECT count(*) FROM information_schema.tables WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'users' AND table_type = 'BASE TABLE'
+
+2025/09/25 18:52:45 [32m/Users/bogdan/work/Septica/backend/internal/database/database.go:52
+[0m[33m[0.601ms] [34;1m[rows:1][0m SELECT CURRENT_DATABASE()
+
+2025/09/25 18:52:45 [32m/Users/bogdan/work/Septica/backend/internal/database/database.go:52
+[0m[33m[22.362ms] [34;1m[rows:-][0m SELECT c.column_name, c.is_nullable = 'YES', c.udt_name, c.character_maximum_length, c.numeric_precision, c.numeric_precision_radix, c.numeric_scale, c.datetime_precision, 8 * typlen, c.column_default, pd.description, c.identity_increment FROM information_schema.columns AS c JOIN pg_type AS pgt ON c.udt_name = pgt.typname LEFT JOIN pg_catalog.pg_description as pd ON pd.objsubid = c.ordinal_position AND pd.objoid = (SELECT oid FROM pg_catalog.pg_class WHERE relname = c.table_name AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = c.table_schema)) where table_catalog = 'septica' AND table_schema = CURRENT_SCHEMA() AND table_name = 'users'
+
+2025/09/25 18:52:45 [31;1m/Users/bogdan/work/Septica/backend/internal/database/database.go:52 [35;1minsufficient arguments
+[0m[33m[0.100ms] [34;1m[rows:-][0m SELECT * FROM "users" LIMIT 1
+2025/09/25 18:52:45 [FATAL] Failed to run database migrations error=insufficient arguments
+exit status 1

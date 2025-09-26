@@ -133,11 +133,7 @@ func rotationMatrix(_ angle: Float, axis: simd_float3) -> matrix_float4x4 {
 
 extension Card {
     var isSpecialCard: Bool {
-        return value == 7 || isPointCard
-    }
-    
-    var isPointCard: Bool {
-        return value == 1 || value == 10 || value == 11
+        value == 7 || isPointCard
     }
 }
 

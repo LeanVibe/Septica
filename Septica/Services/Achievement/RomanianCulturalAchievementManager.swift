@@ -1,238 +1,123 @@
-//
-//  RomanianCulturalAchievementManager.swift
-//  Septica
-//
-//  Romanian Cultural Achievement System - Sprint 3 Week 10
-//  Comprehensive heritage achievement tracking with educational value
-//
-
 import Foundation
 import Combine
-import os.log
 
-/// Romanian cultural achievement manager with educational heritage integration
 @MainActor
-class RomanianCulturalAchievementManager: ObservableObject {
-    
-    // MARK: - Dependencies
-    
-    private let logger = Logger(subsystem: "dev.leanvibe.game.Septica", category: "RomanianCulturalAchievementManager")
-    
-    // MARK: - Published Achievement State
-    
-    @Published var unlockedAchievements: [RomanianAchievement] = []
-    @Published var progressAchievements: [AchievementProgress] = []
-    @Published var availableAchievements: [RomanianAchievement] = []
-    
-    // MARK: - Player Progress Tracking
-    
-    @Published var currentPlayerId: UUID = UUID()
-    @Published var totalExperiencePoints: Int = 0
-    @Published var totalCulturalKnowledgePoints: Int = 0
-    @Published var completedAchievementIds: Set<UUID> = []
-    
-    // MARK: - Achievement Registry
-    
-    private let achievementRegistry = AchievementRegistry.shared
-    
-    // MARK: - Initialization
-    
-    init() {
-        setupDefaultAchievements()
-        loadPlayerProgress()
-    }
-    
-    // MARK: - Achievement Setup
-    
-    private func setupDefaultAchievements() {
-        // Register some basic achievements for testing
-        let firstSteps = RomanianAchievement(
-            type: .gameplay,
-            category: .gameWins,
-            difficulty: .bronze,
-            culturalRegion: nil,
-            titleKey: "achievement_first_steps_title",
-            descriptionKey: "achievement_first_steps_desc",
-            culturalContextKey: "achievement_first_steps_context",
-            requirements: [.gamesPlayed(count: 1)],
-            targetValue: 1,
-            experiencePoints: 10,
-            culturalKnowledgePoints: 5,
-            badge: AchievementBadge(iconName: "star.fill", colorScheme: .bronze)
-        )
-        
-        let cardVirtuoso = RomanianAchievement(
-            type: .gameplay,
-            category: .cardMastery,
-            difficulty: .gold,
-            culturalRegion: .transylvania,
-            titleKey: "achievement_card_virtuoso_title",
-            descriptionKey: "achievement_card_virtuoso_desc",
-            culturalContextKey: "achievement_card_virtuoso_context",
-            requirements: [.gamesWon(count: 25)],
-            targetValue: 25,
-            experiencePoints: 100,
-            culturalKnowledgePoints: 50,
-            badge: AchievementBadge(iconName: "crown.fill", colorScheme: .gold)
-        )
-        
-        let folkloreScholar = RomanianAchievement(
-            type: .cultural,
-            category: .folkloreLearning,
-            difficulty: .silver,
-            culturalRegion: nil,
-            titleKey: "achievement_folklore_scholar_title",
-            descriptionKey: "achievement_folklore_scholar_desc",
-            culturalContextKey: "achievement_folklore_scholar_context",
-            requirements: [.folktaleLearned(count: 15)],
-            targetValue: 15,
-            experiencePoints: 75,
-            culturalKnowledgePoints: 100,
-            badge: AchievementBadge(iconName: "book.fill", colorScheme: .cultural)
-        )
-        
-        achievementRegistry.registerAchievement(firstSteps)
-        achievementRegistry.registerAchievement(cardVirtuoso)
-        achievementRegistry.registerAchievement(folkloreScholar)
-        
-        availableAchievements = achievementRegistry.getAllAchievements()
-        
-        logger.info("Registered \(self.availableAchievements.count) Romanian cultural achievements")
-    }
-    
-    private func loadPlayerProgress() {
-        // Initialize progress tracking for all achievements
-        for achievement in availableAchievements {
-            let progress = AchievementProgress(
+final class RomanianCulturalAchievementManager: ObservableObject {
+    @Published private(set) var unlocked: Set<UUID> = []
+    @Published private(set) var available: [RomanianAchievement]
+    @Published private(set) var progress: [UUID: AchievementProgress] = [:]
+    @Published private(set) var totalExperience: Int = 0
+    @Published private(set) var totalCulturalPoints: Int = 0
+
+    private let registry: AchievementRegistry
+    private let playerId: UUID
+
+    init(registry: AchievementRegistry = .shared, playerId: UUID = UUID()) {
+        self.registry = registry
+        self.playerId = playerId
+
+        if registry.all().isEmpty {
+            Self.bootstrapSampleAchievements(into: registry)
+        }
+        self.available = registry.all()
+        for achievement in available {
+            progress[achievement.id] = AchievementProgress(
                 achievementId: achievement.id,
-                playerId: currentPlayerId
+                playerId: playerId,
+                targetValue: achievement.targetValue
             )
-            progressAchievements.append(progress)
         }
-        
-        logger.info("Initialized progress tracking for \(self.progressAchievements.count) achievements")
     }
-    
-    // MARK: - Progress Tracking
-    
-    func trackGameEvent(type: GameEventType, value: Int = 1) {
-        logger.info("Tracking game event: \(String(describing: type)) with value: \(value)")
-        
-        switch type {
+
+    func recordGameEvent(_ event: GameEventType) {
+        switch event {
         case .gameStarted:
-            updateProgress(for: .gamesPlayed(count: value))
+            updateProgress(for: .gamesPlayed, amount: 1)
         case .gameWon:
-            updateProgress(for: .gamesWon(count: value))
-        case .perfectGame:
-            updateProgress(for: .perfectGames(count: value))
-        case .cardPlayed:
-            updateProgress(for: .cardsPlayed(count: value))
+            updateProgress(for: .gamesWon, amount: 1)
         }
     }
-    
-    func trackCulturalEvent(type: AchievementCulturalEventType, value: Int = 1) {
-        logger.info("Tracking cultural event: \(String(describing: type)) with value: \(value)")
-        
-        switch type {
+
+    func recordCulturalEvent(_ event: AchievementCulturalEventType) {
+        switch event {
         case .folkloreStoryRead:
-            updateProgress(for: .folktaleLearned(count: value))
-        case .traditionExplored:
-            updateProgress(for: .traditionExplored(count: value))
+            updateProgress(for: .folkloreStories, amount: 1)
         case .culturalQuizCompleted:
-            updateProgress(for: .culturalQuizAnswered(count: value))
+            updateProgress(for: .culturalQuizzes, amount: 1)
         }
     }
-    
-    private func updateProgress(for requirement: AchievementRequirement) {
-        for i in 0..<progressAchievements.count {
-            let progress = progressAchievements[i]
-            
-            if let achievement = achievementRegistry.getAchievement(id: progress.achievementId),
-               achievement.requirements.contains(requirement) {
-                
-                let newValue = progress.currentValue + requirement.targetValue
-                progressAchievements[i].updateProgress(newValue)
-                
-                // Check for completion
-                if progressAchievements[i].isCompleted && !completedAchievementIds.contains(achievement.id) {
-                    completeAchievement(achievement)
-                }
+
+    func progress(for achievementId: UUID) -> AchievementProgress? {
+        progress[achievementId]
+    }
+
+    private func updateProgress(for requirement: AchievementRequirementID, amount: Int) {
+        for achievement in available where achievementRequires(achievement, requirement: requirement) {
+            guard var tracker = progress[achievement.id] else { continue }
+            tracker.addProgress(amount)
+            progress[achievement.id] = tracker
+
+            if tracker.isCompleted {
+                unlock(achievement)
             }
         }
     }
-    
-    private func completeAchievement(_ achievement: RomanianAchievement) {
-        guard !completedAchievementIds.contains(achievement.id) else { return }
-        
-        unlockedAchievements.append(achievement)
-        completedAchievementIds.insert(achievement.id)
-        
-        totalExperiencePoints += achievement.experiencePoints
-        totalCulturalKnowledgePoints += achievement.culturalKnowledgePoints
-        
-        logger.info("Achievement completed: \(achievement.titleKey)")
-        logger.info("Gained \(achievement.experiencePoints) XP and \(achievement.culturalKnowledgePoints) cultural knowledge points")
-        
-        // Trigger achievement celebration
-        celebrateAchievement(achievement)
+
+    private func unlock(_ achievement: RomanianAchievement) {
+        guard !unlocked.contains(achievement.id) else { return }
+        unlocked.insert(achievement.id)
+        totalExperience += achievement.experiencePoints
+        totalCulturalPoints += achievement.culturalPoints
     }
-    
-    private func celebrateAchievement(_ achievement: RomanianAchievement) {
-        // Simple celebration logic - could be expanded with animations, sounds, etc.
-        logger.info("🎉 Celebrating achievement: \(achievement.titleKey)")
-        
-        // Post notification for UI to show celebration
-        NotificationCenter.default.post(
-            name: .achievementUnlocked,
-            object: achievement
-        )
-    }
-    
-    // MARK: - Query Methods
-    
-    func getProgress(for achievementId: UUID) -> AchievementProgress? {
-        return progressAchievements.first { $0.achievementId == achievementId }
-    }
-    
-    func getAchievements(for category: AchievementCategory) -> [RomanianAchievement] {
-        return achievementRegistry.getAchievements(for: category)
-    }
-    
-    func getAchievements(for region: RomanianRegion) -> [RomanianAchievement] {
-        return achievementRegistry.getAchievements(for: region)
-    }
-    
-    func getCompletedAchievements() -> [RomanianAchievement] {
-        return unlockedAchievements
-    }
-    
-    func getProgressPercentage(for achievementId: UUID) -> Double {
-        guard let progress = getProgress(for: achievementId),
-              let achievement = achievementRegistry.getAchievement(id: achievementId) else {
-            return 0.0
+
+    private func achievementRequires(_ achievement: RomanianAchievement, requirement: AchievementRequirementID) -> Bool {
+        switch achievement.category {
+        case .gameplay:
+            return requirement == .gamesPlayed || requirement == .gamesWon
+        case .cultural, .cardMastery, .folkloreLearning:
+            return requirement == .folkloreStories
+        case .educational:
+            return requirement == .culturalQuizzes
+        default:
+            return false
         }
-        
-        return min(Double(progress.currentValue) / Double(achievement.targetValue), 1.0)
     }
-}
 
-// MARK: - Event Types
+    static func bootstrapSampleAchievements(into registry: AchievementRegistry) {
+        registry.reset()
 
-enum GameEventType {
-    case gameStarted
-    case gameWon
-    case perfectGame
-    case cardPlayed
-}
+        let starter = RomanianAchievement(
+            titleKey: "achievement.starter.title",
+            descriptionKey: "achievement.starter.description",
+            category: .gameplay,
+            difficulty: .bronze,
+            targetValue: 1,
+            experiencePoints: 10,
+            culturalPoints: 5,
+            badge: AchievementBadge(iconName: "star.fill", tint: .bronze)
+        )
+        let winner = RomanianAchievement(
+            titleKey: "achievement.winner.title",
+            descriptionKey: "achievement.winner.description",
+            category: .gameplay,
+            difficulty: .silver,
+            targetValue: 5,
+            experiencePoints: 50,
+            culturalPoints: 20,
+            badge: AchievementBadge(iconName: "crown.fill", tint: .silver),
+            rewards: [.title("Septica Champion")]
+        )
+        let folklore = RomanianAchievement(
+            titleKey: "achievement.folklore.title",
+            descriptionKey: "achievement.folklore.description",
+            category: .cultural,
+            difficulty: .bronze,
+            targetValue: 3,
+            experiencePoints: 25,
+            culturalPoints: 40,
+            badge: AchievementBadge(iconName: "book.fill", tint: .cultural)
+        )
 
-enum AchievementCulturalEventType {
-    case folkloreStoryRead
-    case traditionExplored
-    case culturalQuizCompleted
-}
-
-// MARK: - Notification Names
-
-extension Notification.Name {
-    static let achievementUnlocked = Notification.Name("achievementUnlocked")
+        [starter, winner, folklore].forEach { registry.register($0) }
+    }
 }

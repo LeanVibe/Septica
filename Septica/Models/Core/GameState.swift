@@ -26,6 +26,8 @@ class GameState: ObservableObject, Codable {
     
     // MARK: - Game Phase
     @Published var phase: GamePhase = .setup
+    @Published var targetScore: Int = 11
+    
     @Published var roundNumber: Int = 1
     @Published var trickNumber: Int = 1
     

@@ -449,7 +449,7 @@ struct WorkingGameScreen: View {
     
     private func handleGamePhaseChange(_ newPhase: GameViewModel.GamePhase) {
         switch newPhase {
-        case .gameOver:
+        case .finished:
             dialogueSystem.triggerDialogue(for: .victory, character: gameViewModel.currentOpponentAvatar)
         default:
             break

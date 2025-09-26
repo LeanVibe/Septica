@@ -8,54 +8,6 @@
 
 import Foundation
 
-// MARK: - Cultural Moment Types
-
-/// Cultural moment captured during gameplay
-struct CulturalMoment {
-    let type: CulturalMomentType
-    let context: String
-    let significance: Double
-    let timestamp: Date
-    
-    init(type: CulturalMomentType, context: String, significance: Double = 0.5, timestamp: Date = Date()) {
-        self.type = type
-        self.context = context
-        self.significance = significance
-        self.timestamp = timestamp
-    }
-}
-
-/// Types of cultural moments that can be captured
-enum CulturalMomentType: String, CaseIterable {
-    case traditionInvoked = "tradition_invoked"
-    case wisdomShared = "wisdom_shared"
-    case folkloreReference = "folklore_reference"
-    case strategicTradition = "strategic_tradition"
-    case culturalPattern = "cultural_pattern"
-    case strategicExcellence = "strategic_excellence"
-    case strategicWildCard = "strategic_wild_card"
-    case perfectTiming = "perfect_timing"
-    case culturalTradition = "cultural_tradition"
-    case folkloreConnection = "folklore_connection"
-    case seasonalReference = "seasonal_reference"
-    
-    var displayName: String {
-        switch self {
-        case .traditionInvoked: return "Tradition Invoked"
-        case .wisdomShared: return "Wisdom Shared"
-        case .folkloreReference: return "Folklore Reference"
-        case .strategicTradition: return "Strategic Tradition"
-        case .culturalPattern: return "Cultural Pattern"
-        case .strategicExcellence: return "Strategic Excellence"
-        case .strategicWildCard: return "Strategic Wild Card"
-        case .perfectTiming: return "Perfect Timing"
-        case .culturalTradition: return "Cultural Tradition"
-        case .folkloreConnection: return "Folklore Connection"
-        case .seasonalReference: return "Seasonal Reference"
-        }
-    }
-}
-
 // MARK: - Cultural Mastery Types
 
 enum CulturalMasteryLevel: String, CaseIterable {

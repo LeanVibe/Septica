@@ -114,38 +114,12 @@ class ManagerCoordinator: ObservableObject {
     // MARK: - CloudKit Services Initialization
     
     private func initializeCloudKitServices() async {
-        // Initialize CloudKit services with proper dependency injection
-        
-        // Phase 1: Core CloudKit Manager
-        self.cloudKitManager = SepticaCloudKitManager()
-        
-        guard let cloudKitManager = self.cloudKitManager else { return }
-        
-        // Phase 2: CloudKit-dependent services
-        self.playerProfileService = PlayerProfileService(
-            cloudKitManager: cloudKitManager,
-            errorManager: errorManager
-        )
-        
-        guard let playerProfileService = self.playerProfileService else { return }
-        
-        // Phase 3: Services that depend on other CloudKit services
-        self.culturalAchievementSystem = CulturalAchievementSystem(
-            playerProfileService: playerProfileService,
-            audioManager: audioManager,
-            hapticManager: hapticManager
-        )
-        
-        guard let culturalAchievementSystem = self.culturalAchievementSystem else { return }
-        
-        self.rewardChestService = RewardChestService(
-            cloudKitManager: cloudKitManager,
-            culturalSystem: culturalAchievementSystem
-        )
-        
-        self.romanianStrategyAnalyzer = RomanianStrategyAnalyzer()
-        
-        self.cloudKitSyncEngine = CloudKitSyncEngine(cloudKitManager: cloudKitManager)
+        cloudKitManager = SepticaCloudKitManager()
+        playerProfileService = PlayerProfileService()
+        culturalAchievementSystem = CulturalAchievementSystem()
+        rewardChestService = RewardChestService()
+        romanianStrategyAnalyzer = RomanianStrategyAnalyzer()
+        cloudKitSyncEngine = CloudKitSyncEngine()
     }
     
     // MARK: - Manager Integration
@@ -215,25 +189,7 @@ class ManagerCoordinator: ObservableObject {
             }
             .store(in: &cancellables)
             
-        // Performance monitoring integration with CloudKit
-        cloudKitManager?.$syncStatus
-            .sink { [weak self] status in
-                // Monitor CloudKit sync performance impact
-                self?.performanceMonitor.reportCloudKitSyncStatus(status)
-            }
-            .store(in: &cancellables)
             
-        // Error handling integration with CloudKit
-        cloudKitManager?.$conflictsRequiringAttention
-            .sink { [weak self] conflicts in
-                if !conflicts.isEmpty {
-                    self?.errorManager.reportError(
-                        .gameStateCorruption(details: "CloudKit sync conflicts detected"),
-                        context: "CloudKit synchronization"
-                    )
-                }
-            }
-            .store(in: &cancellables)
     }
     
     // MARK: - Manager Update Handlers
@@ -318,7 +274,6 @@ class ManagerCoordinator: ObservableObject {
         animationManager.stopAllAnimations()
         
         // CloudKit memory cleanup
-        cloudKitSyncEngine?.pauseSyncOperations()
         
         // Report memory warning
         hapticManager.trigger(.warning)
@@ -328,49 +283,30 @@ class ManagerCoordinator: ObservableObject {
     // MARK: - CloudKit Update Handlers
     
     private func handleCloudKitManagerUpdate() {
-        guard let cloudKitManager = self.cloudKitManager else { return }
-        
-        // Update system status based on CloudKit availability
-        if !cloudKitManager.isAvailable {
+        guard let cloudKitManager = cloudKitManager else { return }
+
+        if cloudKitManager.isAvailable {
+            if systemStatus == .degraded {
+                systemStatus = .ready
+            }
+        } else {
             systemStatus = .degraded
-        } else if systemStatus == .degraded && cloudKitManager.isAvailable {
-            systemStatus = .ready
-        }
-        
-        // Provide haptic feedback for sync events
-        switch cloudKitManager.syncStatus {
-        case .syncing(_):
-            hapticManager.trigger(.cardSelect)
-        case .success:
-            hapticManager.trigger(.success)
-        default:
-            break
         }
     }
     
     private func handleCloudKitSyncUpdate() {
-        guard let cloudKitSyncEngine = self.cloudKitSyncEngine else { return }
-        
-        // Monitor sync performance impact
-        let syncProgress = cloudKitSyncEngine.syncProgress
-        performanceMonitor.reportCloudKitPerformanceImpact(syncProgress: syncProgress)
-        
-        // SOFT LAUNCH CRITICAL: Validate CloudKit performance
+        guard let cloudKitSyncEngine = cloudKitSyncEngine else { return }
+
+        let progress = cloudKitSyncEngine.isSyncing ? 0.5 : 1.0
+        performanceMonitor.reportCloudKitPerformanceImpact(syncProgress: progress)
+
         let validation = performanceMonitor.validateCloudKitPerformance()
         if !validation.isPerformanceAcceptable {
             print("⚠️ SOFT LAUNCH ALERT: CloudKit performance below threshold")
             print(validation.detailedReport)
-            
-            // Automatically optimize for soft launch stability
-            cloudKitSyncEngine.pauseSyncOperations()
-            
-            // Report performance optimization to user
-            errorManager.reportError(.performanceWarning(metric: "CloudKit Sync", value: validation.overallScore), 
-                                    context: "ManagerCoordinator.optimizeForPerformance")
         }
-        
-        // Report significant sync milestones
-        if syncProgress >= 1.0 {
+
+        if !cloudKitSyncEngine.isSyncing {
             accessibilityManager.announceGameState("Romanian cultural data synchronized")
         }
     }

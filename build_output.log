@@ -1,0 +1,895 @@
+Command line invocation:
+    /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild -project Septica.xcodeproj -scheme Septica -configuration Debug -destination "platform=iOS Simulator,name=iPhone 15 Pro,OS=18.2" build
+
+/var/run/com.apple.security.cryptexd/mnt/com.apple.MobileAsset.MetalToolchain-v17.1.324.0.NHdUCa/Metal.xctoolchain:1:1: warning: failed to load toolchain: toolchain 'com.apple.dt.toolchain.Metal.32023' already registered from /Users/bogdan/Library/Developer/Toolchains/Metal.xctoolchain
+ComputePackagePrebuildTargetDependencyGraph
+
+Prepare packages
+
+CreateBuildRequest
+
+SendProjectDescription
+
+CreateBuildOperation
+
+ComputeTargetDependencyGraph
+note: Building targets in dependency order
+note: Target dependency graph (1 target)
+    Target 'Septica' in project 'Septica' (no dependencies)
+
+GatherProvisioningInputs
+
+CreateBuildDescription
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -v -E -dM -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.0.sdk -x c -c /dev/null
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/usr/bin/ibtool --version --output-format xml1
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/usr/bin/actool --print-asset-tag-combinations --output-format xml1 /Users/bogdan/work/Septica/Septica/Assets.xcassets
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/usr/bin/actool --version --output-format xml1
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc --version
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ld -version_details
+
+Build description signature: 422264c27797a119c4f9094cb24bb00a
+Build description path: /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/XCBuildData/422264c27797a119c4f9094cb24bb00a.xcbuilddata
+ClangStatCache /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang-stat-cache /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.0.sdk /Users/bogdan/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/iphonesimulator26.0-23A339-3885c01c3e6b6a337905948deab2002e26257891a6c027eb51374368541b8346.sdkstatcache
+    cd /Users/bogdan/work/Septica/Septica.xcodeproj
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang-stat-cache /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.0.sdk -o /Users/bogdan/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/iphonesimulator26.0-23A339-3885c01c3e6b6a337905948deab2002e26257891a6c027eb51374368541b8346.sdkstatcache
+
+ProcessInfoPlistFile /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Products/Debug-iphonesimulator/Septica.app/Info.plist /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/empty-Septica.plist (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    builtin-infoPlistUtility /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/empty-Septica.plist -producttype com.apple.product-type.application -genpkginfo /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Products/Debug-iphonesimulator/Septica.app/PkgInfo -expandbuildsettings -format binary -platform iphonesimulator -additionalcontentfile /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/Base.lproj/LaunchScreen-SBPartialInfo.plist -additionalcontentfile /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/Base.lproj/Main-SBPartialInfo.plist -additionalcontentfile /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/assetcatalog_generated_info.plist -o /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Products/Debug-iphonesimulator/Septica.app/Info.plist
+
+SwiftDriver Septica normal arm64 com.apple.xcode.tools.swift.compiler (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    builtin-SwiftDriver -- /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name Septica -Onone -enforce-exclusivity\=checked @/Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/Objects-normal/arm64/Septica.SwiftFileList -DDEBUG -default-isolation\=MainActor -enable-bare-slash-regex -enable-upcoming-feature MemberImportVisibility -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.0.sdk -target arm64-apple-ios18.0-simulator -g -module-cache-path /Users/bogdan/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -Xfrontend -serialize-debugging-options -profile-coverage-mapping -profile-generate -enable-testing -index-store-path /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Index.noindex/DataStore -Xcc -D_LIBCPP_HARDENING_MODE\=_LIBCPP_HARDENING_MODE_DEBUG -swift-version 5 -I /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Products/Debug-iphonesimulator -F /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Products/Debug-iphonesimulator -emit-localized-strings -emit-localized-strings-path /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/Objects-normal/arm64 -c -j16 -enable-batch-mode -incremental -Xcc -ivfsstatcache -Xcc /Users/bogdan/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/iphonesimulator26.0-23A339-3885c01c3e6b6a337905948deab2002e26257891a6c027eb51374368541b8346.sdkstatcache -output-file-map /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/Objects-normal/arm64/Septica-OutputFileMap.json -use-frontend-parseable-output -save-temps -no-color-diagnostics -explicit-module-build -module-cache-path /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -clang-scanner-module-cache-path /Users/bogdan/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -sdk-module-cache-path /Users/bogdan/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -serialize-diagnostics -emit-dependencies -emit-module -emit-module-path /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/Objects-normal/arm64/Septica.swiftmodule -validate-clang-modules-once -clang-build-session-file /Users/bogdan/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Session.modulevalidation -Xcc -I/Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/swift-overrides.hmap -emit-const-values -Xfrontend -const-gather-protocols-file -Xfrontend /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/Objects-normal/arm64/Septica_const_extract_protocols.json -Xcc -iquote -Xcc /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/Septica-generated-files.hmap -Xcc -I/Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/Septica-own-target-headers.hmap -Xcc -I/Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/Septica-all-target-headers.hmap -Xcc -iquote -Xcc /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/Septica-project-headers.hmap -Xcc -I/Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Products/Debug-iphonesimulator/include -Xcc -I/Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/DerivedSources-normal/arm64 -Xcc -I/Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/DerivedSources/arm64 -Xcc -I/Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/DerivedSources -Xcc -DDEBUG\=1 -emit-objc-header -emit-objc-header-path /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/Objects-normal/arm64/Septica-Swift.h -import-objc-header /Users/bogdan/work/Septica/Septica/ShaderTypes.h -working-directory /Users/bogdan/work/Septica -experimental-emit-module-separately -disable-cmo
+
+SwiftGeneratePch normal arm64 Compiling\ bridging\ header (in target 'Septica' from project 'Septica')
+
+SwiftDriverJobDiscovery normal arm64 Compiling bridging header (in target 'Septica' from project 'Septica')
+
+SwiftEmitModule normal arm64 Emitting\ module\ for\ Septica (in target 'Septica' from project 'Septica')
+
+EmitSwiftModule normal arm64 (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 Compiling\ PlayerHandView.swift,\ PremiumCardEffects.swift,\ PremiumGameScreen.swift,\ ProfessionalCard.swift,\ ProfessionalCardView.swift,\ RomanianArenaBackgroundView.swift,\ RomanianCulturalPatternView.swift,\ ShuffleCatsGameScreenExtensions.swift /Users/bogdan/work/Septica/Septica/Views/Game/PlayerHandView.swift /Users/bogdan/work/Septica/Septica/Views/Game/PremiumCardEffects.swift /Users/bogdan/work/Septica/Septica/Views/Game/PremiumGameScreen.swift /Users/bogdan/work/Septica/Septica/Views/Game/ProfessionalCard.swift /Users/bogdan/work/Septica/Septica/Views/Game/ProfessionalCardView.swift /Users/bogdan/work/Septica/Septica/Views/Game/RomanianArenaBackgroundView.swift /Users/bogdan/work/Septica/Septica/Views/Game/RomanianCulturalPatternView.swift /Users/bogdan/work/Septica/Septica/Views/Game/ShuffleCatsGameScreenExtensions.swift (in target 'Septica' from project 'Septica')
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Game/PlayerHandView.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Game/PremiumCardEffects.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Game/PremiumGameScreen.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Game/ProfessionalCard.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Game/ProfessionalCardView.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Game/RomanianArenaBackgroundView.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Game/RomanianCulturalPatternView.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Game/ShuffleCatsGameScreenExtensions.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 Compiling\ AchievementNotificationView.swift,\ CulturalInsightsView.swift,\ DropZoneView.swift,\ RomanianCharacterAvatarView.swift,\ RomanianCharacterReactionOverlay.swift,\ RomanianCharacterSelectionView.swift,\ RomanianCharacterSystem.swift,\ RomanianColors.swift /Users/bogdan/work/Septica/Septica/Views/Achievements/AchievementNotificationView.swift /Users/bogdan/work/Septica/Septica/Views/Analytics/CulturalInsightsView.swift /Users/bogdan/work/Septica/Septica/Views/Components/DropZoneView.swift /Users/bogdan/work/Septica/Septica/Views/Components/RomanianCharacterAvatarView.swift /Users/bogdan/work/Septica/Septica/Views/Components/RomanianCharacterReactionOverlay.swift /Users/bogdan/work/Septica/Septica/Views/Components/RomanianCharacterSelectionView.swift /Users/bogdan/work/Septica/Septica/Views/Components/RomanianCharacterSystem.swift /Users/bogdan/work/Septica/Septica/Views/Components/RomanianColors.swift (in target 'Septica' from project 'Septica')
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Achievements/AchievementNotificationView.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Analytics/CulturalInsightsView.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Components/DropZoneView.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Components/RomanianCharacterAvatarView.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Components/RomanianCharacterReactionOverlay.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Components/RomanianCharacterSelectionView.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Components/RomanianCharacterSystem.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Components/RomanianColors.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 Compiling\ ShuffleCatsInspiredGameScreen.swift,\ SpecialCardEffects.swift,\ WorkingGameScreen.swift,\ PrivacyPolicyView.swift,\ GameResultsView.swift,\ GameSetupView.swift,\ MainMenuView.swift,\ RulesView.swift /Users/bogdan/work/Septica/Septica/Views/Game/ShuffleCatsInspiredGameScreen.swift /Users/bogdan/work/Septica/Septica/Views/Game/SpecialCardEffects.swift /Users/bogdan/work/Septica/Septica/Views/Game/WorkingGameScreen.swift /Users/bogdan/work/Septica/Septica/Views/Legal/PrivacyPolicyView.swift /Users/bogdan/work/Septica/Septica/Views/Menu/GameResultsView.swift /Users/bogdan/work/Septica/Septica/Views/Menu/GameSetupView.swift /Users/bogdan/work/Septica/Septica/Views/Menu/MainMenuView.swift /Users/bogdan/work/Septica/Septica/Views/Menu/RulesView.swift (in target 'Septica' from project 'Septica')
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Game/ShuffleCatsInspiredGameScreen.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Game/SpecialCardEffects.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Game/WorkingGameScreen.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Legal/PrivacyPolicyView.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Menu/GameResultsView.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Menu/GameSetupView.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Menu/MainMenuView.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Menu/RulesView.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 Compiling\ WebSocketMessage.swift,\ EnhancedPlayerProfileManager.swift,\ RomanianTournamentManager.swift,\ TournamentDataModels.swift,\ Array+Chunked.swift,\ GameViewModel.swift,\ GameViewModelAnalyticsIntegration.swift,\ AchievementView.swift /Users/bogdan/work/Septica/Septica/Services/Network/WebSocketMessage.swift /Users/bogdan/work/Septica/Septica/Services/Profile/EnhancedPlayerProfileManager.swift /Users/bogdan/work/Septica/Septica/Services/Tournament/RomanianTournamentManager.swift /Users/bogdan/work/Septica/Septica/Services/Tournament/TournamentDataModels.swift /Users/bogdan/work/Septica/Septica/Utilities/Array+Chunked.swift /Users/bogdan/work/Septica/Septica/ViewModels/GameViewModel.swift /Users/bogdan/work/Septica/Septica/ViewModels/GameViewModelAnalyticsIntegration.swift /Users/bogdan/work/Septica/Septica/Views/Achievement/AchievementView.swift (in target 'Septica' from project 'Septica')
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Services/Network/WebSocketMessage.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Services/Profile/EnhancedPlayerProfileManager.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Services/Tournament/RomanianTournamentManager.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Services/Tournament/TournamentDataModels.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Utilities/Array+Chunked.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/ViewModels/GameViewModel.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/ViewModels/GameViewModelAnalyticsIntegration.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Achievement/AchievementView.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 Compiling\ RomanianGameZoneFrames.swift,\ RomanianOrnatePatternSystem.swift,\ RomanianPlayerAvatarView.swift,\ ShuffleCatsStyleDragSystem.swift,\ RomanianPatternIntegration.swift,\ AdvancedEffectsIntegration.swift,\ AdvancedVisualEffectsIntegration.swift,\ CardVisualEffectsSystem.swift /Users/bogdan/work/Septica/Septica/Views/Components/RomanianGameZoneFrames.swift /Users/bogdan/work/Septica/Septica/Views/Components/RomanianOrnatePatternSystem.swift /Users/bogdan/work/Septica/Septica/Views/Components/RomanianPlayerAvatarView.swift /Users/bogdan/work/Septica/Septica/Views/Components/ShuffleCatsStyleDragSystem.swift /Users/bogdan/work/Septica/Septica/Views/Cultural/RomanianPatternIntegration.swift /Users/bogdan/work/Septica/Septica/Views/Effects/AdvancedEffectsIntegration.swift /Users/bogdan/work/Septica/Septica/Views/Effects/AdvancedVisualEffectsIntegration.swift /Users/bogdan/work/Septica/Septica/Views/Effects/CardVisualEffectsSystem.swift (in target 'Septica' from project 'Septica')
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Components/RomanianGameZoneFrames.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Components/RomanianOrnatePatternSystem.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Components/RomanianPlayerAvatarView.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Components/ShuffleCatsStyleDragSystem.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Cultural/RomanianPatternIntegration.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Effects/AdvancedEffectsIntegration.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Effects/AdvancedVisualEffectsIntegration.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Effects/CardVisualEffectsSystem.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 Compiling\ ShuffleCatsQualityEnhancements.swift,\ CardView.swift,\ GameBoardView.swift,\ GameResultView.swift,\ GameStatusView.swift,\ GameTableView.swift,\ OpponentHandView.swift,\ OrganizedGameTableView.swift /Users/bogdan/work/Septica/Septica/Views/Enhancements/ShuffleCatsQualityEnhancements.swift /Users/bogdan/work/Septica/Septica/Views/Game/CardView.swift /Users/bogdan/work/Septica/Septica/Views/Game/GameBoardView.swift /Users/bogdan/work/Septica/Septica/Views/Game/GameResultView.swift /Users/bogdan/work/Septica/Septica/Views/Game/GameStatusView.swift /Users/bogdan/work/Septica/Septica/Views/Game/GameTableView.swift /Users/bogdan/work/Septica/Septica/Views/Game/OpponentHandView.swift /Users/bogdan/work/Septica/Septica/Views/Game/OrganizedGameTableView.swift (in target 'Septica' from project 'Septica')
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Enhancements/ShuffleCatsQualityEnhancements.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Game/CardView.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Game/GameBoardView.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Game/GameResultView.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Game/GameStatusView.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Game/GameTableView.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Game/OpponentHandView.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Game/OrganizedGameTableView.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 Compiling\ SettingsView.swift,\ StatisticsView.swift,\ RenderingSettingsView.swift,\ AppDelegate.swift,\ GameViewController.swift,\ Renderer.swift,\ SepticaGameViewController.swift,\ GeneratedAssetSymbols.swift /Users/bogdan/work/Septica/Septica/Views/Menu/SettingsView.swift /Users/bogdan/work/Septica/Septica/Views/Menu/StatisticsView.swift /Users/bogdan/work/Septica/Septica/Views/Settings/RenderingSettingsView.swift /Users/bogdan/work/Septica/Septica/AppDelegate.swift /Users/bogdan/work/Septica/Septica/GameViewController.swift /Users/bogdan/work/Septica/Septica/Renderer.swift /Users/bogdan/work/Septica/Septica/SepticaGameViewController.swift /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/DerivedSources/GeneratedAssetSymbols.swift (in target 'Septica' from project 'Septica')
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Menu/SettingsView.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Menu/StatisticsView.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Views/Settings/RenderingSettingsView.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/AppDelegate.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/GameViewController.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Renderer.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/SepticaGameViewController.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/DerivedSources/GeneratedAssetSymbols.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 Compiling\ AchievementDataModels.swift,\ EnhancedRomanianAchievementRegistry.swift,\ RomanianAchievementSystem.swift,\ RomanianCulturalAchievementManager.swift,\ TraditionalGameplayMilestoneTracker.swift,\ CardCollectionMasteryEngine.swift,\ CulturalAuthenticityScoring.swift,\ CulturalEngagementTracker.swift,\ GameStateAnalyticsIntegration.swift /Users/bogdan/work/Septica/Septica/Services/Achievement/AchievementDataModels.swift /Users/bogdan/work/Septica/Septica/Services/Achievement/EnhancedRomanianAchievementRegistry.swift /Users/bogdan/work/Septica/Septica/Services/Achievement/RomanianAchievementSystem.swift /Users/bogdan/work/Septica/Septica/Services/Achievement/RomanianCulturalAchievementManager.swift /Users/bogdan/work/Septica/Septica/Services/Achievement/TraditionalGameplayMilestoneTracker.swift /Users/bogdan/work/Septica/Septica/Services/Analytics/CardCollectionMasteryEngine.swift /Users/bogdan/work/Septica/Septica/Services/Analytics/CulturalAuthenticityScoring.swift /Users/bogdan/work/Septica/Septica/Services/Analytics/CulturalEngagementTracker.swift /Users/bogdan/work/Septica/Septica/Services/Analytics/GameStateAnalyticsIntegration.swift (in target 'Septica' from project 'Septica')
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Services/Achievement/AchievementDataModels.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Services/Achievement/EnhancedRomanianAchievementRegistry.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Services/Achievement/RomanianAchievementSystem.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Services/Achievement/RomanianCulturalAchievementManager.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Services/Achievement/TraditionalGameplayMilestoneTracker.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Services/Analytics/CardCollectionMasteryEngine.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Services/Analytics/CulturalAuthenticityScoring.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Services/Analytics/CulturalEngagementTracker.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Services/Analytics/GameStateAnalyticsIntegration.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 Compiling\ GeometryCache.swift,\ LightingEnvironment.swift,\ MaterialEffect.swift,\ ProfessionalCardRenderer.swift,\ ProfessionalRenderingSupport.swift,\ TextureCache.swift,\ RendererExtensions.swift,\ AchievementCelebrationManager.swift,\ AchievementCelebrationSystem.swift /Users/bogdan/work/Septica/Septica/Rendering/Professional/GeometryCache.swift /Users/bogdan/work/Septica/Septica/Rendering/Professional/LightingEnvironment.swift /Users/bogdan/work/Septica/Septica/Rendering/Professional/MaterialEffect.swift /Users/bogdan/work/Septica/Septica/Rendering/Professional/ProfessionalCardRenderer.swift /Users/bogdan/work/Septica/Septica/Rendering/Professional/ProfessionalRenderingSupport.swift /Users/bogdan/work/Septica/Septica/Rendering/Professional/TextureCache.swift /Users/bogdan/work/Septica/Septica/Rendering/RendererExtensions.swift /Users/bogdan/work/Septica/Septica/Services/Achievement/AchievementCelebrationManager.swift /Users/bogdan/work/Septica/Septica/Services/Achievement/AchievementCelebrationSystem.swift (in target 'Septica' from project 'Septica')
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Rendering/Professional/GeometryCache.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Rendering/Professional/LightingEnvironment.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Rendering/Professional/MaterialEffect.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Rendering/Professional/ProfessionalCardRenderer.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Rendering/Professional/ProfessionalRenderingSupport.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Rendering/Professional/TextureCache.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Rendering/RendererExtensions.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Services/Achievement/AchievementCelebrationManager.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Services/Achievement/AchievementCelebrationSystem.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 Compiling\ CloudKitRomanianModels.swift,\ CloudKitSharedTypes.swift,\ CloudKitSubscriptionManager.swift,\ CloudKitSyncEngine.swift,\ CoreDataCloudKitManager.swift,\ CrossDeviceAchievementSyncManager.swift,\ CulturalAchievementSystem.swift,\ EnhancedCloudKitIntegrationService.swift /Users/bogdan/work/Septica/Septica/Services/CloudKit/CloudKitRomanianModels.swift /Users/bogdan/work/Septica/Septica/Services/CloudKit/CloudKitSharedTypes.swift /Users/bogdan/work/Septica/Septica/Services/CloudKit/CloudKitSubscriptionManager.swift /Users/bogdan/work/Septica/Septica/Services/CloudKit/CloudKitSyncEngine.swift /Users/bogdan/work/Septica/Septica/Services/CloudKit/CoreDataCloudKitManager.swift /Users/bogdan/work/Septica/Septica/Services/CloudKit/CrossDeviceAchievementSyncManager.swift /Users/bogdan/work/Septica/Septica/Services/CloudKit/CulturalAchievementSystem.swift /Users/bogdan/work/Septica/Septica/Services/CloudKit/EnhancedCloudKitIntegrationService.swift (in target 'Septica' from project 'Septica')
+Failed frontend command:
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swift-frontend -frontend -c -filelist /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/Objects-normal/arm64/sources-1 -primary-file /Users/bogdan/work/Septica/Septica/Services/CloudKit/CloudKitRomanianModels.swift -primary-file /Users/bogdan/work/Septica/Septica/Services/CloudKit/CloudKitSharedTypes.swift -primary-file /Users/bogdan/work/Septica/Septica/Services/CloudKit/CloudKitSubscriptionManager.swift -primary-file /Users/bogdan/work/Septica/Septica/Services/CloudKit/CloudKitSyncEngine.swift -primary-file /Users/bogdan/work/Septica/Septica/Services/CloudKit/CoreDataCloudKitManager.swift -primary-file /Users/bogdan/work/Septica/Septica/Services/CloudKit/CrossDeviceAchievementSyncManager.swift -primary-file /Users/bogdan/work/Septica/Septica/Services/CloudKit/CulturalAchievementSystem.swift -primary-file /Users/bogdan/work/Septica/Septica/Services/CloudKit/EnhancedCloudKitIntegrationService.swift -supplementary-output-file-map /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/Objects-normal/arm64/supplementaryOutputs-7 -emit-localized-strings -emit-localized-strings-path /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/Objects-normal/arm64 -target arm64-apple-ios18.0-simulator -module-can-import-version DeveloperToolsSupport 23.0.4 23.0.4 -module-can-import-version Metal 370.63 370.63.0 -module-can-import-version SwiftUI 7.0.84.1 7.0.84 -module-can-import-version UIKit 9088.1.113 9088.1.113 -disable-cross-import-overlay-search -swift-module-cross-import CoreData /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk/System/Library/Frameworks/CoreData.framework/Modules/CoreData.swiftcrossimport/CloudKit.swiftoverlay -swift-module-cross-import CoreData /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.0.sdk/System/Library/Frameworks/CoreData.framework/Modules/CoreData.swiftcrossimport/CloudKit.swiftoverlay -swift-module-cross-import Darwin /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk/usr/include/Darwin.swiftcrossimport/xlocale.swiftoverlay -load-resolved-plugin /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/lib/swift/host/plugins/libFoundationMacros.dylib\#/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/swift-plugin-server\#FoundationMacros -load-resolved-plugin /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/lib/swift/host/plugins/libObservationMacros.dylib\#/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/swift-plugin-server\#ObservationMacros -load-resolved-plugin /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/lib/swift/host/plugins/libPreviewsMacros.dylib\#/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/swift-plugin-server\#PreviewsMacros -load-resolved-plugin /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/lib/swift/host/plugins/libSwiftMacros.dylib\#/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/swift-plugin-server\#SwiftMacros -load-resolved-plugin /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/lib/swift/host/plugins/libSwiftUIMacros.dylib\#/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/swift-plugin-server\#SwiftUIMacros -disable-implicit-swift-modules -Xcc -fno-implicit-modules -Xcc -fno-implicit-module-maps -explicit-swift-module-map-file /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/Objects-normal/arm64/Septica-dependencies-1.json -Xllvm -aarch64-use-tbi -enable-objc-interop -sdk /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.0.sdk -I /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Products/Debug-iphonesimulator -F /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Products/Debug-iphonesimulator -no-color-diagnostics -Xcc -fno-color-diagnostics -enable-testing -g -debug-info-format\=dwarf -dwarf-version\=5 -module-cache-path /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -profile-generate -profile-coverage-mapping -swift-version 5 -enforce-exclusivity\=checked -Onone -D DEBUG -serialize-debugging-options -const-gather-protocols-file /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/Objects-normal/arm64/Septica_const_extract_protocols.json -enable-upcoming-feature MemberImportVisibility -enable-experimental-feature DebugDescriptionMacro -enable-bare-slash-regex -default-isolation\=MainActor -empty-abi-descriptor -validate-clang-modules-once -clang-build-session-file /Users/bogdan/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Session.modulevalidation -Xcc -working-directory -Xcc /Users/bogdan/work/Septica -enable-anonymous-context-mangled-names -file-compilation-dir /Users/bogdan/work/Septica -Xcc -D_LIBCPP_HARDENING_MODE\=_LIBCPP_HARDENING_MODE_DEBUG -Xcc -ivfsstatcache -Xcc /Users/bogdan/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/iphonesimulator26.0-23A339-3885c01c3e6b6a337905948deab2002e26257891a6c027eb51374368541b8346.sdkstatcache -Xcc -I/Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/swift-overrides.hmap -Xcc -iquote -Xcc /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/Septica-generated-files.hmap -Xcc -I/Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/Septica-own-target-headers.hmap -Xcc -I/Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/Septica-all-target-headers.hmap -Xcc -iquote -Xcc /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/Septica-project-headers.hmap -Xcc -I/Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Products/Debug-iphonesimulator/include -Xcc -I/Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/DerivedSources-normal/arm64 -Xcc -I/Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/DerivedSources/arm64 -Xcc -I/Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/DerivedSources -Xcc -DDEBUG\=1 -import-objc-header /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/Objects-normal/arm64/Septica-primary-Bridging-header.pch -no-auto-bridging-header-chaining -module-name Septica -frontend-parseable-output -disable-clang-spi -target-sdk-version 26.0 -target-sdk-name iphonesimulator26.0 -clang-target arm64-apple-ios26.0-simulator -in-process-plugin-server-path /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/libSwiftInProcPluginServer.dylib -o /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/Objects-normal/arm64/CloudKitRomanianModels.o -o /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/Objects-normal/arm64/CloudKitSharedTypes.o -o /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/Objects-normal/arm64/CloudKitSubscriptionManager.o -o /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/Objects-normal/arm64/CloudKitSyncEngine.o -o /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/Objects-normal/arm64/CoreDataCloudKitManager.o -o /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/Objects-normal/arm64/CrossDeviceAchievementSyncManager.o -o /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/Objects-normal/arm64/CulturalAchievementSystem.o -o /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Build/Intermediates.noindex/Septica.build/Debug-iphonesimulator/Septica.build/Objects-normal/arm64/EnhancedCloudKitIntegrationService.o -index-unit-output-path /Septica.build/Debug-iphonesimulator/Septica.build/Objects-normal/arm64/CloudKitRomanianModels.o -index-unit-output-path /Septica.build/Debug-iphonesimulator/Septica.build/Objects-normal/arm64/CloudKitSharedTypes.o -index-unit-output-path /Septica.build/Debug-iphonesimulator/Septica.build/Objects-normal/arm64/CloudKitSubscriptionManager.o -index-unit-output-path /Septica.build/Debug-iphonesimulator/Septica.build/Objects-normal/arm64/CloudKitSyncEngine.o -index-unit-output-path /Septica.build/Debug-iphonesimulator/Septica.build/Objects-normal/arm64/CoreDataCloudKitManager.o -index-unit-output-path /Septica.build/Debug-iphonesimulator/Septica.build/Objects-normal/arm64/CrossDeviceAchievementSyncManager.o -index-unit-output-path /Septica.build/Debug-iphonesimulator/Septica.build/Objects-normal/arm64/CulturalAchievementSystem.o -index-unit-output-path /Septica.build/Debug-iphonesimulator/Septica.build/Objects-normal/arm64/EnhancedCloudKitIntegrationService.o -index-store-path /Users/bogdan/Library/Developer/Xcode/DerivedData/Septica-bhxnubcmusynzbbkytwvuelspvfa/Index.noindex/DataStore -index-system-modules
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Services/CloudKit/CloudKitRomanianModels.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/CloudKitRomanianModels.swift:4:8: error: invalid redeclaration of 'CloudKitPlayerProfile'
+struct CloudKitPlayerProfile: Codable, Identifiable {
+       ^
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/CloudKitDataModels.swift:201:8: note: 'CloudKitPlayerProfile' previously declared here
+struct CloudKitPlayerProfile: Codable, Sendable {
+       ^
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/CloudKitDataModels.swift:201:8: note: 'CloudKitPlayerProfile' previously declared here
+struct CloudKitPlayerProfile: Codable, Sendable {
+       ^
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/CloudKitRomanianModels.swift:39:8: error: invalid redeclaration of 'CloudKitGameRecord'
+struct CloudKitGameRecord: Codable, Identifiable {
+       ^
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/CloudKitDataModels.swift:563:8: note: 'CloudKitGameRecord' previously declared here
+struct CloudKitGameRecord: Codable, Sendable {
+       ^
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/CloudKitDataModels.swift:563:8: note: 'CloudKitGameRecord' previously declared here
+struct CloudKitGameRecord: Codable, Sendable {
+       ^
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/CloudKitRomanianModels.swift:71:8: error: invalid redeclaration of 'CulturalEducationProgress'
+struct CulturalEducationProgress: Codable {
+       ^
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/CloudKitDataModels.swift:248:8: note: 'CulturalEducationProgress' previously declared here
+struct CulturalEducationProgress: Codable, Sendable {
+       ^
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/CloudKitDataModels.swift:248:8: note: 'CulturalEducationProgress' previously declared here
+struct CulturalEducationProgress: Codable, Sendable {
+       ^
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/CloudKitRomanianModels.swift:80:8: error: invalid redeclaration of 'CloudKitGameResult'
+struct CloudKitGameResult: Sendable {
+       ^
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/CloudKitDataModels.swift:766:8: note: 'CloudKitGameResult' previously declared here
+struct CloudKitGameResult: Sendable {
+       ^
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/CloudKitDataModels.swift:766:8: note: 'CloudKitGameResult' previously declared here
+struct CloudKitGameResult: Sendable {
+       ^
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Services/CloudKit/CloudKitSharedTypes.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Services/CloudKit/CloudKitSubscriptionManager.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/CloudKitSubscriptionManager.swift:10:16: error: invalid redeclaration of 'cloudKitAccountChanged'
+    static let cloudKitAccountChanged = Notification.Name("cloudKitAccountChanged")
+               ^
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/EnhancedCloudKitIntegrationService.swift:682:16: note: 'cloudKitAccountChanged' previously declared here
+    static let cloudKitAccountChanged = Notification.Name("cloudKitAccountChanged")
+               ^
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/EnhancedCloudKitIntegrationService.swift:682:16: note: 'cloudKitAccountChanged' previously declared here
+    static let cloudKitAccountChanged = Notification.Name("cloudKitAccountChanged")
+               ^
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Services/CloudKit/CloudKitSyncEngine.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Services/CloudKit/CoreDataCloudKitManager.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/CoreDataCloudKitManager.swift:102:39: error: 'CloudKitPlayerProfile' is ambiguous for type lookup in this context
+    func savePlayerProfile(_ profile: CloudKitPlayerProfile) async throws {
+                                      ^~~~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/CloudKitDataModels.swift:201:8: note: found this candidate
+struct CloudKitPlayerProfile: Codable, Sendable {
+       ^
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/CloudKitRomanianModels.swift:4:8: note: found this candidate
+struct CloudKitPlayerProfile: Codable, Identifiable {
+       ^
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/CoreDataCloudKitManager.swift:134:62: error: 'CloudKitPlayerProfile' is ambiguous for type lookup in this context
+    func loadPlayerProfile(playerID: String) async throws -> CloudKitPlayerProfile? {
+                                                             ^~~~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/CloudKitDataModels.swift:201:8: note: found this candidate
+struct CloudKitPlayerProfile: Codable, Sendable {
+       ^
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/CloudKitRomanianModels.swift:4:8: note: found this candidate
+struct CloudKitPlayerProfile: Codable, Identifiable {
+       ^
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/CoreDataCloudKitManager.swift:165:39: error: 'CloudKitGameRecord' is ambiguous for type lookup in this context
+    func saveGameRecord(_ gameRecord: CloudKitGameRecord) async throws {
+                                      ^~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/CloudKitDataModels.swift:563:8: note: found this candidate
+struct CloudKitGameRecord: Codable, Sendable {
+       ^
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/CloudKitRomanianModels.swift:39:8: note: found this candidate
+struct CloudKitGameRecord: Codable, Identifiable {
+       ^
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/CoreDataCloudKitManager.swift:197:82: error: 'CloudKitGameRecord' is ambiguous for type lookup in this context
+    func loadGameRecords(for playerID: String, limit: Int = 50) async throws -> [CloudKitGameRecord] {
+                                                                                 ^~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/CloudKitDataModels.swift:563:8: note: found this candidate
+struct CloudKitGameRecord: Codable, Sendable {
+       ^
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/CloudKitRomanianModels.swift:39:8: note: found this candidate
+struct CloudKitGameRecord: Codable, Identifiable {
+       ^
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/CoreDataCloudKitManager.swift:225:43: error: 'CulturalEducationProgress' is ambiguous for type lookup in this context
+    func saveCulturalProgress(_ progress: CulturalEducationProgress, for playerID: String) async throws {
+                                          ^~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/CloudKitDataModels.swift:248:8: note: found this candidate
+struct CulturalEducationProgress: Codable, Sendable {
+       ^
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/CloudKitRomanianModels.swift:71:8: note: found this candidate
+struct CulturalEducationProgress: Codable {
+       ^
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/CoreDataCloudKitManager.swift:256:69: error: 'CulturalEducationProgress' is ambiguous for type lookup in this context
+    func loadCulturalProgress(for playerID: String) async throws -> CulturalEducationProgress? {
+                                                                    ^~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/CloudKitDataModels.swift:248:8: note: found this candidate
+struct CulturalEducationProgress: Codable, Sendable {
+       ^
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/CloudKitRomanianModels.swift:71:8: note: found this candidate
+struct CulturalEducationProgress: Codable {
+       ^
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/CoreDataCloudKitManager.swift:346:89: error: 'CloudKitPlayerProfile' is ambiguous for type lookup in this context
+    private func updatePlayerProfileEntity(_ entity: PlayerProfileEntity, with profile: CloudKitPlayerProfile) {
+                                                                                        ^~~~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/CloudKitDataModels.swift:201:8: note: found this candidate
+struct CloudKitPlayerProfile: Codable, Sendable {
+       ^
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/CloudKitRomanianModels.swift:4:8: note: found this candidate
+struct CloudKitPlayerProfile: Codable, Identifiable {
+       ^
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/CoreDataCloudKitManager.swift:376:75: error: 'CloudKitPlayerProfile' is ambiguous for type lookup in this context
+    private func createPlayerProfile(from entity: PlayerProfileEntity) -> CloudKitPlayerProfile? {
+                                                                          ^~~~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/CloudKitDataModels.swift:201:8: note: found this candidate
+struct CloudKitPlayerProfile: Codable, Sendable {
+       ^
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/CloudKitRomanianModels.swift:4:8: note: found this candidate
+struct CloudKitPlayerProfile: Codable, Identifiable {
+       ^
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/CoreDataCloudKitManager.swift:427:82: error: 'CloudKitGameRecord' is ambiguous for type lookup in this context
+    private func updateGameRecordEntity(_ entity: GameRecordEntity, with record: CloudKitGameRecord) {
+                                                                                 ^~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/CloudKitDataModels.swift:563:8: note: found this candidate
+struct CloudKitGameRecord: Codable, Sendable {
+       ^
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/CloudKitRomanianModels.swift:39:8: note: found this candidate
+struct CloudKitGameRecord: Codable, Identifiable {
+       ^
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/CoreDataCloudKitManager.swift:450:69: error: 'CloudKitGameRecord' is ambiguous for type lookup in this context
+    private func createGameRecord(from entity: GameRecordEntity) -> CloudKitGameRecord? {
+                                                                    ^~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/CloudKitDataModels.swift:563:8: note: found this candidate
+struct CloudKitGameRecord: Codable, Sendable {
+       ^
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/CloudKitRomanianModels.swift:39:8: note: found this candidate
+struct CloudKitGameRecord: Codable, Identifiable {
+       ^
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/CoreDataCloudKitManager.swift:489:96: error: 'CulturalEducationProgress' is ambiguous for type lookup in this context
+    private func updateCulturalProgressEntity(_ entity: CulturalProgressEntity, with progress: CulturalEducationProgress, playerID: String) {
+                                                                                               ^~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/CloudKitDataModels.swift:248:8: note: found this candidate
+struct CulturalEducationProgress: Codable, Sendable {
+       ^
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/CloudKitRomanianModels.swift:71:8: note: found this candidate
+struct CulturalEducationProgress: Codable {
+       ^
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/CoreDataCloudKitManager.swift:502:81: error: 'CulturalEducationProgress' is ambiguous for type lookup in this context
+    private func createCulturalProgress(from entity: CulturalProgressEntity) -> CulturalEducationProgress {
+                                                                                ^~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/CloudKitDataModels.swift:248:8: note: found this candidate
+struct CulturalEducationProgress: Codable, Sendable {
+       ^
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/CloudKitRomanianModels.swift:71:8: note: found this candidate
+struct CulturalEducationProgress: Codable {
+       ^
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/CoreDataCloudKitManager.swift:614:16: error: covariant 'Self' or 'Self?' can only appear at the top level of property type
+    static var fetchRequest: NSFetchRequest<Self> {
+               ^
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/CoreDataCloudKitManager.swift:109:34: error: type 'any PlayerProfileEntity' does not conform to protocol 'NSFetchRequestResult'
+                    let request: NSFetchRequest<PlayerProfileEntity> = PlayerProfileEntity.fetchRequest()
+                                 ^
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/CoreDataCloudKitManager.swift:105:19: error: generic parameter 'T' could not be inferred
+        try await withCheckedThrowingContinuation { continuation in
+                  ^
+_Concurrency.withCheckedThrowingContinuation:3:24: note: in call to function 'withCheckedThrowingContinuation(isolation:function:_:)'
+@inlinable public func withCheckedThrowingContinuation<T>(isolation: isolated (any Actor)? = #isolation, function: String = #function, _ body: (CheckedContinuation<T, any Error>) -> Void) async throws -> sending T
+                       ^
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/CoreDataCloudKitManager.swift:106:39: error: trailing closure passed to parameter of type 'Selector' that does not accept a closure
+            backgroundContext.perform {
+                                      ^
+ObjectiveC.NSObject.perform:3:13: note: 'perform' declared here
+  open func perform(_ aSelector: Selector!) -> Unmanaged<AnyObject>!}
+            ^
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/CoreDataCloudKitManager.swift:172:34: error: type 'any GameRecordEntity' does not conform to protocol 'NSFetchRequestResult'
+                    let request: NSFetchRequest<GameRecordEntity> = GameRecordEntity.fetchRequest()
+                                 ^
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/CoreDataCloudKitManager.swift:168:19: error: generic parameter 'T' could not be inferred
+        try await withCheckedThrowingContinuation { continuation in
+                  ^
+_Concurrency.withCheckedThrowingContinuation:3:24: note: in call to function 'withCheckedThrowingContinuation(isolation:function:_:)'
+@inlinable public func withCheckedThrowingContinuation<T>(isolation: isolated (any Actor)? = #isolation, function: String = #function, _ body: (CheckedContinuation<T, any Error>) -> Void) async throws -> sending T
+                       ^
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/CoreDataCloudKitManager.swift:169:39: error: trailing closure passed to parameter of type 'Selector' that does not accept a closure
+            backgroundContext.perform {
+                                      ^
+ObjectiveC.NSObject.perform:3:13: note: 'perform' declared here
+  open func perform(_ aSelector: Selector!) -> Unmanaged<AnyObject>!}
+            ^
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/CoreDataCloudKitManager.swift:231:34: error: type 'any CulturalProgressEntity' does not conform to protocol 'NSFetchRequestResult'
+                    let request: NSFetchRequest<CulturalProgressEntity> = CulturalProgressEntity.fetchRequest()
+                                 ^
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/CoreDataCloudKitManager.swift:228:19: error: generic parameter 'T' could not be inferred
+        try await withCheckedThrowingContinuation { continuation in
+                  ^
+_Concurrency.withCheckedThrowingContinuation:3:24: note: in call to function 'withCheckedThrowingContinuation(isolation:function:_:)'
+@inlinable public func withCheckedThrowingContinuation<T>(isolation: isolated (any Actor)? = #isolation, function: String = #function, _ body: (CheckedContinuation<T, any Error>) -> Void) async throws -> sending T
+                       ^
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/CoreDataCloudKitManager.swift:229:39: error: trailing closure passed to parameter of type 'Selector' that does not accept a closure
+            backgroundContext.perform {
+                                      ^
+ObjectiveC.NSObject.perform:3:13: note: 'perform' declared here
+  open func perform(_ aSelector: Selector!) -> Unmanaged<AnyObject>!}
+            ^
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/CoreDataCloudKitManager.swift:300:34: warning: main actor-isolated property 'context' can not be referenced from a Sendable closure
+                        try self.context.save()
+                                 ^
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/CoreDataCloudKitManager.swift:57:9: note: property declared here
+    var context: NSManagedObjectContext {
+        ^
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/CoreDataCloudKitManager.swift:600:30: warning: immutable value 'error' was never used; consider replacing with '_' or removing it
+        case .saveFailed(let error):
+                         ~~~~^~~~~
+                         _
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/CoreDataCloudKitManager.swift:602:31: warning: immutable value 'error' was never used; consider replacing with '_' or removing it
+        case .fetchFailed(let error):
+                          ~~~~^~~~~
+                          _
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/CoreDataCloudKitManager.swift:604:30: warning: immutable value 'error' was never used; consider replacing with '_' or removing it
+        case .syncFailed(let error):
+                         ~~~~^~~~~
+                         _
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Services/CloudKit/CrossDeviceAchievementSyncManager.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Services/CloudKit/CulturalAchievementSystem.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Services/CloudKit/EnhancedCloudKitIntegrationService.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/EnhancedCloudKitIntegrationService.swift:461:47: error: 'SyncOperation' is ambiguous for type lookup in this context
+    private func updateSyncMetrics(operation: SyncOperation, duration: TimeInterval, success: Bool) {
+                                              ^~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/EnhancedCloudKitIntegrationService.swift:534:6: note: found this candidate
+enum SyncOperation {
+     ^
+/Users/bogdan/work/Septica/Septica/Services/Profile/EnhancedPlayerProfileManager.swift:945:8: note: found this candidate
+struct SyncOperation {
+       ^
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/EnhancedCloudKitIntegrationService.swift:534:6: error: invalid redeclaration of 'SyncOperation'
+enum SyncOperation {
+     ^
+/Users/bogdan/work/Septica/Septica/Services/Profile/EnhancedPlayerProfileManager.swift:945:8: note: 'SyncOperation' previously declared here
+struct SyncOperation {
+       ^
+/Users/bogdan/work/Septica/Septica/Services/Profile/EnhancedPlayerProfileManager.swift:945:8: note: 'SyncOperation' previously declared here
+struct SyncOperation {
+       ^
+/Users/bogdan/work/Septica/Septica/Services/Achievement/AchievementDataModels.swift:19:32: error: 'RomanianRegion' is ambiguous for type lookup in this context
+    public let culturalRegion: RomanianRegion?
+                               ^~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Models/Shared/CulturalTypes.swift:94:6: note: found this candidate
+enum RomanianRegion: String, Codable, CaseIterable {
+     ^
+/Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalPatternRecognition.swift:854:6: note: found this candidate
+enum RomanianRegion {
+     ^
+/Users/bogdan/work/Septica/Septica/Services/Achievement/AchievementDataModels.swift:40:36: error: 'EducationalContent' is ambiguous for type lookup in this context
+    public let educationalContent: EducationalContent?
+                                   ^~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/Achievement/AchievementDataModels.swift:385:8: note: found this candidate
+struct EducationalContent: Codable, Hashable {
+       ^
+/Users/bogdan/work/Septica/Septica/Services/Analytics/CulturalEngagementTracker.swift:809:8: note: found this candidate
+struct EducationalContent {
+       ^
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/EnhancedCloudKitIntegrationService.swift:593:45: error: 'SyncOperation' is ambiguous for type lookup in this context
+    mutating func addOperation(_ operation: SyncOperation, duration: TimeInterval, success: Bool) {
+                                            ^~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/EnhancedCloudKitIntegrationService.swift:534:6: note: found this candidate
+enum SyncOperation {
+     ^
+/Users/bogdan/work/Septica/Septica/Services/Profile/EnhancedPlayerProfileManager.swift:945:8: note: found this candidate
+struct SyncOperation {
+       ^
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/EnhancedCloudKitIntegrationService.swift:674:39: error: 'SyncOperation' is ambiguous for type lookup in this context
+    func recordOperation(_ operation: SyncOperation, duration: TimeInterval, success: Bool) {
+                                      ^~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/EnhancedCloudKitIntegrationService.swift:534:6: note: found this candidate
+enum SyncOperation {
+     ^
+/Users/bogdan/work/Septica/Septica/Services/Profile/EnhancedPlayerProfileManager.swift:945:8: note: found this candidate
+struct SyncOperation {
+       ^
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/EnhancedCloudKitIntegrationService.swift:103:11: warning: 'catch' block is unreachable because no errors are thrown in 'do' block
+        } catch {
+          ^
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/EnhancedCloudKitIntegrationService.swift:167:43: error: cannot infer contextual base in reference to member 'achievementSync'
+            updateSyncMetrics(operation: .achievementSync, duration: duration, success: true)
+                                         ~^~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/EnhancedCloudKitIntegrationService.swift:177:43: error: cannot infer contextual base in reference to member 'achievementSync'
+            updateSyncMetrics(operation: .achievementSync, duration: Date().timeIntervalSince(startTime), success: false)
+                                         ~^~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/EnhancedCloudKitIntegrationService.swift:208:43: error: cannot infer contextual base in reference to member 'statisticsSync'
+            updateSyncMetrics(operation: .statisticsSync, duration: duration, success: true)
+                                         ~^~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/EnhancedCloudKitIntegrationService.swift:217:43: error: cannot infer contextual base in reference to member 'statisticsSync'
+            updateSyncMetrics(operation: .statisticsSync, duration: Date().timeIntervalSince(startTime), success: false)
+                                         ~^~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Services/CloudKit/EnhancedCloudKitIntegrationService.swift:238:17: warning: initialization of immutable value 'uploadResult' was never used; consider replacing with assignment to '_' or removing it
+            let uploadResult = try await batchUploadRecords(records, priority: .mastery)
+            ~~~~^~~~~~~~~~~~
+            _
+/Users/bogdan/work/Septica/Septica/Services/Analytics/CardCollectionMasteryEngine.swift:454:31: error: 'CulturalMasteryLevel' is ambiguous for type lookup in this context
+    var culturalMasteryLevel: CulturalMasteryLevel = .beginner
+                              ^~~~~~~~~~~~~~~~~~~~
+/Users/bogdan/work/Septica/Septica/Models/Shared/CulturalTypes.swift:61:6: note: found this candidate
+enum CulturalMasteryLevel: String, CaseIterable {
+     ^
+/Users/bogdan/work/Septica/Septica/Services/Analytics/PerformanceAnalyticsManager.swift:778:6: note: found this candidate
+enum CulturalMasteryLevel: Int, CaseIterable {
+     ^
+
+SwiftCompile normal arm64 Compiling\ ErrorManager.swift,\ HapticManager.swift,\ ManagerCoordinator.swift,\ NavigationManager.swift,\ Card.swift,\ Deck.swift,\ GameRules.swift,\ GameState.swift,\ Player.swift /Users/bogdan/work/Septica/Septica/Managers/ErrorManager.swift /Users/bogdan/work/Septica/Septica/Managers/HapticManager.swift /Users/bogdan/work/Septica/Septica/Managers/ManagerCoordinator.swift /Users/bogdan/work/Septica/Septica/Managers/NavigationManager.swift /Users/bogdan/work/Septica/Septica/Models/Core/Card.swift /Users/bogdan/work/Septica/Septica/Models/Core/Deck.swift /Users/bogdan/work/Septica/Septica/Models/Core/GameRules.swift /Users/bogdan/work/Septica/Septica/Models/Core/GameState.swift /Users/bogdan/work/Septica/Septica/Models/Core/Player.swift (in target 'Septica' from project 'Septica')
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Managers/ErrorManager.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Managers/HapticManager.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Managers/ManagerCoordinator.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Managers/NavigationManager.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Models/Core/Card.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Models/Core/Deck.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Models/Core/GameRules.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Models/Core/GameState.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Models/Core/Player.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 Compiling\ RomanianTraditionalAI.swift,\ GameController.swift,\ SepticaErrorHandling.swift,\ ContentRatingManager.swift,\ PrivacyPolicyManager.swift,\ TermsOfServiceManager.swift,\ AccessibilityManager.swift,\ AnimationManager.swift,\ AudioManager.swift /Users/bogdan/work/Septica/Septica/AI/RomanianTraditionalAI.swift /Users/bogdan/work/Septica/Septica/Controllers/GameController.swift /Users/bogdan/work/Septica/Septica/ErrorHandling/SepticaErrorHandling.swift /Users/bogdan/work/Septica/Septica/Legal/ContentRatingManager.swift /Users/bogdan/work/Septica/Septica/Legal/PrivacyPolicyManager.swift /Users/bogdan/work/Septica/Septica/Legal/TermsOfServiceManager.swift /Users/bogdan/work/Septica/Septica/Managers/AccessibilityManager.swift /Users/bogdan/work/Septica/Septica/Managers/AnimationManager.swift /Users/bogdan/work/Septica/Septica/Managers/AudioManager.swift (in target 'Septica' from project 'Septica')
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/AI/RomanianTraditionalAI.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Controllers/GameController.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/ErrorHandling/SepticaErrorHandling.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Legal/ContentRatingManager.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Legal/PrivacyPolicyManager.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Legal/TermsOfServiceManager.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Managers/AccessibilityManager.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Managers/AnimationManager.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Managers/AudioManager.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 Compiling\ CulturalTypes.swift,\ BatteryOptimizationManager.swift,\ MetalPerformanceMonitor.swift,\ PerformanceMonitor.swift,\ PerformanceValidation.swift,\ CardRenderer.swift,\ Advanced3DTransform.swift,\ AdvancedLightingSystem.swift,\ EnhancedMaterialSystem.swift /Users/bogdan/work/Septica/Septica/Models/Shared/CulturalTypes.swift /Users/bogdan/work/Septica/Septica/Performance/BatteryOptimizationManager.swift /Users/bogdan/work/Septica/Septica/Performance/MetalPerformanceMonitor.swift /Users/bogdan/work/Septica/Septica/Performance/PerformanceMonitor.swift /Users/bogdan/work/Septica/Septica/Performance/PerformanceValidation.swift /Users/bogdan/work/Septica/Septica/Rendering/Metal/CardRenderer.swift /Users/bogdan/work/Septica/Septica/Rendering/Professional/Advanced3DTransform.swift /Users/bogdan/work/Septica/Septica/Rendering/Professional/AdvancedLightingSystem.swift /Users/bogdan/work/Septica/Septica/Rendering/Professional/EnhancedMaterialSystem.swift (in target 'Septica' from project 'Septica')
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Models/Shared/CulturalTypes.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Performance/BatteryOptimizationManager.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Performance/MetalPerformanceMonitor.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Performance/PerformanceMonitor.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Performance/PerformanceValidation.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Rendering/Metal/CardRenderer.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Rendering/Professional/Advanced3DTransform.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Rendering/Professional/AdvancedLightingSystem.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Rendering/Professional/EnhancedMaterialSystem.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 Compiling\ PerformanceAnalyticsManager.swift,\ RomanianCulturalAnalytics.swift,\ StatisticsCloudKitManager.swift,\ TraditionalPatternRecognition.swift,\ TraditionalStrategyAnalyzer.swift,\ CloudKitDataModels.swift,\ CloudKitErrorHandler.swift,\ CloudKitIntegrationValidator.swift,\ CloudKitRecordManager.swift /Users/bogdan/work/Septica/Septica/Services/Analytics/PerformanceAnalyticsManager.swift /Users/bogdan/work/Septica/Septica/Services/Analytics/RomanianCulturalAnalytics.swift /Users/bogdan/work/Septica/Septica/Services/Analytics/StatisticsCloudKitManager.swift /Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalPatternRecognition.swift /Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift /Users/bogdan/work/Septica/Septica/Services/CloudKit/CloudKitDataModels.swift /Users/bogdan/work/Septica/Septica/Services/CloudKit/CloudKitErrorHandler.swift /Users/bogdan/work/Septica/Septica/Services/CloudKit/CloudKitIntegrationValidator.swift /Users/bogdan/work/Septica/Septica/Services/CloudKit/CloudKitRecordManager.swift (in target 'Septica' from project 'Septica')
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Services/Analytics/PerformanceAnalyticsManager.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Services/Analytics/RomanianCulturalAnalytics.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Services/Analytics/StatisticsCloudKitManager.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalPatternRecognition.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Services/Analytics/TraditionalStrategyAnalyzer.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Services/CloudKit/CloudKitDataModels.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Services/CloudKit/CloudKitErrorHandler.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Services/CloudKit/CloudKitIntegrationValidator.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Services/CloudKit/CloudKitRecordManager.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 Compiling\ RomanianCulturalContentLibrary.swift,\ RomanianDialogueSystem.swift,\ GameEndCelebrationSystem.swift,\ RomanianCulturalIntelligence.swift,\ MultiplayerIntegration.swift,\ MultiplayerService.swift,\ NetworkCoordinator.swift,\ NetworkManager.swift /Users/bogdan/work/Septica/Septica/Services/Culture/RomanianCulturalContentLibrary.swift /Users/bogdan/work/Septica/Septica/Services/Dialogue/RomanianDialogueSystem.swift /Users/bogdan/work/Septica/Septica/Services/GameEnd/GameEndCelebrationSystem.swift /Users/bogdan/work/Septica/Septica/Services/Intelligence/RomanianCulturalIntelligence.swift /Users/bogdan/work/Septica/Septica/Services/Network/MultiplayerIntegration.swift /Users/bogdan/work/Septica/Septica/Services/Network/MultiplayerService.swift /Users/bogdan/work/Septica/Septica/Services/Network/NetworkCoordinator.swift /Users/bogdan/work/Septica/Septica/Services/Network/NetworkManager.swift (in target 'Septica' from project 'Septica')
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Services/Culture/RomanianCulturalContentLibrary.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Services/Dialogue/RomanianDialogueSystem.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Services/GameEnd/GameEndCelebrationSystem.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Services/Intelligence/RomanianCulturalIntelligence.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Services/Network/MultiplayerIntegration.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Services/Network/MultiplayerService.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Services/Network/NetworkCoordinator.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+SwiftCompile normal arm64 /Users/bogdan/work/Septica/Septica/Services/Network/NetworkManager.swift (in target 'Septica' from project 'Septica')
+    cd /Users/bogdan/work/Septica
+    
+
+warning: Skipping duplicate build file in Compile Sources build phase: /Users/bogdan/work/Septica/Septica/Services/CloudKit/SepticaCloudKitManager.swift (in target 'Septica' from project 'Septica')

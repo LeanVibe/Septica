@@ -1011,7 +1011,7 @@ struct GameTableBackground: View {
         switch phase {
         case .setup, .playing:
             currentGamePhase = .midGame
-        case .gameOver:
+        case .finished:
             currentGamePhase = .endGame
         }
     }
