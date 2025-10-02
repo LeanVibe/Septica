@@ -1,25 +1,46 @@
-# Romanian Septica PWA - Project Status
+# Romanian Septica - Project Status
 
-**Last Updated**: October 1, 2025
-**Project Type**: Go Backend + Premium PWA Frontend
+**Last Updated**: October 2, 2025
+**Project Type**: Hybrid Dual-Platform (iOS Native + PWA)
 **Game**: Traditional Romanian Septica (32-card deck)
 
 ---
 
 ## 🎯 Project Overview
 
-Romanian Septica is a **premium progressive web application** preserving traditional Romanian card gaming heritage with modern web technology.
+Romanian Septica is a **dual-platform implementation** preserving traditional Romanian card gaming heritage with native iOS excellence and cross-platform web accessibility.
 
-### Architecture
+### Hybrid Architecture
+
+**Platform 1: iOS Native App (PRIMARY)**
+- **Tech**: Swift 6.0 + SwiftUI + Metal GPU rendering
+- **Target**: iPad & iPhone (iOS 18+)
+- **Status**: ✅ Build successful, 166 Swift files, production-ready
+- **Features**: 3D card rendering, CloudKit multiplayer, AI opponents
+
+**Platform 2: Progressive Web App (SECONDARY)**
 - **Backend**: Go 1.21+ with Gin framework, PostgreSQL, WebSocket multiplayer
 - **Frontend**: Premium PWA with Three.js 3D rendering, Romanian cultural theming
 - **Deployment**: Docker-based infrastructure
+- **Status**: ⚠️ Operational with database migration workaround
 
 ---
 
 ## ✅ Completed Components
 
-### Backend Infrastructure (100%)
+### iOS Native App (95%)
+- ✅ Complete Swift 6.0 codebase (166 source files)
+- ✅ SwiftUI game interfaces with Romanian cultural design
+- ✅ Metal GPU-accelerated 3D card rendering
+- ✅ Romanian Septica game engine (32-card deck, authentic rules)
+- ✅ AI opponent with traditional Romanian playing style
+- ✅ CloudKit multiplayer integration
+- ✅ Tournament system with achievements
+- ✅ Accessibility features and battery optimization
+- ✅ Xcode project builds successfully for iPad & iPhone
+- ⏳ App Store submission (pending final testing)
+
+### PWA Backend Infrastructure (100%)
 - ✅ Go server with Gin framework running on port 8082
 - ✅ PostgreSQL database (septica-postgres container on port 5433)
 - ✅ WebSocket real-time multiplayer protocol
@@ -29,17 +50,17 @@ Romanian Septica is a **premium progressive web application** preserving traditi
 - ✅ AI matchmaking manager for bot opponents
 - ✅ CORS configuration for frontend integration
 
-### Game Engine (100%)
+### Shared Game Engine (100%)
 - ✅ Romanian Septica 32-card deck (7,8,9,10,J,Q,K,A × 4 suits)
 - ✅ Authentic beating rules:
   - 7 always beats (wild card)
   - Same value beats
   - 8 beats when table cards % 3 == 0
 - ✅ Point cards scoring (10s and Aces = 1 point each, total 8 points)
-- ✅ Legacy engine + Authentic engine implementations
+- ✅ Swift implementation (iOS) + Go implementation (PWA backend)
 - ✅ 2-player, 3-player, 4-player game modes
 
-### Frontend PWA (90%)
+### PWA Frontend (90%)
 - ✅ Premium Three.js 3D card rendering
 - ✅ Romanian cultural theming and authenticity
 - ✅ Mobile-optimized responsive design
@@ -50,18 +71,32 @@ Romanian Septica is a **premium progressive web application** preserving traditi
 - ⏳ IndexedDB for local state persistence (pending)
 
 ### Multiplayer Infrastructure (95%)
-- ✅ WebSocket hub managing active connections
+- ✅ CloudKit for iOS native multiplayer
+- ✅ WebSocket hub for PWA multiplayer
 - ✅ Real-time game state synchronization
 - ✅ Matchmaking queue system
 - ✅ Tournament bracket management
-- ✅ Chat messaging system
+- ✅ Chat messaging system (PWA)
 - ⏳ Graceful reconnection handling (needs improvement)
 
 ---
 
 ## 🔧 Current Technical Status
 
-### Running Services
+### iOS Native App
+```bash
+# Build and run on simulator
+xcodebuild -project Septica.xcodeproj -scheme Septica \
+  -destination 'platform=iOS Simulator,name=iPad (A16)' \
+  clean build
+
+# Or open in Xcode
+open Septica.xcodeproj
+# Press Cmd+R to run on simulator
+```
+**Build Status**: ✅ Successful compilation (last verified: October 2, 2025)
+
+### PWA Platform - Running Services
 ```bash
 # Backend (Go)
 cd backend && PORT=8082 go run cmd/server/main.go
@@ -148,13 +183,36 @@ See `docs/TECHNICAL_DEBT.md` for complete list:
 
 ```
 Septica/
-├── backend/                 # Go backend server
+├── Septica.xcodeproj/       # iOS Xcode project
+├── Septica/                 # iOS Native App (166 Swift files)
+│   ├── Models/Core/         # Card, Deck, GameState, Player, GameRules
+│   ├── Views/               # SwiftUI game screens
+│   │   ├── Game/           # Main game interface
+│   │   ├── Menu/           # Navigation and setup
+│   │   ├── Components/     # Romanian cultural UI elements
+│   │   ├── Cultural/       # Pattern integration
+│   │   └── Effects/        # Visual effects system
+│   ├── Controllers/         # Game controllers
+│   ├── AI/                  # Romanian traditional AI
+│   ├── Rendering/           # Metal 3D rendering
+│   │   ├── Professional/   # Advanced rendering system
+│   │   └── Metal/          # CardRenderer
+│   ├── Managers/            # Accessibility, Audio, Haptic, etc.
+│   ├── Services/            # CloudKit, Tournament, Achievements
+│   ├── Performance/         # Optimization and monitoring
+│   ├── Shaders.metal        # GPU shaders
+│   └── AppDelegate.swift    # iOS app entry point
+│
+├── SepticaTests/            # iOS unit tests
+├── SepticaUITests/          # iOS UI tests
+│
+├── backend/                 # Go backend server (PWA)
 │   ├── cmd/server/         # Main server entry point
 │   ├── internal/
 │   │   ├── ai/            # AI opponent logic
 │   │   ├── auth/          # Authentication (future)
 │   │   ├── database/      # PostgreSQL models and migrations
-│   │   ├── game/          # Game engine (legacy + authentic)
+│   │   ├── game/          # Game engine (Go implementation)
 │   │   ├── handlers/      # HTTP/WebSocket handlers
 │   │   ├── matchmaking/   # Matchmaking service
 │   │   └── websocket/     # WebSocket hub
@@ -172,8 +230,8 @@ Septica/
 │   └── *.html            # Demo and game pages
 │
 ├── docs/                  # Documentation
-│   ├── CLAUDE.md         # Project guide (SINGLE SOURCE OF TRUTH)
-│   ├── PROJECT_STATUS.md # This file
+│   ├── CLAUDE.md         # PWA project guide
+│   ├── PROJECT_STATUS.md # This file (hybrid architecture)
 │   ├── TECHNICAL_DEBT.md # Known issues
 │   ├── game-rules.md     # Romanian Septica rules
 │   ├── backend-api.md    # API documentation
@@ -216,7 +274,23 @@ Septica/
 
 ## 📞 Quick Reference
 
-### Start Development
+### iOS Native App Development
+```bash
+# Build and run on simulator
+xcodebuild -project Septica.xcodeproj -scheme Septica \
+  -destination 'platform=iOS Simulator,name=iPad (A16)' \
+  clean build
+
+# Or open in Xcode (recommended)
+open Septica.xcodeproj
+# Press Cmd+R to build and run on simulator
+
+# Run tests
+xcodebuild test -project Septica.xcodeproj -scheme Septica \
+  -destination 'platform=iOS Simulator,name=iPad (A16)'
+```
+
+### PWA Development
 ```bash
 # Terminal 1: Database
 docker-compose up -d
@@ -231,18 +305,20 @@ cd frontend && python3 -m http.server 3000
 open http://localhost:3000
 ```
 
-### Key Endpoints
+### Key Endpoints (PWA)
 - **Frontend**: http://localhost:3000
 - **Backend Health**: http://localhost:8082/health
 - **WebSocket**: ws://localhost:8082/ws/connect
 - **Database**: postgresql://septica:septica@localhost:5433/septica
 
 ### Documentation
-- **Project Guide**: `docs/CLAUDE.md`
+- **iOS-Specific**: Check code comments in Septica/ directory
+- **PWA Guide**: `docs/CLAUDE.md`
+- **Hybrid Status**: `docs/PROJECT_STATUS.md` (this file)
 - **Technical Issues**: `docs/TECHNICAL_DEBT.md`
 - **Game Rules**: `docs/game-rules.md`
 - **API Docs**: `docs/backend-api.md`
 
 ---
 
-**Romanian Septica** - Preserving traditional Romanian card gaming heritage through premium PWA technology with authentic cultural presentation and modern multiplayer capabilities.
+**Romanian Septica** - Preserving traditional Romanian card gaming heritage through native iOS excellence and cross-platform PWA technology with authentic cultural presentation and modern multiplayer capabilities.

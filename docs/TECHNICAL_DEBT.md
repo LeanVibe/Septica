@@ -59,27 +59,37 @@ DELETE FROM matchmaking_queues WHERE player_id NOT IN (SELECT id FROM players);
 
 ## 🟢 Documentation Issues
 
-### Incorrect Project Architecture Documentation
-**Status**: In progress
-**Impact**: Confusion about project technology stack
+### Hybrid Architecture Documentation Clarity
+**Status**: Resolved - October 2, 2025
+**Impact**: Documentation now accurately reflects dual-platform implementation
 
-#### Problem
-Multiple documentation files incorrectly describe this as an iOS Swift/SwiftUI project:
-- `docs/PLAN.md` - References "Romanian Septica iOS App"
-- `docs/TODO.md` - Describes iOS development phases with CloudKit
-- `docs/ENHANCEMENT_ROADMAP.md` - Contains Swift/SwiftUI code examples
-- `docs/PROGRESS_SUMMARY.md` - Claims iOS app achievements
+#### Actual Architecture (VERIFIED)
+This is a **HYBRID DUAL-PLATFORM** implementation:
 
-#### Actual Architecture
-- **Backend**: Go + Gin framework + PostgreSQL + WebSocket
-- **Frontend**: Premium PWA (HTML/CSS/JS + Three.js)
-- **No iOS codebase exists**
+**Platform 1: iOS Native App (PRIMARY)**
+- ✅ 166 Swift source files, fully implemented
+- ✅ Xcode project: `Septica.xcodeproj`
+- ✅ Tech: Swift 6.0 + SwiftUI + Metal GPU rendering
+- ✅ Platforms: iPad & iPhone (iOS 18+)
+- ✅ Build Status: Successful compilation (verified October 2, 2025)
+- ✅ Features: 3D rendering, Romanian cultural authenticity, AI opponents, CloudKit multiplayer
 
-#### Resolution Plan
-1. Archive incorrect docs to `docs/archive/ios-confusion/`
-2. Update `docs/CLAUDE.md` as single source of truth (already accurate)
-3. Create new consolidated `docs/PROJECT_STATUS.md` for PWA architecture
-4. Update `PROJECT_INDEX.json` to reflect reality
+**Platform 2: Progressive Web App (SECONDARY)**
+- ✅ Backend: Go + Gin framework + PostgreSQL + WebSocket
+- ✅ Frontend: Premium PWA (Three.js + HTML/CSS/JS)
+- ⚠️ Database: Running with `SKIP_MIGRATIONS=true` workaround (see Critical Issues)
+- ✅ Features: Cross-platform web access, real-time multiplayer
+
+#### Shared Components
+- Game rules implementation (Romanian Septica 32-card deck)
+- Multiplayer infrastructure (CloudKit for iOS, WebSocket for PWA)
+- Romanian cultural elements (regional variations, traditional AI behavior)
+
+#### Documentation Status
+- ✅ `docs/PROJECT_STATUS.md` - Describes PWA architecture accurately
+- ✅ `docs/CLAUDE.md` - PWA-focused guidance (should note iOS app exists)
+- ℹ️ iOS-specific docs (PLAN.md, TODO.md, etc.) - Valid for iOS platform
+- ✅ This file - Now accurately documents hybrid architecture
 
 ---
 
