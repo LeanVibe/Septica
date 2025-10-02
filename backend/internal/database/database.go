@@ -48,22 +48,30 @@ func Initialize(databaseURL string, logger *logger.Logger) (*gorm.DB, error) {
 
 // Migrate runs database migrations
 func Migrate(db *gorm.DB) error {
-	// Auto-migrate all models
-	return db.AutoMigrate(
+	// Auto-migrate models one by one to help identify issues
+	models := []interface{}{
 		&User{},
 		&Player{},
-		&Game{},
-		&GameMove{},
 		&PlayerStatistics{},
+		&MatchmakingQueue{},
+		&PlayerSeasonStats{},
 		&Tournament{},
 		&TournamentParticipant{},
 		&TournamentBracket{},
+		&Game{},
+		&GameMove{},
 		&ELORatingHistory{},
-		&PlayerSeasonStats{},
-		&MatchmakingQueue{},
 		&Friendship{},
 		&ChatMessage{},
-	)
+	}
+
+	for _, model := range models {
+		if err := db.AutoMigrate(model); err != nil {
+			return fmt.Errorf("failed to migrate %T: %w", model, err)
+		}
+	}
+
+	return nil
 }
 
 // Health checks database connectivity

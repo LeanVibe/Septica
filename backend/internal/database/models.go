@@ -9,7 +9,7 @@ import (
 
 // Base model with UUID and timestamps
 type BaseModel struct {
-	ID        uuid.UUID `gorm:"type:uuid;primary_key;default:gen_random_uuid()" json:"id"`
+	ID        uuid.UUID `gorm:"type:uuid;primary_key" json:"id"`
 	CreatedAt time.Time `gorm:"autoCreateTime" json:"created_at"`
 	UpdatedAt time.Time `gorm:"autoUpdateTime" json:"updated_at"`
 }
@@ -24,7 +24,7 @@ type User struct {
 	LastLoginAt  *time.Time `json:"last_login_at"`
 	
 	// Relationships
-	Player *Player `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"player,omitempty"`
+	Player *Player `gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"player,omitempty"`
 }
 
 // Player represents a game player profile
@@ -45,7 +45,7 @@ type Player struct {
 	SelectedAvatar     string `gorm:"default:'default'" json:"selected_avatar"`
 	
 	// Relationships
-	User        User              `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"user,omitempty"`
+	User        *User             `gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"user,omitempty"`
 	GamesPlayer1 []Game           `gorm:"foreignKey:Player1ID" json:"-"`
 	GamesPlayer2 []Game           `gorm:"foreignKey:Player2ID" json:"-"`
 }
@@ -138,7 +138,7 @@ type Game struct {
 	Winner          *Player            `gorm:"foreignKey:WinnerID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"winner,omitempty"`
 	Tournament      *Tournament        `gorm:"foreignKey:TournamentID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"tournament,omitempty"`
 	TournamentBracket *TournamentBracket `gorm:"foreignKey:TournamentBracketID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"tournament_bracket,omitempty"`
-	Moves           []GameMove         `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"moves,omitempty"`
+	Moves           []GameMove         `gorm:"foreignKey:GameID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"moves,omitempty"`
 }
 
 // GameMove represents a single move in a game
@@ -163,7 +163,7 @@ type GameMove struct {
 	PointsAwarded      int        `gorm:"default:0" json:"points_awarded"`        // Points gained from this move
 
 	// Relationships
-	Game   Game   `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"game,omitempty"`
+	Game   Game   `gorm:"foreignKey:GameID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"game,omitempty"`
 	Player Player `gorm:"foreignKey:PlayerID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT;" json:"player,omitempty"`
 }
 
@@ -212,8 +212,8 @@ type Tournament struct {
 	
 	// Relationships
 	Creator      *Player                 `gorm:"foreignKey:CreatorPlayerID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"creator,omitempty"`
-	Participants []TournamentParticipant `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"participants,omitempty"`
-	Brackets     []TournamentBracket     `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"brackets,omitempty"`
+	Participants []TournamentParticipant `gorm:"foreignKey:TournamentID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"participants,omitempty"`
+	Brackets     []TournamentBracket     `gorm:"foreignKey:TournamentID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"brackets,omitempty"`
 	Games        []Game                  `gorm:"foreignKey:TournamentID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"games,omitempty"`
 }
 
@@ -256,8 +256,8 @@ type TournamentParticipant struct {
 	RegistrationDate   time.Time `gorm:"autoCreateTime" json:"registration_date"`
 	
 	// Relationships
-	Tournament Tournament `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"tournament,omitempty"`
-	Player     Player     `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"player,omitempty"`
+	Tournament Tournament `gorm:"foreignKey:TournamentID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"tournament,omitempty"`
+	Player     Player     `gorm:"foreignKey:PlayerID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"player,omitempty"`
 }
 
 // TournamentBracket represents a bracket structure for elimination tournaments
@@ -276,7 +276,7 @@ type TournamentBracket struct {
 	IsBye            bool       `gorm:"default:false" json:"is_bye"`
 	
 	// Relationships
-	Tournament Tournament `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"tournament,omitempty"`
+	Tournament Tournament `gorm:"foreignKey:TournamentID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"tournament,omitempty"`
 	Player1    *Player    `gorm:"foreignKey:Player1ID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"player1,omitempty"`
 	Player2    *Player    `gorm:"foreignKey:Player2ID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"player2,omitempty"`
 	Winner     *Player    `gorm:"foreignKey:WinnerID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"winner,omitempty"`
@@ -304,9 +304,9 @@ type ELORatingHistory struct {
 	// Game result context
 	GameResult     *string   `json:"game_result"` // win, loss, draw
 	ScoreDifference *int     `json:"score_difference"`
-	
+
 	// Relationships
-	Player     Player      `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"player,omitempty"`
+	Player     Player      `gorm:"foreignKey:PlayerID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"player,omitempty"`
 	Game       *Game       `gorm:"foreignKey:GameID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"game,omitempty"`
 	Tournament *Tournament `gorm:"foreignKey:TournamentID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"tournament,omitempty"`
 	Opponent   *Player     `gorm:"foreignKey:OpponentID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"opponent,omitempty"`
@@ -336,9 +336,9 @@ type PlayerSeasonStats struct {
 	RankedGamesPlayed    int     `gorm:"default:0" json:"ranked_games_played"`
 	RankedGamesWon       int     `gorm:"default:0" json:"ranked_games_won"`
 	WinRate              float64 `gorm:"default:0" json:"win_rate"`
-	
+
 	// Relationships
-	Player Player `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"player,omitempty"`
+	Player Player `gorm:"foreignKey:PlayerID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"player,omitempty"`
 }
 
 // MatchmakingQueue tracks players waiting for matches
@@ -351,9 +351,9 @@ type MatchmakingQueue struct {
 	SearchRange    int       `gorm:"default:100" json:"search_range"`
 	MaxWaitTime    int       `gorm:"default:300" json:"max_wait_time"` // seconds
 	IsActive       bool      `gorm:"default:true" json:"is_active"`
-	
+
 	// Relationships
-	Player Player `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"player,omitempty"`
+	Player Player `gorm:"foreignKey:PlayerID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"player,omitempty"`
 }
 
 // Friendship represents a friendship between two players
@@ -375,9 +375,9 @@ type ChatMessage struct {
 	PlayerID uuid.UUID `gorm:"type:uuid;not null" json:"player_id"`
 	Message  string    `gorm:"not null" json:"message"`
 	Type     string    `gorm:"default:'text'" json:"type"` // text, emote, system
-	
+
 	// Relationships
-	Game   Game   `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"game,omitempty"`
+	Game   Game   `gorm:"foreignKey:GameID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"game,omitempty"`
 	Player Player `gorm:"foreignKey:PlayerID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT;" json:"player,omitempty"`
 }
 

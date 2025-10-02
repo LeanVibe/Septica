@@ -4,25 +4,27 @@ This file provides guidance to Claude Code (claude.ai/code) when working with th
 
 ## 🚀 SESSION CONTEXT MANAGEMENT - READ THIS FIRST
 
-### **CURRENT PROJECT STATUS (September 2025)**
+### **CURRENT PROJECT STATUS (October 2025)**
 ```
 ✅ Phase 1: Go Backend Implementation - COMPLETE (Romanian Septica rules verified)
 ✅ Phase 2: WebSocket Multiplayer Protocol - COMPLETE (Real-time sync operational)
-✅ Phase 3: Premium LitPWA/Three.js Frontend - COMPLETE (ShuffleCats quality achieved)
-🎯 CURRENT FOCUS: Production Deployment & Cross-Platform Testing
+✅ Phase 3: Premium PWA/Three.js Frontend - COMPLETE (ShuffleCats quality achieved)
+✅ Phase 4: Documentation Cleanup - COMPLETE (iOS confusion resolved)
+🔴 CRITICAL: Database migration blocked (GORM issue - running with SKIP_MIGRATIONS=true)
+🎯 CURRENT FOCUS: Database fixes, data cleanup, production readiness
 ```
 
 ### **CRITICAL CONTEXT FILES TO READ ON SESSION START:**
-1. **docs/PLAN.md** - Comprehensive project plan and implementation status
-2. **docs/SHUFFLECATS_QUALITY_IMPLEMENTATION_PLAN.md** - Premium frontend quality standards (if exists)
-3. **docs/game-rules.md** - Romanian Septica rules implementation (if exists)
+1. **docs/PROJECT_STATUS.md** - Current consolidated project status (AUTHORITATIVE)
+2. **docs/TECHNICAL_DEBT.md** - Known issues and workarounds
+3. **docs/game-rules.md** - Romanian Septica rules implementation
 4. **PROJECT_INDEX.json** - Complete project structure and codebase overview
 
 ### **IMMEDIATE NEXT PRIORITIES:**
-1. **Documentation Consolidation** - Fix conflicting status documents
-2. **Cross-Platform Validation** - iOS PWA, Android, Desktop compatibility
-3. **Performance Optimization** - 60 FPS maintenance across devices
-4. **Multiplayer Load Testing** - Tournament system scalability
+1. **Database Migration Fix** - Resolve GORM "insufficient arguments" error
+2. **Data Cleanup** - Remove 1006 stale matchmaking queue entries
+3. **End-to-End Testing** - Validate frontend → WebSocket → backend → database flow
+4. **Service Worker Implementation** - Enable offline PWA capabilities
 
 ## 🎮 ROMANIAN SEPTICA GAME RULES
 
@@ -44,10 +46,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with th
 
 ### **Backend Commands**
 ```bash
-# Start Go backend server
-cd backend && go run cmd/server/main.go
-# Or with specific port
-PORT=8082 go run cmd/server/main.go
+# Start Go backend server (NOTE: migrations currently disabled due to GORM issue)
+cd backend && SKIP_MIGRATIONS=true PORT=8082 go run cmd/server/main.go
 
 # Start PostgreSQL database
 docker-compose up -d
@@ -133,19 +133,24 @@ cd frontend && python3 -m http.server 3000 &
 
 ## 📚 KEY DOCUMENTATION FILES
 
-### **Implementation Guides**
-- **docs/PLAN.md** - Complete project roadmap and status
-- **frontend/README.md** - Frontend setup and testing guide (if exists)
-- **docs/game-rules.md** - Romanian Septica complete rules (if exists)
+### **Essential Documentation**
+- **docs/PROJECT_STATUS.md** - Complete project status and architecture (START HERE)
+- **docs/TECHNICAL_DEBT.md** - Known issues, workarounds, and fixes needed
+- **docs/game-rules.md** - Romanian Septica complete rules
 
 ### **Architecture Documentation**
-- **docs/backend-api.md** - REST API documentation (if exists)
-- **docs/multiplayer-protocol.md** - WebSocket protocol specification (if exists)
-- **docs/database-schema.md** - PostgreSQL schema design (if exists)
+- **docs/backend-api.md** - REST API documentation
+- **docs/multiplayer-protocol.md** - WebSocket protocol specification
+- **docs/database-schema.md** - PostgreSQL schema design
+
+### **Archived Documentation**
+- **docs/archive/ios-confusion/** - Outdated iOS-focused documentation (DO NOT USE)
 
 ## 🐛 COMMON ISSUES & SOLUTIONS
 
 ### **Backend Issues**
+- **Database Migration Error**: Known GORM issue - use `SKIP_MIGRATIONS=true` workaround
+- **Stale Queue Data**: 1006 matchmaking entries causing "record not found" errors
 - **Database Connection**: Ensure PostgreSQL running on port 5433
 - **WebSocket Failures**: Check Go server on port 8082, verify CORS
 - **Game Logic**: Validate Romanian rules in `backend/internal/game/engine.go`
