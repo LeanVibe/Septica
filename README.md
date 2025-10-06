@@ -1,23 +1,38 @@
 # Romanian Septica - Multiplayer Card Game
 
-A premium web-based implementation of the traditional Romanian card game "Septica" with real-time multiplayer capabilities, authentic cultural elements, and modern Three.js 3D graphics.
+A premium implementation of the traditional Romanian card game "Septica" featuring:
+- **iOS Native App** (98% complete) - SwiftUI + Metal rendering with authentic objection-based gameplay
+- **Web PWA** - Real-time multiplayer with Three.js 3D graphics
+- **Go Backend** - Production-ready server with WebSocket multiplayer
 
 ## 🎮 What is Romanian Septica?
 
 Septica is a traditional Romanian trick-taking card game played with a 32-card deck. Our implementation preserves the authentic rules while bringing the game to modern web browsers with premium visual quality and real-time multiplayer functionality.
 
 ### Authentic Game Rules
-- **32-Card Deck**: Values 7-14 (7,8,9,10,J,Q,K,A) in all four suits
+- **32-Card Deck**: Values 7-14 (7,8,9,10,J,Q,K,A) in all four suits (2-player mode)
+- **30-Card Deck**: Reduced deck for 3-player mode (8s removed, used as wild cards)
 - **Beating Rules**:
   - 7s always beat any card (wild cards)
   - Same values beat each other (10 beats 10, etc.)
-  - 8s beat when table cards count % 3 == 0
+  - 8s are wild cards ONLY in 3-player mode
 - **Point System**: Only 10s and Aces count (1 point each, max 8 total per game)
-- **2-Player**: Turn-based gameplay with automatic matchmaking
+- **Objection System**: Players choose to PASS or OBJECT (30-second timer)
+  - PASS: Save cards for better opportunities
+  - OBJECT: Play beating card and take control
+- **Game Modes**: 2-player, 3-player (triangular), 4-player team (partnerships)
 
 ## 🏗️ Architecture Overview
 
 ### Technology Stack
+
+**iOS Native App**:
+- **Language**: Swift 6.0
+- **UI**: SwiftUI with Metal GPU rendering
+- **Features**: Objection system, 3/4-player modes, achievements, analytics
+- **Status**: 98% complete, App Store ready
+
+**Web Platform**:
 - **Backend**: Go 1.21+ with Gin framework
 - **Database**: PostgreSQL with GORM ORM
 - **WebSocket**: Native Go real-time communication
@@ -125,14 +140,24 @@ e2e-tests/
 
 ## 🎯 Key Features
 
+### iOS Native App Features (October 2025)
+- **✅ Authentic Objection System**: PASS/OBJECT choice with 30-second timer
+- **✅ Multi-Player Modes**: 2/3/4 player support with dynamic layouts
+- **✅ Achievement System**: 10 achievements with persistent tracking
+- **✅ Privacy Analytics**: 22 COPPA-compliant metrics with opt-out
+- **✅ Strategic AI**: AI evaluates point cards before objection decisions
+- **✅ Metal Rendering**: GPU-accelerated 60 FPS card animations
+- **✅ SwiftUI Interface**: Romanian cultural design with glass morphism
+
 ### Romanian Cultural Authenticity
 - **Traditional Rules**: 100% authentic Romanian Septica rules implementation
+- **Objection-Based Gameplay**: Authentic PASS/OBJECT decision mechanism
 - **Cultural Elements**: Traditional Romanian patterns, colors, and design
 - **Regional Variations**: Support for different Romanian regional playing styles
 - **Folk Music**: Ambient Romanian folk music during gameplay
 - **Cultural Education**: Preserves and teaches traditional Romanian gaming
 
-### Premium Gaming Experience
+### Premium Gaming Experience (Web PWA)
 - **60 FPS Rendering**: Smooth Three.js-powered 3D card animations
 - **Glass Morphism UI**: Modern premium interface design
 - **Real-time Multiplayer**: Instant WebSocket-based gameplay
@@ -227,22 +252,31 @@ npx playwright test
 
 ## 📈 Roadmap
 
+### ✅ Completed (October 2025)
+- **Objection System**: Authentic PASS/OBJECT gameplay mechanism
+- **Multi-Player Modes**: 2/3/4 player support with dynamic layouts
+- **Achievement System**: 10 achievements with persistent tracking
+- **Privacy Analytics**: COPPA-compliant analytics with opt-out
+- **iOS Native App**: 98% complete, App Store ready
+- **Strategic AI**: AI with objection decision logic
+
 ### Short Term (1-2 months)
+- **iOS App Store Launch**: Final submission and approval
 - **Tournament System**: Multi-player tournaments with brackets
 - **ELO Rankings**: Competitive rating system
+- **CloudKit Integration**: iOS multiplayer sync
 - **Enhanced Mobile**: PWA installation and offline support
-- **Performance**: Broader device compatibility optimization
 
 ### Medium Term (3-6 months)
 - **Regional Variations**: Different Romanian regional rule sets
 - **Advanced Analytics**: Player behavior and cultural preservation metrics
-- **Social Features**: Player profiles, achievements, friends
+- **Social Features**: Player profiles, friends, leaderboards
 - **Monetization**: Premium Romanian cultural content
 
 ### Long Term (6+ months)
-- **Mobile Apps**: Native iOS/Android applications
+- **Android App**: Native Android implementation
 - **International**: Multi-language support beyond Romanian/English
-- **AI Opponents**: Traditional Romanian playing style AI
+- **Advanced AI**: Multiple AI personalities with regional playing styles
 - **Cultural Expansion**: Educational content about Romanian gaming history
 
 ## 📄 License

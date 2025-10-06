@@ -7,6 +7,7 @@
 //
 
 import SwiftUI
+import Combine
 
 /// Simplified working game screen with core functionality and Romanian styling
 struct WorkingGameScreen: View {
@@ -27,34 +28,36 @@ struct WorkingGameScreen: View {
     var body: some View {
         GeometryReader { geometry in
             ZStack {
-                // Romanian cultural background
-                romanianBackground
-                
-                VStack(spacing: 16) {
-                    // Top status bar
-                    gameStatusBar
+                // Switch between layouts based on game mode
+                switch gameViewModel.gameState.gameMode {
+                case .twoPlayers:
+                    // Traditional 2-player layout
+                    twoPlayerLayout
 
-                    Spacer()
+                case .threePlayers:
+                    // Triangular 3-player layout
+                    ThreePlayerGameLayout(
+                        gameViewModel: gameViewModel,
+                        selectedCard: $selectedCard,
+                        showingGameMenu: $showingGameMenu
+                    )
 
-                    // Opponent area with Romanian styling
-                    opponentArea
-
-                    Spacer()
-
-                    // Game table with Romanian ornate frame
-                    gameTableArea
-
-                    Spacer()
-
-                    // Player hand with Romanian styling
-                    playerHandArea
-
-                    // Game Action Controls - Professional Romanian interface
-                    gameActionControlsArea
+                case .fourPlayers:
+                    // 4-player team mode layout
+                    FourPlayerGameLayout(
+                        gameViewModel: gameViewModel,
+                        selectedCard: $selectedCard,
+                        onCardPlayed: { card in
+                            playCard(card)
+                        },
+                        onPass: {
+                            selectedCard = nil
+                            gameViewModel.passCurrentTurn()
+                        }
+                    )
                 }
-                .padding()
-                
-                // Romanian dialogue overlay
+
+                // Romanian dialogue overlay (shared across all layouts)
                 if dialogueSystem.isShowingDialogue,
                    let dialogue = dialogueSystem.currentDialogue {
                     VStack {
@@ -71,7 +74,7 @@ struct WorkingGameScreen: View {
                     .padding()
                     .zIndex(100)
                 }
-                
+
                 // Game menu overlay
                 if showingGameMenu {
                     gameMenuOverlay
@@ -85,6 +88,39 @@ struct WorkingGameScreen: View {
         }
         .onChange(of: gameViewModel.gamePhase) { _, newPhase in
             handleGamePhaseChange(newPhase)
+        }
+    }
+
+    // MARK: - Two Player Layout
+
+    private var twoPlayerLayout: some View {
+        ZStack {
+            // Romanian cultural background
+            romanianBackground
+
+            VStack(spacing: 16) {
+                // Top status bar
+                gameStatusBar
+
+                Spacer()
+
+                // Opponent area with Romanian styling
+                opponentArea
+
+                Spacer()
+
+                // Game table with Romanian ornate frame
+                gameTableArea
+
+                Spacer()
+
+                // Player hand with Romanian styling
+                playerHandArea
+
+                // Game Action Controls - Professional Romanian interface
+                gameActionControlsArea
+            }
+            .padding()
         }
     }
     
@@ -332,7 +368,24 @@ struct WorkingGameScreen: View {
                 )
             
             // Dynamic instructions based on game state
-            if selectedCard != nil {
+            if gameViewModel.gameState.waitingForObjection {
+                if selectedCard != nil {
+                    Text("Cartea de obiecție selectată • Apasă Joacă sau Pasează")
+                        .font(.caption2)
+                        .foregroundColor(RomanianColors.goldAccent)
+                        .multilineTextAlignment(.center)
+                } else if !gameViewModel.gameState.validObjectionCards.isEmpty {
+                    Text("Poți obiecta! Selectează o carte sau apasă Pasează")
+                        .font(.caption2)
+                        .foregroundColor(RomanianColors.primaryYellow)
+                        .multilineTextAlignment(.center)
+                } else {
+                    Text("Fără cărți de obiecție disponibile • Apasă Pasează")
+                        .font(.caption2)
+                        .foregroundColor(RomanianColors.primaryRed.opacity(0.8))
+                        .multilineTextAlignment(.center)
+                }
+            } else if selectedCard != nil {
                 Text("Cartea selectată • Folosește butoanele de jos pentru a juca")
                     .font(.caption2)
                     .foregroundColor(RomanianColors.goldAccent.opacity(0.9))
@@ -349,9 +402,15 @@ struct WorkingGameScreen: View {
                 FannedCardHandView(
                     cards: humanPlayer.hand,
                     selectedCard: selectedCard,
-                    validMoves: gameViewModel.validMoves,
+                    validMoves: gameViewModel.gameState.waitingForObjection
+                        ? gameViewModel.gameState.validObjectionCards
+                        : gameViewModel.validMoves,
                     onCardTapped: { card in
-                        if gameViewModel.validMoves.contains(card) {
+                        let movesToCheck = gameViewModel.gameState.waitingForObjection
+                            ? gameViewModel.gameState.validObjectionCards
+                            : gameViewModel.validMoves
+
+                        if movesToCheck.contains(card) {
                             withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
                                 // Tap to select card (use action buttons to play)
                                 selectedCard = card
@@ -368,6 +427,13 @@ struct WorkingGameScreen: View {
 
     private var gameActionControlsArea: some View {
         VStack(spacing: 12) {
+            // Objection Timer Display (when waiting for objection)
+            if gameViewModel.gameState.waitingForObjection,
+               let deadline = gameViewModel.gameState.objectionDeadline {
+                ObjectionTimerView(deadline: deadline)
+                    .transition(.scale.combined(with: .opacity))
+            }
+
             // Action buttons area
             if gameViewModel.isHumanPlayerTurn {
                 HStack(spacing: 16) {
@@ -406,10 +472,48 @@ struct WorkingGameScreen: View {
                             y: 3
                         )
                     }
-                    .disabled(selectedCard == nil)
+                    .disabled(selectedCard == nil || gameViewModel.gameState.waitingForObjection)
 
-                    // Pass Turn button (always available during player's turn)
-                    if shouldShowPassButton {
+                    // Pass/Objection button
+                    if gameViewModel.gameState.waitingForObjection {
+                        // PASS button during objection window
+                        Button(action: {
+                            selectedCard = nil // Clear selection
+                            // Add haptic feedback
+                            #if os(iOS)
+                            let impact = UIImpactFeedbackGenerator(style: .medium)
+                            impact.impactOccurred()
+                            #endif
+                            gameViewModel.passCurrentTurn()
+                        }) {
+                            HStack(spacing: 8) {
+                                Image(systemName: "hand.raised.fill")
+                                Text("Pasez")
+                                    .font(.headline.weight(.bold))
+                            }
+                            .foregroundColor(.white)
+                            .frame(minWidth: 120)
+                            .padding(.vertical, 14)
+                            .padding(.horizontal, 20)
+                            .background(
+                                LinearGradient(
+                                    colors: [
+                                        RomanianColors.primaryRed,
+                                        RomanianColors.primaryRed.opacity(0.8)
+                                    ],
+                                    startPoint: .top,
+                                    endPoint: .bottom
+                                )
+                            )
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                            .shadow(color: RomanianColors.primaryRed.opacity(0.5), radius: 8, x: 0, y: 4)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(RomanianColors.goldAccent.opacity(0.4), lineWidth: 2)
+                            )
+                        }
+                    } else if shouldShowPassButton {
+                        // Regular Pass Turn button
                         Button(action: {
                             selectedCard = nil // Clear selection
                             gameViewModel.gameState.skipCurrentPlayer()
@@ -871,5 +975,120 @@ private extension FannedCardHandView {
         let availableSpan = max(availableWidth - cardWidth, 0)
         let fittedSpacing = availableSpan / CGFloat(count - 1)
         return max(minimumSpacing, min(baseSpacing, fittedSpacing))
+    }
+}
+
+// MARK: - Objection Timer View
+
+/// Timer display for the 30-second objection window in Romanian Septica
+struct ObjectionTimerView: View {
+    let deadline: Date
+    @State private var timeRemaining: TimeInterval = 30
+    @State private var timerActive = true
+
+    private let timer = Timer.publish(every: 0.1, on: .main, in: .common).autoconnect()
+
+    var body: some View {
+        HStack(spacing: 12) {
+            // Countdown circle with progress
+            ZStack {
+                // Background circle
+                Circle()
+                    .stroke(
+                        RomanianColors.goldAccent.opacity(0.2),
+                        lineWidth: 4
+                    )
+                    .frame(width: 50, height: 50)
+
+                // Progress circle
+                Circle()
+                    .trim(from: 0, to: CGFloat(timeRemaining / 30.0))
+                    .stroke(
+                        LinearGradient(
+                            colors: progressColors,
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ),
+                        style: StrokeStyle(lineWidth: 4, lineCap: .round)
+                    )
+                    .frame(width: 50, height: 50)
+                    .rotationEffect(.degrees(-90))
+                    .animation(.linear(duration: 0.1), value: timeRemaining)
+
+                // Time text
+                Text(String(format: "%.0f", max(0, timeRemaining)))
+                    .font(.system(size: 18, weight: .bold, design: .rounded))
+                    .foregroundColor(textColor)
+            }
+
+            // Objection message
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Poți Obiecta!")
+                    .font(.headline.weight(.bold))
+                    .foregroundColor(RomanianColors.goldAccent)
+
+                Text("Joacă o carte sau pasează")
+                    .font(.caption)
+                    .foregroundColor(.white.opacity(0.8))
+            }
+
+            Spacer()
+        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 12)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color.black.opacity(0.6))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(
+                            LinearGradient(
+                                colors: [
+                                    RomanianColors.goldAccent.opacity(0.6),
+                                    RomanianColors.primaryYellow.opacity(0.4)
+                                ],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            ),
+                            lineWidth: 2
+                        )
+                )
+        )
+        .shadow(color: RomanianColors.goldAccent.opacity(0.3), radius: 8, x: 0, y: 4)
+        .onReceive(timer) { _ in
+            updateTimer()
+        }
+        .onAppear {
+            updateTimer()
+        }
+    }
+
+    private func updateTimer() {
+        let remaining = deadline.timeIntervalSinceNow
+        timeRemaining = max(0, remaining)
+
+        if timeRemaining <= 0 {
+            timerActive = false
+        }
+    }
+
+    private var progressColors: [Color] {
+        if timeRemaining > 20 {
+            return [RomanianColors.countrysideGreen, RomanianColors.countrysideGreen.opacity(0.8)]
+        } else if timeRemaining > 10 {
+            return [RomanianColors.primaryYellow, RomanianColors.goldAccent]
+        } else {
+            return [RomanianColors.primaryRed, RomanianColors.embroideryRed]
+        }
+    }
+
+    private var textColor: Color {
+        if timeRemaining > 20 {
+            return RomanianColors.countrysideGreen
+        } else if timeRemaining > 10 {
+            return RomanianColors.goldAccent
+        } else {
+            return RomanianColors.primaryRed
+        }
     }
 }

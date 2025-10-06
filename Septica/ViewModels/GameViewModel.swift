@@ -109,6 +109,24 @@ final class GameViewModel: ObservableObject {
         Task { await performAIMove() }
     }
 
+    func passCurrentTurn() {
+        guard let human = humanPlayer else { return }
+
+        // Clear objection state
+        gameState.waitingForObjection = false
+        gameState.objectionDeadline = nil
+        gameState.validObjectionCards = []
+
+        // Notify players of the pass action
+        let event = GameEvent.playerPassed(playerId: human.id)
+        players.forEach { $0.handleGameEvent(event) }
+
+        logger.info("Player passed objection opportunity")
+
+        // Continue with AI turn if needed
+        endTurnIfNeeded()
+    }
+
     private func performAIMove() async {
         guard let opponent = players.first(where: { !$0.isHuman }), gamePhase == .playing else { return }
         let moves = GameRules.validMoves(

@@ -8,22 +8,49 @@
 
 import Foundation
 
+/// Game mode for Romanian Septica (different rules for player counts)
+enum GameMode {
+    case twoPlayers   // 32 cards, 7s wild, 8s normal
+    case threePlayers // 30 cards (remove 2 eights), 7s + remaining 8s wild
+    case fourPlayers  // 32 cards, team play, 7s wild, 8s normal
+}
+
+/// Player action in objection-based gameplay
+enum PlayerAction: Equatable {
+    case playCard(Card)
+    case pass
+
+    var isPass: Bool {
+        if case .pass = self { return true }
+        return false
+    }
+}
+
 /// Core rules engine for the Septica card game
 struct GameRules {
-    
+
     // MARK: - Game Constants
-    
+
     /// Total number of cards dealt to each player at game start
     static let initialHandSize = 4
-    
-    /// Maximum number of players in a Romanian Septica game (strict 2-player)
-    static let maxPlayers = 2
-    
+
+    /// Maximum number of players in a Romanian Septica game
+    static func maxPlayers(for mode: GameMode) -> Int {
+        switch mode {
+        case .twoPlayers: return 2
+        case .threePlayers: return 3
+        case .fourPlayers: return 4
+        }
+    }
+
     /// Total number of point cards in the deck (8 cards: 4 tens + 4 aces)
     static let totalPointCards = 8
-    
+
     /// Total points available in a game (each point card = 1 point)
     static let totalPoints = 8
+
+    /// Time limit for objection decision (seconds)
+    static let objectionTimeLimit: TimeInterval = 30
     
     // MARK: - Romanian Septica Deck Rules
     
@@ -56,65 +83,68 @@ struct GameRules {
     
     // MARK: - Card Beating Logic
     
-    /// Determines if a card can beat another card according to 2-player Romanian Septica rules
+    /// Determines if a card can beat another card according to Romanian Septica rules
     /// - Parameters:
     ///   - attackingCard: The card attempting to beat
     ///   - targetCard: The card being beaten
-    ///   - tableCardsCount: Current number of cards on the table
+    ///   - gameMode: Current game mode (affects 8s behavior)
+    ///   - tableCardsCount: Current number of cards on the table (unused, kept for compatibility)
     /// - Returns: true if attacking card can beat the target card
-    static func canBeat(attackingCard: Card, targetCard: Card, tableCardsCount: Int) -> Bool {
-        // Rule 1: 7s always beat (wild cards)
-        if isCuttingCard(attackingCard) {
+    static func canBeat(attackingCard: Card, targetCard: Card, gameMode: GameMode = .twoPlayers, tableCardsCount: Int = 0) -> Bool {
+        // Rule 1: 7s always beat (wild cards in all modes)
+        if attackingCard.value == 7 {
             return true
         }
-        
+
         // Rule 2: Same value beats (including figure cards)
         if attackingCard.value == targetCard.value {
             return true
         }
-        
-        // Rule 3: 8s beat when table cards count is divisible by 3
-        if attackingCard.value == 8 && tableCardsCount % 3 == 0 {
+
+        // Rule 3: 8s are wild ONLY in 3-player mode (with 30-card deck)
+        if gameMode == .threePlayers && attackingCard.value == 8 {
             return true
         }
-        
+
         // No other cards can beat
         return false
     }
     
-    /// Determines if a player can play any card from their hand
+    /// Determines if a player can play any card from their hand (for objection)
     /// - Parameters:
     ///   - playerHand: Cards in the player's hand
     ///   - topTableCard: The top card on the table (to beat)
-    ///   - tableCardsCount: Current number of cards on the table
-    /// - Returns: true if player has at least one valid move
-    static func hasValidMove(playerHand: [Card], topTableCard: Card?, tableCardsCount: Int) -> Bool {
+    ///   - gameMode: Current game mode
+    ///   - tableCardsCount: Current number of cards on the table (unused, kept for compatibility)
+    /// - Returns: true if player has at least one valid card to object with
+    static func hasValidMove(playerHand: [Card], topTableCard: Card?, gameMode: GameMode = .twoPlayers, tableCardsCount: Int = 0) -> Bool {
         // If no card on table, player can play any card
         guard let topCard = topTableCard else {
             return !playerHand.isEmpty
         }
-        
+
         // Check if any card in hand can beat the top card
         return playerHand.contains { card in
-            canBeat(attackingCard: card, targetCard: topCard, tableCardsCount: tableCardsCount)
+            canBeat(attackingCard: card, targetCard: topCard, gameMode: gameMode, tableCardsCount: tableCardsCount)
         }
     }
     
-    /// Get all valid cards a player can play
+    /// Get all valid cards a player can play (for objection)
     /// - Parameters:
     ///   - playerHand: Cards in the player's hand
     ///   - topTableCard: The top card on the table (to beat)
-    ///   - tableCardsCount: Current number of cards on the table
-    /// - Returns: Array of cards that can be played
-    static func validMoves(from playerHand: [Card], against topTableCard: Card?, tableCardsCount: Int) -> [Card] {
+    ///   - gameMode: Current game mode
+    ///   - tableCardsCount: Current number of cards on the table (unused, kept for compatibility)
+    /// - Returns: Array of cards that can be played to object
+    static func validMoves(from playerHand: [Card], against topTableCard: Card?, gameMode: GameMode = .twoPlayers, tableCardsCount: Int = 0) -> [Card] {
         // If no card on table, all cards are valid
         guard let topCard = topTableCard else {
             return playerHand
         }
-        
+
         // Return cards that can beat the top card
         return playerHand.filter { card in
-            canBeat(attackingCard: card, targetCard: topCard, tableCardsCount: tableCardsCount)
+            canBeat(attackingCard: card, targetCard: topCard, gameMode: gameMode, tableCardsCount: tableCardsCount)
         }
     }
     
@@ -204,21 +234,24 @@ struct GameRules {
     
     // MARK: - Hand Dealing Logic
     
-    /// Deal initial hands to both players from a deck (2-player Septica)
-    /// - Parameter deck: Deck to deal from (will be modified)
-    /// - Returns: Array of player hands [player1Hand, player2Hand]
-    static func dealInitialHands(from deck: inout Deck) -> [[Card]] {
-        var hands: [[Card]] = Array(repeating: [], count: maxPlayers)
-        
+    /// Deal initial hands to players from a deck
+    /// - Parameters:
+    ///   - deck: Deck to deal from (will be modified)
+    ///   - gameMode: Current game mode (determines number of players)
+    /// - Returns: Array of player hands
+    static func dealInitialHands(from deck: inout Deck, gameMode: GameMode = .twoPlayers) -> [[Card]] {
+        let playerCount = maxPlayers(for: gameMode)
+        var hands: [[Card]] = Array(repeating: [], count: playerCount)
+
         // Deal cards in round-robin fashion (4 cards each)
         for _ in 0..<initialHandSize {
-            for playerIndex in 0..<maxPlayers {
+            for playerIndex in 0..<playerCount {
                 if let card = deck.drawCard() {
                     hands[playerIndex].append(card)
                 }
             }
         }
-        
+
         return hands
     }
     
@@ -285,41 +318,43 @@ extension GameRules {
     /// - Parameters:
     ///   - attackingCard: Card doing the beating
     ///   - targetCard: Card being beaten
-    ///   - tableCardsCount: Number of cards on table
+    ///   - gameMode: Current game mode
+    ///   - tableCardsCount: Number of cards on table (unused)
     /// - Returns: Explanation string, or nil if card cannot beat
-    static func beatExplanation(attackingCard: Card, targetCard: Card, tableCardsCount: Int) -> String? {
+    static func beatExplanation(attackingCard: Card, targetCard: Card, gameMode: GameMode = .twoPlayers, tableCardsCount: Int = 0) -> String? {
         if attackingCard.value == 7 {
             return "7 always beats (wild card)"
-        } else if attackingCard.value == 8 && tableCardsCount % 3 == 0 {
-            return "8 beats when table has \(tableCardsCount) cards (divisible by 3)"
+        } else if gameMode == .threePlayers && attackingCard.value == 8 {
+            return "8 is a wild card in 3-player mode"
         } else if attackingCard.value == targetCard.value {
             return "Same value beats (\(attackingCard.displayValue) beats \(targetCard.displayValue))"
         }
-        
+
         return nil
     }
     
     /// Analyze the strength of a card in the current game context
     /// - Parameters:
     ///   - card: Card to analyze
-    ///   - tableCardsCount: Current cards on table
+    ///   - gameMode: Current game mode
+    ///   - tableCardsCount: Current cards on table (unused)
     /// - Returns: Card strength analysis
-    static func analyzeCardStrength(card: Card, tableCardsCount: Int) -> CardStrength {
+    static func analyzeCardStrength(card: Card, gameMode: GameMode = .twoPlayers, tableCardsCount: Int = 0) -> CardStrength {
         var strength = CardStrength.normal
-        
-        // 7 is always strong (wild card)
+
+        // 7 is always strong (wild card in all modes)
         if card.value == 7 {
             strength = .veryStrong
         }
-        // 8 is strong when table count is divisible by 3
-        else if card.value == 8 && tableCardsCount % 3 == 0 {
-            strength = .strong
+        // 8 is strong in 3-player mode (wild card)
+        else if gameMode == .threePlayers && card.value == 8 {
+            strength = .veryStrong
         }
         // Point cards have strategic value
         else if card.isPointCard {
             strength = .valuable
         }
-        
+
         return strength
     }
 }

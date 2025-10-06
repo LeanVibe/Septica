@@ -121,6 +121,9 @@ class Player: SepticaPlayer, ObservableObject {
             if winnerId == self.id {
                 statistics.gamesWon += 1
             }
+        case .playerPassed:
+            // Player passed objection opportunity - no statistics update needed
+            break
         }
     }
 }
@@ -141,15 +144,31 @@ class AIPlayer: Player {
     /// AI chooses the best card to play based on strategy
     override func chooseCard(gameState: GameState, validMoves: [Card]) async -> Card? {
         guard !validMoves.isEmpty else { return nil }
-        
+
         // Add slight delay to make AI feel more natural
         let delay = difficulty.thinkingTime
         try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
-        
+
         return strategy.chooseOptimalCard(
             from: validMoves,
             gameState: gameState,
             playerHand: hand
+        )
+    }
+
+    /// Decide whether to object to a card played by opponent (Romanian Septica objection system)
+    /// - Parameters:
+    ///   - lastPlayed: The card just played by opponent
+    ///   - tableCards: All cards currently on the table
+    ///   - gameMode: Current game mode (affects beating rules)
+    /// - Returns: true if AI decides to object (play a beating card)
+    func shouldObjectToCard(lastPlayed: Card, tableCards: [Card], gameMode: GameMode = .twoPlayers) -> Bool {
+        return strategy.shouldObjectToCard(
+            lastPlayed: lastPlayed,
+            tableCards: tableCards,
+            hand: hand,
+            gameMode: gameMode,
+            difficulty: difficulty
         )
     }
 }
@@ -788,7 +807,7 @@ struct AIStrategy {
     /// Determine if AI should be aggressive with point cards based on difficulty
     private func shouldBeAggressiveWithPoints(_ difficulty: AIDifficulty, gameState: GameState) -> Bool {
         let handSize = gameState.currentPlayer?.hand.count ?? 4
-        
+
         switch difficulty {
         case .easy:
             return handSize <= 1 // Only aggressive in endgame
@@ -798,6 +817,117 @@ struct AIStrategy {
             return handSize <= 3 // More strategic aggression
         case .expert:
             return true // Always consider strategic aggression
+        }
+    }
+
+    // MARK: - Objection System Decision Logic
+
+    /// Decide whether AI should object to opponent's card (Romanian Septica authentic gameplay)
+    /// Strategic considerations:
+    /// - Point cards on table (10s, Aces) = high value target
+    /// - Card strength (7s are precious, avoid wasting)
+    /// - Hand composition and game phase
+    /// - Difficulty-based decision quality
+    ///
+    /// - Parameters:
+    ///   - lastPlayed: Card just played by opponent
+    ///   - tableCards: All cards currently on table
+    ///   - hand: AI player's current hand
+    ///   - gameMode: Current game mode (affects 8 beating rules)
+    ///   - difficulty: AI difficulty level
+    /// - Returns: true if AI decides to OBJECT (play beating card), false to PASS
+    mutating func shouldObjectToCard(
+        lastPlayed: Card,
+        tableCards: [Card],
+        hand: [Card],
+        gameMode: GameMode = .twoPlayers,
+        difficulty: AIDifficulty
+    ) -> Bool {
+        // Find all cards that can beat the last played card
+        let validBeatingCards = hand.filter { card in
+            GameRules.canBeat(attackingCard: card, targetCard: lastPlayed, gameMode: gameMode, tableCardsCount: tableCards.count)
+        }
+
+        // If no valid beating cards, must PASS
+        guard !validBeatingCards.isEmpty else {
+            return false
+        }
+
+        // Calculate strategic value of objecting
+        let pointsAtStake = tableCards.filter { $0.isPointCard }.count
+
+        // Strategy 1: HIGH VALUE - Always object if 2+ point cards on table
+        // Romanian Septica wisdom: "Nu lăsa punctele pe masă" (Don't leave points on the table)
+        if pointsAtStake >= 2 {
+            return true
+        }
+
+        // Strategy 2: CARD EFFICIENCY - Can we beat with a "cheap" card?
+        // Prefer objecting if we have weak cards that can beat (save strong cards)
+        let cheapBeatingCards = validBeatingCards.filter { card in
+            // Cheap cards: not 7s, not point cards, not matching values (strategic)
+            card.value != 7 && !card.isPointCard
+        }
+
+        if !cheapBeatingCards.isEmpty {
+            // We can beat efficiently - good opportunity
+            if pointsAtStake >= 1 {
+                return true // Even 1 point is worth a cheap card
+            }
+
+            // Difficulty-based decision: higher difficulties recognize cheap beat opportunities
+            switch difficulty {
+            case .easy:
+                return Double.random(in: 0...1) < 0.3 // 30% chance - often miss opportunities
+            case .medium:
+                return Double.random(in: 0...1) < 0.6 // 60% chance - sometimes object
+            case .hard:
+                return Double.random(in: 0...1) < 0.8 // 80% chance - usually object
+            case .expert:
+                return true // Always recognize cheap beat opportunities
+            }
+        }
+
+        // Strategy 3: CONSERVATION - Would we waste a valuable card?
+        // Check if we'd have to use 7s or valuable cards to beat
+        let has7 = validBeatingCards.contains { $0.value == 7 }
+        let hasMatchingValue = validBeatingCards.contains { $0.value == lastPlayed.value }
+
+        // If we only have valuable cards to beat with:
+        let wouldWasteValuableCard = validBeatingCards.allSatisfy { card in
+            card.value == 7 || card.isPointCard || (hasMatchingValue && card.value >= 10)
+        }
+
+        if wouldWasteValuableCard {
+            // High bar for wasting valuable cards
+            if pointsAtStake >= 3 {
+                return true // 3+ points worth sacrificing valuable card
+            }
+
+            // Otherwise PASS - save valuable cards for better opportunities
+            // Romanian wisdom: "Păstrează șeptarul pentru momentul potrivit" (Save the 7 for the right moment)
+            return false
+        }
+
+        // Strategy 4: DIFFICULTY MODULATION - Easy AI makes more mistakes
+        switch difficulty {
+        case .easy:
+            // Easy AI: Often passes even with opportunities (50% random)
+            return Double.random(in: 0...1) < 0.5
+        case .medium:
+            // Medium AI: Objects if 1+ points, otherwise 40% chance
+            return pointsAtStake >= 1 || Double.random(in: 0...1) < 0.4
+        case .hard:
+            // Hard AI: Strategic - objects for any points with good cards
+            return pointsAtStake >= 1
+        case .expert:
+            // Expert AI: Optimal strategy - analyze hand composition
+            // Object if we have multiple beating options (flexibility)
+            if validBeatingCards.count >= 2 {
+                return pointsAtStake >= 1 || has7 // Multiple options = can afford to object
+            }
+            // Single beating option: only if points available
+            return pointsAtStake >= 1
         }
     }
 }
@@ -835,6 +965,7 @@ enum GameEvent {
     case cardPlayed(playerId: UUID, card: Card)
     case trickWon(playerId: UUID, points: Int)
     case gameEnded(winnerId: UUID?, finalScores: [UUID: Int])
+    case playerPassed(playerId: UUID)
 }
 
 // MARK: - Player Extensions

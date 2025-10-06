@@ -33,7 +33,14 @@ class GameState: ObservableObject, Codable {
     
     // MARK: - Game Configuration
     // Romanian Septica configuration - games end when all cards are played, not by target score
-    
+    @Published var gameMode: GameMode = .twoPlayers
+
+    // MARK: - Objection System (Authentic Romanian Septica)
+    @Published var waitingForObjection: Bool = false
+    @Published var objectionDeadline: Date?
+    @Published var lastPlayedCard: Card?
+    @Published var validObjectionCards: [Card] = []
+
     // MARK: - Players
     @Published var players: [Player] = []
     @Published var currentPlayerIndex: Int = 0
@@ -139,17 +146,17 @@ class GameState: ObservableObject, Codable {
         roundNumber = 1
         trickNumber = 1
         currentPlayerIndex = _dealerIndex
-        
+
         // Reset all players
         players.forEach { $0.resetForNewGame() }
-        
-        // Create and shuffle deck
-        _deck = Deck()
+
+        // Create and shuffle deck (30 cards for 3-player mode, 32 for others)
+        _deck = Deck(gameMode: gameMode)
         _deck.shuffle()
-        
+
         // Deal initial hands
         dealInitialHands()
-        
+
         // Clear game state - use batch updates for performance
         beginBatchUpdates()
         tableCards.removeAll()
@@ -157,18 +164,18 @@ class GameState: ObservableObject, Codable {
         lastMove = nil
         gameResult = nil
         endBatchUpdates()
-        
+
         // Start the game
         phase = .playing
         updateTimestamp()
     }
     
-    /// Deal initial hands to both players (2-player Septica only)
+    /// Deal initial hands to all players based on game mode
     private func dealInitialHands() {
-        // Ensure exactly 2 players for Romanian Septica
-        assert(players.count == GameRules.maxPlayers, "Romanian Septica requires exactly 2 players")
-        
-        let hands = GameRules.dealInitialHands(from: &_deck)
+        // Ensure correct number of players for game mode
+        assert(players.count == GameRules.maxPlayers(for: gameMode), "Romanian Septica requires correct number of players for game mode")
+
+        let hands = GameRules.dealInitialHands(from: &_deck, gameMode: gameMode)
         for (index, hand) in hands.enumerated() {
             players[index].hand = hand
         }
@@ -636,8 +643,65 @@ extension GameState {
         guard let localId = localPlayerId else { return nil }
         return players.first { $0.id != localId }
     }
+
+    // MARK: - Team Play Support (4-player mode)
+
+    /// Team indices for 4-player mode (2v2)
+    /// Team A: Players 0 and 2 (human + partner opposite)
+    /// Team B: Players 1 and 3 (opponents on sides)
+    var teamAIndices: [Int] {
+        guard gameMode == .fourPlayers else { return [] }
+        return [0, 2]
+    }
+
+    var teamBIndices: [Int] {
+        guard gameMode == .fourPlayers else { return [] }
+        return [1, 3]
+    }
+
+    /// Get combined team score for Team A (human + partner)
+    var teamAScore: Int {
+        guard gameMode == .fourPlayers else { return 0 }
+        return teamAIndices.reduce(0) { total, index in
+            guard index < players.count else { return total }
+            return total + players[index].score
+        }
+    }
+
+    /// Get combined team score for Team B (opponents)
+    var teamBScore: Int {
+        guard gameMode == .fourPlayers else { return 0 }
+        return teamBIndices.reduce(0) { total, index in
+            guard index < players.count else { return total }
+            return total + players[index].score
+        }
+    }
+
+    /// Check if a player is on Team A (human's team)
+    func isTeamA(playerIndex: Int) -> Bool {
+        guard gameMode == .fourPlayers else { return false }
+        return teamAIndices.contains(playerIndex)
+    }
+
+    /// Check if a player is on Team B (opponent team)
+    func isTeamB(playerIndex: Int) -> Bool {
+        guard gameMode == .fourPlayers else { return false }
+        return teamBIndices.contains(playerIndex)
+    }
+
+    /// Get partner index for a given player (4-player mode only)
+    func getPartnerIndex(for playerIndex: Int) -> Int? {
+        guard gameMode == .fourPlayers else { return nil }
+
+        if teamAIndices.contains(playerIndex) {
+            return teamAIndices.first { $0 != playerIndex }
+        } else if teamBIndices.contains(playerIndex) {
+            return teamBIndices.first { $0 != playerIndex }
+        }
+        return nil
+    }
 }
 
-// MARK: - GameState Extensions  
+// MARK: - GameState Extensions
 // Note: GameState is not Codable due to ObservableObject complexity
 // Use GameSession for persistence instead

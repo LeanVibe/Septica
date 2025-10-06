@@ -12,9 +12,22 @@ import Foundation
 struct Deck: Codable {
     private var cards: [Card]
     
-    /// Create a new standard 32-card Romanian deck
+    /// Create a new standard 32-card Romanian deck (2-player mode)
     init() {
         self.cards = Deck.createStandardDeck()
+    }
+
+    /// Create a deck for specific game mode
+    /// - Parameter gameMode: The game mode (affects deck composition)
+    init(gameMode: GameMode) {
+        switch gameMode {
+        case .twoPlayers, .fourPlayers:
+            // Standard 32-card deck
+            self.cards = Deck.createStandardDeck()
+        case .threePlayers:
+            // 30-card deck (remove 2 eights for 3-player mode)
+            self.cards = Deck.createThreePlayerDeck()
+        }
     }
     
     /// Create a deck from existing cards
@@ -90,7 +103,7 @@ struct Deck: Codable {
     /// - Returns: Array of 32 cards (7,8,9,10,J,Q,K,A in each suit)
     private static func createStandardDeck() -> [Card] {
         var deck: [Card] = []
-        
+
         // Create cards for each suit
         for suit in Suit.allCases {
             // Romanian deck uses values 7-14 (7,8,9,10,J,Q,K,A)
@@ -98,7 +111,34 @@ struct Deck: Codable {
                 deck.append(Card(suit: suit, value: value))
             }
         }
-        
+
+        return deck
+    }
+
+    /// Create a 30-card deck for 3-player mode (removes 2 eights)
+    /// - Returns: Array of 30 cards (7,8,9,10,J,Q,K,A with 2 eights removed)
+    private static func createThreePlayerDeck() -> [Card] {
+        var deck: [Card] = []
+        var eightCount = 0
+        let maxEights = 2 // Keep only 2 eights (remove 2)
+
+        // Create cards for each suit
+        for suit in Suit.allCases {
+            // Romanian deck uses values 7-14 (7,8,9,10,J,Q,K,A)
+            for value in 7...14 {
+                // Special handling for 8s - only include 2 out of 4
+                if value == 8 {
+                    if eightCount < maxEights {
+                        deck.append(Card(suit: suit, value: value))
+                        eightCount += 1
+                    }
+                    // Skip the other 2 eights
+                } else {
+                    deck.append(Card(suit: suit, value: value))
+                }
+            }
+        }
+
         return deck
     }
 }

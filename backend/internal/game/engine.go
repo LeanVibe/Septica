@@ -17,6 +17,30 @@ var (
 	ErrCannotBeatCard   = errors.New("cannot beat card")
 )
 
+// GameMode represents different Romanian Septica game modes
+type GameMode string
+
+const (
+	TwoPlayers   GameMode = "two_players"   // 32 cards, 7s wild, 8s normal
+	ThreePlayers GameMode = "three_players" // 30 cards (remove 2 eights), 7s + remaining 8s wild
+	FourPlayers  GameMode = "four_players"  // 32 cards, team play, 7s wild, 8s normal
+)
+
+// PlayerActionType represents the type of action a player can take
+type PlayerActionType string
+
+const (
+	ActionPlayCard PlayerActionType = "PLAY_CARD"
+	ActionPass     PlayerActionType = "PASS"
+)
+
+// PlayerAction represents a player's action in objection-based gameplay
+type PlayerAction struct {
+	Type     PlayerActionType `json:"type"`
+	Card     *Card            `json:"card,omitempty"` // nil for PASS
+	PlayerID uuid.UUID        `json:"player_id"`
+}
+
 // Card represents a playing card
 type Card struct {
 	Suit  string `json:"suit"`  // hearts, diamonds, clubs, spades
@@ -31,24 +55,32 @@ type GameState struct {
 	Player2ID         uuid.UUID `json:"player2_id"`
 	CurrentPlayerID   uuid.UUID `json:"current_player_id"`
 	Status            string    `json:"status"` // waiting, in_progress, completed
-	
+
+	// Game configuration
+	GameMode          GameMode  `json:"game_mode"`
+
 	// Game state
 	Player1Hand       []Card    `json:"player1_hand"`
 	Player2Hand       []Card    `json:"player2_hand"`
 	TableCards        []Card    `json:"table_cards"`
 	Deck              []Card    `json:"deck"`
-	
+
+	// Objection system (Authentic Romanian Septica)
+	WaitingForObjection bool      `json:"waiting_for_objection"`
+	ObjectionDeadline   *time.Time `json:"objection_deadline,omitempty"`
+	LastPlayedCard      *Card     `json:"last_played_card,omitempty"`
+
 	// Score tracking
 	Player1Score      int       `json:"player1_score"`
 	Player2Score      int       `json:"player2_score"`
 	TrickNumber       int       `json:"trick_number"`
 	MoveNumber        int       `json:"move_number"`
-	
+
 	// Timing
 	CreatedAt         time.Time `json:"created_at"`
 	StartedAt         *time.Time `json:"started_at"`
 	LastMoveAt        *time.Time `json:"last_move_at"`
-	
+
 	// Multiplayer sync
 	SequenceNumber    int       `json:"sequence_number"`
 }
@@ -79,37 +111,39 @@ func NewEngine() *Engine {
 // CreateGame creates a new game between two players
 func (e *Engine) CreateGame(player1ID, player2ID uuid.UUID) *GameState {
 	gameID := uuid.New()
-	
+
 	// Create and shuffle deck (32 cards: 7-14 in all suits)
 	deck := createAndShuffleDeck()
-	
+
 	// Deal 4 cards to each player
 	player1Hand := deck[:4]
 	player2Hand := deck[4:8]
 	remainingDeck := deck[8:]
-	
+
 	// Player 1 starts
 	game := &GameState{
-		ID:              gameID,
-		Player1ID:       player1ID,
-		Player2ID:       player2ID,
-		CurrentPlayerID: player1ID,
-		Status:          "in_progress",
-		Player1Hand:     player1Hand,
-		Player2Hand:     player2Hand,
-		TableCards:      []Card{},
-		Deck:            remainingDeck,
-		Player1Score:    0,
-		Player2Score:    0,
-		TrickNumber:     1,
-		MoveNumber:      1,
-		CreatedAt:       time.Now(),
-		SequenceNumber:  0,
+		ID:                  gameID,
+		Player1ID:           player1ID,
+		Player2ID:           player2ID,
+		CurrentPlayerID:     player1ID,
+		Status:              "in_progress",
+		GameMode:            TwoPlayers, // Default to 2-player mode
+		Player1Hand:         player1Hand,
+		Player2Hand:         player2Hand,
+		TableCards:          []Card{},
+		Deck:                remainingDeck,
+		WaitingForObjection: false,
+		Player1Score:        0,
+		Player2Score:        0,
+		TrickNumber:         1,
+		MoveNumber:          1,
+		CreatedAt:           time.Now(),
+		SequenceNumber:      0,
 	}
-	
+
 	now := time.Now()
 	game.StartedAt = &now
-	
+
 	e.games[gameID] = game
 	return game
 }
@@ -162,7 +196,7 @@ func (e *Engine) PlayCard(gameID uuid.UUID, playerID uuid.UUID, card Card) (*Mov
 	}
 	
 	// Validate the move according to Septica rules
-	if !isValidMove(card, game.TableCards) {
+	if !isValidMove(card, game.TableCards, game.GameMode) {
 		return &MoveResult{Valid: false, Error: "cannot beat current card"}, nil
 	}
 	
@@ -191,7 +225,7 @@ func (e *Engine) PlayCard(gameID uuid.UUID, playerID uuid.UUID, card Card) (*Mov
 	game.CurrentPlayerID = opponentID
 
 	// Then check if trick is complete (opponent cannot beat the current card)
-	trickComplete := !hasValidMoves(opponentHand, game.TableCards)
+	trickComplete := !hasValidMoves(opponentHand, game.TableCards, game.GameMode)
 	pointsAwarded := 0
 
 	if trickComplete {
@@ -265,7 +299,7 @@ func createAndShuffleDeck() []Card {
 	return deck
 }
 
-func isValidMove(card Card, tableCards []Card) bool {
+func isValidMove(card Card, tableCards []Card, gameMode GameMode) bool {
 	// If table is empty, any card is valid
 	if len(tableCards) == 0 {
 		return true
@@ -274,12 +308,12 @@ func isValidMove(card Card, tableCards []Card) bool {
 	topCard := tableCards[len(tableCards)-1]
 
 	// Romanian Septica rules:
-	// 1. 7s always beat everything
+	// 1. 7s always beat everything (wild cards in all modes)
 	if card.Value == 7 {
 		return true
 	}
 
-	// 2. Same value beats (with 7s having suit priority)
+	// 2. Same value beats
 	if card.Value == topCard.Value {
 		// If both are 7s, check suit priority (spades > hearts > diamonds > clubs)
 		if card.Value == 7 {
@@ -288,8 +322,8 @@ func isValidMove(card Card, tableCards []Card) bool {
 		return true
 	}
 
-	// 3. 8s beat when table card count is exactly divisible by 3 (non-zero)
-	if card.Value == 8 && len(tableCards) > 0 && len(tableCards)%3 == 0 {
+	// 3. 8s are wild ONLY in 3-player mode (with 30-card deck)
+	if gameMode == ThreePlayers && card.Value == 8 {
 		return true
 	}
 
@@ -313,9 +347,9 @@ func getSuitPriority(suit string) int {
 	}
 }
 
-func hasValidMoves(hand []Card, tableCards []Card) bool {
+func hasValidMoves(hand []Card, tableCards []Card, gameMode GameMode) bool {
 	for _, card := range hand {
-		if isValidMove(card, tableCards) {
+		if isValidMove(card, tableCards, gameMode) {
 			return true
 		}
 	}
@@ -390,7 +424,7 @@ func (e *Engine) GetValidMoves(gameID uuid.UUID, playerID uuid.UUID) ([]Card, er
 	
 	var validMoves []Card
 	for _, card := range hand {
-		if isValidMove(card, game.TableCards) {
+		if isValidMove(card, game.TableCards, game.GameMode) {
 			validMoves = append(validMoves, card)
 		}
 	}
