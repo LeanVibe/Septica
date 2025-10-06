@@ -40,9 +40,9 @@ type Player struct {
 	Gems     int       `gorm:"default:0" json:"gems"`
 	
 	// Cosmetic preferences
-	SelectedCardBack   string `gorm:"default:'default'" json:"selected_card_back"`
-	SelectedTableTheme string `gorm:"default:'default'" json:"selected_table_theme"`
-	SelectedAvatar     string `gorm:"default:'default'" json:"selected_avatar"`
+	SelectedCardBack   string `gorm:"default:default" json:"selected_card_back"`
+	SelectedTableTheme string `gorm:"default:default" json:"selected_table_theme"`
+	SelectedAvatar     string `gorm:"default:default" json:"selected_avatar"`
 	
 	// Relationships
 	User        *User             `gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"user,omitempty"`
@@ -86,7 +86,7 @@ type Game struct {
 	IsPlayoffGame      bool       `gorm:"default:false" json:"is_playoff_game"`
 	
 	// Game state
-	Status       string    `gorm:"default:'waiting'" json:"status"` // waiting, in_progress, completed, abandoned
+	Status       string    `gorm:"default:waiting" json:"status"` // waiting, in_progress, completed, abandoned
 	WinnerID     *uuid.UUID `gorm:"type:uuid" json:"winner_id"`
 	WinningTeam  *string   `json:"winning_team,omitempty"`          // "team1", "team2" for 4-player games
 	Player1Score int       `gorm:"default:0" json:"player1_score"`
@@ -98,7 +98,7 @@ type Game struct {
 	IsMars       bool      `gorm:"default:false" json:"is_mars"`
 	
 	// Game metadata
-	GameMode         string     `gorm:"default:'ranked'" json:"game_mode"` // ranked, casual, tournament, swiss
+	GameMode         string     `gorm:"default:ranked" json:"game_mode"` // ranked, casual, tournament, swiss
 	AuthenticMode    string     `json:"authentic_mode,omitempty"`          // "2_player", "3_player", "4_player" for authentic Septica
 	UseAuthenticRules bool      `gorm:"default:false" json:"use_authentic_rules"`
 	StartedAt        *time.Time `json:"started_at"`
@@ -155,7 +155,7 @@ type GameMove struct {
 	TimeTakenMs    int64     `gorm:"default:0" json:"time_taken_ms"`
 
 	// Authentic Septica specific fields
-	MoveType           string     `gorm:"default:'PLAY_CARD'" json:"move_type"`     // "PLAY_CARD", "PASS"
+	MoveType           string     `gorm:"default:PLAY_CARD" json:"move_type"`     // "PLAY_CARD", "PASS"
 	IsObjection        bool       `gorm:"default:false" json:"is_objection"`       // Was this an objection move
 	ObjectedCardSuit   *string    `json:"objected_card_suit,omitempty"`           // Card being objected to
 	ObjectedCardValue  *int       `json:"objected_card_value,omitempty"`          // Card being objected to
@@ -173,7 +173,7 @@ type Tournament struct {
 	Name        string    `gorm:"not null" json:"name"`
 	Description string    `json:"description"`
 	Type        string    `gorm:"not null" json:"type"` // single_elimination, double_elimination, swiss_system, round_robin
-	Status      string    `gorm:"default:'registration'" json:"status"` // registration, in_progress, completed, cancelled
+	Status      string    `gorm:"default:registration" json:"status"` // registration, in_progress, completed, cancelled
 	
 	// Tournament settings
 	MaxParticipants    int  `gorm:"not null" json:"max_participants"`
@@ -185,7 +185,7 @@ type Tournament struct {
 	// Prize pool and distribution
 	PrizePoolCoins          int    `gorm:"default:0" json:"prize_pool_coins"`
 	PrizePoolGems           int    `gorm:"default:0" json:"prize_pool_gems"`
-	PrizeDistributionType   string `gorm:"default:'percentage'" json:"prize_distribution_type"` // percentage, fixed, winner_takes_all
+	PrizeDistributionType   string `gorm:"default:percentage" json:"prize_distribution_type"` // percentage, fixed, winner_takes_all
 	FirstPlacePrizePercent  int    `gorm:"default:50" json:"first_place_prize_percent"`
 	SecondPlacePrizePercent int    `gorm:"default:30" json:"second_place_prize_percent"`
 	ThirdPlacePrizePercent  int    `gorm:"default:20" json:"third_place_prize_percent"`
@@ -280,7 +280,9 @@ type TournamentBracket struct {
 	Player1    *Player    `gorm:"foreignKey:Player1ID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"player1,omitempty"`
 	Player2    *Player    `gorm:"foreignKey:Player2ID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"player2,omitempty"`
 	Winner     *Player    `gorm:"foreignKey:WinnerID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"winner,omitempty"`
-	Game       *Game      `gorm:"foreignKey:GameID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"game,omitempty"`
+	// Game relationship removed to avoid circular dependency during migration
+	// Game can be loaded manually using GameID field when needed
+	// Game       *Game      `gorm:"foreignKey:GameID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"game,omitempty"`
 }
 
 // ELORatingHistory tracks rating changes over time
@@ -361,7 +363,7 @@ type Friendship struct {
 	BaseModel
 	RequesterID uuid.UUID `gorm:"type:uuid;not null" json:"requester_id"`
 	AddresseeID uuid.UUID `gorm:"type:uuid;not null" json:"addressee_id"`
-	Status      string    `gorm:"default:'pending'" json:"status"` // pending, accepted, blocked
+	Status      string    `gorm:"default:pending" json:"status"` // pending, accepted, blocked
 	
 	// Relationships
 	Requester Player `gorm:"foreignKey:RequesterID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"requester,omitempty"`
@@ -374,7 +376,7 @@ type ChatMessage struct {
 	GameID   uuid.UUID `gorm:"type:uuid;not null" json:"game_id"`
 	PlayerID uuid.UUID `gorm:"type:uuid;not null" json:"player_id"`
 	Message  string    `gorm:"not null" json:"message"`
-	Type     string    `gorm:"default:'text'" json:"type"` // text, emote, system
+	Type     string    `gorm:"default:text" json:"type"` // text, emote, system
 
 	// Relationships
 	Game   Game   `gorm:"foreignKey:GameID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"game,omitempty"`

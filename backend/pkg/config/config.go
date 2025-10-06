@@ -51,7 +51,7 @@ func Load() *Config {
 		Environment: getEnv("ENVIRONMENT", "development"),
 
 		// Database
-		DatabaseURL: getEnv("DATABASE_URL", "postgres://septica:septica@localhost:5432/septica?sslmode=disable"),
+		DatabaseURL: getEnv("DATABASE_URL", "postgres://septica:septica@localhost:5434/septica?sslmode=disable"),
 
 		// JWT
 		JWTSecret:     getEnv("JWT_SECRET", "septica-development-secret-key-change-in-production"),

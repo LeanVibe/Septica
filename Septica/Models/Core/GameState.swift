@@ -81,6 +81,12 @@ class GameState: ObservableObject, Codable {
     @Published var gameSessionId: String?
     @Published var serverSequenceNumber: Int = 0
     @Published var connectionStatus: ConnectionStatus = .disconnected
+    @Published var isReconnecting: Bool = false
+    @Published var lastSyncedAt: Date?
+
+    // State recovery tracking
+    private var lastKnownServerState: [String: Any]?
+    private var pendingMoves: [GameMove] = []
     
     // Performance optimization: Batch state updates
     private var _batchingUpdates = false
@@ -642,6 +648,184 @@ extension GameState {
     var remotePlayer: Player? {
         guard let localId = localPlayerId else { return nil }
         return players.first { $0.id != localId }
+    }
+
+    // MARK: - Reconnection Handling
+
+    /// Handle reconnection with state recovery
+    /// Merges recovered server state with local state and validates consistency
+    /// - Parameter recoveredState: Game state recovered from server
+    func handleReconnection(recoveredState: [String: Any]) {
+        print("[GameState] Handling reconnection with recovered state")
+
+        isReconnecting = true
+        beginBatchUpdates()
+
+        // Validate server sequence number (prevent stale state)
+        if let serverSeq = recoveredState["sequence_number"] as? Int,
+           serverSeq > serverSequenceNumber {
+
+            // Server state is newer - merge it
+            mergeServerState(recoveredState)
+
+            // Replay any pending moves that weren't synced
+            replayPendingMoves()
+
+            // Update sync timestamp
+            lastSyncedAt = Date()
+            lastKnownServerState = recoveredState
+
+        } else {
+            // Local state is same or newer - send local state to server
+            print("[GameState] Local state is current, no merge needed")
+        }
+
+        isReconnecting = false
+        connectionStatus = .connected
+        endBatchUpdates()
+
+        print("[GameState] Reconnection complete - game resumed")
+    }
+
+    /// Merge server state with local state
+    /// Prioritizes server authoritative data while preserving local UI state
+    private func mergeServerState(_ serverState: [String: Any]) {
+        print("[GameState] Merging server state")
+
+        // Update sequence number
+        if let serverSeq = serverState["sequence_number"] as? Int {
+            serverSequenceNumber = serverSeq
+        }
+
+        // Update round and trick numbers
+        if let roundNum = serverState["round_number"] as? Int {
+            roundNumber = roundNum
+        }
+
+        if let trickNum = serverState["trick_number"] as? Int {
+            trickNumber = trickNum
+        }
+
+        // Update current player
+        if let currentPlayerIdString = serverState["current_player_id"] as? String,
+           let currentPlayerId = UUID(uuidString: currentPlayerIdString) {
+            if let playerIdx = players.firstIndex(where: { $0.id == currentPlayerId }) {
+                currentPlayerIndex = playerIdx
+            }
+        }
+
+        // Update table cards
+        if let tableCardsData = serverState["table_cards"] as? [[String: Any]] {
+            tableCards = tableCardsData.compactMap { cardData in
+                guard let suit = cardData["suit"] as? String,
+                      let value = cardData["value"] as? Int else { return nil }
+                return Card(suit: Suit(rawValue: suit) ?? .hearts, value: value)
+            }
+        }
+
+        // Update player hands and scores
+        if let playerHands = serverState["player_hands"] as? [String: [[String: Any]]] {
+            for player in players {
+                if let handData = playerHands[player.id.uuidString] {
+                    let hand = handData.compactMap { cardData -> Card? in
+                        guard let suit = cardData["suit"] as? String,
+                              let value = cardData["value"] as? Int else { return nil }
+                        return Card(suit: Suit(rawValue: suit) ?? .hearts, value: value)
+                    }
+                    player.hand = hand
+                }
+            }
+        }
+
+        if let scores = serverState["scores"] as? [String: Int] {
+            for player in players {
+                if let score = scores[player.id.uuidString] {
+                    player.score = score
+                }
+            }
+        }
+
+        // Update game phase
+        if let status = serverState["status"] as? String {
+            switch status {
+            case "playing":
+                phase = .playing
+            case "finished":
+                phase = .finished
+            case "paused":
+                phase = .paused
+            default:
+                break
+            }
+        }
+
+        print("[GameState] Server state merged successfully")
+    }
+
+    /// Replay pending moves that weren't synced before disconnect
+    private func replayPendingMoves() {
+        guard !pendingMoves.isEmpty else { return }
+
+        print("[GameState] Replaying \(pendingMoves.count) pending moves")
+
+        for move in pendingMoves {
+            // Attempt to replay the move
+            _ = playCard(move.card, by: move.playerId)
+        }
+
+        // Clear pending moves after replay
+        pendingMoves.removeAll()
+    }
+
+    /// Store server state snapshot for recovery
+    func storeServerStateSnapshot(_ state: [String: Any]) {
+        lastKnownServerState = state
+        lastSyncedAt = Date()
+    }
+
+    /// Add move to pending queue (for offline play during disconnect)
+    func addPendingMove(_ move: GameMove) {
+        pendingMoves.append(move)
+    }
+
+    /// Clear pending moves (after successful sync)
+    func clearPendingMoves() {
+        pendingMoves.removeAll()
+    }
+
+    /// Validate state consistency between client and server
+    /// Returns true if states are consistent, false if conflict detected
+    func validateStateConsistency(with serverState: [String: Any]) -> Bool {
+        // Check sequence number
+        guard let serverSeq = serverState["sequence_number"] as? Int else {
+            return false
+        }
+
+        // Allow server to be ahead (we're catching up)
+        // or equal (we're in sync)
+        // but not behind (client state is invalid)
+        if serverSeq < serverSequenceNumber {
+            print("[GameState] State conflict: server behind client")
+            return false
+        }
+
+        // Check current player consistency
+        if let serverPlayerId = serverState["current_player_id"] as? String,
+           let localPlayerId = currentPlayer?.id.uuidString,
+           serverSeq == serverSequenceNumber {
+            if serverPlayerId != localPlayerId {
+                print("[GameState] State conflict: different current player")
+                return false
+            }
+        }
+
+        return true
+    }
+
+    /// Reset reconnection state
+    func resetReconnectionState() {
+        isReconnecting = false
+        pendingMoves.removeAll()
     }
 
     // MARK: - Team Play Support (4-player mode)

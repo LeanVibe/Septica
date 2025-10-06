@@ -576,9 +576,342 @@
     transform: none;
     box-shadow: var(--shadow-card);
   }
-  
+
   .septica-premium-card:active {
     transform: scale(0.95);
     transition: transform 0.1s ease-out;
   }
+}
+
+/* ==========================================================================
+   PWA Offline/Online Status Indicators
+   ========================================================================== */
+
+/* Offline Mode Indicator */
+.offline-indicator {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--glass-background-strong);
+  backdrop-filter: var(--glass-backdrop-strong);
+  border: 2px solid rgba(239, 68, 68, 0.5);
+  border-radius: 24px;
+  padding: 10px 20px;
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: 0 8px 32px rgba(239, 68, 68, 0.3);
+  z-index: 9999;
+  opacity: 0;
+  transform: translateY(-20px);
+  transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  pointer-events: none;
+}
+
+.offline-indicator.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.offline-icon {
+  font-size: 20px;
+  animation: offline-pulse 2s ease-in-out infinite;
+}
+
+@keyframes offline-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.offline-text {
+  letter-spacing: 0.5px;
+}
+
+/* Reconnecting Indicator */
+.reconnecting-indicator {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  background: var(--glass-background-strong);
+  backdrop-filter: var(--glass-backdrop-strong);
+  border: 2px solid rgba(251, 191, 36, 0.5);
+  border-radius: 24px;
+  padding: 10px 20px;
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: 0 8px 32px rgba(251, 191, 36, 0.3);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.reconnecting-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: 2px solid #fbbf24;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+/* Service Worker Update Notification */
+.sw-update-notification {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%) translateY(100px);
+  background: var(--glass-background-strong);
+  backdrop-filter: var(--glass-backdrop-strong);
+  border: 2px solid rgba(59, 130, 246, 0.5);
+  border-radius: 16px;
+  padding: 16px 24px;
+  box-shadow: 0 12px 48px rgba(59, 130, 246, 0.4);
+  z-index: 10000;
+  opacity: 0;
+  transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  max-width: 500px;
+  width: 90%;
+}
+
+.sw-update-notification.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.sw-update-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: white;
+  flex-wrap: wrap;
+}
+
+.sw-update-icon {
+  font-size: 24px;
+  animation: rotate 2s linear infinite;
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.sw-update-message {
+  flex: 1;
+  min-width: 120px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.sw-update-button,
+.sw-dismiss-button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.sw-update-button {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: white;
+}
+
+.sw-update-button:hover {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
+.sw-dismiss-button {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.sw-dismiss-button:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* PWA General Notification System */
+.pwa-notification {
+  position: fixed;
+  top: 80px;
+  right: 20px;
+  background: var(--glass-background-strong);
+  backdrop-filter: var(--glass-backdrop-strong);
+  border-radius: 12px;
+  padding: 12px 20px;
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  z-index: 9998;
+  opacity: 0;
+  transform: translateX(400px);
+  transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  max-width: 300px;
+}
+
+.pwa-notification.show {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.pwa-notification-success {
+  border: 2px solid rgba(16, 185, 129, 0.5);
+  box-shadow: 0 8px 32px rgba(16, 185, 129, 0.3);
+}
+
+.pwa-notification-info {
+  border: 2px solid rgba(59, 130, 246, 0.5);
+  box-shadow: 0 8px 32px rgba(59, 130, 246, 0.3);
+}
+
+.pwa-notification-warning {
+  border: 2px solid rgba(251, 191, 36, 0.5);
+  box-shadow: 0 8px 32px rgba(251, 191, 36, 0.3);
+}
+
+.pwa-notification-error {
+  border: 2px solid rgba(239, 68, 68, 0.5);
+  box-shadow: 0 8px 32px rgba(239, 68, 68, 0.3);
+}
+
+/* Connection Status Dot (for existing UI) */
+.status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #ef4444;
+  transition: background-color 0.3s;
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
+}
+
+.status-dot.connected {
+  background: #10b981;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+}
+
+.status-dot.reconnecting {
+  background: #fbbf24;
+  animation: status-pulse 1.5s ease-in-out infinite;
+  box-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
+}
+
+@keyframes status-pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.3);
+    opacity: 0.7;
+  }
+}
+
+/* Service Worker Status Badge */
+.sw-status {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: var(--glass-background);
+  backdrop-filter: var(--glass-backdrop);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  z-index: 9997;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+
+.sw-status:hover {
+  opacity: 1;
+}
+
+.sw-status-active {
+  border-color: rgba(16, 185, 129, 0.5);
+}
+
+.sw-status-installing {
+  border-color: rgba(59, 130, 246, 0.5);
+}
+
+.sw-status-waiting {
+  border-color: rgba(251, 191, 36, 0.5);
+}
+
+/* Mobile Responsive Adjustments */
+@media (max-width: 768px) {
+  .offline-indicator,
+  .reconnecting-indicator {
+    top: 10px;
+    right: 10px;
+    padding: 8px 16px;
+    font-size: 12px;
+    border-radius: 20px;
+  }
+
+  .offline-icon {
+    font-size: 16px;
+  }
+
+  .sw-update-notification {
+    bottom: 10px;
+    width: 95%;
+    padding: 12px 16px;
+  }
+
+  .sw-update-content {
+    gap: 8px;
+  }
+
+  .sw-update-icon {
+    font-size: 20px;
+  }
+
+  .sw-update-message {
+    font-size: 13px;
+    width: 100%;
+  }
+
+  .sw-update-button,
+  .sw-dismiss-button {
+    padding: 6px 12px;
+    font-size: 12px;
+    flex: 1;
+  }
+
+  .pwa-notification {
+    top: 60px;
+    right: 10px;
+    left: 10px;
+    max-width: none;
+    font-size: 13px;
+  }
+
+  .sw-status {
+    bottom: 10px;
+    right: 10px;
+    font-size: 10px;
+    padding: 4px 10px;
+  }
+}
+
+/* Loading/Sync Spinner */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }

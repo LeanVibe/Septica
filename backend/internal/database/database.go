@@ -48,21 +48,31 @@ func Initialize(databaseURL string, logger *logger.Logger) (*gorm.DB, error) {
 
 // Migrate runs database migrations
 func Migrate(db *gorm.DB) error {
-	// Auto-migrate models one by one to help identify issues
+	// Auto-migrate models in dependency order
+	// Note: Models with foreign keys must come AFTER their dependencies
 	models := []interface{}{
+		// Base tables with no foreign keys
 		&User{},
 		&Player{},
+
+		// Player-related tables (depend on Player)
 		&PlayerStatistics{},
 		&MatchmakingQueue{},
 		&PlayerSeasonStats{},
+		&Friendship{},
+
+		// Tournament tables (depend on Player)
 		&Tournament{},
 		&TournamentParticipant{},
-		&TournamentBracket{},
+		&TournamentBracket{}, // Must come before Game (Game references it)
+
+		// Game tables (depend on Player, Tournament, TournamentBracket)
 		&Game{},
 		&GameMove{},
-		&ELORatingHistory{},
-		&Friendship{},
 		&ChatMessage{},
+
+		// Rating history (depends on Player, Game, Tournament)
+		&ELORatingHistory{},
 	}
 
 	for _, model := range models {

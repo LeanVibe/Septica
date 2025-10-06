@@ -53,6 +53,9 @@ type Hub struct {
 	// Matchmaking service reference
 	matchmakingService MatchmakingServiceInterface
 
+	// Session store for reconnection support
+	sessionStore *SessionStore
+
 	// Database connection
 	db *gorm.DB
 
@@ -76,6 +79,9 @@ type MatchmakingServiceInterface interface {
 
 // NewHub creates a new WebSocket hub
 func NewHub(gameEngine *game.Engine, authenticEngine *game.AuthenticEngine, db *gorm.DB, logger *logger.Logger) *Hub {
+	// Create session store with 30 minute timeout
+	sessionStore := NewSessionStore(30 * time.Minute)
+
 	return &Hub{
 		clients:         make(map[*Client]bool),
 		userClients:     make(map[uuid.UUID]*Client),
@@ -86,6 +92,7 @@ func NewHub(gameEngine *game.Engine, authenticEngine *game.AuthenticEngine, db *
 		unregister:      make(chan *Client),
 		gameEngine:      gameEngine,
 		authenticEngine: authenticEngine,
+		sessionStore:    sessionStore,
 		db:              db,
 		logger:          logger,
 		randGen:         rand.New(rand.NewSource(time.Now().UnixNano())),
@@ -116,10 +123,46 @@ func (h *Hub) handleRegister(client *Client) {
 	h.mutex.Lock()
 	defer h.mutex.Unlock()
 
+	// Check if this is a reconnection (existing session)
+	isReconnection := false
+	var recoveredSession *GameSession
+
+	if existingSession, exists := h.sessionStore.GetSession(client.sessionID); exists {
+		// This is a reconnection attempt
+		isReconnection = true
+		recoveredSession = existingSession
+		h.sessionStore.IncrementReconnectCount(client.sessionID)
+		h.logger.Info("Client reconnecting", "user_id", client.userID, "session_id", client.sessionID, "reconnect_count", recoveredSession.ReconnectCount)
+	}
+
 	h.clients[client] = true
 	h.userClients[client.userID] = client
 
-	h.logger.Info("Client registered", "user_id", client.userID, "total_clients", len(h.clients))
+	// Create or update session in session store
+	session := &GameSession{
+		SessionID:      client.sessionID,
+		UserID:         client.userID,
+		GameID:         client.currentGameID,
+		CreatedAt:      time.Now(),
+		LastActiveAt:   time.Now(),
+		RemoteAddr:     client.remoteAddr,
+		UserAgent:      client.userAgent,
+		ReconnectCount: 0,
+	}
+
+	if isReconnection && recoveredSession != nil {
+		session.CreatedAt = recoveredSession.CreatedAt
+		session.ReconnectCount = recoveredSession.ReconnectCount
+		session.GameID = recoveredSession.GameID
+		session.GameState = recoveredSession.GameState
+
+		// Restore game context
+		client.currentGameID = recoveredSession.GameID
+	}
+
+	h.sessionStore.StoreSession(session)
+
+	h.logger.Info("Client registered", "user_id", client.userID, "total_clients", len(h.clients), "is_reconnection", isReconnection)
 
 	// Send connection acknowledgment
 	ackMsg := Message{
@@ -132,10 +175,58 @@ func (h *Hub) handleRegister(client *Client) {
 			"server_time":       time.Now(),
 			"heartbeat_interval": 30000, // 30 seconds
 			"max_message_queue": 100,
+			"is_reconnection":   isReconnection,
 		},
 	}
 
 	client.send <- ackMsg
+
+	// If reconnection, send recovered game state
+	if isReconnection && recoveredSession != nil && recoveredSession.GameState != nil {
+		h.handleReconnection(client, recoveredSession)
+	}
+}
+
+// handleReconnection sends recovered game state to reconnecting client
+func (h *Hub) handleReconnection(client *Client, session *GameSession) {
+	h.logger.Info("Handling reconnection", "user_id", client.userID, "game_id", session.GameID)
+
+	// Export session snapshot for client
+	snapshot, err := h.sessionStore.ExportSessionSnapshot(session.SessionID)
+	if err != nil {
+		h.logger.Error("Failed to export session snapshot", "error", err)
+		return
+	}
+
+	// Send reconnection success message with recovered state
+	reconnectMsg := Message{
+		Type:      "reconnection_success",
+		ID:        uuid.New().String(),
+		PlayerID:  client.userID,
+		GameID:    session.GameID,
+		Timestamp: time.Now(),
+		Payload:   snapshot,
+	}
+
+	client.send <- reconnectMsg
+
+	// If client was in a game, re-add them to game session
+	if session.GameID != nil {
+		// Re-add client to game clients map
+		h.gameClients[*session.GameID] = append(h.gameClients[*session.GameID], client)
+
+		// Notify other players in the game
+		h.broadcastToGame(*session.GameID, Message{
+			Type:      "player_reconnected",
+			ID:        uuid.New().String(),
+			GameID:    session.GameID,
+			PlayerID:  client.userID,
+			Timestamp: time.Now(),
+			Payload: map[string]interface{}{
+				"player_id": client.userID,
+			},
+		})
+	}
 }
 
 // ensurePlayerExists creates user and player records if they don't exist
@@ -426,6 +517,11 @@ func (h *Hub) broadcastAuthenticGameState(gameID uuid.UUID, gameState *game.Auth
 		return
 	}
 
+	// Update session store with latest game state for all players in this game
+	for _, client := range clients {
+		h.sessionStore.UpdateSessionGameState(client.sessionID, gameState, gameState.SequenceNumber)
+	}
+
 	for _, client := range clients {
 		// Get player-specific view for authentic Septica
 		playerView := h.createAuthenticPlayerView(gameState, client.userID)
@@ -441,6 +537,8 @@ func (h *Hub) broadcastAuthenticGameState(gameID uuid.UUID, gameState *game.Auth
 
 		select {
 		case client.send <- stateMessage:
+			// Update session activity on successful send
+			h.sessionStore.UpdateSessionActivity(client.sessionID)
 		default:
 			h.logger.Warn("Failed to send authentic game state to client", "user_id", client.userID)
 		}
