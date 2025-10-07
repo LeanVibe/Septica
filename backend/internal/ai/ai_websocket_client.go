@@ -189,9 +189,20 @@ func (c *AIWebSocketClient) handleMatchFound(message websocket.Message) {
 	c.CurrentGameID = gameID
 	c.AI.CurrentGameID = gameID
 
+	// Extract game mode from message payload if available
+	if gameModeStr, ok := message.Payload["game_mode"].(string); ok {
+		c.AI.GameMode = game.AuthenticGameMode(gameModeStr)
+		c.Logger.Debug("AI client received game mode in match_found",
+			"ai_id", c.AI.ID,
+			"game_id", *gameID,
+			"game_mode", c.AI.GameMode,
+		)
+	}
+
 	c.Logger.Info("AI client matched to game",
 		"ai_id", c.AI.ID,
 		"game_id", *gameID,
+		"game_mode", c.AI.GameMode,
 		"opponent_id", message.Payload["opponent_id"])
 
 	// Send confirmation that AI is ready
@@ -259,6 +270,9 @@ func (c *AIWebSocketClient) handleGameState(message websocket.Message) {
 
 	c.lastGameState = &gameState
 	c.AI.GameState = &gameState
+
+	// Update AI game mode from game state
+	c.AI.GameMode = gameState.GameMode
 
 	// Check if it's AI's turn
 	if gameState.CurrentPlayerID == c.AI.ID && gameState.Status == "playing" {

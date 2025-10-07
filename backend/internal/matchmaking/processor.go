@@ -149,8 +149,8 @@ func (s *MatchmakingService) createMatch(player1, player2 *QueueEntry, queueType
 	}
 
 	// Send match found messages to both players
-	s.sendMatchFound(player1.PlayerID, gameState.ID, player2.PlayerID, player2.Rating, player2Info.Username, player1WaitTime)
-	s.sendMatchFound(player2.PlayerID, gameState.ID, player1.PlayerID, player1.Rating, player1Info.Username, player2WaitTime)
+	s.sendMatchFound(player1.PlayerID, gameState.ID, player2.PlayerID, player2.Rating, player2Info.Username, player1WaitTime, gameState.GameMode)
+	s.sendMatchFound(player2.PlayerID, gameState.ID, player1.PlayerID, player1.Rating, player1Info.Username, player2WaitTime, gameState.GameMode)
 
 	// Auto-join both players to the game via WebSocket hub with retry logic
 	s.autoJoinPlayerWithRetry(player1.PlayerID, gameState.ID, "player1")
@@ -266,7 +266,7 @@ func (s *MatchmakingService) sendMatchmakingLeft(playerID uuid.UUID) {
 	s.sendToPlayer(playerID, message)
 }
 
-func (s *MatchmakingService) sendMatchFound(playerID, gameID, opponentID uuid.UUID, opponentRating int, opponentName string, waitTime time.Duration) {
+func (s *MatchmakingService) sendMatchFound(playerID, gameID, opponentID uuid.UUID, opponentRating int, opponentName string, waitTime time.Duration, gameMode game.AuthenticGameMode) {
 	message := websocket.Message{
 		Type:      "match_found",
 		ID:        uuid.New().String(),
@@ -275,6 +275,7 @@ func (s *MatchmakingService) sendMatchFound(playerID, gameID, opponentID uuid.UU
 		Timestamp: time.Now(),
 		Payload: map[string]interface{}{
 			"game_id":          gameID,
+			"game_mode":        string(gameMode),
 			"opponent_id":      opponentID,
 			"opponent_rating":  opponentRating,
 			"opponent_name":    opponentName,
@@ -282,7 +283,7 @@ func (s *MatchmakingService) sendMatchFound(playerID, gameID, opponentID uuid.UU
 			"message":          "Match found! Joining game...",
 		},
 	}
-	
+
 	s.sendToPlayer(playerID, message)
 }
 
