@@ -340,18 +340,40 @@ func (m *AIMatchmakingManager) generateAIRating(humanRating int) int {
 
 // createAIPlayerRecord creates database records for AI player
 func (m *AIMatchmakingManager) createAIPlayerRecord(ai *AIPlayer) error {
-	// Create user record
-	user := &database.User{
-		BaseModel:    database.BaseModel{ID: ai.ID},
-		Username:     ai.Username,
-		Email:        fmt.Sprintf("%s@ai.septica.game", ai.ID.String()),
-		PasswordHash: "ai_player_no_password",
-		IsActive:     true,
+	// Check if user already exists (may have been created by hub.ensurePlayerExists)
+	var existingUser database.User
+	err := m.db.Where("id = ?", ai.ID).First(&existingUser).Error
+	if err == nil {
+		// User already exists, just create player record
+		m.logger.Debug("AI user already exists, skipping user creation", "ai_id", ai.ID)
+	} else {
+		// Create user record only if it doesn't exist
+		user := &database.User{
+			BaseModel:    database.BaseModel{ID: ai.ID},
+			Username:     ai.Username,
+			Email:        fmt.Sprintf("%s@ai.septica.game", ai.ID.String()),
+			PasswordHash: "ai_player_no_password",
+			IsActive:     true,
+		}
+
+		err := m.db.Create(user).Error
+		if err != nil {
+			// Check if error is due to duplicate key constraint
+			if err.Error() == "duplicate key value violates unique constraint \"users_pkey\"" {
+				m.logger.Debug("AI user created concurrently by another process", "ai_id", ai.ID)
+			} else {
+				return fmt.Errorf("failed to create AI user: %w", err)
+			}
+		}
 	}
 
-	err := m.db.Create(user).Error
-	if err != nil {
-		return fmt.Errorf("failed to create AI user: %w", err)
+	// Check if player already exists
+	var existingPlayer database.Player
+	err = m.db.Where("user_id = ?", ai.ID).First(&existingPlayer).Error
+	if err == nil {
+		// Player already exists
+		m.logger.Debug("AI player already exists, skipping player creation", "ai_id", ai.ID)
+		return nil
 	}
 
 	// Create player record

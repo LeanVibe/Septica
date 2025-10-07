@@ -146,6 +146,8 @@ func (c *AIWebSocketClient) handleMessage(message websocket.Message) {
 		"game_id", message.GameID)
 
 	switch message.Type {
+	case "match_found":
+		c.handleMatchFound(message)
 	case "game_found":
 		c.handleGameFound(message)
 	case "game_state":
@@ -163,6 +165,46 @@ func (c *AIWebSocketClient) handleMessage(message websocket.Message) {
 			"ai_id", c.AI.ID,
 			"message_type", message.Type)
 	}
+}
+
+// handleMatchFound processes match_found notification (from matchmaking service)
+func (c *AIWebSocketClient) handleMatchFound(message websocket.Message) {
+	// Extract game_id from message payload or GameID field
+	var gameID *uuid.UUID
+	if message.GameID != nil {
+		gameID = message.GameID
+	} else if message.Payload != nil {
+		if gameIDStr, ok := message.Payload["game_id"].(string); ok {
+			if parsedID, err := uuid.Parse(gameIDStr); err == nil {
+				gameID = &parsedID
+			}
+		}
+	}
+
+	if gameID == nil {
+		c.Logger.Error("AI client received match_found without game_id", "ai_id", c.AI.ID)
+		return
+	}
+
+	c.CurrentGameID = gameID
+	c.AI.CurrentGameID = gameID
+
+	c.Logger.Info("AI client matched to game",
+		"ai_id", c.AI.ID,
+		"game_id", *gameID,
+		"opponent_id", message.Payload["opponent_id"])
+
+	// Send confirmation that AI is ready
+	response := websocket.Message{
+		Type:      "player_ready",
+		ID:        uuid.New().String(),
+		GameID:    gameID,
+		PlayerID:  c.AI.ID,
+		Timestamp: time.Now(),
+		Payload:   map[string]interface{}{"status": "ready"},
+	}
+
+	c.sendResponseToHub(response)
 }
 
 // handleGameFound processes game found notification

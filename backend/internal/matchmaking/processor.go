@@ -152,14 +152,9 @@ func (s *MatchmakingService) createMatch(player1, player2 *QueueEntry, queueType
 	s.sendMatchFound(player1.PlayerID, gameState.ID, player2.PlayerID, player2.Rating, player2Info.Username, player1WaitTime)
 	s.sendMatchFound(player2.PlayerID, gameState.ID, player1.PlayerID, player1.Rating, player1Info.Username, player2WaitTime)
 
-	// Auto-join both players to the game via WebSocket hub
-	if err := s.hub.JoinGame(player1.PlayerID, gameState.ID); err != nil {
-		s.logger.Error("Failed to auto-join player1 to game", "error", err, "player_id", player1.PlayerID, "game_id", gameState.ID)
-	}
-
-	if err := s.hub.JoinGame(player2.PlayerID, gameState.ID); err != nil {
-		s.logger.Error("Failed to auto-join player2 to game", "error", err, "player_id", player2.PlayerID, "game_id", gameState.ID)
-	}
+	// Auto-join both players to the game via WebSocket hub with retry logic
+	s.autoJoinPlayerWithRetry(player1.PlayerID, gameState.ID, "player1")
+	s.autoJoinPlayerWithRetry(player2.PlayerID, gameState.ID, "player2")
 
 	// CRITICAL FIX: Broadcast initial game state to both players
 	s.broadcastAuthenticGameState(gameState)
@@ -476,6 +471,61 @@ func abs(x int) int {
 		return -x
 	}
 	return x
+}
+
+// autoJoinPlayerWithRetry attempts to auto-join a player with exponential backoff retry
+func (s *MatchmakingService) autoJoinPlayerWithRetry(playerID, gameID uuid.UUID, playerLabel string) {
+	maxAttempts := 3
+	retryDelays := []time.Duration{
+		100 * time.Millisecond,  // First retry after 100ms
+		500 * time.Millisecond,  // Second retry after 500ms
+		1 * time.Second,         // Third retry after 1s
+	}
+
+	go func() {
+		for attempt := 0; attempt < maxAttempts; attempt++ {
+			// Wait before retry (except first attempt)
+			if attempt > 0 {
+				time.Sleep(retryDelays[attempt-1])
+				s.logger.Debug("Retrying auto-join",
+					"player_id", playerID,
+					"game_id", gameID,
+					"attempt", attempt+1,
+					"player_label", playerLabel)
+			}
+
+			// Attempt to join game
+			err := s.hub.JoinGame(playerID, gameID)
+			if err == nil {
+				// Success
+				s.logger.Info("Successfully auto-joined player to game",
+					"player_id", playerID,
+					"game_id", gameID,
+					"player_label", playerLabel,
+					"attempt", attempt+1)
+				return
+			}
+
+			// Log error with context
+			if attempt < maxAttempts-1 {
+				s.logger.Warn("Failed to auto-join player, will retry",
+					"error", err,
+					"player_id", playerID,
+					"game_id", gameID,
+					"player_label", playerLabel,
+					"attempt", attempt+1,
+					"next_retry_in", retryDelays[attempt])
+			} else {
+				// Final attempt failed
+				s.logger.Error("Failed to auto-join player after all retries",
+					"error", err,
+					"player_id", playerID,
+					"game_id", gameID,
+					"player_label", playerLabel,
+					"total_attempts", maxAttempts)
+			}
+		}
+	}()
 }
 
 // Database persistence methods
