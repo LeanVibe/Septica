@@ -68,6 +68,7 @@ type AIPlayer struct {
 
 	// Game state awareness
 	CurrentGameID *uuid.UUID       `json:"current_game_id,omitempty"`
+	GameMode      game.AuthenticGameMode `json:"game_mode"` // Track current game mode for rule awareness
 	Hand          []game.Card      `json:"-"` // Keep private
 	GameState     *game.AuthenticGameState `json:"-"`
 }
@@ -285,21 +286,34 @@ func (ai *AIPlayer) scoreMove(card game.Card, gameState *game.AuthenticGameState
 	// 3. 8s are wild ONLY in 3-player variant (when 2 eights removed from deck)
 	// In authentic Romanian Septica, 8s are NOT wild in 2 or 4 player games
 	if card.Value == 8 {
-		// For now, treat 8s as regular cards since we don't have game mode context
-		// TODO: Add game mode awareness to distinguish 2/3/4 player variants
-		// In 3-player variant only: 8s would be wild cards along with 7s
-		// In 2/4-player variants: 8s are regular cards with no special power
-
-		// Apply conservative strategy since 8s have no special power in most variants
-		if len(tableCards) > 0 {
-			score += 2.0 // Modest bonus for playing when cards are on table
-		} else {
-			score -= 1.0 // Slight penalty for leading with 8
-		}
-
-		// Apply timing strategy (reduced effectiveness)
-		if rand.Float64() < ai.Config.EightTiming * 0.3 {
-			score += 1.0 // Much reduced bonus since 8s aren't special
+		switch ai.GameMode {
+		case game.ModeThreePlayer:
+			// In 3-player mode, 8s ARE wild (along with 7s)
+			score += 8.0  // Similar to 7s but slightly less valuable
+			if len(tableCards) > 0 {
+				score += 5.0  // Strong bonus for beating cards
+			}
+			// Apply timing strategy
+			if rand.Float64() < ai.Config.EightTiming {
+				score += 2.0
+			}
+		case game.ModeTwoPlayer, game.ModeFourPlayer:
+			// In 2/4-player modes, 8s are NORMAL cards (not wild)
+			// Check if 8 can beat table card via same-value rule
+			canBeat := false
+			for _, tableCard := range tableCards {
+				if tableCard.Value == 8 {
+					canBeat = true
+					score += 5.0  // Good move - beats via same value
+					break
+				}
+			}
+			if !canBeat && len(tableCards) > 0 {
+				score -= 3.0  // Penalty - 8 doesn't beat non-8 cards
+			}
+		default:
+			// Unknown mode - conservative strategy
+			score += 1.0
 		}
 	}
 

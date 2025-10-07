@@ -185,23 +185,24 @@ func (s *MatchmakingService) Start() error {
 	if s.running {
 		return errors.New("matchmaking service already running")
 	}
-	
+
 	s.logger.Info("Starting matchmaking service")
-	
+
 	// Load existing queue entries from database
 	if err := s.loadQueuesFromDatabase(); err != nil {
 		s.logger.Error("Failed to load queues from database", "error", err)
 		return err
 	}
-	
+
 	// Start queue processors
 	s.processorTicker = time.NewTicker(s.config.ProcessInterval)
 	s.updateTicker = time.NewTicker(s.config.UpdateInterval)
 	s.running = true
-	
+
 	go s.runQueueProcessor()
 	go s.runQueueUpdater()
-	
+	go s.runCleanupLoop()
+
 	s.logger.Info("Matchmaking service started successfully")
 	return nil
 }
@@ -389,11 +390,108 @@ func (s *MatchmakingService) GetQueueStats() map[string]interface{} {
 func (s *MatchmakingService) IsPlayerInQueue(playerID uuid.UUID) bool {
 	s.queueMutex.RLock()
 	defer s.queueMutex.RUnlock()
-	
+
 	for _, queue := range s.queues {
 		if queue.Find(playerID) != nil {
 			return true
 		}
 	}
 	return false
+}
+
+// runCleanupLoop runs the automated cleanup job every 5 minutes
+func (s *MatchmakingService) runCleanupLoop() {
+	ticker := time.NewTicker(5 * time.Minute)
+	defer ticker.Stop()
+
+	s.logger.Info("Starting automated queue cleanup loop", "interval", "5m")
+
+	for {
+		select {
+		case <-ticker.C:
+			if err := s.CleanupStaleEntries(); err != nil {
+				s.logger.Error("Queue cleanup failed", "error", err)
+			}
+		case <-s.stopChan:
+			s.logger.Info("Queue cleanup loop stopped")
+			return
+		}
+	}
+}
+
+// CleanupStaleEntries removes orphaned and expired queue entries
+func (s *MatchmakingService) CleanupStaleEntries() error {
+	s.logger.Info("Starting matchmaking queue cleanup")
+
+	// 1. Remove orphaned entries (player doesn't exist)
+	orphanedQuery := `
+		DELETE FROM matchmaking_queues
+		WHERE player_id NOT IN (SELECT id FROM players)
+	`
+	orphanedResult := s.db.Exec(orphanedQuery)
+	if orphanedResult.Error != nil {
+		s.logger.Error("Failed to remove orphaned queue entries", "error", orphanedResult.Error)
+	} else {
+		s.logger.Info("Removed orphaned queue entries", "count", orphanedResult.RowsAffected)
+	}
+
+	// 2. Mark old entries as inactive (queued > 10 minutes)
+	staleTime := time.Now().Add(-10 * time.Minute)
+	staleResult := s.db.Model(&database.MatchmakingQueue{}).
+		Where("queued_at < ? AND is_active = ?", staleTime, true).
+		Update("is_active", false)
+	if staleResult.Error != nil {
+		s.logger.Error("Failed to mark stale entries inactive", "error", staleResult.Error)
+	} else {
+		s.logger.Info("Marked stale entries inactive", "count", staleResult.RowsAffected)
+	}
+
+	// 3. Remove entries from completed games (last 1 hour)
+	oneHourAgo := time.Now().Add(-1 * time.Hour)
+	completedQuery := `
+		DELETE FROM matchmaking_queues
+		WHERE player_id IN (
+			SELECT DISTINCT player_id FROM games
+			WHERE status IN ('completed', 'aborted')
+			AND updated_at > ?
+		)
+	`
+	completedResult := s.db.Exec(completedQuery, oneHourAgo)
+	if completedResult.Error != nil {
+		s.logger.Error("Failed to remove completed game entries", "error", completedResult.Error)
+	} else {
+		s.logger.Info("Removed completed game queue entries", "count", completedResult.RowsAffected)
+	}
+
+	return nil
+}
+
+// GetCleanupStats returns statistics about queue entries requiring cleanup
+func (s *MatchmakingService) GetCleanupStats() map[string]int64 {
+	stats := make(map[string]int64)
+
+	// Count orphaned entries
+	var orphanedCount int64
+	s.db.Raw(`
+		SELECT COUNT(*) FROM matchmaking_queues
+		WHERE player_id NOT IN (SELECT id FROM players)
+	`).Scan(&orphanedCount)
+	stats["orphaned"] = orphanedCount
+
+	// Count stale entries
+	var staleCount int64
+	staleTime := time.Now().Add(-10 * time.Minute)
+	s.db.Model(&database.MatchmakingQueue{}).
+		Where("queued_at < ? AND is_active = ?", staleTime, true).
+		Count(&staleCount)
+	stats["stale"] = staleCount
+
+	// Count total active
+	var activeCount int64
+	s.db.Model(&database.MatchmakingQueue{}).
+		Where("is_active = ?", true).
+		Count(&activeCount)
+	stats["active"] = activeCount
+
+	return stats
 }
