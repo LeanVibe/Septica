@@ -1,27 +1,128 @@
 # Technical Debt - Romanian Septica PWA
 
-**Last Updated**: October 6, 2025
-**Status**: Production Ready - All Critical Issues Resolved
+**Last Updated**: October 7, 2025
+**Status**: Production Operational - New Critical Issues Identified
+
+## 🔴 CRITICAL ISSUES (October 7, 2025)
+
+### 🔴 AI Matchmaking: Duplicate User Creation
+**Status**: 🔴 **CRITICAL** - Discovered October 7, 2025
+**Impact**: Database integrity compromised, user account pollution
+**Error**: `pq: duplicate key value violates unique constraint "users_username_key"`
+
+#### Problem Details
+- **Location**: `backend/internal/matchmaking/ai_matchmaking_manager.go:140`
+- **Root Cause**: AI matchmaking attempts to create users that already exist
+- **Frequency**: Multiple occurrences in production logs
+- **Data Impact**: Failed AI game initializations, potential user confusion
+
+#### Solution Required
+```go
+// Fix needed in ai_matchmaking_manager.go
+// Replace CreateUser with GetOrCreateUser logic:
+func (m *AIMatchmakingManager) ensureAIUser(username string) (*database.User, error) {
+    // Check if user exists first
+    user, err := m.db.GetUserByUsername(username)
+    if err == nil {
+        return user, nil
+    }
+    // Only create if not found
+    return m.db.CreateUser(username, hashedPassword)
+}
+```
+
+#### Files Affected
+- `backend/internal/matchmaking/ai_matchmaking_manager.go` (line 140)
+- `backend/internal/database/database.go` (needs GetOrCreateUser method)
+
+---
+
+### 🔴 AI Moves Missing Game ID
+**Status**: 🔴 **CRITICAL** - Discovered October 7, 2025
+**Impact**: AI opponent moves fail to record, game state inconsistency
+**Error**: `missing game_id in AI move`
+
+#### Problem Details
+- **Location**: AI move processing pipeline
+- **Root Cause**: Game context not properly passed to AI decision engine
+- **Frequency**: Consistent across all AI-involved games
+- **Game Impact**: AI moves not persisted, breaks game history/replay
+
+#### Solution Required
+```go
+// Ensure all AI move calls include game_id:
+aiMove := &GameMove{
+    GameID:   game.ID,        // REQUIRED
+    PlayerID: aiPlayer.ID,
+    CardID:   selectedCard.ID,
+    MoveType: "play",
+}
+```
+
+#### Files Affected
+- `backend/internal/ai/ai_opponent.go` (move generation)
+- `backend/internal/game/engine.go` (AI integration)
+- `backend/internal/database/models.go` (GameMove validation)
+
+---
+
+### 🔴 Auto-Join Timing Failures
+**Status**: 🔴 **CRITICAL** - Discovered October 7, 2025
+**Impact**: Players unable to automatically join games, manual intervention required
+**Error**: `auto-join failed` (details in server logs)
+
+#### Problem Details
+- **Symptom**: Matchmaking queue entries created but games never start
+- **Root Cause**: Race condition between queue processing and game initialization
+- **Frequency**: Intermittent, appears during high load or rapid requests
+- **User Impact**: Players stuck in queue indefinitely
+
+#### Solution Required
+```go
+// Add transaction safety and retry logic:
+func (m *MatchmakingManager) processQueue() error {
+    tx := m.db.Begin()
+    defer tx.RollbackUnlessCommitted()
+
+    // Lock queue entries for processing
+    entries := m.db.LockMatchmakingEntries(2)
+
+    // Create game with retry
+    game, err := m.createGameWithRetry(entries, 3)
+    if err != nil {
+        return err
+    }
+
+    tx.Commit()
+    return nil
+}
+```
+
+#### Files Affected
+- `backend/internal/matchmaking/matchmaking_manager.go` (queue processing)
+- `backend/internal/database/database.go` (transaction handling)
+
+---
 
 ## ✅ RESOLVED CRITICAL ISSUES
 
 ### ✅ Database Migration Failure (GORM) - RESOLVED
-**Status**: ✅ **RESOLVED** - October 6, 2025
-**Impact**: Database schema now initializes correctly without workarounds
+**Status**: ✅ **RESOLVED** - October 7, 2025 (verified operational)
+**Impact**: Database schema initializes correctly with automatic migrations
 **Resolution**: GORM version updated to v1.25.12, migration order reorganized, circular dependencies removed
 
 #### Solution Applied
 - ✅ Updated GORM to stable version (v1.25.12)
 - ✅ Reorganized migration order to resolve circular foreign key dependencies
-- ✅ Removed `SKIP_MIGRATIONS=true` workaround - no longer needed
-- ✅ Database migrations now run automatically on server startup (<1s)
+- ✅ Database migrations run automatically on server startup (<1s)
+- ✅ No workarounds needed - clean startup verified
 
 #### Production Status
-Backend server now starts cleanly with automatic database migrations:
+Backend server starts cleanly with automatic database migrations:
 ```bash
-# Now works without workarounds
+# Works without workarounds
 PORT=8082 go run cmd/server/main.go
-✅ Database migrations completed successfully
+✅ Database migrations completed successfully (verified October 7, 2025)
 ```
 
 #### Files Fixed
@@ -31,12 +132,12 @@ PORT=8082 go run cmd/server/main.go
 
 ---
 
-## ✅ RESOLVED HIGH PRIORITY ISSUES
+## 🟡 RESOLVED HIGH PRIORITY ISSUES
 
-### ✅ Stale Matchmaking Queue Data - RESOLVED
-**Status**: ✅ **RESOLVED** - October 6, 2025
-**Impact**: Database cleaned, no more "record not found" errors
-**Resolution**: Orphaned queue entries removed, data integrity restored
+### ⚠️ Stale Matchmaking Queue Data - PARTIALLY RESOLVED
+**Status**: ⚠️ **MONITORING** - October 7, 2025
+**Impact**: Database cleaned, but new issues creating orphaned entries
+**Resolution**: Orphaned queue entries removed, but root cause (auto-join failures) still active
 
 #### Solution Applied
 ```sql
@@ -45,10 +146,11 @@ DELETE FROM matchmaking_queues WHERE player_id NOT IN (SELECT id FROM players);
 -- Result: 1006 orphaned entries removed
 ```
 
-#### Production Status
-- ✅ Database contains only valid matchmaking queue entries
-- ✅ No more "record not found" errors in logs
-- ✅ Matchmaking system operational without errors
+#### Current Status
+- ✅ Database initially cleaned of orphaned entries
+- ⚠️ New orphaned entries accumulating due to auto-join failures (see Critical Issues)
+- ⚠️ Periodic cleanup required until auto-join root cause fixed
+- 🔄 Recommend automated cleanup job every 1 hour
 
 ---
 
@@ -158,23 +260,25 @@ This is a **HYBRID DUAL-PLATFORM** implementation:
 
 ---
 
-## 🎉 Production Readiness Status
+## ⚠️ Production Readiness Status
 
-**Overall Status**: ✅ **PRODUCTION READY**
-**Version**: 1.0.0
-**Release Date**: October 6, 2025
-**Critical Issues**: 0 (All resolved)
-**High Priority Issues**: 0 (All resolved)
-**Blocking Issues**: 0 (All resolved)
+**Overall Status**: ⚠️ **OPERATIONAL WITH CRITICAL ISSUES**
+**Version**: 1.0.1-dev
+**Last Updated**: October 7, 2025
+**Critical Issues**: 3 (AI matchmaking bugs - see above)
+**High Priority Issues**: 0
+**Blocking Issues**: 3 (AI gameplay affected)
 
 ### Quality Metrics
 - ✅ Build Success Rate: 100%
 - ✅ Test Pass Rate: 100% (4 test suites)
 - ✅ Performance Targets: Met (60 FPS, <500MB memory)
 - ✅ Privacy Compliance: COPPA requirements verified
-- ✅ Database Migrations: Automatic without errors
+- ✅ Database Migrations: Automatic without errors (verified October 7, 2025)
 - ✅ Service Worker: Operational with offline mode
 - ✅ Reconnection: Exponential backoff implemented
+- ⚠️ AI Matchmaking: Requires fixes for duplicate users, missing game IDs, auto-join
+- ⚠️ Data Integrity: Monitoring for orphaned queue entries
 
 ### Deployment Checklist
 - ✅ iOS app builds successfully
@@ -182,8 +286,17 @@ This is a **HYBRID DUAL-PLATFORM** implementation:
 - ✅ Database migrations automatic
 - ✅ Service Worker caching functional
 - ✅ All tests passing
-- ✅ Documentation complete
+- ✅ Documentation synchronized
 - ✅ Performance validated
 - ✅ Privacy compliance verified
+- ❌ AI matchmaking reliability (3 critical bugs)
+- ❌ Database cleanup automation (manual intervention required)
 
-**Ready for iOS App Store submission and PWA production deployment**
+### Pre-Production Tasks Required
+1. 🔴 **Fix AI duplicate user creation** - Add GetOrCreateUser logic
+2. 🔴 **Fix AI moves missing game_id** - Update AI move generation
+3. 🔴 **Fix auto-join timing failures** - Add transaction safety and retry
+4. 🟡 **Implement automated queue cleanup** - Prevent orphaned entry accumulation
+5. 🟡 **Add monitoring alerts** - Detect AI matchmaking failures in real-time
+
+**Status**: Operational for manual testing, NOT READY for production deployment until AI issues resolved

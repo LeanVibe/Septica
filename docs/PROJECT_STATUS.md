@@ -1,6 +1,6 @@
 # Romanian Septica - Project Status
 
-**Last Updated**: October 6, 2025
+**Last Updated**: October 7, 2025
 **Project Type**: Hybrid Dual-Platform (iOS Native + PWA)
 **Game**: Traditional Romanian Septica (32-card deck)
 
@@ -22,7 +22,7 @@ Romanian Septica is a **dual-platform implementation** preserving traditional Ro
 - **Backend**: Go 1.21+ with Gin framework, PostgreSQL, WebSocket multiplayer
 - **Frontend**: Premium PWA with Three.js 3D rendering, Romanian cultural theming
 - **Deployment**: Docker-based infrastructure
-- **Status**: ⚠️ Operational with database migration workaround
+- **Status**: ✅ Operational with automatic database migrations (⚠️ AI matchmaking issues - see Known Issues)
 
 ---
 
@@ -102,9 +102,8 @@ open Septica.xcodeproj
 
 ### PWA Platform - Running Services
 ```bash
-# Backend (Go)
+# Backend (Go) - Database migrations now automatic
 cd backend && PORT=8082 go run cmd/server/main.go
-# Note: Currently running with SKIP_MIGRATIONS=true due to GORM issue
 
 # Frontend (Python HTTP server for dev)
 cd frontend && python3 -m http.server 3000
@@ -116,19 +115,26 @@ docker-compose up -d  # PostgreSQL on port 5433
 ### Known Issues
 See `docs/TECHNICAL_DEBT.md` for complete list:
 
-#### 🔴 Critical
-- Database migration failure (GORM "insufficient arguments" error)
-  - Workaround: Running with `SKIP_MIGRATIONS=true`
-  - Investigation ongoing
+#### 🔴 Critical (Discovered October 7, 2025)
+- **AI Matchmaking: Duplicate User Creation** - Database constraint violations
+  - Location: `backend/internal/matchmaking/ai_matchmaking_manager.go:140`
+  - Fix Required: Implement GetOrCreateUser logic
+- **AI Moves Missing Game ID** - AI moves fail to persist
+  - Location: AI move processing pipeline
+  - Fix Required: Pass game context to AI decision engine
+- **Auto-Join Timing Failures** - Players stuck in matchmaking queue
+  - Location: `backend/internal/matchmaking/matchmaking_manager.go`
+  - Fix Required: Add transaction safety and retry logic
 
 #### 🟡 High Priority
-- 1006 stale matchmaking queue entries causing errors
-- Need database cleanup script
+- **Stale Queue Data Accumulation** - Auto-join failures creating orphaned entries
+  - Temporary Solution: Manual cleanup executed (1006 entries removed)
+  - Permanent Solution: Fix auto-join root cause + automated cleanup job
 
 #### 🟢 Low Priority
-- Documentation consolidation (in progress)
-- Service worker implementation
+- Service worker enhancements
 - Performance optimization benchmarks
+- Advanced analytics dashboard
 
 ---
 
@@ -153,9 +159,10 @@ See `docs/TECHNICAL_DEBT.md` for complete list:
 - ELO rating system
 
 ### Phase 4: Production Readiness 🔄 (In Progress)
-- ⏳ Database migration fixes
-- ⏳ Data cleanup and optimization
-- ⏳ Service worker + offline mode
+- ✅ Database migration fixes (automatic migrations operational)
+- ⏳ AI matchmaking reliability (3 critical bugs identified)
+- ⏳ Data cleanup automation (manual cleanup completed)
+- ✅ Service worker + offline mode (operational)
 - ⏳ Deployment automation
 - ⏳ Performance benchmarking
 
@@ -251,16 +258,20 @@ Septica/
 ## 🚀 Next Steps (Priority Order)
 
 ### Immediate (This Week)
-1. ✅ Fix documentation confusion (complete)
-2. ⏳ Resolve database migration issue
-3. ⏳ Clean up stale matchmaking queue data
-4. ⏳ Test end-to-end game flow (frontend → WebSocket → backend)
+1. ✅ Fix documentation confusion (completed October 7, 2025)
+2. ✅ Resolve database migration issue (completed October 7, 2025)
+3. ✅ Clean up stale matchmaking queue data (manual cleanup completed)
+4. 🔴 **Fix AI matchmaking duplicate user creation** (CRITICAL)
+5. 🔴 **Fix AI moves missing game_id** (CRITICAL)
+6. 🔴 **Fix auto-join timing failures** (CRITICAL)
+7. ⏳ Test end-to-end game flow with AI opponents
 
 ### Short-term (Next 2 Weeks)
-1. Implement service worker for offline PWA
-2. Add IndexedDB for local game state
+1. Implement automated queue cleanup job
+2. Add monitoring alerts for AI matchmaking failures
 3. Performance benchmarking and optimization
 4. Mobile testing on real devices
+5. Load testing for tournament system
 
 ### Medium-term (Next Month)
 1. 3-player and 4-player UI implementation

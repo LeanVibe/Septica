@@ -10,8 +10,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with th
 ✅ Phase 2: WebSocket Multiplayer Protocol - COMPLETE (Real-time sync operational)
 ✅ Phase 3: Premium PWA/Three.js Frontend - COMPLETE (ShuffleCats quality achieved)
 ✅ Phase 4: Documentation Cleanup - COMPLETE (iOS confusion resolved)
-🔴 CRITICAL: Database migration blocked (GORM issue - running with SKIP_MIGRATIONS=true)
-🎯 CURRENT FOCUS: Database fixes, data cleanup, production readiness
+✅ Phase 5: Database Migration Fix - COMPLETE (automatic migrations operational)
+🔴 CRITICAL: AI Matchmaking Issues (3 bugs - duplicate users, missing game IDs, auto-join failures)
+🎯 CURRENT FOCUS: AI matchmaking reliability, data integrity, production readiness
 ```
 
 ### **CRITICAL CONTEXT FILES TO READ ON SESSION START:**
@@ -21,10 +22,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with th
 4. **PROJECT_INDEX.json** - Complete project structure and codebase overview
 
 ### **IMMEDIATE NEXT PRIORITIES:**
-1. **Database Migration Fix** - Resolve GORM "insufficient arguments" error
-2. **Data Cleanup** - Remove 1006 stale matchmaking queue entries
-3. **End-to-End Testing** - Validate frontend → WebSocket → backend → database flow
-4. **Service Worker Implementation** - Enable offline PWA capabilities
+1. **AI Matchmaking Duplicate User Fix** - Implement GetOrCreateUser logic (CRITICAL)
+2. **AI Moves Missing Game ID Fix** - Pass game context to AI engine (CRITICAL)
+3. **Auto-Join Timing Fix** - Add transaction safety and retry logic (CRITICAL)
+4. **Automated Queue Cleanup** - Prevent orphaned entry accumulation
+5. **End-to-End AI Testing** - Validate complete AI opponent gameplay flow
 
 ## 🎮 ROMANIAN SEPTICA GAME RULES
 
@@ -46,8 +48,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with th
 
 ### **Backend Commands**
 ```bash
-# Start Go backend server (NOTE: migrations currently disabled due to GORM issue)
-cd backend && SKIP_MIGRATIONS=true PORT=8082 go run cmd/server/main.go
+# Start Go backend server (database migrations automatic)
+cd backend && PORT=8082 go run cmd/server/main.go
 
 # Start PostgreSQL database
 docker-compose up -d
@@ -149,11 +151,14 @@ cd frontend && python3 -m http.server 3000 &
 ## 🐛 COMMON ISSUES & SOLUTIONS
 
 ### **Backend Issues**
-- **Database Migration Error**: Known GORM issue - use `SKIP_MIGRATIONS=true` workaround
-- **Stale Queue Data**: 1006 matchmaking entries causing "record not found" errors
+- **AI Matchmaking Bugs**: 3 critical issues affecting AI opponent gameplay
+  - Duplicate user creation errors (database constraint violations)
+  - AI moves missing game_id (moves fail to persist)
+  - Auto-join timing failures (players stuck in queue)
 - **Database Connection**: Ensure PostgreSQL running on port 5433
 - **WebSocket Failures**: Check Go server on port 8082, verify CORS
 - **Game Logic**: Validate Romanian rules in `backend/internal/game/engine.go`
+- **Queue Data**: Orphaned entries accumulating (automated cleanup needed)
 
 ### **Frontend Issues**
 - **Three.js Errors**: Check WebGL support, update graphics drivers
