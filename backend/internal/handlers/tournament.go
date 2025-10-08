@@ -19,6 +19,7 @@ import (
 type TournamentHandlers struct {
 	tournamentService *tournament.Service
 	ratingService     *rating.Service
+	db                *gorm.DB
 	logger            *logger.Logger
 }
 
@@ -27,6 +28,7 @@ func NewTournamentHandlers(db *gorm.DB, logger *logger.Logger) *TournamentHandle
 	return &TournamentHandlers{
 		tournamentService: tournament.NewService(db, logger),
 		ratingService:     rating.NewService(db, nil, logger),
+		db:                db,
 		logger:            logger,
 	}
 }
@@ -243,8 +245,44 @@ func (h *TournamentHandlers) StartTournament(c *gin.Context) {
 		return
 	}
 
-	// TODO: Add authorization check - only tournament creator or admin should be able to start
-	
+	// Get authenticated user from context (set by auth middleware)
+	userID, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "user not authenticated",
+		})
+		return
+	}
+
+	// Fetch tournament from database to check creator
+	var tournamentRecord database.Tournament
+	if err := h.db.First(&tournamentRecord, "id = ?", tournamentID).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			c.JSON(http.StatusNotFound, gin.H{
+				"error": "tournament not found",
+			})
+			return
+		}
+		h.logger.Error("Failed to fetch tournament for authorization", "error", err, "tournament_id", tournamentID)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "failed to verify tournament",
+		})
+		return
+	}
+
+	// Authorization check: only tournament creator can start the tournament
+	authenticatedUserID := userID.(uuid.UUID)
+	if tournamentRecord.CreatorPlayerID != authenticatedUserID {
+		h.logger.Warn("Unauthorized tournament start attempt",
+			"tournament_id", tournamentID,
+			"creator_id", tournamentRecord.CreatorPlayerID,
+			"user_id", authenticatedUserID)
+		c.JSON(http.StatusForbidden, gin.H{
+			"error": "only the tournament creator can start the tournament",
+		})
+		return
+	}
+
 	if err := h.tournamentService.StartTournament(c.Request.Context(), tournamentID); err != nil {
 		h.logger.Error("Failed to start tournament", "error", err, "tournament_id", tournamentID)
 

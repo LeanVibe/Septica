@@ -9,16 +9,19 @@ import (
 	"time"
 
 	"septica-backend/internal/ai"
+	"septica-backend/internal/auth"
 	"septica-backend/internal/database"
 	"septica-backend/internal/game"
 	"septica-backend/internal/handlers"
 	"septica-backend/internal/matchmaking"
+	"septica-backend/internal/middleware"
 	"septica-backend/internal/websocket"
 	"septica-backend/pkg/config"
 	"septica-backend/pkg/logger"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"gorm.io/gorm"
 )
 
@@ -46,6 +49,10 @@ func main() {
 	} else {
 		logger.Info("Database migrations skipped (SKIP_MIGRATIONS=true)")
 	}
+
+	// Initialize authentication service
+	authService := auth.NewService(cfg.JWTSecret, cfg.JWTExpiration, db)
+	logger.Info("Authentication service initialized")
 
 	// Initialize game engines
 	gameEngine := game.NewEngine()
@@ -84,10 +91,11 @@ func main() {
 	// Global middleware
 	router.Use(gin.Recovery())
 	router.Use(LoggerMiddleware(logger))
+	router.Use(middleware.PrometheusMiddleware())
 	router.Use(CORSMiddleware(cfg))
 
 	// Register routes
-	registerRoutes(router, wsHub, matchmakingService, db, logger)
+	registerRoutes(router, wsHub, matchmakingService, authService, db, logger)
 
 	// Create HTTP server
 	server := &http.Server{
@@ -132,47 +140,131 @@ func main() {
 	logger.Info("Server exited")
 }
 
+// Track server start time for uptime calculation
+var serverStartTime = time.Now()
+
 // registerRoutes sets up all application routes
-func registerRoutes(router *gin.Engine, wsHub *websocket.Hub, matchmakingService *matchmaking.MatchmakingService, db *gorm.DB, logger *logger.Logger) {
-	// Health check endpoint
+func registerRoutes(router *gin.Engine, wsHub *websocket.Hub, matchmakingService *matchmaking.MatchmakingService, authService *auth.Service, db *gorm.DB, logger *logger.Logger) {
+	// Prometheus metrics endpoint (public, no authentication)
+	router.GET("/metrics", gin.WrapH(promhttp.Handler()))
+
+	// Enhanced health check endpoint (public)
 	router.GET("/health", func(c *gin.Context) {
+		// Check database connection
+		dbStatus := "healthy"
+		sqlDB, err := db.DB()
+		if err != nil {
+			dbStatus = "unhealthy"
+		} else {
+			if err := sqlDB.Ping(); err != nil {
+				dbStatus = "unhealthy"
+			}
+		}
+
+		// Check WebSocket hub
+		wsStatus := "healthy"
+		if wsHub == nil {
+			wsStatus = "not_initialized"
+		}
+
+		// Check matchmaking service
+		mmStatus := "healthy"
+		if matchmakingService == nil {
+			mmStatus = "not_initialized"
+		}
+
 		c.JSON(http.StatusOK, gin.H{
-			"status":    "healthy",
-			"timestamp": time.Now(),
-			"version":   "1.0.0",
-			"service":   "septica-backend",
+			"status":    "ok",
+			"timestamp": time.Now().Unix(),
+			"uptime_seconds": time.Since(serverStartTime).Seconds(),
+			"components": gin.H{
+				"database":    dbStatus,
+				"websocket":   wsStatus,
+				"matchmaking": mmStatus,
+				"metrics":     "enabled",
+			},
+			"version": "1.0.0",
+			"service": "septica-backend",
 		})
 	})
 
 	// API version group
 	v1 := router.Group("/api/v1")
 
-	// Register WebSocket routes
-	handlers.RegisterWebSocketRoutes(router, wsHub, logger)
+	// Register authentication routes (public + protected)
+	handlers.RegisterAuthRoutes(v1, authService, db, logger)
 
-	// Register tournament routes
-	handlers.RegisterTournamentRoutes(v1, db, logger)
+	// Register WebSocket routes (authentication via token query param)
+	handlers.RegisterWebSocketRoutes(router, wsHub, authService, logger)
 
-	// Register matchmaking routes
-	handlers.RegisterMatchmakingRoutes(v1, matchmakingService, logger)
+	// Protected routes - require authentication
+	protected := v1.Group("/")
+	protected.Use(middleware.AuthMiddleware(authService, logger))
+	{
+		// Tournament management
+		protected.POST("/tournaments", func(c *gin.Context) {
+			// Get handler and inject user context
+			tournamentHandlers := handlers.NewTournamentHandlers(db, logger)
+			tournamentHandlers.CreateTournament(c)
+		})
+		protected.GET("/tournaments", func(c *gin.Context) {
+			tournamentHandlers := handlers.NewTournamentHandlers(db, logger)
+			tournamentHandlers.ListTournaments(c)
+		})
+		protected.GET("/tournaments/:id", func(c *gin.Context) {
+			tournamentHandlers := handlers.NewTournamentHandlers(db, logger)
+			tournamentHandlers.GetTournament(c)
+		})
+		protected.POST("/tournaments/:id/join", func(c *gin.Context) {
+			tournamentHandlers := handlers.NewTournamentHandlers(db, logger)
+			tournamentHandlers.JoinTournament(c)
+		})
+		protected.POST("/tournaments/:id/start", func(c *gin.Context) {
+			tournamentHandlers := handlers.NewTournamentHandlers(db, logger)
+			tournamentHandlers.StartTournament(c)
+		})
+		protected.GET("/tournaments/:id/bracket", func(c *gin.Context) {
+			tournamentHandlers := handlers.NewTournamentHandlers(db, logger)
+			tournamentHandlers.GetTournamentBracket(c)
+		})
 
-	// Game management endpoints
-	v1.GET("/games/:id", getGameHandler(logger))
-	v1.POST("/games", createGameHandler(wsHub, logger))
-	v1.POST("/games/:id/join", joinGameHandler(logger))
-	v1.DELETE("/games/:id/leave", leaveGameHandler(logger))
+		// Rating and leaderboards
+		protected.GET("/leaderboard", func(c *gin.Context) {
+			tournamentHandlers := handlers.NewTournamentHandlers(db, logger)
+			tournamentHandlers.GetLeaderboard(c)
+		})
+		protected.GET("/players/:id/rating-history", func(c *gin.Context) {
+			tournamentHandlers := handlers.NewTournamentHandlers(db, logger)
+			tournamentHandlers.GetPlayerRatingHistory(c)
+		})
+		protected.GET("/rating-distribution", func(c *gin.Context) {
+			tournamentHandlers := handlers.NewTournamentHandlers(db, logger)
+			tournamentHandlers.GetRatingDistribution(c)
+		})
 
-	// Server info endpoint
+		// Matchmaking endpoints
+		protected.POST("/matchmaking/queue", func(c *gin.Context) {
+			// Re-register matchmaking routes with auth
+			handlers.RegisterMatchmakingRoutes(protected, matchmakingService, logger)
+		})
+
+		// Game management endpoints
+		protected.GET("/games/:id", getGameHandler(logger))
+		protected.POST("/games", createGameHandler(wsHub, logger))
+		protected.POST("/games/:id/join", joinGameHandler(logger))
+		protected.DELETE("/games/:id/leave", leaveGameHandler(logger))
+	}
+
+	// Public info endpoint (optional auth)
 	v1.GET("/info", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
-			"connections": wsHub.GetConnectionCount(),
+			"connections":  wsHub.GetConnectionCount(),
 			"active_games": wsHub.GetGameCount(),
-			"server_time": time.Now(),
-			"uptime":      time.Since(time.Now()), // This would be calculated from start time
+			"server_time":  time.Now(),
 		})
 	})
 
-	logger.Info("Routes registered successfully")
+	logger.Info("Routes registered successfully with authentication")
 }
 
 // LoggerMiddleware provides request logging

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"septica-backend/internal/database"
+	"septica-backend/internal/metrics"
 	"septica-backend/internal/websocket"
 	"septica-backend/pkg/logger"
 
@@ -262,6 +263,10 @@ func (m *AIMatchmakingManager) deployAIPlayer(queueType string, humanRating int,
 	m.activeAI[ai.ID] = aiClient
 	m.aiMutex.Unlock()
 
+	// Update AI metrics
+	metrics.AIOpponentsActive.Inc()
+	metrics.AIDeployments.WithLabelValues(string(difficulty)).Inc()
+
 	// Create player record in database for AI
 	err = m.createAIPlayerRecord(ai)
 	if err != nil {
@@ -291,6 +296,7 @@ func (m *AIMatchmakingManager) deployAIPlayer(queueType string, humanRating int,
 		m.aiMutex.Lock()
 		delete(m.activeAI, ai.ID)
 		m.aiMutex.Unlock()
+		metrics.AIOpponentsActive.Dec()
 		aiClient.Disconnect()
 		return
 	}
@@ -403,6 +409,9 @@ func (m *AIMatchmakingManager) cleanupAIPlayer(aiID uuid.UUID) {
 
 	delete(m.activeAI, aiID)
 	m.aiMutex.Unlock()
+
+	// Update AI metrics
+	metrics.AIOpponentsActive.Dec()
 
 	// Disconnect AI client
 	aiClient.Disconnect()

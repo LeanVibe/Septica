@@ -9,6 +9,7 @@ import (
 
 	"septica-backend/internal/database"
 	"septica-backend/internal/game"
+	"septica-backend/internal/metrics"
 	"septica-backend/pkg/logger"
 
 	"github.com/google/uuid"
@@ -137,6 +138,9 @@ func (h *Hub) handleRegister(client *Client) {
 
 	h.clients[client] = true
 	h.userClients[client.userID] = client
+
+	// Update WebSocket connection metrics
+	metrics.WebSocketConnections.Set(float64(len(h.clients)))
 
 	// Create or update session in session store
 	session := &GameSession{
@@ -293,6 +297,9 @@ func (h *Hub) handleUnregister(client *Client) {
 		delete(h.userClients, client.userID)
 		close(client.send)
 
+		// Update WebSocket connection metrics
+		metrics.WebSocketConnections.Set(float64(len(h.clients)))
+
 		// Remove from game sessions
 		for gameID, clients := range h.gameClients {
 			for i, c := range clients {
@@ -320,13 +327,16 @@ func (h *Hub) handleBroadcast(messageBytes []byte) {
 	var message Message
 	if err := json.Unmarshal(messageBytes, &message); err != nil {
 		h.logger.Error("Failed to unmarshal broadcast message", "error", err)
+		metrics.WebSocketErrors.WithLabelValues("message_parse_error").Inc()
 		return
 	}
 
 	for client := range h.clients {
 		select {
 		case client.send <- message:
+			metrics.WebSocketMessages.WithLabelValues(message.Type, "outbound").Inc()
 		default:
+			metrics.WebSocketErrors.WithLabelValues("send_failed").Inc()
 			close(client.send)
 			delete(h.clients, client)
 		}
@@ -601,8 +611,10 @@ func (h *Hub) broadcastToGame(gameID uuid.UUID, message Message) {
 	for _, client := range clients {
 		select {
 		case client.send <- message:
+			metrics.WebSocketMessages.WithLabelValues(message.Type, "outbound").Inc()
 		default:
 			// Client's send channel is full, skip
+			metrics.WebSocketErrors.WithLabelValues("send_failed").Inc()
 			h.logger.Warn("Failed to send message to client", "user_id", client.userID)
 		}
 	}

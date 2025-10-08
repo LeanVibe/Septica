@@ -7,6 +7,7 @@ import (
 
 	"septica-backend/internal/database"
 	"septica-backend/internal/game"
+	"septica-backend/internal/metrics"
 	"septica-backend/internal/websocket"
 	"septica-backend/pkg/logger"
 
@@ -272,7 +273,10 @@ func (s *MatchmakingService) JoinQueue(playerID uuid.UUID, queueType, gameMode s
 	
 	// Add to in-memory queue
 	queue.Add(entry)
-	
+
+	// Update queue size metrics
+	metrics.QueueSize.WithLabelValues(queueType).Set(float64(queue.Size()))
+
 	// Save to database
 	// CRITICAL FIX: Use actual Player.ID for foreign key, not UserID
 	dbEntry := &database.MatchmakingQueue{
@@ -308,11 +312,13 @@ func (s *MatchmakingService) LeaveQueue(playerID uuid.UUID) error {
 	for queueType, queue := range s.queues {
 		if queue.Remove(playerID) {
 			found = true
+			// Update queue size metrics
+			metrics.QueueSize.WithLabelValues(queueType).Set(float64(queue.Size()))
 			s.logger.Info("Player left matchmaking queue", "player_id", playerID, "queue_type", queueType)
 			break
 		}
 	}
-	
+
 	if !found {
 		return ErrPlayerNotInQueue
 	}

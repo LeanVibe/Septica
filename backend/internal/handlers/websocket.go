@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	"septica-backend/internal/auth"
 	"septica-backend/internal/websocket"
 	"septica-backend/pkg/logger"
 
@@ -14,51 +15,62 @@ import (
 
 // WebSocketHandler handles WebSocket-related HTTP endpoints
 type WebSocketHandler struct {
-	hub    *websocket.Hub
-	logger *logger.Logger
+	hub         *websocket.Hub
+	authService *auth.Service
+	logger      *logger.Logger
 }
 
 // NewWebSocketHandler creates a new WebSocket handler
-func NewWebSocketHandler(hub *websocket.Hub, logger *logger.Logger) *WebSocketHandler {
+func NewWebSocketHandler(hub *websocket.Hub, authService *auth.Service, logger *logger.Logger) *WebSocketHandler {
 	return &WebSocketHandler{
-		hub:    hub,
-		logger: logger,
+		hub:         hub,
+		authService: authService,
+		logger:      logger,
 	}
 }
 
 // HandleWebSocketUpgrade handles WebSocket connection upgrade requests
+// WebSocket authentication: requires token in query parameter since WebSocket
+// doesn't support custom headers during the initial handshake
 func (h *WebSocketHandler) HandleWebSocketUpgrade(c *gin.Context) {
-	// Extract user ID from query parameter or JWT token
-	userIDStr := c.Query("user_id")
-	if userIDStr == "" {
-		// Try to get from JWT token if available
-		if userIDFromToken := h.getUserIDFromToken(c); userIDFromToken != uuid.Nil {
-			userIDStr = userIDFromToken.String()
-		} else {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"error": "user_id parameter or valid JWT token required",
-			})
-			return
-		}
-	}
-
-	userID, err := uuid.Parse(userIDStr)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "invalid user_id format",
+	// Extract and validate JWT token from query parameter
+	token := c.Query("token")
+	if token == "" {
+		h.logger.Warn("WebSocket connection attempt without token", "ip", c.ClientIP())
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "authentication token required in query parameter",
+			"usage": "ws://server/ws/connect?token=YOUR_JWT_TOKEN",
 		})
 		return
 	}
 
+	// Validate the token
+	claims, err := h.authService.ValidateToken(token)
+	if err != nil {
+		h.logger.Warn("WebSocket connection with invalid token", "error", err, "ip", c.ClientIP())
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "invalid or expired token",
+		})
+		return
+	}
+
+	userID := claims.UserID
+	username := claims.Username
+
+	// Optional session ID for multi-device support
 	sessionID := c.Query("session_id")
 	if sessionID == "" {
 		sessionID = uuid.New().String()
 	}
 
+	h.logger.Info("WebSocket connection authenticated",
+		"user_id", userID,
+		"username", username,
+		"session_id", sessionID)
+
 	// Upgrade HTTP connection to WebSocket
+	// The actual user ID will be extracted from the validated token during ServeWS
 	websocket.ServeWS(h.hub, c.Writer, c.Request)
-	
-	h.logger.Info("WebSocket connection upgrade", "user_id", userID, "session_id", sessionID)
 }
 
 // GetConnectionStats returns WebSocket connection statistics
@@ -250,32 +262,25 @@ func RateLimitWebSocket() gin.HandlerFunc {
 	}
 }
 
-// Helper function to extract user ID from JWT token
-func (h *WebSocketHandler) getUserIDFromToken(c *gin.Context) uuid.UUID {
-	// Implementation would extract user ID from JWT token
-	// For now, return nil UUID
-	return uuid.Nil
-}
-
 // RegisterWebSocketRoutes registers all WebSocket-related routes
-func RegisterWebSocketRoutes(router *gin.Engine, hub *websocket.Hub, logger *logger.Logger) {
-	handler := NewWebSocketHandler(hub, logger)
-	
+func RegisterWebSocketRoutes(router *gin.Engine, hub *websocket.Hub, authService *auth.Service, logger *logger.Logger) {
+	handler := NewWebSocketHandler(hub, authService, logger)
+
 	// Apply middleware
 	wsGroup := router.Group("/ws")
 	wsGroup.Use(WebSocketCORS())
 	wsGroup.Use(RateLimitWebSocket())
-	
-	// WebSocket upgrade endpoint
+
+	// WebSocket upgrade endpoint (authentication via token query param)
 	wsGroup.GET("/connect", handler.HandleWebSocketUpgrade)
-	
-	// WebSocket management endpoints
+
+	// WebSocket management endpoints (public for monitoring)
 	wsGroup.GET("/stats", handler.GetConnectionStats)
 	wsGroup.POST("/heartbeat", handler.SendHeartbeat)
 	wsGroup.POST("/broadcast", handler.BroadcastMessage)
 	wsGroup.POST("/broadcast/:game_id", handler.BroadcastToGame)
-	
-	// User management endpoints
+
+	// User management endpoints (public for monitoring)
 	wsGroup.GET("/users/:user_id", handler.GetUserConnections)
 	wsGroup.DELETE("/users/:user_id", handler.DisconnectUser)
 }

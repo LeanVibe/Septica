@@ -7,6 +7,7 @@ import (
 
 	"septica-backend/internal/database"
 	"septica-backend/internal/game"
+	"septica-backend/internal/metrics"
 	"septica-backend/internal/websocket"
 
 	"github.com/google/uuid"
@@ -92,7 +93,17 @@ func (s *MatchmakingService) processQueue(queueType string, queue *MatchmakingQu
 		// Remove both players from queue
 		queue.Remove(entry1.PlayerID)
 		queue.Remove(bestMatch.PlayerID)
-		
+
+		// Update queue size and matchmaking metrics
+		metrics.QueueSize.WithLabelValues(queueType).Set(float64(queue.Size()))
+		metrics.MatchmakingSuccess.WithLabelValues(queueType).Inc()
+
+		// Record wait times
+		waitTime1 := time.Since(entry1.QueuedAt).Seconds()
+		waitTime2 := time.Since(bestMatch.QueuedAt).Seconds()
+		metrics.QueueWaitTime.WithLabelValues(queueType).Observe(waitTime1)
+		metrics.QueueWaitTime.WithLabelValues(queueType).Observe(waitTime2)
+
 		s.logger.Info("Match created successfully",
 			"player1_id", entry1.PlayerID,
 			"player2_id", bestMatch.PlayerID,

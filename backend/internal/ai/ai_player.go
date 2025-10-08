@@ -8,6 +8,7 @@ import (
 
 	"septica-backend/internal/database"
 	"septica-backend/internal/game"
+	"septica-backend/internal/metrics"
 	"septica-backend/pkg/logger"
 
 	"github.com/google/uuid"
@@ -124,6 +125,7 @@ func generateAIUsername(difficulty string) string {
 
 // DecideMove analyzes the game state and decides the AI's next move
 func (ai *AIPlayer) DecideMove(gameState *game.AuthenticGameState) (*game.AuthenticPlayerAction, error) {
+	startTime := time.Now()
 	ai.GameState = gameState
 	ai.Hand = gameState.PlayerHands[ai.ID]
 
@@ -144,6 +146,11 @@ func (ai *AIPlayer) DecideMove(gameState *game.AuthenticGameState) (*game.Authen
 	if len(validMoves) == 0 {
 		// Must pass
 		ai.Logger.Debug("AI player passing - no valid moves", "ai_id", ai.ID)
+
+		// Record AI move duration metric
+		duration := time.Since(startTime).Seconds()
+		metrics.AIMoveDuration.WithLabelValues(ai.Config.Difficulty).Observe(duration)
+
 		return &game.AuthenticPlayerAction{
 			Type:     "PASS",
 			PlayerID: ai.ID,
@@ -152,6 +159,10 @@ func (ai *AIPlayer) DecideMove(gameState *game.AuthenticGameState) (*game.Authen
 
 	// Choose best move based on AI strategy
 	bestMove := ai.chooseBestMove(validMoves, gameState)
+
+	// Record AI move duration metric
+	duration := time.Since(startTime).Seconds()
+	metrics.AIMoveDuration.WithLabelValues(ai.Config.Difficulty).Observe(duration)
 
 	ai.Logger.Info("AI player chose move",
 		"ai_id", ai.ID,

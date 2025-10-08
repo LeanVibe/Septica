@@ -5,6 +5,8 @@ import (
 	"math/rand"
 	"time"
 
+	"septica-backend/internal/metrics"
+
 	"github.com/google/uuid"
 )
 
@@ -145,6 +147,11 @@ func (e *Engine) CreateGame(player1ID, player2ID uuid.UUID) *GameState {
 	game.StartedAt = &now
 
 	e.games[gameID] = game
+
+	// Update game metrics
+	metrics.ConcurrentGames.Inc()
+	metrics.TotalGames.WithLabelValues(string(TwoPlayers)).Inc()
+
 	return game
 }
 
@@ -166,14 +173,16 @@ func (e *Engine) PlayCard(gameID uuid.UUID, playerID uuid.UUID, card Card) (*Mov
 	
 	// Validate game is active
 	if game.Status != "in_progress" {
+		metrics.GameErrors.WithLabelValues("game_not_active").Inc()
 		return &MoveResult{Valid: false, Error: "game not active"}, nil
 	}
-	
+
 	// Validate it's the player's turn
 	if game.CurrentPlayerID != playerID {
+		metrics.GameErrors.WithLabelValues("not_player_turn").Inc()
 		return &MoveResult{Valid: false, Error: "not your turn"}, nil
 	}
-	
+
 	// Get player's hand
 	var playerHand *[]Card
 	if playerID == game.Player1ID {
@@ -181,7 +190,7 @@ func (e *Engine) PlayCard(gameID uuid.UUID, playerID uuid.UUID, card Card) (*Mov
 	} else {
 		playerHand = &game.Player2Hand
 	}
-	
+
 	// Validate card is in player's hand
 	cardIndex := -1
 	for i, handCard := range *playerHand {
@@ -190,13 +199,15 @@ func (e *Engine) PlayCard(gameID uuid.UUID, playerID uuid.UUID, card Card) (*Mov
 			break
 		}
 	}
-	
+
 	if cardIndex == -1 {
+		metrics.GameErrors.WithLabelValues("card_not_in_hand").Inc()
 		return &MoveResult{Valid: false, Error: "card not in hand"}, nil
 	}
-	
+
 	// Validate the move according to Septica rules
 	if !isValidMove(card, game.TableCards, game.GameMode) {
+		metrics.GameErrors.WithLabelValues("invalid_move").Inc()
 		return &MoveResult{Valid: false, Error: "cannot beat current card"}, nil
 	}
 	
@@ -259,6 +270,13 @@ func (e *Engine) PlayCard(gameID uuid.UUID, playerID uuid.UUID, card Card) (*Mov
 			winnerID = &game.Player2ID
 		}
 		// Draw case: winnerID remains nil
+
+		// Update game metrics
+		metrics.ConcurrentGames.Dec()
+		if game.StartedAt != nil {
+			duration := time.Since(*game.StartedAt).Seconds()
+			metrics.GameDuration.WithLabelValues(string(game.GameMode)).Observe(duration)
+		}
 	}
 	
 	return &MoveResult{
