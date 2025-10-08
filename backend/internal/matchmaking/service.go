@@ -33,6 +33,7 @@ type MatchmakingConfig struct {
 	MaxWaitTime           time.Duration  // 5 minutes
 	ProcessInterval       time.Duration  // 5 seconds
 	UpdateInterval        time.Duration  // 15 seconds
+	CleanupInterval       time.Duration  // 1 hour - automated queue cleanup
 }
 
 // DefaultConfig returns default matchmaking configuration
@@ -45,6 +46,7 @@ func DefaultConfig() *MatchmakingConfig {
 		MaxWaitTime:           5 * time.Minute,
 		ProcessInterval:       5 * time.Second,
 		UpdateInterval:        15 * time.Second,
+		CleanupInterval:       1 * time.Hour, // Run cleanup every hour
 	}
 }
 
@@ -421,12 +423,12 @@ func (s *MatchmakingService) IsPlayerInQueue(playerID uuid.UUID) bool {
 	return false
 }
 
-// runCleanupLoop runs the automated cleanup job every 5 minutes
+// runCleanupLoop runs the automated cleanup job at configured interval
 func (s *MatchmakingService) runCleanupLoop() {
-	ticker := time.NewTicker(5 * time.Minute)
+	ticker := time.NewTicker(s.config.CleanupInterval)
 	defer ticker.Stop()
 
-	s.logger.Info("Starting automated queue cleanup loop", "interval", "5m")
+	s.logger.Info("Starting automated queue cleanup loop", "interval", s.config.CleanupInterval)
 
 	for {
 		select {
@@ -454,7 +456,10 @@ func (s *MatchmakingService) CleanupStaleEntries() error {
 	if orphanedResult.Error != nil {
 		s.logger.Error("Failed to remove orphaned queue entries", "error", orphanedResult.Error)
 	} else {
-		s.logger.Info("Removed orphaned queue entries", "count", orphanedResult.RowsAffected)
+		if orphanedResult.RowsAffected > 0 {
+			s.logger.Info("Removed orphaned queue entries", "count", orphanedResult.RowsAffected)
+			metrics.QueueCleanupTotal.WithLabelValues("orphaned").Add(float64(orphanedResult.RowsAffected))
+		}
 	}
 
 	// 2. Mark old entries as inactive (queued > 10 minutes)
@@ -465,7 +470,10 @@ func (s *MatchmakingService) CleanupStaleEntries() error {
 	if staleResult.Error != nil {
 		s.logger.Error("Failed to mark stale entries inactive", "error", staleResult.Error)
 	} else {
-		s.logger.Info("Marked stale entries inactive", "count", staleResult.RowsAffected)
+		if staleResult.RowsAffected > 0 {
+			s.logger.Info("Marked stale entries inactive", "count", staleResult.RowsAffected)
+			metrics.QueueCleanupTotal.WithLabelValues("stale").Add(float64(staleResult.RowsAffected))
+		}
 	}
 
 	// 3. Remove entries from completed games (last 1 hour)
@@ -482,7 +490,10 @@ func (s *MatchmakingService) CleanupStaleEntries() error {
 	if completedResult.Error != nil {
 		s.logger.Error("Failed to remove completed game entries", "error", completedResult.Error)
 	} else {
-		s.logger.Info("Removed completed game queue entries", "count", completedResult.RowsAffected)
+		if completedResult.RowsAffected > 0 {
+			s.logger.Info("Removed completed game queue entries", "count", completedResult.RowsAffected)
+			metrics.QueueCleanupTotal.WithLabelValues("completed_game").Add(float64(completedResult.RowsAffected))
+		}
 	}
 
 	return nil

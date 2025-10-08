@@ -225,27 +225,49 @@ func TestMatchmakingService_GetCleanupStats(t *testing.T) {
 		queues: make(map[string]*MatchmakingQueue),
 	}
 
-	// Create a player
-	userID := uuid.New()
-	playerID := uuid.New()
+	// Create first player for stale entry
+	user1ID := uuid.New()
+	player1ID := uuid.New()
 
-	user := &database.User{
-		BaseModel:    database.BaseModel{ID: userID},
-		Username:     "test_player",
-		Email:        "test@test.com",
+	user1 := &database.User{
+		BaseModel:    database.BaseModel{ID: user1ID},
+		Username:     "stale_player",
+		Email:        "stale@test.com",
 		PasswordHash: "hash",
 		IsActive:     true,
 	}
-	require.NoError(t, db.Create(user).Error)
+	require.NoError(t, db.Create(user1).Error)
 
-	player := &database.Player{
-		BaseModel: database.BaseModel{ID: playerID},
-		UserID:    userID,
-		Username:  "test_player",
+	player1 := &database.Player{
+		BaseModel: database.BaseModel{ID: player1ID},
+		UserID:    user1ID,
+		Username:  "stale_player",
 		Level:     1,
 		Rating:    1200,
 	}
-	require.NoError(t, db.Create(player).Error)
+	require.NoError(t, db.Create(player1).Error)
+
+	// Create second player for active entry
+	user2ID := uuid.New()
+	player2ID := uuid.New()
+
+	user2 := &database.User{
+		BaseModel:    database.BaseModel{ID: user2ID},
+		Username:     "active_player",
+		Email:        "active@test.com",
+		PasswordHash: "hash",
+		IsActive:     true,
+	}
+	require.NoError(t, db.Create(user2).Error)
+
+	player2 := &database.Player{
+		BaseModel: database.BaseModel{ID: player2ID},
+		UserID:    user2ID,
+		Username:  "active_player",
+		Level:     1,
+		Rating:    1200,
+	}
+	require.NoError(t, db.Create(player2).Error)
 
 	// Create various queue entries
 	// 1. Orphaned entry
@@ -264,7 +286,7 @@ func TestMatchmakingService_GetCleanupStats(t *testing.T) {
 	// 2. Stale entry
 	staleEntry := &database.MatchmakingQueue{
 		BaseModel:   database.BaseModel{ID: uuid.New()},
-		PlayerID:    playerID,
+		PlayerID:    player1ID,
 		QueueType:   "ranked",
 		Rating:      1200,
 		QueuedAt:    time.Now().Add(-15 * time.Minute),
@@ -277,7 +299,7 @@ func TestMatchmakingService_GetCleanupStats(t *testing.T) {
 	// 3. Active entry
 	activeEntry := &database.MatchmakingQueue{
 		BaseModel:   database.BaseModel{ID: uuid.New()},
-		PlayerID:    playerID,
+		PlayerID:    player2ID,
 		QueueType:   "casual",
 		Rating:      1200,
 		QueuedAt:    time.Now().Add(-2 * time.Minute),
@@ -302,6 +324,7 @@ func TestMatchmakingService_CleanupLoop_Integration(t *testing.T) {
 	config := &MatchmakingConfig{
 		ProcessInterval: 1 * time.Second,
 		UpdateInterval:  1 * time.Second,
+		CleanupInterval: 1 * time.Second, // Short interval for testing
 	}
 
 	service := &MatchmakingService{

@@ -93,7 +93,7 @@ func testRomanianCardBeatingRules(t *testing.T) {
 		for _, tc := range testCases {
 			t.Run(tc.name, func(t *testing.T) {
 				tableCards := []Card{tc.tableCard}
-				result := isValidMove(tc.playCard, tableCards)
+				result := isValidMove(tc.playCard, tableCards, TwoPlayers)
 				assert.Equal(t, tc.shouldWin, result, "7s must always beat other cards")
 			})
 		}
@@ -109,7 +109,7 @@ func testRomanianCardBeatingRules(t *testing.T) {
 			{Suit: "diamonds", Value: 11},
 			{Suit: "clubs", Value: 12},
 		}
-		assert.True(t, isValidMove(eightCard, tableWith3Cards), "8 should beat when table has 3 cards")
+		assert.True(t, isValidMove(eightCard, tableWith3Cards, TwoPlayers), "8 should beat when table has 3 cards")
 		
 		// Create table with 6 cards (divisible by 3)
 		tableWith6Cards := []Card{
@@ -117,21 +117,21 @@ func testRomanianCardBeatingRules(t *testing.T) {
 			{Suit: "clubs", Value: 12}, {Suit: "hearts", Value: 13},
 			{Suit: "spades", Value: 9}, {Suit: "diamonds", Value: 14},
 		}
-		assert.True(t, isValidMove(eightCard, tableWith6Cards), "8 should beat when table has 6 cards")
+		assert.True(t, isValidMove(eightCard, tableWith6Cards, TwoPlayers), "8 should beat when table has 6 cards")
 		
 		// Create table with 2 cards (not divisible by 3)
 		tableWith2Cards := []Card{
 			{Suit: "spades", Value: 10},
 			{Suit: "diamonds", Value: 11},
 		}
-		assert.False(t, isValidMove(eightCard, tableWith2Cards), "8 should not beat when table has 2 cards")
+		assert.False(t, isValidMove(eightCard, tableWith2Cards, TwoPlayers), "8 should not beat when table has 2 cards")
 		
 		// Create table with 4 cards (not divisible by 3)
 		tableWith4Cards := []Card{
 			{Suit: "spades", Value: 10}, {Suit: "diamonds", Value: 11},
 			{Suit: "clubs", Value: 12}, {Suit: "hearts", Value: 13},
 		}
-		assert.False(t, isValidMove(eightCard, tableWith4Cards), "8 should not beat when table has 4 cards")
+		assert.False(t, isValidMove(eightCard, tableWith4Cards, TwoPlayers), "8 should not beat when table has 4 cards")
 	})
 	
 	t.Run("Same Value Cards Beat Each Other", func(t *testing.T) {
@@ -170,7 +170,7 @@ func testRomanianCardBeatingRules(t *testing.T) {
 		for _, tc := range testCases {
 			t.Run(tc.name, func(t *testing.T) {
 				tableCards := []Card{tc.tableCard}
-				result := isValidMove(tc.playCard, tableCards)
+				result := isValidMove(tc.playCard, tableCards, TwoPlayers)
 				assert.Equal(t, tc.shouldWin, result, "Same values should beat, different should not")
 			})
 		}
@@ -182,7 +182,7 @@ func testRomanianCardBeatingRules(t *testing.T) {
 		aceOnTable := []Card{{Suit: "spades", Value: 14}}
 		
 		// 9 cannot beat Ace (not 7, not 8 with table%3=0, not same value)
-		assert.False(t, isValidMove(nineCard, aceOnTable), "9 should not beat Ace")
+		assert.False(t, isValidMove(nineCard, aceOnTable, TwoPlayers), "9 should not beat Ace")
 		
 		// Test various invalid combinations
 		invalidCases := []struct {
@@ -196,7 +196,7 @@ func testRomanianCardBeatingRules(t *testing.T) {
 		
 		for _, tc := range invalidCases {
 			tableCards := []Card{tc.tableCard}
-			assert.False(t, isValidMove(tc.playCard, tableCards), 
+			assert.False(t, isValidMove(tc.playCard, tableCards, TwoPlayers),
 				"Card %d should not beat card %d", tc.playCard.Value, tc.tableCard.Value)
 		}
 	})
@@ -614,7 +614,7 @@ func TestPerformanceAndEdgeCases(t *testing.T) {
 		
 		// Verify all returned moves are actually valid
 		for _, move := range validMoves2 {
-			assert.True(t, isValidMove(move, result.UpdatedState.TableCards), 
+			assert.True(t, isValidMove(move, result.UpdatedState.TableCards, result.UpdatedState.GameMode),
 				"Returned move should be valid: %+v", move)
 		}
 	})

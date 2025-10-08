@@ -84,6 +84,13 @@ func NewHub(gameEngine *game.Engine, authenticEngine *game.AuthenticEngine, db *
 	// Create session store with 30 minute timeout
 	sessionStore := NewSessionStore(30 * time.Minute)
 
+	// If authenticEngine doesn't have database configured, create a new one with DB
+	if authenticEngine != nil {
+		// Create a new authentic engine with database persistence
+		authenticEngine = game.NewAuthenticEngineWithDB(db, logger)
+		logger.Info("Created AuthenticEngine with database persistence enabled")
+	}
+
 	return &Hub{
 		clients:         make(map[*Client]bool),
 		userClients:     make(map[uuid.UUID]*Client),

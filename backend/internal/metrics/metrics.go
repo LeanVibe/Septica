@@ -83,6 +83,12 @@ var (
 		Help: "Total number of AI opponents deployed",
 	}, []string{"difficulty"})
 
+	// Queue cleanup metrics
+	QueueCleanupTotal = promauto.NewCounterVec(prometheus.CounterOpts{
+		Name: "septica_queue_cleanup_total",
+		Help: "Total number of queue entries cleaned up",
+	}, []string{"type"}) // labels: orphaned, stale, completed_game
+
 	// HTTP API metrics (automatically collected by prometheus middleware)
 	HTTPRequestDuration = promauto.NewHistogramVec(prometheus.HistogramOpts{
 		Name:    "septica_http_request_duration_seconds",

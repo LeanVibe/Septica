@@ -5,7 +5,11 @@ import (
 	"math/rand"
 	"time"
 
+	"septica-backend/internal/database"
+	"septica-backend/pkg/logger"
+
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 var (
@@ -102,6 +106,8 @@ type AuthenticEngineConfig struct {
 type AuthenticEngine struct {
 	games  map[uuid.UUID]*AuthenticGameState
 	config *AuthenticEngineConfig
+	db     *gorm.DB
+	logger *logger.Logger
 }
 
 // NewAuthenticEngine creates a new authentic game engine
@@ -114,6 +120,23 @@ func NewAuthenticEngine() *AuthenticEngine {
 			MaxGameDuration:   30 * time.Minute,
 			ObjectionTimeout:  30 * time.Second,
 		},
+		db:     nil,
+		logger: nil,
+	}
+}
+
+// NewAuthenticEngineWithDB creates a new authentic game engine with database persistence
+func NewAuthenticEngineWithDB(db *gorm.DB, logger *logger.Logger) *AuthenticEngine {
+	return &AuthenticEngine{
+		games: make(map[uuid.UUID]*AuthenticGameState),
+		config: &AuthenticEngineConfig{
+			UseAuthenticRules: true,
+			DefaultGameMode:   ModeTwoPlayer,
+			MaxGameDuration:   30 * time.Minute,
+			ObjectionTimeout:  30 * time.Second,
+		},
+		db:     db,
+		logger: logger,
 	}
 }
 
@@ -223,15 +246,60 @@ func (e *AuthenticEngine) ProcessAction(gameID uuid.UUID, action AuthenticPlayer
 		return &AuthenticMoveResult{Valid: false, Error: "not your turn to object"}, nil
 	}
 
+	// Create move record for database persistence
+	moveRecord := &database.GameMove{
+		GameID:         gameID, // ✅ game_id explicitly set
+		PlayerID:       action.PlayerID,
+		MoveNumber:     game.MoveNumber,
+		MoveType:       action.Type,
+		TrickNumber:    game.RoundNumber,
+		TableCardCount: len(game.TableCards),
+		IsObjection:    game.WaitingForObjection,
+	}
+
+	// Add card details if this is a PLAY_CARD action
+	if action.Type == "PLAY_CARD" && action.Card != nil {
+		moveRecord.CardSuit = action.Card.Suit
+		moveRecord.CardValue = action.Card.Value
+	}
+
+	// If this is an objection, record the card being objected to
+	if game.WaitingForObjection && game.LastPlayedCard != nil {
+		moveRecord.ObjectedCardSuit = &game.LastPlayedCard.Suit
+		moveRecord.ObjectedCardValue = &game.LastPlayedCard.Value
+	}
+
 	// Process the action based on type
+	var result *AuthenticMoveResult
 	switch action.Type {
 	case "PLAY_CARD":
-		return e.processPlayCard(game, action)
+		result, err = e.processPlayCard(game, action)
 	case "PASS":
-		return e.processPass(game, action)
+		result, err = e.processPass(game, action)
 	default:
 		return &AuthenticMoveResult{Valid: false, Error: "invalid action type"}, nil
 	}
+
+	// If move was valid, persist to database
+	if result != nil && result.Valid {
+		// Update move record with result data
+		moveRecord.RoundComplete = result.RoundComplete
+		moveRecord.PointsAwarded = result.PointsAwarded
+		moveRecord.IsWinningMove = result.GameComplete
+
+		// Persist move to database
+		if persistErr := e.RecordMove(gameID, moveRecord); persistErr != nil {
+			// Log error but don't fail the move - game state already updated
+			if e.logger != nil {
+				e.logger.Error("Failed to persist move (move already processed)",
+					"error", persistErr,
+					"game_id", gameID,
+					"player_id", action.PlayerID)
+			}
+		}
+	}
+
+	return result, err
 }
 
 // processPlayCard handles playing a card
@@ -585,6 +653,52 @@ func (e *AuthenticEngine) GetPlayerHand(gameID uuid.UUID, playerID uuid.UUID) ([
 	}
 
 	return hand, nil
+}
+
+// RecordMove persists a game move to the database
+func (e *AuthenticEngine) RecordMove(gameID uuid.UUID, move *database.GameMove) error {
+	if e.db == nil {
+		// Database not initialized, skip persistence (for tests or in-memory mode)
+		return nil
+	}
+
+	// Validate game_id is set
+	if move.GameID == uuid.Nil {
+		if e.logger != nil {
+			e.logger.Error("Attempted to record move without game_id", "player_id", move.PlayerID)
+		}
+		return errors.New("game_id is required for move recording")
+	}
+
+	// Validate player_id is set
+	if move.PlayerID == uuid.Nil {
+		if e.logger != nil {
+			e.logger.Error("Attempted to record move without player_id", "game_id", move.GameID)
+		}
+		return errors.New("player_id is required for move recording")
+	}
+
+	// Persist to database
+	if err := e.db.Create(move).Error; err != nil {
+		if e.logger != nil {
+			e.logger.Error("Failed to persist move to database",
+				"error", err,
+				"game_id", move.GameID,
+				"player_id", move.PlayerID,
+				"move_number", move.MoveNumber)
+		}
+		return err
+	}
+
+	if e.logger != nil {
+		e.logger.Debug("Move persisted to database",
+			"game_id", move.GameID,
+			"player_id", move.PlayerID,
+			"move_type", move.MoveType,
+			"move_number", move.MoveNumber)
+	}
+
+	return nil
 }
 
 // GetValidMoves returns valid moves for a player in current game state

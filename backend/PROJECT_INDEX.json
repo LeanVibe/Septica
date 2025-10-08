@@ -1,5 +1,5 @@
 {
-  "at": "2025-10-08T04:43:49.800080",
+  "at": "2025-10-08T12:31:33.931840",
   "root": ".",
   "tree": [
     ".",
@@ -7,6 +7,8 @@
     "\u2502   \u251c\u2500\u2500 cleanup/ (1 files)",
     "\u2502   \u2514\u2500\u2500 server/ (1 files)",
     "\u251c\u2500\u2500 deployments/",
+    "\u251c\u2500\u2500 docs/",
+    "\u2502   \u2514\u2500\u2500 fixes/",
     "\u251c\u2500\u2500 internal/ (40 files)",
     "\u2502   \u251c\u2500\u2500 ai/ (5 files)",
     "\u2502   \u251c\u2500\u2500 api/",
@@ -19,22 +21,20 @@
     "\u2502   \u251c\u2500\u2500 metrics/ (1 files)",
     "\u2502   \u251c\u2500\u2500 middleware/ (3 files)",
     "\u2502   \u251c\u2500\u2500 rating/ (2 files)",
-    "\u2502   \u251c\u2500\u2500 services/",
-    "\u2502   \u251c\u2500\u2500 tournament/ (3 files)",
-    "\u2502   \u2514\u2500\u2500 websocket/ (6 files)"
+    "\u2502   \u251c\u2500\u2500 services/"
   ],
   "stats": {
-    "total_files": 62,
-    "total_directories": 21,
+    "total_files": 64,
+    "total_directories": 24,
     "fully_parsed": {
       "shell": 1,
       "javascript": 1
     },
     "listed_only": {
       "json": 2,
-      "go": 58
+      "go": 60
     },
-    "markdown_files": 2
+    "markdown_files": 3
   },
   "f": {
     "run-all-ai-tests.sh": [
@@ -95,6 +95,18 @@
       "4. **End-to-End Integration Tests** (`test-ai-e2e.js`)",
       "5. **Master Test Runner** (`run-all-ai-tests.sh`)",
       "6. **Comprehensive Testing Guide** (`AI-TESTING-GUIDE.md`)"
+    ],
+    "docs/fixes/AI_MATCHMAKING_STATS_FIX.md": [
+      "AI Matchmaking Stats Integration Fix",
+      "Problem",
+      "Root Cause",
+      "Solution",
+      "Files Modified",
+      "Fixed Flow",
+      "Verification",
+      "Test Results",
+      "Success Criteria Met",
+      "Impact"
     ]
   },
   "deps": {
@@ -113,14 +125,15 @@
     "internal/middleware": "Middleware functions and handlers",
     "internal/websocket": "Test files and test utilities",
     "pkg/config": "Configuration files and settings",
+    "test": "Test files and test utilities",
     "tests/integration": "Test files and test utilities"
   },
-  "staleness": 1759283029.832831,
+  "staleness": 1759311093.966374,
   "_meta": {
     "target_size_k": 50,
-    "generated_at": 1759887829.8376498,
+    "generated_at": 1759915893.9716501,
     "actual_size_k": 1,
-    "files_hash": "b302cd136636800e",
+    "files_hash": "ad5ef44bdb9ddf1b",
     "compression_ratio": "2.0%",
     "last_interactive_size_k": 50
   }
