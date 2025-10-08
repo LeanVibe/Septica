@@ -1,5 +1,5 @@
 {
-  "at": "2025-10-08T12:31:33.931840",
+  "at": "2025-10-08T13:01:42.120245",
   "root": ".",
   "tree": [
     ".",
@@ -9,12 +9,12 @@
     "\u251c\u2500\u2500 deployments/",
     "\u251c\u2500\u2500 docs/",
     "\u2502   \u2514\u2500\u2500 fixes/",
-    "\u251c\u2500\u2500 internal/ (40 files)",
+    "\u251c\u2500\u2500 internal/ (42 files)",
     "\u2502   \u251c\u2500\u2500 ai/ (5 files)",
     "\u2502   \u251c\u2500\u2500 api/",
     "\u2502   \u251c\u2500\u2500 auth/ (1 files)",
-    "\u2502   \u251c\u2500\u2500 database/ (4 files)",
-    "\u2502   \u251c\u2500\u2500 game/ (6 files)",
+    "\u2502   \u251c\u2500\u2500 database/ (5 files)",
+    "\u2502   \u251c\u2500\u2500 game/ (7 files)",
     "\u2502   \u251c\u2500\u2500 handlers/ (4 files)",
     "\u2502   \u251c\u2500\u2500 logger/ (1 files)",
     "\u2502   \u251c\u2500\u2500 matchmaking/ (4 files)",
@@ -24,7 +24,7 @@
     "\u2502   \u251c\u2500\u2500 services/"
   ],
   "stats": {
-    "total_files": 64,
+    "total_files": 66,
     "total_directories": 24,
     "fully_parsed": {
       "shell": 1,
@@ -32,7 +32,7 @@
     },
     "listed_only": {
       "json": 2,
-      "go": 60
+      "go": 62
     },
     "markdown_files": 3
   },
@@ -128,12 +128,12 @@
     "test": "Test files and test utilities",
     "tests/integration": "Test files and test utilities"
   },
-  "staleness": 1759311093.966374,
+  "staleness": 1759312902.15366,
   "_meta": {
     "target_size_k": 50,
-    "generated_at": 1759915893.9716501,
+    "generated_at": 1759917702.158498,
     "actual_size_k": 1,
-    "files_hash": "ad5ef44bdb9ddf1b",
+    "files_hash": "41d5004eff93dbb0",
     "compression_ratio": "2.0%",
     "last_interactive_size_k": 50
   }
