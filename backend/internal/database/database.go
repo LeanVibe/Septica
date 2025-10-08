@@ -1,11 +1,13 @@
 package database
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
 	"septica-backend/pkg/logger"
 
+	"github.com/google/uuid"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	gormlogger "gorm.io/gorm/logger"
@@ -100,4 +102,52 @@ func Close(db *gorm.DB) error {
 		return err
 	}
 	return sqlDB.Close()
+}
+
+// Database wraps GORM database for custom methods
+type Database struct {
+	db *gorm.DB
+}
+
+// NewDatabase creates a new Database instance
+func NewDatabase(db *gorm.DB) *Database {
+	return &Database{db: db}
+}
+
+// GetUserByUsername retrieves a user by username
+func (d *Database) GetUserByUsername(username string) (*User, error) {
+	var user User
+	err := d.db.Where("username = ?", username).First(&user).Error
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
+// GetOrCreateUser gets existing user or creates new one (handles race conditions)
+func (d *Database) GetOrCreateUser(id uuid.UUID, username, email, passwordHash string) (*User, error) {
+	// Try to get existing user by ID or username
+	var user User
+	err := d.db.Where("id = ? OR username = ?", id, username).First(&user).Error
+	if err == nil {
+		return &user, nil // User exists
+	}
+	if !errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, err // Real error
+	}
+
+	// Create new user
+	user = User{
+		BaseModel:    BaseModel{ID: id},
+		Username:     username,
+		Email:        email,
+		PasswordHash: passwordHash,
+		IsActive:     true,
+	}
+
+	err = d.db.Create(&user).Error
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
 }
