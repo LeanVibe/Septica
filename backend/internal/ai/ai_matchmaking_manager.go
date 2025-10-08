@@ -202,6 +202,7 @@ func (m *AIMatchmakingManager) checkQueuesForAIActivation() {
 			m.aiMutex.RUnlock()
 
 			if currentAICount >= m.config.MaxConcurrentAI {
+				metrics.AIDeploymentFailures.WithLabelValues("max_concurrent_reached").Inc()
 				m.logger.Debug("Max concurrent AI players reached",
 					"current", currentAICount,
 					"max", m.config.MaxConcurrentAI)
@@ -239,6 +240,7 @@ func (m *AIMatchmakingManager) deployAIPlayer(queueType string, humanRating int,
 	// Connect AI client
 	err := aiClient.Connect()
 	if err != nil {
+		metrics.AIDeploymentFailures.WithLabelValues("connection_failed").Inc()
 		m.logger.Error("Failed to connect AI player",
 			"error", err,
 			"ai_id", ai.ID,
@@ -334,32 +336,20 @@ func (m *AIMatchmakingManager) generateAIRating(humanRating int) int {
 
 // createAIPlayerRecord creates database records for AI player
 func (m *AIMatchmakingManager) createAIPlayerRecord(ai *AIPlayer) error {
-	// Check if user already exists (may have been created by hub.ensurePlayerExists)
-	var existingUser database.User
-	err := m.db.Where("id = ?", ai.ID).First(&existingUser).Error
-	if err == nil {
-		// User already exists, just create player record
-		m.logger.Debug("AI user already exists, skipping user creation", "ai_id", ai.ID)
-	} else {
-		// Create user record only if it doesn't exist
-		user := &database.User{
-			BaseModel:    database.BaseModel{ID: ai.ID},
-			Username:     ai.Username,
-			Email:        fmt.Sprintf("%s@ai.septica.game", ai.ID.String()),
-			PasswordHash: "ai_player_no_password",
-			IsActive:     true,
-		}
-
-		err := m.db.Create(user).Error
-		if err != nil {
-			// Check if error is due to duplicate key constraint
-			if err.Error() == "duplicate key value violates unique constraint \"users_pkey\"" {
-				m.logger.Debug("AI user created concurrently by another process", "ai_id", ai.ID)
-			} else {
-				return fmt.Errorf("failed to create AI user: %w", err)
-			}
-		}
+	// Use GetOrCreateUser to handle race conditions properly
+	dbService := database.NewDatabase(m.db)
+	user, err := dbService.GetOrCreateUser(
+		ai.ID,
+		ai.Username,
+		fmt.Sprintf("%s@ai.septica.game", ai.ID.String()),
+		"ai_player_no_password",
+	)
+	if err != nil {
+		metrics.AIDeploymentFailures.WithLabelValues("database_error").Inc()
+		return fmt.Errorf("failed to create/retrieve AI user: %w", err)
 	}
+
+	m.logger.Debug("AI user ready", "ai_id", ai.ID, "username", user.Username)
 
 	// Check if player already exists
 	var existingPlayer database.Player
@@ -374,6 +364,7 @@ func (m *AIMatchmakingManager) createAIPlayerRecord(ai *AIPlayer) error {
 	player := ai.GetPlayerInfo()
 	err = m.db.Create(player).Error
 	if err != nil {
+		metrics.AIDeploymentFailures.WithLabelValues("database_error").Inc()
 		return fmt.Errorf("failed to create AI player: %w", err)
 	}
 

@@ -83,6 +83,11 @@ var (
 		Help: "Total number of AI opponents deployed",
 	}, []string{"difficulty"})
 
+	AIDeploymentFailures = promauto.NewCounterVec(prometheus.CounterOpts{
+		Name: "septica_ai_deployment_failures_total",
+		Help: "Total number of AI deployment failures",
+	}, []string{"reason"}) // labels: duplicate_user, connection_failed, database_error, max_concurrent_reached
+
 	// Queue cleanup metrics
 	QueueCleanupTotal = promauto.NewCounterVec(prometheus.CounterOpts{
 		Name: "septica_queue_cleanup_total",
