@@ -96,7 +96,7 @@ func main() {
 	router.Use(CORSMiddleware(cfg))
 
 	// Register routes
-	registerRoutes(router, wsHub, matchmakingService, authService, db, logger)
+	registerRoutes(router, wsHub, matchmakingService, authService, aiMatchmakingManager, db, logger)
 
 	// Create HTTP server
 	server := &http.Server{
@@ -145,49 +145,20 @@ func main() {
 var serverStartTime = time.Now()
 
 // registerRoutes sets up all application routes
-func registerRoutes(router *gin.Engine, wsHub *websocket.Hub, matchmakingService *matchmaking.MatchmakingService, authService *auth.Service, db *gorm.DB, logger *logger.Logger) {
+func registerRoutes(router *gin.Engine, wsHub *websocket.Hub, matchmakingService *matchmaking.MatchmakingService, authService *auth.Service, aiManager *ai.AIMatchmakingManager, db *gorm.DB, logger *logger.Logger) {
 	// Prometheus metrics endpoint (public, no authentication)
 	router.GET("/metrics", gin.WrapH(promhttp.Handler()))
 
-	// Enhanced health check endpoint (public)
-	router.GET("/health", func(c *gin.Context) {
-		// Check database connection
-		dbStatus := "healthy"
-		sqlDB, err := db.DB()
-		if err != nil {
-			dbStatus = "unhealthy"
-		} else {
-			if err := sqlDB.Ping(); err != nil {
-				dbStatus = "unhealthy"
-			}
-		}
+	// Initialize health handler
+	healthHandler := handlers.NewHealthHandler(db, wsHub, matchmakingService, aiManager, logger)
 
-		// Check WebSocket hub
-		wsStatus := "healthy"
-		if wsHub == nil {
-			wsStatus = "not_initialized"
-		}
-
-		// Check matchmaking service
-		mmStatus := "healthy"
-		if matchmakingService == nil {
-			mmStatus = "not_initialized"
-		}
-
-		c.JSON(http.StatusOK, gin.H{
-			"status":    "ok",
-			"timestamp": time.Now().Unix(),
-			"uptime_seconds": time.Since(serverStartTime).Seconds(),
-			"components": gin.H{
-				"database":    dbStatus,
-				"websocket":   wsStatus,
-				"matchmaking": mmStatus,
-				"metrics":     "enabled",
-			},
-			"version": "1.0.0",
-			"service": "septica-backend",
-		})
-	})
+	// Health check endpoints (public, no authentication)
+	router.GET("/health", healthHandler.Basic)                     // Basic liveness probe
+	router.GET("/health/ready", healthHandler.Readiness)           // Readiness probe (Kubernetes)
+	router.GET("/health/detailed", healthHandler.Detailed)         // Comprehensive system status
+	router.GET("/health/ai", healthHandler.AIHealth)               // AI matchmaking manager status
+	router.GET("/health/matchmaking", healthHandler.MatchmakingHealth) // Matchmaking queue health
+	router.GET("/health/websocket", healthHandler.WebSocketHealth) // WebSocket hub status
 
 	// API version group
 	v1 := router.Group("/api/v1")
