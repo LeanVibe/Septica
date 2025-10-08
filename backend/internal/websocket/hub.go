@@ -75,6 +75,7 @@ type MatchmakingServiceInterface interface {
 	JoinQueue(playerID uuid.UUID, queueType, gameMode string) error
 	LeaveQueue(playerID uuid.UUID) error
 	GetQueueStatus(playerID uuid.UUID) (map[string]interface{}, error)
+	GetQueueStats() map[string]interface{}
 	IsPlayerInQueue(playerID uuid.UUID) bool
 }
 
@@ -950,16 +951,17 @@ func (h *Hub) handleAIPlayerReady(userID uuid.UUID, message Message) error {
 
 // GetMatchmakingQueueStats returns statistics about matchmaking queues
 func (h *Hub) GetMatchmakingQueueStats() map[string]interface{} {
-	// This would be implemented by the matchmaking service
-	// For now, return empty stats
 	if h.matchmakingService == nil {
+		h.logger.Warn("Matchmaking service not initialized, returning empty queue stats")
 		return make(map[string]interface{})
 	}
 
-	// In a real implementation, we would get this data from the matchmaking service
-	// For now, return empty stats - this will be enhanced when matchmaking service
-	// provides queue statistics
-	return make(map[string]interface{})
+	stats := h.matchmakingService.GetQueueStats()
+	h.logger.Debug("Retrieved queue stats for AI activation",
+		"total_players", stats["total_players"],
+		"queue_count", len(stats))
+
+	return stats
 }
 
 // GetRandomFloat64 returns a random float64 between 0 and 1

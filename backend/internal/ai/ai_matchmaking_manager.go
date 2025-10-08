@@ -161,77 +161,65 @@ func (m *AIMatchmakingManager) checkQueuesForAIActivation() {
 	m.logger.Debug("Checking queues for AI activation")
 
 	// Get current queue statistics from the hub
-	queueStats := m.hub.GetMatchmakingQueueStats()
+	allStats := m.hub.GetMatchmakingQueueStats()
 
-	// For testing purposes, let's create a mock queue stat to trigger AI deployment
-	// TODO: Replace with real queue stats from matchmaking service
-	if len(queueStats) == 0 {
-		m.logger.Info("No queue stats available - deploying test AI for debugging")
-
-		// Create a mock waiting player to test AI deployment
-		testStats := QueueStats{
-			TotalPlayers:    1,
-			LongestWaitTime: m.config.ActivationTimeout + 1*time.Second, // Trigger AI deployment
-			AverageWaitTime: m.config.ActivationTimeout + 1*time.Second,
-			PlayersWaiting: []PlayerWaitInfo{
-				{
-					PlayerID: uuid.New(),
-					Rating:   1200,
-					WaitTime: m.config.ActivationTimeout + 1*time.Second,
-				},
-			},
-		}
-
-		m.logger.Info("Testing AI deployment with mock stats",
-			"longest_wait", testStats.LongestWaitTime,
-			"activation_timeout", m.config.ActivationTimeout)
-
-		m.checkQueueForAI("ranked", testStats)
+	// Check if we have any queues data
+	queuesInterface, hasQueues := allStats["queues"]
+	if !hasQueues {
+		m.logger.Debug("No queues data available, skipping AI activation check")
 		return
 	}
 
-	// Real queue stats processing (when implemented)
-	for queueType, statsInterface := range queueStats {
-		if stats, ok := statsInterface.(QueueStats); ok {
-			m.checkQueueForAI(queueType, stats)
-		}
+	queues, ok := queuesInterface.(map[string]interface{})
+	if !ok {
+		m.logger.Error("Invalid queues data format")
+		return
 	}
-}
 
+	// Process each queue type
+	for queueType, queueDataInterface := range queues {
+		queueData, ok := queueDataInterface.(map[string]interface{})
+		if !ok {
+			m.logger.Warn("Invalid queue data format", "queue_type", queueType)
+			continue
+		}
 
-// checkQueueForAI determines if AI should be added to a specific queue
-func (m *AIMatchmakingManager) checkQueueForAI(queueType string, stats QueueStats) {
-	// Check if any human players have been waiting longer than activation timeout
-	needsAI := false
-	var longestWaitingPlayer *PlayerWaitInfo
+		// Extract queue statistics
+		longestWaitSeconds, _ := queueData["longest_wait_seconds"].(float64)
+		playersWaiting, _ := queueData["players_waiting"].(int)
 
-	for _, player := range stats.PlayersWaiting {
-		if player.WaitTime >= m.config.ActivationTimeout {
-			needsAI = true
-			if longestWaitingPlayer == nil || player.WaitTime > longestWaitingPlayer.WaitTime {
-				longestWaitingPlayer = &player
+		m.logger.Debug("Queue stats retrieved",
+			"queue_type", queueType,
+			"longest_wait_seconds", longestWaitSeconds,
+			"players_waiting", playersWaiting,
+			"activation_timeout", m.config.ActivationTimeout.Seconds())
+
+		// Check if AI should be deployed
+		if longestWaitSeconds > m.config.ActivationTimeout.Seconds() && playersWaiting > 0 {
+			// Check if we've already reached max concurrent AI
+			m.aiMutex.RLock()
+			currentAICount := len(m.activeAI)
+			m.aiMutex.RUnlock()
+
+			if currentAICount >= m.config.MaxConcurrentAI {
+				m.logger.Debug("Max concurrent AI players reached",
+					"current", currentAICount,
+					"max", m.config.MaxConcurrentAI)
+				continue
 			}
+
+			m.logger.Info("Deploying AI due to long wait time",
+				"queue_type", queueType,
+				"wait_time", longestWaitSeconds,
+				"players_waiting", playersWaiting,
+				"threshold", m.config.ActivationTimeout.Seconds())
+
+			// Use default rating of 1200 for AI deployment
+			// The wait time is converted from seconds back to duration
+			waitTime := time.Duration(longestWaitSeconds * float64(time.Second))
+			m.deployAIPlayer(queueType, 1200, waitTime)
 		}
 	}
-
-	if !needsAI || longestWaitingPlayer == nil {
-		return // No AI needed
-	}
-
-	// Check if we've already reached max concurrent AI
-	m.aiMutex.RLock()
-	currentAICount := len(m.activeAI)
-	m.aiMutex.RUnlock()
-
-	if currentAICount >= m.config.MaxConcurrentAI {
-		m.logger.Debug("Max concurrent AI players reached",
-			"current", currentAICount,
-			"max", m.config.MaxConcurrentAI)
-		return
-	}
-
-	// Create and deploy AI player
-	m.deployAIPlayer(queueType, longestWaitingPlayer.Rating, longestWaitingPlayer.WaitTime)
 }
 
 // deployAIPlayer creates and deploys an AI player to help with matchmaking

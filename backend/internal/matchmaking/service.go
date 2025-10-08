@@ -369,25 +369,41 @@ func (s *MatchmakingService) GetQueueStatus(playerID uuid.UUID) (map[string]inte
 func (s *MatchmakingService) GetQueueStats() map[string]interface{} {
 	s.queueMutex.RLock()
 	defer s.queueMutex.RUnlock()
-	
+
 	stats := map[string]interface{}{
 		"total_players": 0,
 		"queues":        make(map[string]interface{}),
 	}
-	
+
 	totalPlayers := 0
 	for queueType, queue := range s.queues {
-		size := queue.Size()
+		entries := queue.GetAll()
+		size := len(entries)
 		totalPlayers += size
-		
+
+		if size == 0 {
+			continue
+		}
+
 		avgWaitTime := s.calculateAverageWaitTime(queue)
-		
+
+		// Calculate longest wait time for AI activation
+		var longestWait time.Duration
+		for _, entry := range entries {
+			waitTime := time.Since(entry.QueuedAt)
+			if waitTime > longestWait {
+				longestWait = waitTime
+			}
+		}
+
 		stats["queues"].(map[string]interface{})[queueType] = map[string]interface{}{
-			"players":           size,
-			"average_wait_time": int(avgWaitTime.Seconds()),
+			"players":              size,
+			"average_wait_time":    int(avgWaitTime.Seconds()),
+			"longest_wait_seconds": longestWait.Seconds(),
+			"players_waiting":      size,
 		}
 	}
-	
+
 	stats["total_players"] = totalPlayers
 	return stats
 }

@@ -196,7 +196,8 @@ func setupTestHub() (*Hub, *gorm.DB, *MockAuthenticEngine) {
 	mockEngine := NewMockAuthenticEngine()
 
 	// Create hub (we'll need to cast the engine interface when needed)
-	hub := NewHub(nil, db, testLogger) // Pass nil for regular engine since we'll use mock
+	// TODO: Fix mock engine to properly implement game.AuthenticEngine interface
+	hub := NewHub(nil, nil, db, testLogger) // Pass nil for both engines for now
 
 	return hub, db, mockEngine
 }
