@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"os"
 	"os/signal"
@@ -249,10 +250,10 @@ func registerRoutes(router *gin.Engine, wsHub *websocket.Hub, matchmakingService
 		})
 
 		// Game management endpoints
-		protected.GET("/games/:id", getGameHandler(logger))
-		protected.POST("/games", createGameHandler(wsHub, logger))
-		protected.POST("/games/:id/join", joinGameHandler(logger))
-		protected.DELETE("/games/:id/leave", leaveGameHandler(logger))
+		protected.GET("/games/:id", getGameHandler(db, logger))
+		protected.POST("/games", createGameHandler(db, wsHub, logger))
+		protected.POST("/games/:id/join", joinGameHandler(db, logger))
+		protected.DELETE("/games/:id/leave", leaveGameHandler(db, logger))
 	}
 
 	// Public info endpoint (optional auth)
@@ -323,84 +324,286 @@ func startHeartbeatTicker(hub *websocket.Hub, logger *logger.Logger) {
 	}
 }
 
-// Placeholder handlers for game management (to be implemented)
+// Game management handlers
 
-func getGameHandler(logger *logger.Logger) gin.HandlerFunc {
+func getGameHandler(db *gorm.DB, logger *logger.Logger) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		c.JSON(http.StatusNotImplemented, gin.H{
-			"error": "Game management endpoints not implemented yet",
-		})
+		gameID, err := uuid.Parse(c.Param("id"))
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid game ID"})
+			return
+		}
+
+		// Get authenticated user ID from context (set by auth middleware)
+		userID, exists := c.Get("user_id")
+		if !exists {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "user not authenticated"})
+			return
+		}
+
+		// Query database for game
+		var dbGame database.Game
+		if err := db.Preload("Player1").Preload("Player2").Preload("Player3").Preload("Player4").First(&dbGame, "id = ?", gameID).Error; err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				c.JSON(http.StatusNotFound, gin.H{"error": "game not found"})
+			} else {
+				logger.Error("Failed to fetch game from database", "error", err)
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to retrieve game"})
+			}
+			return
+		}
+
+		// Verify user is participant in this game
+		userUUID := userID.(uuid.UUID)
+		isPlayer := dbGame.Player1ID == userUUID || dbGame.Player2ID == userUUID
+		if dbGame.Player3ID != nil && *dbGame.Player3ID == userUUID {
+			isPlayer = true
+		}
+		if dbGame.Player4ID != nil && *dbGame.Player4ID == userUUID {
+			isPlayer = true
+		}
+
+		if !isPlayer {
+			c.JSON(http.StatusForbidden, gin.H{"error": "not a participant in this game"})
+			return
+		}
+
+		c.JSON(http.StatusOK, dbGame)
 	}
 }
 
-func createGameHandler(wsHub *websocket.Hub, logger *logger.Logger) gin.HandlerFunc {
+func createGameHandler(db *gorm.DB, wsHub *websocket.Hub, logger *logger.Logger) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// Parse request body
 		var req struct {
-			GameMode string `json:"game_mode,omitempty"`
-			PlayerID string `json:"player_id,omitempty"`
+			Mode       string `json:"mode" binding:"required,oneof=two_players three_players four_players"`
+			IsPrivate  bool   `json:"is_private"`
+			MaxPlayers int    `json:"max_players" binding:"required,min=2,max=4"`
 		}
-		
+
 		if err := c.ShouldBindJSON(&req); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"error": "Invalid request format",
-				"details": err.Error(),
-			})
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-		
-		// Parse player ID or generate one for testing
-		var player1ID uuid.UUID
-		var err error
-		if req.PlayerID != "" {
-			player1ID, err = uuid.Parse(req.PlayerID)
-			if err != nil {
-				c.JSON(http.StatusBadRequest, gin.H{
-					"error": "Invalid player ID format",
-				})
-				return
-			}
-		} else {
-			player1ID = uuid.New()
+
+		// Get authenticated user ID
+		userID, exists := c.Get("user_id")
+		if !exists {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "user not authenticated"})
+			return
 		}
-		
-		// For testing: Create a dummy second player
-		// TODO: Replace with proper matchmaking system
-		player2ID := uuid.New()
-		
-		// Create game using the game engine
-		game := wsHub.GetGameEngine().CreateGame(player1ID, player2ID)
-		
-		logger.Info("Game created successfully", 
-			"game_id", game.ID, 
-			"player1_id", player1ID, 
-			"player2_id", player2ID,
-			"game_mode", req.GameMode)
-		
+
+		userUUID := userID.(uuid.UUID)
+		gameID := uuid.New()
+
+		// Determine authentic mode based on max players
+		authenticMode := ""
+		if req.MaxPlayers == 2 {
+			authenticMode = "2_player"
+		} else if req.MaxPlayers == 3 {
+			authenticMode = "3_player"
+		} else if req.MaxPlayers == 4 {
+			authenticMode = "4_player"
+		}
+
+		// Create game in database
+		dbGame := &database.Game{
+			Player1ID:          userUUID,
+			Player2ID:          uuid.Nil, // Will be filled when player joins
+			Status:             "waiting",
+			GameMode:           req.Mode,
+			AuthenticMode:      authenticMode,
+			UseAuthenticRules:  true,
+		}
+		dbGame.ID = gameID
+
+		if err := db.Create(dbGame).Error; err != nil {
+			logger.Error("Failed to create game in database", "error", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create game"})
+			return
+		}
+
+		logger.Info("Game created via REST API",
+			"user_id", userUUID,
+			"game_id", gameID,
+			"mode", req.Mode,
+			"max_players", req.MaxPlayers)
+
 		c.JSON(http.StatusCreated, gin.H{
-			"game_id": game.ID,
-			"player1_id": player1ID,
-			"player2_id": player2ID,
-			"status": game.Status,
-			"current_player": game.CurrentPlayerID,
-			"created_at": game.CreatedAt,
-			"game_mode": req.GameMode,
+			"message":   "game created successfully",
+			"game_id":   gameID,
+			"game":      dbGame,
 		})
 	}
 }
 
-func joinGameHandler(logger *logger.Logger) gin.HandlerFunc {
+func joinGameHandler(db *gorm.DB, logger *logger.Logger) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		c.JSON(http.StatusNotImplemented, gin.H{
-			"error": "Game join endpoint not implemented yet",
+		gameID, err := uuid.Parse(c.Param("id"))
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid game ID"})
+			return
+		}
+
+		// Get authenticated user ID
+		userID, exists := c.Get("user_id")
+		if !exists {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "user not authenticated"})
+			return
+		}
+
+		userUUID := userID.(uuid.UUID)
+
+		// Fetch game from database
+		var dbGame database.Game
+		if err := db.First(&dbGame, "id = ?", gameID).Error; err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				c.JSON(http.StatusNotFound, gin.H{"error": "game not found"})
+			} else {
+				logger.Error("Failed to fetch game", "error", err)
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to retrieve game"})
+			}
+			return
+		}
+
+		// Determine max players from authentic mode
+		maxPlayers := 2
+		if dbGame.AuthenticMode == "3_player" {
+			maxPlayers = 3
+		} else if dbGame.AuthenticMode == "4_player" {
+			maxPlayers = 4
+		}
+
+		// Check if game is full
+		currentPlayers := 1 // Player1 always exists
+		if dbGame.Player2ID != uuid.Nil {
+			currentPlayers++
+		}
+		if dbGame.Player3ID != nil && *dbGame.Player3ID != uuid.Nil {
+			currentPlayers++
+		}
+		if dbGame.Player4ID != nil && *dbGame.Player4ID != uuid.Nil {
+			currentPlayers++
+		}
+
+		if currentPlayers >= maxPlayers {
+			c.JSON(http.StatusConflict, gin.H{"error": "game is full"})
+			return
+		}
+
+		// Check if already in game
+		if dbGame.Player1ID == userUUID || dbGame.Player2ID == userUUID {
+			c.JSON(http.StatusConflict, gin.H{"error": "already in game"})
+			return
+		}
+		if dbGame.Player3ID != nil && *dbGame.Player3ID == userUUID {
+			c.JSON(http.StatusConflict, gin.H{"error": "already in game"})
+			return
+		}
+		if dbGame.Player4ID != nil && *dbGame.Player4ID == userUUID {
+			c.JSON(http.StatusConflict, gin.H{"error": "already in game"})
+			return
+		}
+
+		// Check if game already started
+		if dbGame.Status != "waiting" {
+			c.JSON(http.StatusConflict, gin.H{"error": "game already started"})
+			return
+		}
+
+		// Add player to game
+		if dbGame.Player2ID == uuid.Nil {
+			dbGame.Player2ID = userUUID
+		} else if dbGame.Player3ID == nil || *dbGame.Player3ID == uuid.Nil {
+			dbGame.Player3ID = &userUUID
+		} else if dbGame.Player4ID == nil || *dbGame.Player4ID == uuid.Nil {
+			dbGame.Player4ID = &userUUID
+		}
+
+		// Save updated game
+		if err := db.Save(&dbGame).Error; err != nil {
+			logger.Error("Failed to update game", "error", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to join game"})
+			return
+		}
+
+		logger.Info("Player joined game via REST API",
+			"user_id", userUUID,
+			"game_id", gameID)
+
+		c.JSON(http.StatusOK, gin.H{
+			"message": "successfully joined game",
+			"game_id": gameID,
+			"game":    dbGame,
 		})
 	}
 }
 
-func leaveGameHandler(logger *logger.Logger) gin.HandlerFunc {
+func leaveGameHandler(db *gorm.DB, logger *logger.Logger) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		c.JSON(http.StatusNotImplemented, gin.H{
-			"error": "Game leave endpoint not implemented yet",
+		gameID, err := uuid.Parse(c.Param("id"))
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid game ID"})
+			return
+		}
+
+		// Get authenticated user ID
+		userID, exists := c.Get("user_id")
+		if !exists {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "user not authenticated"})
+			return
+		}
+
+		userUUID := userID.(uuid.UUID)
+
+		// Fetch game from database
+		var dbGame database.Game
+		if err := db.First(&dbGame, "id = ?", gameID).Error; err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				c.JSON(http.StatusNotFound, gin.H{"error": "game not found or not a participant"})
+			} else {
+				logger.Error("Failed to fetch game", "error", err)
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to retrieve game"})
+			}
+			return
+		}
+
+		// Check if user is in the game and remove them
+		wasInGame := false
+		if dbGame.Player1ID == userUUID {
+			// If player1 leaves, abandon the game or reassign
+			dbGame.Status = "abandoned"
+			wasInGame = true
+		} else if dbGame.Player2ID == userUUID {
+			dbGame.Player2ID = uuid.Nil
+			wasInGame = true
+		} else if dbGame.Player3ID != nil && *dbGame.Player3ID == userUUID {
+			dbGame.Player3ID = nil
+			wasInGame = true
+		} else if dbGame.Player4ID != nil && *dbGame.Player4ID == userUUID {
+			dbGame.Player4ID = nil
+			wasInGame = true
+		}
+
+		if !wasInGame {
+			c.JSON(http.StatusNotFound, gin.H{"error": "not a participant in this game"})
+			return
+		}
+
+		// Save updated game
+		if err := db.Save(&dbGame).Error; err != nil {
+			logger.Error("Failed to update game", "error", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to leave game"})
+			return
+		}
+
+		logger.Info("Player left game via REST API",
+			"user_id", userUUID,
+			"game_id", gameID)
+
+		c.JSON(http.StatusOK, gin.H{
+			"message": "successfully left game",
+			"game_id": gameID,
 		})
 	}
 }
