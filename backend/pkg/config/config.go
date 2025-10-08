@@ -19,9 +19,6 @@ type Config struct {
 	JWTSecret     string
 	JWTExpiration time.Duration
 
-	// Redis configuration
-	RedisURL string
-
 	// WebSocket configuration
 	WSReadBufferSize  int
 	WSWriteBufferSize int
@@ -56,9 +53,6 @@ func Load() *Config {
 		// JWT
 		JWTSecret:     getEnv("JWT_SECRET", "septica-development-secret-key-change-in-production"),
 		JWTExpiration: getDurationEnv("JWT_EXPIRATION", 24*time.Hour),
-
-		// Redis
-		RedisURL: getEnv("REDIS_URL", "redis://localhost:6379"),
 
 		// WebSocket
 		WSReadBufferSize:  getIntEnv("WS_READ_BUFFER_SIZE", 1024),
