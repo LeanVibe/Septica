@@ -1,5 +1,5 @@
 {
-  "at": "2025-10-10T01:20:49.147597",
+  "at": "2025-10-10T01:43:05.943512",
   "root": ".",
   "tree": [
     ".",
@@ -7,6 +7,10 @@
     "\u2502   \u251c\u2500\u2500 cleanup/ (1 files)",
     "\u2502   \u2514\u2500\u2500 server/ (1 files)",
     "\u251c\u2500\u2500 deployments/",
+    "\u2502   \u251c\u2500\u2500 grafana/",
+    "\u2502   \u2502   \u2514\u2500\u2500 dashboards/",
+    "\u2502   \u2514\u2500\u2500 prometheus/",
+    "\u2502       \u2514\u2500\u2500 alerts/",
     "\u251c\u2500\u2500 docs/",
     "\u2502   \u2514\u2500\u2500 fixes/",
     "\u251c\u2500\u2500 internal/ (47 files)",
@@ -17,24 +21,21 @@
     "\u2502   \u251c\u2500\u2500 game/ (7 files)",
     "\u2502   \u251c\u2500\u2500 handlers/ (6 files)",
     "\u2502   \u251c\u2500\u2500 logger/ (1 files)",
-    "\u2502   \u251c\u2500\u2500 matchmaking/ (4 files)",
-    "\u2502   \u251c\u2500\u2500 metrics/ (1 files)",
-    "\u2502   \u251c\u2500\u2500 middleware/ (5 files)",
-    "\u2502   \u251c\u2500\u2500 rating/ (3 files)",
-    "\u2502   \u251c\u2500\u2500 services/"
+    "\u2502   \u251c\u2500\u2500 matchmaking/ (4 files)"
   ],
   "stats": {
-    "total_files": 71,
-    "total_directories": 24,
+    "total_files": 74,
+    "total_directories": 25,
     "fully_parsed": {
-      "shell": 1,
+      "shell": 2,
       "javascript": 1
     },
     "listed_only": {
       "json": 2,
-      "go": 67
+      "go": 67,
+      "shell": 2
     },
-    "markdown_files": 6
+    "markdown_files": 9
   },
   "f": {
     "run-all-ai-tests.sh": [
@@ -46,6 +47,12 @@
         "generate_master_report:0:()::Function to generate master report",
         "display_final_results:0:()::Function to display final results",
         "main:0:()::Main execution flow"
+      ]
+    ],
+    "s/ci-build.sh": [
+      "s",
+      [
+        "run_step:0:()::Function to run step"
       ]
     ],
     "test-ai-e2e.js": [
@@ -120,6 +127,30 @@
       "3. Detailed Health Status",
       "4. AI Matchmaking Health"
     ],
+    "OBSERVABILITY_SETUP.md": [
+      "Observability Setup Guide",
+      "Overview",
+      "Quick Start",
+      "View all available commands",
+      "Run tests with coverage",
+      "Start development environment",
+      "Check system health",
+      "Grafana Dashboards (Planned)",
+      "1. Game Metrics Dashboard",
+      "2. Matchmaking & AI Dashboard"
+    ],
+    "docs/developer-guide.md": [
+      "Romanian Septica Backend - Developer Guide",
+      "Table of Contents",
+      "Getting Started",
+      "Prerequisites",
+      "Initial Setup",
+      "Clone the repository",
+      "Complete development environment setup (one command!)",
+      "This will:",
+      "- Install development tools (golangci-lint, air)",
+      "- Download Go dependencies"
+    ],
     "docs/fixes/AI_MATCHMAKING_STATS_FIX.md": [
       "AI Matchmaking Stats Integration Fix",
       "Problem",
@@ -141,6 +172,18 @@
       "3. Detailed Health Status",
       "4. AI Matchmaking Health",
       "5. Matchmaking Queue Health"
+    ],
+    "scripts/README.md": [
+      "Developer Scripts",
+      "Available Scripts",
+      "test-coverage.sh",
+      "check-coverage.sh",
+      "Or with custom threshold",
+      "pre-commit",
+      "Automatic installation",
+      "Or manual installation",
+      "ci-build.sh",
+      "Integration with Makefile"
     ]
   },
   "deps": {
@@ -162,15 +205,16 @@
     "internal/rating": "Test files and test utilities",
     "internal/websocket": "Test files and test utilities",
     "pkg/config": "Configuration files and settings",
+    "scripts": "Build and utility scripts",
     "test": "Test files and test utilities",
     "tests/integration": "Test files and test utilities"
   },
-  "staleness": 1759443649.201182,
+  "staleness": 1759444986.004963,
   "_meta": {
     "target_size_k": 50,
-    "generated_at": 1760048449.20701,
+    "generated_at": 1760049786.010726,
     "actual_size_k": 1,
-    "files_hash": "26da8c0c087a729e",
+    "files_hash": "9550eca2cf4c5221",
     "compression_ratio": "2.0%",
     "last_interactive_size_k": 50
   }
