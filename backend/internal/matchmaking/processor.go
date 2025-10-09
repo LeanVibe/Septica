@@ -16,7 +16,7 @@ import (
 // runQueueProcessor is the main queue processing loop
 func (s *MatchmakingService) runQueueProcessor() {
 	s.logger.Info("Starting queue processor")
-	
+
 	for {
 		select {
 		case <-s.processorTicker.C:
@@ -31,7 +31,7 @@ func (s *MatchmakingService) runQueueProcessor() {
 // runQueueUpdater sends periodic updates to players in queue
 func (s *MatchmakingService) runQueueUpdater() {
 	s.logger.Info("Starting queue updater")
-	
+
 	for {
 		select {
 		case <-s.updateTicker.C:
@@ -47,11 +47,11 @@ func (s *MatchmakingService) runQueueUpdater() {
 func (s *MatchmakingService) processAllQueues() {
 	s.queueMutex.RLock()
 	defer s.queueMutex.RUnlock()
-	
+
 	for queueType, queue := range s.queues {
 		s.processQueue(queueType, queue)
 	}
-	
+
 	// Clean up expired entries
 	s.cleanupExpiredEntries()
 }
@@ -62,34 +62,34 @@ func (s *MatchmakingService) processQueue(queueType string, queue *MatchmakingQu
 	if len(entries) < 2 {
 		return // Need at least 2 players to make a match
 	}
-	
+
 	// Sort entries by queue time (oldest first for fairness)
 	sort.Slice(entries, func(i, j int) bool {
 		return entries[i].QueuedAt.Before(entries[j].QueuedAt)
 	})
-	
+
 	// Try to find matches
 	for i := 0; i < len(entries); i++ {
 		entry1 := entries[i]
-		
+
 		// Skip if already processed
 		if queue.Find(entry1.PlayerID) == nil {
 			continue
 		}
-		
+
 		// Find best match for this player
 		bestMatch := s.findBestMatch(entry1, entries[i+1:])
 		if bestMatch == nil {
 			continue
 		}
-		
+
 		// Create the match
 		if err := s.createMatch(entry1, bestMatch, queueType); err != nil {
 			s.logger.Error("Failed to create match", "error", err,
 				"player1_id", entry1.PlayerID, "player2_id", bestMatch.PlayerID)
 			continue
 		}
-		
+
 		// Remove both players from queue
 		queue.Remove(entry1.PlayerID)
 		queue.Remove(bestMatch.PlayerID)
@@ -117,21 +117,21 @@ func (s *MatchmakingService) findBestMatch(player *QueueEntry, candidates []*Que
 	currentRange := player.GetCurrentSearchRange(s.config)
 	var bestMatch *QueueEntry
 	bestRatingDiff := math.MaxInt32
-	
+
 	for _, candidate := range candidates {
 		// Check if ratings are within search range
 		ratingDiff := abs(player.Rating - candidate.Rating)
 		if ratingDiff > currentRange {
 			continue
 		}
-		
+
 		// Check if this is a better match (closer rating)
 		if ratingDiff < bestRatingDiff {
 			bestMatch = candidate
 			bestRatingDiff = ratingDiff
 		}
 	}
-	
+
 	return bestMatch
 }
 
@@ -177,13 +177,13 @@ func (s *MatchmakingService) createMatch(player1, player2 *QueueEntry, queueType
 	// Create game record in database with matchmaking context
 	// CRITICAL FIX: Use the actual Player.ID from database, not userID
 	dbGame := &database.Game{
-		Player1ID:            player1Info.ID, // Use actual Player.ID
-		Player2ID:            player2Info.ID, // Use actual Player.ID
-		Status:               "in_progress",
-		GameMode:             queueType,
-		Player1RatingBefore:  player1.Rating,
-		Player2RatingBefore:  player2.Rating,
-		StartedAt:            &gameState.CreatedAt,
+		Player1ID:           player1Info.ID, // Use actual Player.ID
+		Player2ID:           player2Info.ID, // Use actual Player.ID
+		Status:              "in_progress",
+		GameMode:            queueType,
+		Player1RatingBefore: player1.Rating,
+		Player2RatingBefore: player2.Rating,
+		StartedAt:           &gameState.CreatedAt,
 	}
 
 	// Set the game ID to match the engine's game ID
@@ -210,17 +210,17 @@ func (s *MatchmakingService) cleanupExpiredEntries() {
 			if entry.IsExpired(s.config) {
 				// Remove from queue
 				queue.Remove(entry.PlayerID)
-				
+
 				// Update database - need to get Player.ID for the UserID
 				var player database.Player
 				if err := s.db.Where("user_id = ?", entry.PlayerID).First(&player).Error; err == nil {
 					s.db.Where("player_id = ? AND is_active = true", player.ID).
 						Update("is_active", false)
 				}
-				
+
 				// Send timeout message to player
 				s.sendMatchmakingTimeout(entry.PlayerID)
-				
+
 				s.logger.Info("Removed expired queue entry",
 					"player_id", entry.PlayerID,
 					"queue_type", queueType,
@@ -234,7 +234,7 @@ func (s *MatchmakingService) cleanupExpiredEntries() {
 func (s *MatchmakingService) sendQueueUpdates() {
 	s.queueMutex.RLock()
 	defer s.queueMutex.RUnlock()
-	
+
 	for queueType, queue := range s.queues {
 		entries := queue.GetAll()
 		for _, entry := range entries {
@@ -259,7 +259,7 @@ func (s *MatchmakingService) sendMatchmakingJoined(playerID uuid.UUID, queueType
 			"message":    "Successfully joined matchmaking queue",
 		},
 	}
-	
+
 	s.sendToPlayer(playerID, message)
 }
 
@@ -273,7 +273,7 @@ func (s *MatchmakingService) sendMatchmakingLeft(playerID uuid.UUID) {
 			"message": "Successfully left matchmaking queue",
 		},
 	}
-	
+
 	s.sendToPlayer(playerID, message)
 }
 
@@ -285,13 +285,13 @@ func (s *MatchmakingService) sendMatchFound(playerID, gameID, opponentID uuid.UU
 		GameID:    &gameID,
 		Timestamp: time.Now(),
 		Payload: map[string]interface{}{
-			"game_id":          gameID,
-			"game_mode":        string(gameMode),
-			"opponent_id":      opponentID,
-			"opponent_rating":  opponentRating,
-			"opponent_name":    opponentName,
-			"wait_time_ms":     waitTime.Milliseconds(),
-			"message":          "Match found! Joining game...",
+			"game_id":         gameID,
+			"game_mode":       string(gameMode),
+			"opponent_id":     opponentID,
+			"opponent_rating": opponentRating,
+			"opponent_name":   opponentName,
+			"wait_time_ms":    waitTime.Milliseconds(),
+			"message":         "Match found! Joining game...",
 		},
 	}
 
@@ -302,7 +302,7 @@ func (s *MatchmakingService) sendMatchmakingUpdate(entry *QueueEntry, queueType 
 	position := s.getQueuePosition(queue, entry.PlayerID)
 	estimatedWait := s.calculateEstimatedWaitTime(queue, entry)
 	currentRange := entry.GetCurrentSearchRange(s.config)
-	
+
 	message := websocket.Message{
 		Type:      "matchmaking_update",
 		ID:        uuid.New().String(),
@@ -316,7 +316,7 @@ func (s *MatchmakingService) sendMatchmakingUpdate(entry *QueueEntry, queueType 
 			"wait_time":           int(time.Since(entry.QueuedAt).Seconds()),
 		},
 	}
-	
+
 	s.sendToPlayer(entry.PlayerID, message)
 }
 
@@ -331,7 +331,7 @@ func (s *MatchmakingService) sendMatchmakingTimeout(playerID uuid.UUID) {
 			"message":    "Matchmaking timed out. Please try again.",
 		},
 	}
-	
+
 	s.sendToPlayer(playerID, message)
 }
 
@@ -352,12 +352,12 @@ func (s *MatchmakingService) sendToPlayer(playerID uuid.UUID, message websocket.
 // Helper utility functions
 func (s *MatchmakingService) getQueuePosition(queue *MatchmakingQueue, playerID uuid.UUID) int {
 	entries := queue.GetAll()
-	
+
 	// Sort by queue time to determine position
 	sort.Slice(entries, func(i, j int) bool {
 		return entries[i].QueuedAt.Before(entries[j].QueuedAt)
 	})
-	
+
 	for i, entry := range entries {
 		if entry.PlayerID == playerID {
 			return i + 1 // 1-based position
@@ -369,21 +369,21 @@ func (s *MatchmakingService) getQueuePosition(queue *MatchmakingQueue, playerID 
 func (s *MatchmakingService) calculateEstimatedWaitTime(queue *MatchmakingQueue, entry *QueueEntry) time.Duration {
 	// Simple estimation based on current queue size and historical data
 	// This could be improved with more sophisticated algorithms
-	
+
 	queueSize := queue.Size()
 	if queueSize <= 1 {
 		return 2 * time.Minute // Base wait time for single player
 	}
-	
+
 	// Estimate based on queue position and average match rate
 	position := s.getQueuePosition(queue, entry.PlayerID)
 	averageMatchTime := 30 * time.Second // Assume matches are made every 30 seconds on average
-	
+
 	estimatedWait := time.Duration(position/2) * averageMatchTime
 	if estimatedWait < 30*time.Second {
 		estimatedWait = 30 * time.Second
 	}
-	
+
 	return estimatedWait
 }
 
@@ -392,12 +392,12 @@ func (s *MatchmakingService) calculateAverageWaitTime(queue *MatchmakingQueue) t
 	if len(entries) == 0 {
 		return 0
 	}
-	
+
 	totalWaitTime := time.Duration(0)
 	for _, entry := range entries {
 		totalWaitTime += time.Since(entry.QueuedAt)
 	}
-	
+
 	return totalWaitTime / time.Duration(len(entries))
 }
 
@@ -456,24 +456,24 @@ func (s *MatchmakingService) createAuthenticPlayerView(gameState *game.Authentic
 	}
 
 	return map[string]interface{}{
-		"game_id":                gameState.ID,
-		"current_player_id":      gameState.CurrentPlayerID,
-		"your_turn":              gameState.CurrentPlayerID == playerID,
-		"your_cards":             playerHand,
-		"opponent_card_counts":   opponentCardCounts,
-		"table_cards":            gameState.TableCards,
-		"valid_moves":            validMoves,
-		"scores":                 scores,
-		"round_number":           gameState.RoundNumber,
-		"move_number":            gameState.MoveNumber,
-		"sequence_number":        gameState.SequenceNumber,
-		"status":                 gameState.Status,
-		"game_mode":              gameState.GameMode,
-		"waiting_for_objection":  gameState.WaitingForObjection,
-		"last_played_card":       gameState.LastPlayedCard,
-		"last_player_id":         gameState.LastPlayerID,
-		"teams":                  gameState.Teams,
-		"team_scores":            gameState.TeamScores,
+		"game_id":               gameState.ID,
+		"current_player_id":     gameState.CurrentPlayerID,
+		"your_turn":             gameState.CurrentPlayerID == playerID,
+		"your_cards":            playerHand,
+		"opponent_card_counts":  opponentCardCounts,
+		"table_cards":           gameState.TableCards,
+		"valid_moves":           validMoves,
+		"scores":                scores,
+		"round_number":          gameState.RoundNumber,
+		"move_number":           gameState.MoveNumber,
+		"sequence_number":       gameState.SequenceNumber,
+		"status":                gameState.Status,
+		"game_mode":             gameState.GameMode,
+		"waiting_for_objection": gameState.WaitingForObjection,
+		"last_played_card":      gameState.LastPlayedCard,
+		"last_player_id":        gameState.LastPlayerID,
+		"teams":                 gameState.Teams,
+		"team_scores":           gameState.TeamScores,
 		"wild_eights":           gameState.WildEights,
 	}
 }
@@ -489,9 +489,9 @@ func abs(x int) int {
 func (s *MatchmakingService) autoJoinPlayerWithRetry(playerID, gameID uuid.UUID, playerLabel string) {
 	maxAttempts := 3
 	retryDelays := []time.Duration{
-		100 * time.Millisecond,  // First retry after 100ms
-		500 * time.Millisecond,  // Second retry after 500ms
-		1 * time.Second,         // Third retry after 1s
+		100 * time.Millisecond, // First retry after 100ms
+		500 * time.Millisecond, // Second retry after 500ms
+		1 * time.Second,        // Third retry after 1s
 	}
 
 	go func() {
@@ -543,12 +543,12 @@ func (s *MatchmakingService) autoJoinPlayerWithRetry(playerID, gameID uuid.UUID,
 // Database persistence methods
 func (s *MatchmakingService) loadQueuesFromDatabase() error {
 	var dbEntries []database.MatchmakingQueue
-	
+
 	// Load all active queue entries
 	if err := s.db.Where("is_active = true").Find(&dbEntries).Error; err != nil {
 		return err
 	}
-	
+
 	// Populate in-memory queues
 	for _, dbEntry := range dbEntries {
 		entry := &QueueEntry{
@@ -561,12 +561,12 @@ func (s *MatchmakingService) loadQueuesFromDatabase() error {
 			QueueType:   dbEntry.QueueType,
 			LastUpdate:  time.Now(),
 		}
-		
+
 		if queue, exists := s.queues[dbEntry.QueueType]; exists {
 			queue.Add(entry)
 		}
 	}
-	
+
 	s.logger.Info("Loaded queue entries from database", "count", len(dbEntries))
 	return nil
 }

@@ -87,7 +87,7 @@ func (h *WebSocketHandler) GetConnectionStats(c *gin.Context) {
 // SendHeartbeat manually triggers a heartbeat to all connected clients
 func (h *WebSocketHandler) SendHeartbeat(c *gin.Context) {
 	h.hub.SendHeartbeat()
-	
+
 	c.JSON(http.StatusOK, gin.H{
 		"message": "heartbeat sent to all connected clients",
 		"count":   h.hub.GetConnectionCount(),
@@ -126,10 +126,10 @@ func (h *WebSocketHandler) GetUserConnections(c *gin.Context) {
 	// Implementation would need to be added to Hub to get user-specific connection info
 	// For now, return placeholder
 	c.JSON(http.StatusOK, gin.H{
-		"user_id":     userID,
-		"connected":   false, // Placeholder
-		"session_id":  "",    // Placeholder
-		"connected_at": nil,  // Placeholder
+		"user_id":      userID,
+		"connected":    false, // Placeholder
+		"session_id":   "",    // Placeholder
+		"connected_at": nil,   // Placeholder
 	})
 }
 
@@ -218,30 +218,30 @@ func (h *WebSocketHandler) BroadcastToGame(c *gin.Context) {
 func WebSocketCORS() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		origin := c.Request.Header.Get("Origin")
-		
+
 		// In production, check against allowed origins
 		allowedOrigins := []string{
 			"http://localhost:3000",
 			"http://localhost:8080",
 			"http://localhost:5173", // Vite dev server
 		}
-		
+
 		for _, allowed := range allowedOrigins {
 			if origin == allowed {
 				c.Header("Access-Control-Allow-Origin", origin)
 				break
 			}
 		}
-		
+
 		c.Header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
 		c.Header("Access-Control-Allow-Headers", "Content-Type, Authorization")
 		c.Header("Access-Control-Allow-Credentials", "true")
-		
+
 		if c.Request.Method == "OPTIONS" {
 			c.AbortWithStatus(http.StatusNoContent)
 			return
 		}
-		
+
 		c.Next()
 	}
 }
@@ -251,13 +251,13 @@ func RateLimitWebSocket() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// Simple rate limiting by IP
 		clientIP := c.ClientIP()
-		
+
 		// Implementation would use Redis or in-memory store for rate limiting
 		// For now, just log and continue
 		if clientIP != "" {
 			// log.Printf("WebSocket connection attempt from: %s", clientIP)
 		}
-		
+
 		c.Next()
 	}
 }

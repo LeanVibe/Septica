@@ -55,21 +55,21 @@ func setupTestDatabase(t *testing.T) *gorm.DB {
 	}
 
 	type TestGameMove struct {
-		ID                uuid.UUID  `gorm:"type:text;primary_key" json:"id"`
-		GameID            uuid.UUID  `gorm:"type:text;not null" json:"game_id"`
-		PlayerID          uuid.UUID  `gorm:"type:text;not null" json:"player_id"`
-		MoveNumber        int        `gorm:"not null" json:"move_number"`
-		CardSuit          string     `json:"card_suit,omitempty"`
-		CardValue         int        `json:"card_value,omitempty"`
-		TableCardCount    int        `gorm:"not null" json:"table_card_count"`
-		TrickNumber       int        `gorm:"not null" json:"trick_number"`
-		MoveType          string     `gorm:"default:'PLAY_CARD'" json:"move_type"`
-		IsObjection       bool       `gorm:"default:false" json:"is_objection"`
-		ObjectedCardSuit  *string    `json:"objected_card_suit,omitempty"`
-		ObjectedCardValue *int       `json:"objected_card_value,omitempty"`
-		RoundComplete     bool       `gorm:"default:false" json:"round_complete"`
-		PointsAwarded     int        `gorm:"default:0" json:"points_awarded"`
-		TimeTakenMs       int64      `gorm:"default:0" json:"time_taken_ms"`
+		ID                uuid.UUID `gorm:"type:text;primary_key" json:"id"`
+		GameID            uuid.UUID `gorm:"type:text;not null" json:"game_id"`
+		PlayerID          uuid.UUID `gorm:"type:text;not null" json:"player_id"`
+		MoveNumber        int       `gorm:"not null" json:"move_number"`
+		CardSuit          string    `json:"card_suit,omitempty"`
+		CardValue         int       `json:"card_value,omitempty"`
+		TableCardCount    int       `gorm:"not null" json:"table_card_count"`
+		TrickNumber       int       `gorm:"not null" json:"trick_number"`
+		MoveType          string    `gorm:"default:'PLAY_CARD'" json:"move_type"`
+		IsObjection       bool      `gorm:"default:false" json:"is_objection"`
+		ObjectedCardSuit  *string   `json:"objected_card_suit,omitempty"`
+		ObjectedCardValue *int      `json:"objected_card_value,omitempty"`
+		RoundComplete     bool      `gorm:"default:false" json:"round_complete"`
+		PointsAwarded     int       `gorm:"default:0" json:"points_awarded"`
+		TimeTakenMs       int64     `gorm:"default:0" json:"time_taken_ms"`
 	}
 
 	type TestPlayerStatistics struct {
@@ -267,16 +267,16 @@ func TestGameMove_AuthenticSepticaMoveStorage(t *testing.T) {
 	db.Create(&game)
 
 	tests := []struct {
-		name                string
-		moveType            string
-		isObjection         bool
-		cardSuit            *string
-		cardValue           *int
-		objectedCardSuit    *string
-		objectedCardValue   *int
-		roundComplete       bool
-		pointsAwarded       int
-		expectValidStorage  bool
+		name               string
+		moveType           string
+		isObjection        bool
+		cardSuit           *string
+		cardValue          *int
+		objectedCardSuit   *string
+		objectedCardValue  *int
+		roundComplete      bool
+		pointsAwarded      int
+		expectValidStorage bool
 	}{
 		{
 			name:               "Regular card play",
@@ -331,18 +331,18 @@ func TestGameMove_AuthenticSepticaMoveStorage(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			move := GameMove{
-				GameID:             game.ID,
-				PlayerID:           players[0].ID,
-				MoveNumber:         1,
-				TrickNumber:        1,
-				TableCardCount:     1,
-				MoveType:           tt.moveType,
-				IsObjection:        tt.isObjection,
-				ObjectedCardSuit:   tt.objectedCardSuit,
-				ObjectedCardValue:  tt.objectedCardValue,
-				RoundComplete:      tt.roundComplete,
-				PointsAwarded:      tt.pointsAwarded,
-				TimeTakenMs:        2500,
+				GameID:            game.ID,
+				PlayerID:          players[0].ID,
+				MoveNumber:        1,
+				TrickNumber:       1,
+				TableCardCount:    1,
+				MoveType:          tt.moveType,
+				IsObjection:       tt.isObjection,
+				ObjectedCardSuit:  tt.objectedCardSuit,
+				ObjectedCardValue: tt.objectedCardValue,
+				RoundComplete:     tt.roundComplete,
+				PointsAwarded:     tt.pointsAwarded,
+				TimeTakenMs:       2500,
 			}
 
 			// Set card information if provided
@@ -409,8 +409,8 @@ func TestGame_TeamScoreTracking(t *testing.T) {
 	team1Score := 0
 	team2Score := 0
 	game := Game{
-		Player1ID:         players[0].ID, // Team 1
-		Player2ID:         players[1].ID, // Team 2
+		Player1ID:         players[0].ID,  // Team 1
+		Player2ID:         players[1].ID,  // Team 2
 		Player3ID:         &players[2].ID, // Team 1
 		Player4ID:         &players[3].ID, // Team 2
 		GameMode:          "ranked",
@@ -427,9 +427,9 @@ func TestGame_TeamScoreTracking(t *testing.T) {
 	// Simulate team scoring
 	// Team 1 (Player 1 + Player 3) scores 3 points
 	// Team 2 (Player 2 + Player 4) scores 2 points
-	game.Player1Score = 2  // Player 1 individual score
+	game.Player1Score = 2         // Player 1 individual score
 	game.Player3Score = intPtr(1) // Player 3 individual score
-	game.Player2Score = 1  // Player 2 individual score
+	game.Player2Score = 1         // Player 2 individual score
 	game.Player4Score = intPtr(1) // Player 4 individual score
 	game.Team1Score = intPtr(3)   // Team 1 total
 	game.Team2Score = intPtr(2)   // Team 2 total
@@ -570,7 +570,7 @@ func TestGameMove_PassMoveHandling(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.Equal(t, "PASS", savedMove.MoveType)
-	assert.Empty(t, savedMove.CardSuit) // No card played
+	assert.Empty(t, savedMove.CardSuit)     // No card played
 	assert.Equal(t, 0, savedMove.CardValue) // No card played
 	assert.False(t, savedMove.IsObjection)
 	assert.True(t, savedMove.RoundComplete)
@@ -665,15 +665,15 @@ func TestPlayerStatistics_MultiPlayerSupport(t *testing.T) {
 	// Create statistics for each player
 	for i, player := range players {
 		stats := PlayerStatistics{
-			PlayerID:            player.ID,
-			GamesPlayed:         10 + i,
-			GamesWon:            5 + i,
-			GamesLost:           3 + i,
+			PlayerID:             player.ID,
+			GamesPlayed:          10 + i,
+			GamesWon:             5 + i,
+			GamesLost:            3 + i,
 			TotalPointsCollected: 50 + i*10,
-			SevensPlayed:        15 + i*2,
-			EightsPlayed:        8 + i,
-			PointCardsWon:       25 + i*3,
-			TricksWon:           35 + i*4,
+			SevensPlayed:         15 + i*2,
+			EightsPlayed:         8 + i,
+			PointCardsWon:        25 + i*3,
+			TricksWon:            35 + i*4,
 		}
 		result := db.Create(&stats)
 		require.NoError(t, result.Error)

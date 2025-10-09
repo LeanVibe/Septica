@@ -32,21 +32,21 @@ type SimpleGame struct {
 }
 
 type SimpleGameMove struct {
-	ID                uuid.UUID  `gorm:"type:text;primary_key" json:"id"`
-	GameID            uuid.UUID  `gorm:"type:text;not null" json:"game_id"`
-	PlayerID          uuid.UUID  `gorm:"type:text;not null" json:"player_id"`
-	MoveNumber        int        `gorm:"not null" json:"move_number"`
-	CardSuit          string     `json:"card_suit,omitempty"`
-	CardValue         int        `json:"card_value,omitempty"`
-	TableCardCount    int        `gorm:"not null" json:"table_card_count"`
-	TrickNumber       int        `gorm:"not null" json:"trick_number"`
-	MoveType          string     `gorm:"default:'PLAY_CARD'" json:"move_type"`
-	IsObjection       bool       `gorm:"default:false" json:"is_objection"`
-	ObjectedCardSuit  *string    `json:"objected_card_suit,omitempty"`
-	ObjectedCardValue *int       `json:"objected_card_value,omitempty"`
-	RoundComplete     bool       `gorm:"default:false" json:"round_complete"`
-	PointsAwarded     int        `gorm:"default:0" json:"points_awarded"`
-	TimeTakenMs       int64      `gorm:"default:0" json:"time_taken_ms"`
+	ID                uuid.UUID `gorm:"type:text;primary_key" json:"id"`
+	GameID            uuid.UUID `gorm:"type:text;not null" json:"game_id"`
+	PlayerID          uuid.UUID `gorm:"type:text;not null" json:"player_id"`
+	MoveNumber        int       `gorm:"not null" json:"move_number"`
+	CardSuit          string    `json:"card_suit,omitempty"`
+	CardValue         int       `json:"card_value,omitempty"`
+	TableCardCount    int       `gorm:"not null" json:"table_card_count"`
+	TrickNumber       int       `gorm:"not null" json:"trick_number"`
+	MoveType          string    `gorm:"default:'PLAY_CARD'" json:"move_type"`
+	IsObjection       bool      `gorm:"default:false" json:"is_objection"`
+	ObjectedCardSuit  *string   `json:"objected_card_suit,omitempty"`
+	ObjectedCardValue *int      `json:"objected_card_value,omitempty"`
+	RoundComplete     bool      `gorm:"default:false" json:"round_complete"`
+	PointsAwarded     int       `gorm:"default:0" json:"points_awarded"`
+	TimeTakenMs       int64     `gorm:"default:0" json:"time_taken_ms"`
 }
 
 func setupSimpleTestDatabase(t *testing.T) *gorm.DB {
@@ -201,16 +201,16 @@ func TestDatabase_AuthenticSepticaMoveStorage(t *testing.T) {
 	db.Create(&game)
 
 	tests := []struct {
-		name                string
-		moveType            string
-		isObjection         bool
-		cardSuit            *string
-		cardValue           *int
-		objectedCardSuit    *string
-		objectedCardValue   *int
-		roundComplete       bool
-		pointsAwarded       int
-		expectValidStorage  bool
+		name               string
+		moveType           string
+		isObjection        bool
+		cardSuit           *string
+		cardValue          *int
+		objectedCardSuit   *string
+		objectedCardValue  *int
+		roundComplete      bool
+		pointsAwarded      int
+		expectValidStorage bool
 	}{
 		{
 			name:               "Regular card play",
@@ -348,8 +348,8 @@ func TestDatabase_TeamScoreTracking(t *testing.T) {
 	team2Score := 0
 	game := SimpleGame{
 		ID:                uuid.New(),
-		Player1ID:         player1ID, // Team 1
-		Player2ID:         player2ID, // Team 2
+		Player1ID:         player1ID,  // Team 1
+		Player2ID:         player2ID,  // Team 2
 		Player3ID:         &player3ID, // Team 1
 		Player4ID:         &player4ID, // Team 2
 		GameMode:          "ranked",
@@ -366,10 +366,10 @@ func TestDatabase_TeamScoreTracking(t *testing.T) {
 	// Simulate team scoring
 	// Team 1 (Player 1 + Player 3) scores 3 points
 	// Team 2 (Player 2 + Player 4) scores 2 points
-	game.Player1Score = 2  // Player 1 individual score
+	game.Player1Score = 2 // Player 1 individual score
 	player3Score := 1
 	game.Player3Score = &player3Score // Player 3 individual score
-	game.Player2Score = 1  // Player 2 individual score
+	game.Player2Score = 1             // Player 2 individual score
 	player4Score := 1
 	game.Player4Score = &player4Score // Player 4 individual score
 	team1Final := 3
@@ -515,7 +515,7 @@ func TestDatabase_PassMoveHandling(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.Equal(t, "PASS", savedMove.MoveType)
-	assert.Empty(t, savedMove.CardSuit) // No card played
+	assert.Empty(t, savedMove.CardSuit)     // No card played
 	assert.Equal(t, 0, savedMove.CardValue) // No card played
 	assert.False(t, savedMove.IsObjection)
 	assert.True(t, savedMove.RoundComplete)

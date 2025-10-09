@@ -67,7 +67,7 @@ func (h *TournamentHandlers) CreateTournament(c *gin.Context) {
 		return
 	}
 
-	h.logger.Info("Tournament created successfully", 
+	h.logger.Info("Tournament created successfully",
 		"tournament_id", newTournament.ID,
 		"name", newTournament.Name,
 		"creator", creatorID)
@@ -139,7 +139,7 @@ func (h *TournamentHandlers) ListTournaments(c *gin.Context) {
 			filter.MaxRating = rating
 		}
 	}
-	
+
 	filter.IncludePrivate = c.Query("include_private") == "true"
 	filter.IncludeFull = c.Query("include_full") == "true"
 	filter.OrderBy = c.DefaultQuery("order_by", "tournament_start")
@@ -202,9 +202,9 @@ func (h *TournamentHandlers) JoinTournament(c *gin.Context) {
 
 	// Join tournament
 	if err := h.tournamentService.JoinTournament(c.Request.Context(), tournamentID, playerID, req.InviteCode); err != nil {
-		h.logger.Warn("Failed to join tournament", 
-			"error", err, 
-			"tournament_id", tournamentID, 
+		h.logger.Warn("Failed to join tournament",
+			"error", err,
+			"tournament_id", tournamentID,
 			"player_id", playerID)
 
 		// Return appropriate error code based on error type
@@ -225,8 +225,8 @@ func (h *TournamentHandlers) JoinTournament(c *gin.Context) {
 		return
 	}
 
-	h.logger.Info("Player joined tournament", 
-		"tournament_id", tournamentID, 
+	h.logger.Info("Player joined tournament",
+		"tournament_id", tournamentID,
 		"player_id", playerID)
 
 	c.JSON(http.StatusOK, gin.H{
@@ -339,10 +339,10 @@ func (h *TournamentHandlers) GetTournamentBracket(c *gin.Context) {
 	bracketData := h.formatBracketData(tournament)
 
 	c.JSON(http.StatusOK, gin.H{
-		"tournament_id": tournamentID,
+		"tournament_id":   tournamentID,
 		"tournament_type": tournament.Type,
-		"status": tournament.Status,
-		"bracket": bracketData,
+		"status":          tournament.Status,
+		"bracket":         bracketData,
 	})
 }
 
@@ -457,9 +457,9 @@ func (h *TournamentHandlers) formatSingleEliminationBracket(brackets []database.
 	}
 
 	return map[string]interface{}{
-		"type":       "single_elimination",
-		"rounds":     rounds,
-		"max_round":  maxRound,
+		"type":         "single_elimination",
+		"rounds":       rounds,
+		"max_round":    maxRound,
 		"total_rounds": maxRound,
 	}
 }
@@ -477,7 +477,7 @@ func (h *TournamentHandlers) formatDoubleEliminationBracket(brackets []database.
 	}
 
 	return map[string]interface{}{
-		"type":           "double_elimination",
+		"type":            "double_elimination",
 		"winners_bracket": winners,
 		"losers_bracket":  losers,
 	}
@@ -495,8 +495,8 @@ func (h *TournamentHandlers) formatSwissBracket(brackets []database.TournamentBr
 	}
 
 	return map[string]interface{}{
-		"type":         "swiss_system",
-		"rounds":       rounds,
+		"type":          "swiss_system",
+		"rounds":        rounds,
 		"current_round": maxRound,
 	}
 }

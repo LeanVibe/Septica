@@ -22,20 +22,20 @@ type SessionStore struct {
 
 // GameSession represents a stored session for reconnection
 type GameSession struct {
-	SessionID       string                  `json:"session_id"`
-	UserID          uuid.UUID               `json:"user_id"`
-	GameID          *uuid.UUID              `json:"game_id"`
-	LastActiveAt    time.Time               `json:"last_active_at"`
-	CreatedAt       time.Time               `json:"created_at"`
+	SessionID    string     `json:"session_id"`
+	UserID       uuid.UUID  `json:"user_id"`
+	GameID       *uuid.UUID `json:"game_id"`
+	LastActiveAt time.Time  `json:"last_active_at"`
+	CreatedAt    time.Time  `json:"created_at"`
 
 	// Game state snapshot for recovery
-	GameState       *game.AuthenticGameState `json:"game_state"`
-	SequenceNumber  int                      `json:"sequence_number"`
+	GameState      *game.AuthenticGameState `json:"game_state"`
+	SequenceNumber int                      `json:"sequence_number"`
 
 	// Connection metadata
-	RemoteAddr      string                  `json:"remote_addr"`
-	UserAgent       string                  `json:"user_agent"`
-	ReconnectCount  int                     `json:"reconnect_count"`
+	RemoteAddr     string `json:"remote_addr"`
+	UserAgent      string `json:"user_agent"`
+	ReconnectCount int    `json:"reconnect_count"`
 }
 
 // NewSessionStore creates a new session store

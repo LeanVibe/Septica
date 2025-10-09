@@ -90,7 +90,7 @@ func (h *AuthHandler) Register(c *gin.Context) {
 			"username": user.Username,
 			"email":    user.Email,
 		},
-		"token": token,
+		"token":   token,
 		"message": "account created successfully",
 	})
 }
@@ -145,7 +145,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 			"username": user.Username,
 			"email":    user.Email,
 		},
-		"token": token,
+		"token":   token,
 		"message": "login successful",
 	})
 }

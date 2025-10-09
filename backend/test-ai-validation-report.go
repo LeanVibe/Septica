@@ -10,13 +10,13 @@ import (
 
 // TestValidationReport represents the comprehensive AI test validation
 type TestValidationReport struct {
-	TestSuite    string                   `json:"test_suite"`
-	Timestamp    string                   `json:"timestamp"`
-	Summary      TestSummary              `json:"summary"`
-	CriticalIssues []CriticalIssue        `json:"critical_issues"`
-	Recommendations []string              `json:"recommendations"`
-	QualityScores QualityAssessment       `json:"quality_scores"`
-	TechnicalFindings TechnicalAnalysis   `json:"technical_findings"`
+	TestSuite         string            `json:"test_suite"`
+	Timestamp         string            `json:"timestamp"`
+	Summary           TestSummary       `json:"summary"`
+	CriticalIssues    []CriticalIssue   `json:"critical_issues"`
+	Recommendations   []string          `json:"recommendations"`
+	QualityScores     QualityAssessment `json:"quality_scores"`
+	TechnicalFindings TechnicalAnalysis `json:"technical_findings"`
 }
 
 type TestSummary struct {
@@ -36,16 +36,16 @@ type CriticalIssue struct {
 
 type QualityAssessment struct {
 	CulturalAuthenticity float64 `json:"cultural_authenticity"`
-	TechnicalCoverage   float64 `json:"technical_coverage"`
-	TestCompleteness    float64 `json:"test_completeness"`
-	DocumentationScore  float64 `json:"documentation_score"`
+	TechnicalCoverage    float64 `json:"technical_coverage"`
+	TestCompleteness     float64 `json:"test_completeness"`
+	DocumentationScore   float64 `json:"documentation_score"`
 }
 
 type TechnicalAnalysis struct {
-	TestFrameworks      []string `json:"test_frameworks"`
-	CoverageAreas       []string `json:"coverage_areas"`
-	PerformanceTargets  map[string]string `json:"performance_targets"`
-	IntegrationPoints   []string `json:"integration_points"`
+	TestFrameworks     []string          `json:"test_frameworks"`
+	CoverageAreas      []string          `json:"coverage_areas"`
+	PerformanceTargets map[string]string `json:"performance_targets"`
+	IntegrationPoints  []string          `json:"integration_points"`
 }
 
 // GenerateValidationReport creates comprehensive test validation report
@@ -93,9 +93,9 @@ func GenerateValidationReport() *TestValidationReport {
 		},
 		QualityScores: QualityAssessment{
 			CulturalAuthenticity: 85.0, // Reduced due to 8-rule bug
-			TechnicalCoverage:   95.0,
-			TestCompleteness:    90.0,
-			DocumentationScore:  98.0,
+			TechnicalCoverage:    95.0,
+			TestCompleteness:     90.0,
+			DocumentationScore:   98.0,
 		},
 		TechnicalFindings: TechnicalAnalysis{
 			TestFrameworks: []string{
@@ -117,8 +117,8 @@ func GenerateValidationReport() *TestValidationReport {
 			PerformanceTargets: map[string]string{
 				"AI Decision Latency": "<500ms",
 				"Memory per AI":       "<50MB",
-				"Throughput":         ">10 decisions/sec",
-				"Deployment Time":    "<15 seconds",
+				"Throughput":          ">10 decisions/sec",
+				"Deployment Time":     "<15 seconds",
 			},
 			IntegrationPoints: []string{
 				"AI ↔ Game Engine rule validation",
@@ -133,12 +133,12 @@ func GenerateValidationReport() *TestValidationReport {
 
 // TestFileAnalysis analyzes the created test files
 type TestFileAnalysis struct {
-	FileName        string `json:"file_name"`
-	LinesOfCode     int    `json:"lines_of_code"`
-	TestCount       int    `json:"test_count"`
-	CoverageArea    string `json:"coverage_area"`
-	Quality         string `json:"quality"`
-	Completeness    string `json:"completeness"`
+	FileName     string `json:"file_name"`
+	LinesOfCode  int    `json:"lines_of_code"`
+	TestCount    int    `json:"test_count"`
+	CoverageArea string `json:"coverage_area"`
+	Quality      string `json:"quality"`
+	Completeness string `json:"completeness"`
 }
 
 func AnalyzeTestFiles() []TestFileAnalysis {

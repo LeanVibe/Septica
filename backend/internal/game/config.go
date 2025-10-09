@@ -9,24 +9,24 @@ import (
 // GameConfig holds configuration for both legacy and authentic game engines
 type GameConfig struct {
 	// Feature flags for gradual migration
-	UseAuthenticRules       bool          `json:"use_authentic_rules"`
-	EnableLegacyFallback    bool          `json:"enable_legacy_fallback"`
-	DefaultToAuthentic      bool          `json:"default_to_authentic"`
+	UseAuthenticRules    bool `json:"use_authentic_rules"`
+	EnableLegacyFallback bool `json:"enable_legacy_fallback"`
+	DefaultToAuthentic   bool `json:"default_to_authentic"`
 
 	// Authentic engine specific config
-	AuthenticConfig         AuthenticEngineConfig `json:"authentic_config"`
+	AuthenticConfig AuthenticEngineConfig `json:"authentic_config"`
 
 	// Legacy engine config (existing)
-	LegacyEnabled           bool          `json:"legacy_enabled"`
+	LegacyEnabled bool `json:"legacy_enabled"`
 
 	// General game settings
-	MaxConcurrentGames      int           `json:"max_concurrent_games"`
-	GameTimeoutDuration     time.Duration `json:"game_timeout_duration"`
-	PlayerActionTimeout     time.Duration `json:"player_action_timeout"`
+	MaxConcurrentGames  int           `json:"max_concurrent_games"`
+	GameTimeoutDuration time.Duration `json:"game_timeout_duration"`
+	PlayerActionTimeout time.Duration `json:"player_action_timeout"`
 
 	// Performance settings
-	EnableGameStateLogging  bool          `json:"enable_game_state_logging"`
-	MaxHistoryPerGame       int           `json:"max_history_per_game"`
+	EnableGameStateLogging bool `json:"enable_game_state_logging"`
+	MaxHistoryPerGame      int  `json:"max_history_per_game"`
 }
 
 // LoadConfigFromEnv loads game configuration from environment variables
@@ -38,12 +38,12 @@ func LoadConfigFromEnv() *GameConfig {
 		DefaultToAuthentic:   getBoolEnv("DEFAULT_TO_AUTHENTIC", false), // Gradual rollout
 
 		// Legacy support
-		LegacyEnabled:        getBoolEnv("LEGACY_ENGINE_ENABLED", true),
+		LegacyEnabled: getBoolEnv("LEGACY_ENGINE_ENABLED", true),
 
 		// General settings
-		MaxConcurrentGames:   getIntEnv("MAX_CONCURRENT_GAMES", 10000),
-		GameTimeoutDuration:  getDurationEnv("GAME_TIMEOUT_DURATION", 30*time.Minute),
-		PlayerActionTimeout:  getDurationEnv("PLAYER_ACTION_TIMEOUT", 30*time.Second),
+		MaxConcurrentGames:  getIntEnv("MAX_CONCURRENT_GAMES", 10000),
+		GameTimeoutDuration: getDurationEnv("GAME_TIMEOUT_DURATION", 30*time.Minute),
+		PlayerActionTimeout: getDurationEnv("PLAYER_ACTION_TIMEOUT", 30*time.Second),
 
 		// Performance
 		EnableGameStateLogging: getBoolEnv("ENABLE_GAME_STATE_LOGGING", true),
@@ -70,12 +70,12 @@ func GetDefaultConfig() *GameConfig {
 		DefaultToAuthentic:   true,
 
 		// Legacy support during transition
-		LegacyEnabled:        true,
+		LegacyEnabled: true,
 
 		// General settings
-		MaxConcurrentGames:   1000,
-		GameTimeoutDuration:  30 * time.Minute,
-		PlayerActionTimeout:  30 * time.Second,
+		MaxConcurrentGames:  1000,
+		GameTimeoutDuration: 30 * time.Minute,
+		PlayerActionTimeout: 30 * time.Second,
 
 		// Performance
 		EnableGameStateLogging: true,
@@ -95,8 +95,8 @@ func GetDefaultConfig() *GameConfig {
 type GameEngineType string
 
 const (
-	EngineTypeLegacy     GameEngineType = "legacy"
-	EngineTypeAuthentic  GameEngineType = "authentic"
+	EngineTypeLegacy    GameEngineType = "legacy"
+	EngineTypeAuthentic GameEngineType = "authentic"
 )
 
 // DetermineEngineType determines which engine to use based on config and request
@@ -126,9 +126,9 @@ func (c *GameConfig) ShouldEnableLegacyFallback() bool {
 
 // ValidationConfig returns validation settings for games
 type ValidationConfig struct {
-	StrictRuleValidation     bool `json:"strict_rule_validation"`
-	EnableCheatingDetection  bool `json:"enable_cheating_detection"`
-	LogInvalidMoves          bool `json:"log_invalid_moves"`
+	StrictRuleValidation    bool `json:"strict_rule_validation"`
+	EnableCheatingDetection bool `json:"enable_cheating_detection"`
+	LogInvalidMoves         bool `json:"log_invalid_moves"`
 }
 
 // GetValidationConfig returns validation configuration
@@ -187,21 +187,21 @@ func getAuthenticGameModeEnv(key string, defaultVal AuthenticGameMode) Authentic
 
 // MigrationStrategy defines how to migrate from legacy to authentic
 type MigrationStrategy struct {
-	Phase                    string    `json:"phase"`                      // "testing", "gradual", "full"
-	AuthenticPercentage      int       `json:"authentic_percentage"`       // 0-100% of new games use authentic
-	EnableABTesting          bool      `json:"enable_ab_testing"`
-	UserWhitelist            []string  `json:"user_whitelist"`            // Always use authentic for these users
-	UserBlacklist            []string  `json:"user_blacklist"`            // Never use authentic for these users
+	Phase               string   `json:"phase"`                // "testing", "gradual", "full"
+	AuthenticPercentage int      `json:"authentic_percentage"` // 0-100% of new games use authentic
+	EnableABTesting     bool     `json:"enable_ab_testing"`
+	UserWhitelist       []string `json:"user_whitelist"` // Always use authentic for these users
+	UserBlacklist       []string `json:"user_blacklist"` // Never use authentic for these users
 }
 
 // GetMigrationStrategy returns current migration strategy
 func (c *GameConfig) GetMigrationStrategy() MigrationStrategy {
 	return MigrationStrategy{
-		Phase:                getBoolToStringEnv("MIGRATION_PHASE", "testing"),
-		AuthenticPercentage:  getIntEnv("AUTHENTIC_PERCENTAGE", 10), // Start with 10% rollout
-		EnableABTesting:      getBoolEnv("ENABLE_AB_TESTING", true),
-		UserWhitelist:        getStringSliceEnv("AUTHENTIC_WHITELIST", []string{}),
-		UserBlacklist:        getStringSliceEnv("AUTHENTIC_BLACKLIST", []string{}),
+		Phase:               getBoolToStringEnv("MIGRATION_PHASE", "testing"),
+		AuthenticPercentage: getIntEnv("AUTHENTIC_PERCENTAGE", 10), // Start with 10% rollout
+		EnableABTesting:     getBoolEnv("ENABLE_AB_TESTING", true),
+		UserWhitelist:       getStringSliceEnv("AUTHENTIC_WHITELIST", []string{}),
+		UserBlacklist:       getStringSliceEnv("AUTHENTIC_BLACKLIST", []string{}),
 	}
 }
 

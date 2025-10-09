@@ -457,8 +457,8 @@ func (gi *GameIntegration) checkSwissProgression(tx *gorm.DB, tournament *databa
 		return fmt.Errorf("failed to update tournament round: %w", err)
 	}
 
-	gi.logger.Info("Generated next Swiss round", 
-		"tournament_id", tournament.ID, 
+	gi.logger.Info("Generated next Swiss round",
+		"tournament_id", tournament.ID,
 		"round", nextRound)
 
 	return nil
@@ -478,8 +478,8 @@ func (gi *GameIntegration) completeTournament(tx *gorm.DB, tournament *database.
 		return fmt.Errorf("failed to award prizes: %w", err)
 	}
 
-	gi.logger.Info("Tournament completed", 
-		"tournament_id", tournament.ID, 
+	gi.logger.Info("Tournament completed",
+		"tournament_id", tournament.ID,
 		"winner", winnerID)
 
 	return nil
@@ -585,10 +585,10 @@ func (gi *GameIntegration) awardFinalPrizes(tx *gorm.DB, tournament *database.To
 				continue
 			}
 
-			gi.logger.Info("Prizes awarded", 
-				"player_id", participant.PlayerID, 
+			gi.logger.Info("Prizes awarded",
+				"player_id", participant.PlayerID,
 				"rank", *participant.FinalRank,
-				"coins", prizeCoins, 
+				"coins", prizeCoins,
 				"gems", prizeGems)
 		}
 	}

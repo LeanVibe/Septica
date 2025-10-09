@@ -19,26 +19,26 @@ type MobileGameLogger struct {
 }
 
 type PerformanceMetrics struct {
-	ActiveConnections    int           `json:"active_connections"`
-	GameSessions         int           `json:"game_sessions"`
-	AverageResponseTime  time.Duration `json:"average_response_time"`
-	CardPlaysPerSecond   float64       `json:"card_plays_per_second"`
-	DatabaseQueryTime    time.Duration `json:"database_query_time"`
-	MemoryUsageMB        float64       `json:"memory_usage_mb"`
-	GoroutineCount       int           `json:"goroutine_count"`
-	LastHealthCheck      time.Time     `json:"last_health_check"`
+	ActiveConnections   int           `json:"active_connections"`
+	GameSessions        int           `json:"game_sessions"`
+	AverageResponseTime time.Duration `json:"average_response_time"`
+	CardPlaysPerSecond  float64       `json:"card_plays_per_second"`
+	DatabaseQueryTime   time.Duration `json:"database_query_time"`
+	MemoryUsageMB       float64       `json:"memory_usage_mb"`
+	GoroutineCount      int           `json:"goroutine_count"`
+	LastHealthCheck     time.Time     `json:"last_health_check"`
 }
 
 type GameEvent struct {
-	Timestamp   time.Time   `json:"timestamp"`
-	PlayerID    string      `json:"player_id"`
-	GameID      string      `json:"game_id"`
-	EventType   string      `json:"event_type"`
-	CardPlayed  *Card       `json:"card_played,omitempty"`
-	TableState  []Card      `json:"table_state,omitempty"`
-	IsValidPlay bool        `json:"is_valid_play"`
-	Points      int         `json:"points"`
-	RuleChecked string      `json:"rule_checked,omitempty"`
+	Timestamp    time.Time     `json:"timestamp"`
+	PlayerID     string        `json:"player_id"`
+	GameID       string        `json:"game_id"`
+	EventType    string        `json:"event_type"`
+	CardPlayed   *Card         `json:"card_played,omitempty"`
+	TableState   []Card        `json:"table_state,omitempty"`
+	IsValidPlay  bool          `json:"is_valid_play"`
+	Points       int           `json:"points"`
+	RuleChecked  string        `json:"rule_checked,omitempty"`
 	ResponseTime time.Duration `json:"response_time"`
 }
 
@@ -86,14 +86,14 @@ func NewMobileGameLogger() *MobileGameLogger {
 
 func (l *MobileGameLogger) LogCardPlay(playerID, gameID string, card Card, tableState []Card, isValid bool, points int, responseTime time.Duration) {
 	event := GameEvent{
-		Timestamp:   time.Now(),
-		PlayerID:    playerID,
-		GameID:      gameID,
-		EventType:   "CARD_PLAY",
-		CardPlayed:  &card,
-		TableState:  tableState,
-		IsValidPlay: isValid,
-		Points:      points,
+		Timestamp:    time.Now(),
+		PlayerID:     playerID,
+		GameID:       gameID,
+		EventType:    "CARD_PLAY",
+		CardPlayed:   &card,
+		TableState:   tableState,
+		IsValidPlay:  isValid,
+		Points:       points,
 		ResponseTime: responseTime,
 	}
 
@@ -111,9 +111,9 @@ func (l *MobileGameLogger) LogCardPlay(playerID, gameID string, card Card, table
 	// Performance warning for slow card processing
 	if responseTime > 200*time.Millisecond {
 		l.Warn("PERFORMANCE", fmt.Sprintf("Slow card processing: %v", responseTime), map[string]interface{}{
-			"player_id": playerID[:8],
+			"player_id":     playerID[:8],
 			"response_time": responseTime,
-			"target_time": "< 200ms",
+			"target_time":   "< 200ms",
 		})
 	}
 }
@@ -156,8 +156,8 @@ func (l *MobileGameLogger) validateRomanianRules(card Card, tableState []Card, w
 			pointType = "Ace (1pt)"
 		}
 		l.Info("POINTS", fmt.Sprintf("Point card played: %s", pointType), map[string]interface{}{
-			"card": fmt.Sprintf("%d%s", card.Value, card.Suit),
-			"player_id": event.PlayerID[:8],
+			"card":           fmt.Sprintf("%d%s", card.Value, card.Suit),
+			"player_id":      event.PlayerID[:8],
 			"total_possible": 8,
 		})
 	}
@@ -266,8 +266,8 @@ func (l *MobileGameLogger) UpdatePerformanceMetrics() {
 
 func (l *MobileGameLogger) LogDatabaseQuery(query string, duration time.Duration, error error) {
 	data := map[string]interface{}{
-		"query":    query,
-		"duration": duration,
+		"query":     query,
+		"duration":  duration,
 		"timestamp": time.Now(),
 	}
 
@@ -289,11 +289,11 @@ func (l *MobileGameLogger) HealthCheck() map[string]interface{} {
 	l.UpdatePerformanceMetrics()
 
 	health := map[string]interface{}{
-		"status":     "healthy",
-		"uptime":     time.Since(l.startTime),
-		"metrics":    l.metrics,
-		"timestamp":  time.Now(),
-		"issues":     []string{},
+		"status":    "healthy",
+		"uptime":    time.Since(l.startTime),
+		"metrics":   l.metrics,
+		"timestamp": time.Now(),
+		"issues":    []string{},
 	}
 
 	var issues []string

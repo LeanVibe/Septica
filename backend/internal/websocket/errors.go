@@ -4,46 +4,46 @@ import "errors"
 
 // WebSocket-specific errors
 var (
-	ErrClientNotFound       = errors.New("client not found")
-	ErrClientAlreadyInGame  = errors.New("client already in a game")
-	ErrGameNotFound         = errors.New("game not found")
-	ErrGameFull             = errors.New("game is full")
-	ErrInvalidMessage       = errors.New("invalid message format")
-	ErrNotAuthenticated     = errors.New("client not authenticated")
-	ErrConnectionClosed     = errors.New("connection closed")
-	ErrMessageQueueFull     = errors.New("message queue full")
-	ErrRateLimitExceeded    = errors.New("rate limit exceeded")
-	ErrInvalidGameState     = errors.New("invalid game state")
-	ErrPlayerNotInGame      = errors.New("player not in game")
-	ErrInvalidMove          = errors.New("invalid move")
-	ErrNotPlayerTurn        = errors.New("not player's turn")
-	ErrGameAlreadyStarted   = errors.New("game already started")
-	ErrGameNotStarted       = errors.New("game not started")
+	ErrClientNotFound      = errors.New("client not found")
+	ErrClientAlreadyInGame = errors.New("client already in a game")
+	ErrGameNotFound        = errors.New("game not found")
+	ErrGameFull            = errors.New("game is full")
+	ErrInvalidMessage      = errors.New("invalid message format")
+	ErrNotAuthenticated    = errors.New("client not authenticated")
+	ErrConnectionClosed    = errors.New("connection closed")
+	ErrMessageQueueFull    = errors.New("message queue full")
+	ErrRateLimitExceeded   = errors.New("rate limit exceeded")
+	ErrInvalidGameState    = errors.New("invalid game state")
+	ErrPlayerNotInGame     = errors.New("player not in game")
+	ErrInvalidMove         = errors.New("invalid move")
+	ErrNotPlayerTurn       = errors.New("not player's turn")
+	ErrGameAlreadyStarted  = errors.New("game already started")
+	ErrGameNotStarted      = errors.New("game not started")
 	ErrInsufficientPlayers = errors.New("insufficient players to start game")
-	ErrSessionExpired       = errors.New("session expired")
-	ErrDuplicateConnection  = errors.New("duplicate connection for user")
+	ErrSessionExpired      = errors.New("session expired")
+	ErrDuplicateConnection = errors.New("duplicate connection for user")
 )
 
 // Error codes for client communication
 const (
-	ErrorCodeClientNotFound       = 1001
-	ErrorCodeClientAlreadyInGame  = 1002
-	ErrorCodeGameNotFound         = 1003
-	ErrorCodeGameFull             = 1004
-	ErrorCodeInvalidMessage       = 1005
-	ErrorCodeNotAuthenticated     = 1006
-	ErrorCodeConnectionClosed     = 1007
-	ErrorCodeMessageQueueFull     = 1008
-	ErrorCodeRateLimitExceeded    = 1009
-	ErrorCodeInvalidGameState     = 1010
-	ErrorCodePlayerNotInGame      = 1011
-	ErrorCodeInvalidMove          = 1012
-	ErrorCodeNotPlayerTurn        = 1013
-	ErrorCodeGameAlreadyStarted   = 1014
-	ErrorCodeGameNotStarted       = 1015
+	ErrorCodeClientNotFound      = 1001
+	ErrorCodeClientAlreadyInGame = 1002
+	ErrorCodeGameNotFound        = 1003
+	ErrorCodeGameFull            = 1004
+	ErrorCodeInvalidMessage      = 1005
+	ErrorCodeNotAuthenticated    = 1006
+	ErrorCodeConnectionClosed    = 1007
+	ErrorCodeMessageQueueFull    = 1008
+	ErrorCodeRateLimitExceeded   = 1009
+	ErrorCodeInvalidGameState    = 1010
+	ErrorCodePlayerNotInGame     = 1011
+	ErrorCodeInvalidMove         = 1012
+	ErrorCodeNotPlayerTurn       = 1013
+	ErrorCodeGameAlreadyStarted  = 1014
+	ErrorCodeGameNotStarted      = 1015
 	ErrorCodeInsufficientPlayers = 1016
-	ErrorCodeSessionExpired       = 1017
-	ErrorCodeDuplicateConnection  = 1018
+	ErrorCodeSessionExpired      = 1017
+	ErrorCodeDuplicateConnection = 1018
 )
 
 // ErrorWithCode represents an error with an associated error code

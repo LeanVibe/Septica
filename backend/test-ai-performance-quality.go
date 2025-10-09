@@ -19,13 +19,13 @@ import (
 
 // PerformanceMetrics holds performance measurement data
 type PerformanceMetrics struct {
-	ExecutionTime     time.Duration `json:"execution_time"`
-	MemoryUsageMB     float64       `json:"memory_usage_mb"`
-	CPUUsagePercent   float64       `json:"cpu_usage_percent"`
-	GoroutineCount    int           `json:"goroutine_count"`
-	ThroughputOpsPerSec float64     `json:"throughput_ops_per_sec"`
-	LatencyMS         float64       `json:"latency_ms"`
-	ErrorRate         float64       `json:"error_rate"`
+	ExecutionTime       time.Duration `json:"execution_time"`
+	MemoryUsageMB       float64       `json:"memory_usage_mb"`
+	CPUUsagePercent     float64       `json:"cpu_usage_percent"`
+	GoroutineCount      int           `json:"goroutine_count"`
+	ThroughputOpsPerSec float64       `json:"throughput_ops_per_sec"`
+	LatencyMS           float64       `json:"latency_ms"`
+	ErrorRate           float64       `json:"error_rate"`
 }
 
 // QualityMetrics holds AI behavior quality measurements
@@ -40,14 +40,14 @@ type QualityMetrics struct {
 
 // PerformanceTestResult represents results of performance and quality tests
 type PerformanceTestResult struct {
-	TestName         string              `json:"test_name"`
-	Success          bool                `json:"success"`
-	ExecutionTime    time.Duration       `json:"execution_time"`
-	ErrorMessage     string              `json:"error_message,omitempty"`
-	Performance      *PerformanceMetrics `json:"performance,omitempty"`
-	Quality          *QualityMetrics     `json:"quality,omitempty"`
-	Benchmark        map[string]float64  `json:"benchmark,omitempty"`
-	Details          interface{}         `json:"details,omitempty"`
+	TestName      string              `json:"test_name"`
+	Success       bool                `json:"success"`
+	ExecutionTime time.Duration       `json:"execution_time"`
+	ErrorMessage  string              `json:"error_message,omitempty"`
+	Performance   *PerformanceMetrics `json:"performance,omitempty"`
+	Quality       *QualityMetrics     `json:"quality,omitempty"`
+	Benchmark     map[string]float64  `json:"benchmark,omitempty"`
+	Details       interface{}         `json:"details,omitempty"`
 }
 
 // PerformanceTestSuite manages all AI performance and quality tests
@@ -61,12 +61,12 @@ type PerformanceTestSuite struct {
 
 // Performance test configuration constants
 const (
-	PERFORMANCE_THRESHOLD_MS = 500.0  // AI decisions should be under 500ms
-	MEMORY_THRESHOLD_MB     = 50.0   // Each AI should use under 50MB
-	THROUGHPUT_THRESHOLD    = 10.0   // At least 10 decisions per second
-	QUALITY_THRESHOLD       = 0.8    // 80% quality threshold
-	LOAD_TEST_DURATION      = 30     // seconds
-	MAX_CONCURRENT_AI       = 20     // concurrent AI players for load testing
+	PERFORMANCE_THRESHOLD_MS = 500.0 // AI decisions should be under 500ms
+	MEMORY_THRESHOLD_MB      = 50.0  // Each AI should use under 50MB
+	THROUGHPUT_THRESHOLD     = 10.0  // At least 10 decisions per second
+	QUALITY_THRESHOLD        = 0.8   // 80% quality threshold
+	LOAD_TEST_DURATION       = 30    // seconds
+	MAX_CONCURRENT_AI        = 20    // concurrent AI players for load testing
 )
 
 // NewPerformanceTestSuite creates a new performance test suite
@@ -170,8 +170,8 @@ func (ts *PerformanceTestSuite) TestSingleAIDecisionLatency() {
 	p95Latency := ts.calculatePercentileLatency(allLatencies, 0.95)
 
 	performance := &PerformanceMetrics{
-		ExecutionTime: time.Since(start),
-		LatencyMS:     float64(avgLatency.Nanoseconds()) / 1e6,
+		ExecutionTime:       time.Since(start),
+		LatencyMS:           float64(avgLatency.Nanoseconds()) / 1e6,
 		ThroughputOpsPerSec: float64(totalDecisions) / time.Since(start).Seconds(),
 	}
 
@@ -190,10 +190,10 @@ func (ts *PerformanceTestSuite) TestSingleAIDecisionLatency() {
 			return ""
 		}(),
 		Details: map[string]interface{}{
-			"total_decisions":    totalDecisions,
-			"avg_latency_ms":     float64(avgLatency.Nanoseconds()) / 1e6,
-			"max_latency_ms":     float64(maxLatency.Nanoseconds()) / 1e6,
-			"p95_latency_ms":     float64(p95Latency.Nanoseconds()) / 1e6,
+			"total_decisions":     totalDecisions,
+			"avg_latency_ms":      float64(avgLatency.Nanoseconds()) / 1e6,
+			"max_latency_ms":      float64(maxLatency.Nanoseconds()) / 1e6,
+			"p95_latency_ms":      float64(p95Latency.Nanoseconds()) / 1e6,
 			"difficulties_tested": difficulties,
 		},
 	})
@@ -245,11 +245,11 @@ func (ts *PerformanceTestSuite) TestSingleAIMemoryUsage() {
 			return ""
 		}(),
 		Details: map[string]interface{}{
-			"ai_players_created":  len(aiPlayers),
-			"total_memory_mb":     memoryIncreaseMB,
-			"memory_per_ai_mb":    memoryPerAIMB,
-			"memory_before_mb":    float64(memStatsBefore.Alloc) / 1024 / 1024,
-			"memory_after_mb":     float64(memStatsAfter.Alloc) / 1024 / 1024,
+			"ai_players_created": len(aiPlayers),
+			"total_memory_mb":    memoryIncreaseMB,
+			"memory_per_ai_mb":   memoryPerAIMB,
+			"memory_before_mb":   float64(memStatsBefore.Alloc) / 1024 / 1024,
+			"memory_after_mb":    float64(memStatsAfter.Alloc) / 1024 / 1024,
 		},
 	})
 }
@@ -274,8 +274,8 @@ func (ts *PerformanceTestSuite) TestAIInitializationTime() {
 	maxInitTime := ts.findMaxLatency(initTimes)
 
 	performance := &PerformanceMetrics{
-		ExecutionTime:   time.Since(start),
-		LatencyMS:       float64(avgInitTime.Nanoseconds()) / 1e6,
+		ExecutionTime:       time.Since(start),
+		LatencyMS:           float64(avgInitTime.Nanoseconds()) / 1e6,
 		ThroughputOpsPerSec: float64(len(initTimes)) / time.Since(start).Seconds(),
 	}
 
@@ -372,12 +372,12 @@ func (ts *PerformanceTestSuite) TestMultipleAIConcurrentDecisions() {
 		ExecutionTime: time.Since(start),
 		Performance:   performance,
 		Details: map[string]interface{}{
-			"concurrent_ai":        concurrentAI,
-			"decisions_per_ai":     decisionsPerAI,
-			"total_decisions":      len(allDecisionTimes),
-			"error_count":          errorCount,
-			"avg_latency_ms":       float64(avgLatency.Nanoseconds()) / 1e6,
-			"throughput_ops_sec":   throughput,
+			"concurrent_ai":      concurrentAI,
+			"decisions_per_ai":   decisionsPerAI,
+			"total_decisions":    len(allDecisionTimes),
+			"error_count":        errorCount,
+			"avg_latency_ms":     float64(avgLatency.Nanoseconds()) / 1e6,
+			"throughput_ops_sec": throughput,
 		},
 	})
 }
@@ -419,9 +419,9 @@ func (ts *PerformanceTestSuite) TestAIDecisionQuality() {
 	avgQualityScore := (qualityScores["easy"] + qualityScores["medium"] + qualityScores["hard"]) / 3.0
 
 	quality := &QualityMetrics{
-		DecisionAccuracy:     avgQualityScore,
+		DecisionAccuracy:      avgQualityScore,
 		StrategicIntelligence: avgQualityScore * 1.1, // Weighted for strategic moves
-		DifficultyVariation:  ts.calculateDifficultyVariation(qualityScores),
+		DifficultyVariation:   ts.calculateDifficultyVariation(qualityScores),
 	}
 
 	testSuccess := avgQualityScore >= QUALITY_THRESHOLD
@@ -446,9 +446,9 @@ func (ts *PerformanceTestSuite) TestRomanianRuleCompliance() {
 
 	// Test critical Romanian rules
 	ruleTests := []struct {
-		ruleName     string
-		testFunc     func(*ai.AIPlayer) float64
-		weight       float64
+		ruleName string
+		testFunc func(*ai.AIPlayer) float64
+		weight   float64
 	}{
 		{"Seven Always Beats", ts.testSevenRule, 0.3},
 		{"Same Value Beats", ts.testSameValueRule, 0.3},
@@ -474,8 +474,8 @@ func (ts *PerformanceTestSuite) TestRomanianRuleCompliance() {
 	}
 
 	quality := &QualityMetrics{
-		GameRuleCompliance:   overallCompliance,
-		CulturalAuthenticity: overallCompliance * 0.9, // Authentic rules are cultural
+		GameRuleCompliance:    overallCompliance,
+		CulturalAuthenticity:  overallCompliance * 0.9, // Authentic rules are cultural
 		StrategicIntelligence: overallCompliance * 1.1,
 	}
 
@@ -487,9 +487,9 @@ func (ts *PerformanceTestSuite) TestRomanianRuleCompliance() {
 		ExecutionTime: time.Since(start),
 		Quality:       quality,
 		Details: map[string]interface{}{
-			"overall_compliance":   overallCompliance,
-			"rule_test_results":    ruleResults,
-			"rules_tested":         len(ruleTests),
+			"overall_compliance": overallCompliance,
+			"rule_test_results":  ruleResults,
+			"rules_tested":       len(ruleTests),
 		},
 	})
 }
@@ -499,8 +499,8 @@ func (ts *PerformanceTestSuite) TestRomanianRuleCompliance() {
 
 func (ts *PerformanceTestSuite) TestAILoadUnderStress() {
 	ts.recordResult(PerformanceTestResult{
-		TestName: "AI Load Under Stress",
-		Success:  true,
+		TestName:      "AI Load Under Stress",
+		Success:       true,
 		ExecutionTime: time.Second * 5,
 		Performance: &PerformanceMetrics{
 			ThroughputOpsPerSec: 25.0,
@@ -512,8 +512,8 @@ func (ts *PerformanceTestSuite) TestAILoadUnderStress() {
 
 func (ts *PerformanceTestSuite) TestMemoryScalabilityWithMultipleAI() {
 	ts.recordResult(PerformanceTestResult{
-		TestName: "Memory Scalability with Multiple AI",
-		Success:  true,
+		TestName:      "Memory Scalability with Multiple AI",
+		Success:       true,
 		ExecutionTime: time.Second * 3,
 		Performance: &PerformanceMetrics{
 			MemoryUsageMB: 120.0,
@@ -523,8 +523,8 @@ func (ts *PerformanceTestSuite) TestMemoryScalabilityWithMultipleAI() {
 
 func (ts *PerformanceTestSuite) TestCulturalAuthenticityQuality() {
 	ts.recordResult(PerformanceTestResult{
-		TestName: "Cultural Authenticity Quality",
-		Success:  true,
+		TestName:      "Cultural Authenticity Quality",
+		Success:       true,
 		ExecutionTime: time.Millisecond * 800,
 		Quality: &QualityMetrics{
 			CulturalAuthenticity: 0.92,
@@ -534,8 +534,8 @@ func (ts *PerformanceTestSuite) TestCulturalAuthenticityQuality() {
 
 func (ts *PerformanceTestSuite) TestDifficultyLevelConsistency() {
 	ts.recordResult(PerformanceTestResult{
-		TestName: "Difficulty Level Consistency",
-		Success:  true,
+		TestName:      "Difficulty Level Consistency",
+		Success:       true,
 		ExecutionTime: time.Millisecond * 600,
 		Quality: &QualityMetrics{
 			DifficultyVariation: 0.85,
@@ -545,8 +545,8 @@ func (ts *PerformanceTestSuite) TestDifficultyLevelConsistency() {
 
 func (ts *PerformanceTestSuite) TestAIEndurancePerformance() {
 	ts.recordResult(PerformanceTestResult{
-		TestName: "AI Endurance Performance",
-		Success:  true,
+		TestName:      "AI Endurance Performance",
+		Success:       true,
 		ExecutionTime: time.Second * 30,
 		Performance: &PerformanceMetrics{
 			ThroughputOpsPerSec: 15.0,
@@ -556,8 +556,8 @@ func (ts *PerformanceTestSuite) TestAIEndurancePerformance() {
 
 func (ts *PerformanceTestSuite) TestMemoryLeakDetection() {
 	ts.recordResult(PerformanceTestResult{
-		TestName: "Memory Leak Detection",
-		Success:  true,
+		TestName:      "Memory Leak Detection",
+		Success:       true,
 		ExecutionTime: time.Second * 45,
 		Performance: &PerformanceMetrics{
 			MemoryUsageMB: 50.0, // Stable memory usage
@@ -567,8 +567,8 @@ func (ts *PerformanceTestSuite) TestMemoryLeakDetection() {
 
 func (ts *PerformanceTestSuite) TestPerformanceDegradationOverTime() {
 	ts.recordResult(PerformanceTestResult{
-		TestName: "Performance Degradation Over Time",
-		Success:  true,
+		TestName:      "Performance Degradation Over Time",
+		Success:       true,
 		ExecutionTime: time.Minute * 2,
 		Performance: &PerformanceMetrics{
 			LatencyMS: 180.0, // Slight increase over time is acceptable
@@ -578,8 +578,8 @@ func (ts *PerformanceTestSuite) TestPerformanceDegradationOverTime() {
 
 func (ts *PerformanceTestSuite) TestAIWebSocketPerformance() {
 	ts.recordResult(PerformanceTestResult{
-		TestName: "AI WebSocket Performance",
-		Success:  true,
+		TestName:      "AI WebSocket Performance",
+		Success:       true,
 		ExecutionTime: time.Millisecond * 400,
 		Performance: &PerformanceMetrics{
 			LatencyMS: 50.0,
@@ -589,8 +589,8 @@ func (ts *PerformanceTestSuite) TestAIWebSocketPerformance() {
 
 func (ts *PerformanceTestSuite) TestAINetworkLatency() {
 	ts.recordResult(PerformanceTestResult{
-		TestName: "AI Network Latency",
-		Success:  true,
+		TestName:      "AI Network Latency",
+		Success:       true,
 		ExecutionTime: time.Millisecond * 300,
 		Performance: &PerformanceMetrics{
 			LatencyMS: 25.0,
@@ -600,16 +600,16 @@ func (ts *PerformanceTestSuite) TestAINetworkLatency() {
 
 func (ts *PerformanceTestSuite) TestConnectionRecoveryPerformance() {
 	ts.recordResult(PerformanceTestResult{
-		TestName: "Connection Recovery Performance",
-		Success:  true,
+		TestName:      "Connection Recovery Performance",
+		Success:       true,
 		ExecutionTime: time.Second * 2,
 	})
 }
 
 func (ts *PerformanceTestSuite) TestAIGameplayPerformance() {
 	ts.recordResult(PerformanceTestResult{
-		TestName: "AI Gameplay Performance",
-		Success:  true,
+		TestName:      "AI Gameplay Performance",
+		Success:       true,
 		ExecutionTime: time.Second * 10,
 		Performance: &PerformanceMetrics{
 			ThroughputOpsPerSec: 8.0,
@@ -620,8 +620,8 @@ func (ts *PerformanceTestSuite) TestAIGameplayPerformance() {
 
 func (ts *PerformanceTestSuite) TestAIResponseTimeDuringGame() {
 	ts.recordResult(PerformanceTestResult{
-		TestName: "AI Response Time During Game",
-		Success:  true,
+		TestName:      "AI Response Time During Game",
+		Success:       true,
 		ExecutionTime: time.Second * 5,
 		Performance: &PerformanceMetrics{
 			LatencyMS: 350.0,
@@ -631,8 +631,8 @@ func (ts *PerformanceTestSuite) TestAIResponseTimeDuringGame() {
 
 func (ts *PerformanceTestSuite) TestMultiGameConcurrentPerformance() {
 	ts.recordResult(PerformanceTestResult{
-		TestName: "Multi-Game Concurrent Performance",
-		Success:  true,
+		TestName:      "Multi-Game Concurrent Performance",
+		Success:       true,
 		ExecutionTime: time.Second * 15,
 		Performance: &PerformanceMetrics{
 			ThroughputOpsPerSec: 12.0,
@@ -668,10 +668,10 @@ func (ts *PerformanceTestSuite) createTestGameState(playerID uuid.UUID, tableCar
 }
 
 type QualityTestScenario struct {
-	description   string
-	gameState     *game.AuthenticGameState
-	optimalMove   string
-	expectedCard  *game.Card
+	description  string
+	gameState    *game.AuthenticGameState
+	optimalMove  string
+	expectedCard *game.Card
 }
 
 func (ts *PerformanceTestSuite) createQualityTestScenarios() []QualityTestScenario {
@@ -945,27 +945,27 @@ func (ts *PerformanceTestSuite) GeneratePerformanceReport() {
 
 	// Generate JSON report
 	report := map[string]interface{}{
-		"test_suite": "Romanian Septica AI Performance & Quality",
-		"timestamp":  time.Now().Format(time.RFC3339),
+		"test_suite":        "Romanian Septica AI Performance & Quality",
+		"timestamp":         time.Now().Format(time.RFC3339),
 		"execution_time_ms": totalTime.Milliseconds(),
 		"summary": map[string]interface{}{
-			"total_tests":  ts.totalTests,
-			"passed":       ts.passedTests,
-			"failed":       ts.totalTests - ts.passedTests,
-			"pass_rate":    passRate,
+			"total_tests": ts.totalTests,
+			"passed":      ts.passedTests,
+			"failed":      ts.totalTests - ts.passedTests,
+			"pass_rate":   passRate,
 		},
 		"performance_summary": map[string]interface{}{
-			"avg_latency_ms":       avgLatency,
-			"max_latency_ms":       maxLatency,
-			"avg_throughput":       avgThroughput,
-			"avg_memory_mb":        avgMemory,
-			"performance_met":      performanceMet,
+			"avg_latency_ms":  avgLatency,
+			"max_latency_ms":  maxLatency,
+			"avg_throughput":  avgThroughput,
+			"avg_memory_mb":   avgMemory,
+			"performance_met": performanceMet,
 		},
 		"quality_summary": map[string]interface{}{
-			"decision_quality":     avgQuality * 100,
+			"decision_quality":      avgQuality * 100,
 			"cultural_authenticity": avgAuthenticity * 100,
-			"rule_compliance":      avgCompliance * 100,
-			"quality_met":          qualityMet,
+			"rule_compliance":       avgCompliance * 100,
+			"quality_met":           qualityMet,
 		},
 		"results": ts.results,
 	}

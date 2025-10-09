@@ -18,11 +18,11 @@ type IntegrationTestRunner struct {
 
 // TestResult stores the result of an individual integration test
 type TestResult struct {
-	Name      string
-	Duration  time.Duration
-	Success   bool
-	Error     string
-	Details   map[string]interface{}
+	Name     string
+	Duration time.Duration
+	Success  bool
+	Error    string
+	Details  map[string]interface{}
 }
 
 // NewIntegrationTestRunner creates a new integration test runner
@@ -201,7 +201,7 @@ func (r *IntegrationTestRunner) generateIntegrationTestReport(passed, total, cri
 func ValidateTestEnvironment() error {
 	// Check required components
 	requirements := []struct {
-		name string
+		name  string
 		check func() error
 	}{
 		{

@@ -522,14 +522,14 @@ func (s *Service) generateBrackets(tx *gorm.DB, tournament *database.Tournament)
 
 // TournamentFilter represents filtering options for tournament listing
 type TournamentFilter struct {
-	Status         string `json:"status"`         // registration, in_progress, completed
-	Type           string `json:"type"`           // single_elimination, etc.
-	IsRanked       *bool  `json:"is_ranked"`      // filter by ranked status
-	MinRating      int    `json:"min_rating"`     // player's rating for eligibility
-	MaxRating      int    `json:"max_rating"`     // player's rating for eligibility
+	Status         string `json:"status"`     // registration, in_progress, completed
+	Type           string `json:"type"`       // single_elimination, etc.
+	IsRanked       *bool  `json:"is_ranked"`  // filter by ranked status
+	MinRating      int    `json:"min_rating"` // player's rating for eligibility
+	MaxRating      int    `json:"max_rating"` // player's rating for eligibility
 	IncludePrivate bool   `json:"include_private"`
 	IncludeFull    bool   `json:"include_full"`
-	OrderBy        string `json:"order_by"`       // created_at, tournament_start, prize_pool
+	OrderBy        string `json:"order_by"` // created_at, tournament_start, prize_pool
 	Limit          int    `json:"limit"`
 	Offset         int    `json:"offset"`
 }

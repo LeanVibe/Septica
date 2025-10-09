@@ -24,66 +24,66 @@ var (
 type AuthenticGameMode string
 
 const (
-	ModeTwoPlayer    AuthenticGameMode = "2_player"    // Individual play
-	ModeThreePlayer  AuthenticGameMode = "3_player"    // Individual with wild 8s
-	ModeFourPlayer   AuthenticGameMode = "4_player"    // Team play (1+3 vs 2+4)
+	ModeTwoPlayer   AuthenticGameMode = "2_player" // Individual play
+	ModeThreePlayer AuthenticGameMode = "3_player" // Individual with wild 8s
+	ModeFourPlayer  AuthenticGameMode = "4_player" // Team play (1+3 vs 2+4)
 )
 
 // AuthenticGameState represents the complete state of an authentic Romanian Septica game
 type AuthenticGameState struct {
 	ID              uuid.UUID         `json:"id"`
-	Players         []uuid.UUID       `json:"players"`          // 2-4 players in turn order
-	Teams           [][]uuid.UUID     `json:"teams,omitempty"`  // For 4-player team mode
+	Players         []uuid.UUID       `json:"players"`         // 2-4 players in turn order
+	Teams           [][]uuid.UUID     `json:"teams,omitempty"` // For 4-player team mode
 	CurrentPlayerID uuid.UUID         `json:"current_player_id"`
-	Status          string            `json:"status"`           // waiting, playing, finished
+	Status          string            `json:"status"` // waiting, playing, finished
 	GameMode        AuthenticGameMode `json:"game_mode"`
 
 	// Objection-based game state
-	WaitingForObjection bool          `json:"waiting_for_objection"`
-	LastPlayedCard     *Card         `json:"last_played_card,omitempty"`
-	LastPlayerID       uuid.UUID     `json:"last_player_id,omitempty"`
-	TableCards         []Card        `json:"table_cards"`
+	WaitingForObjection bool      `json:"waiting_for_objection"`
+	LastPlayedCard      *Card     `json:"last_played_card,omitempty"`
+	LastPlayerID        uuid.UUID `json:"last_player_id,omitempty"`
+	TableCards          []Card    `json:"table_cards"`
 
 	// Player hands and scores (indexed by player position)
-	PlayerHands     map[uuid.UUID][]Card `json:"player_hands"`
-	PlayerScores    map[uuid.UUID]int    `json:"player_scores"`
-	TeamScores      map[string]int       `json:"team_scores,omitempty"` // "team1", "team2"
+	PlayerHands  map[uuid.UUID][]Card `json:"player_hands"`
+	PlayerScores map[uuid.UUID]int    `json:"player_scores"`
+	TeamScores   map[string]int       `json:"team_scores,omitempty"` // "team1", "team2"
 
 	// Deck management
-	Deck            []Card        `json:"deck"`
-	WildEights      bool          `json:"wild_eights"`  // true for 3-player variant
+	Deck       []Card `json:"deck"`
+	WildEights bool   `json:"wild_eights"` // true for 3-player variant
 
 	// Game progression
-	RoundNumber     int           `json:"round_number"`
-	MoveNumber      int           `json:"move_number"`
-	SequenceNumber  int           `json:"sequence_number"`
+	RoundNumber    int `json:"round_number"`
+	MoveNumber     int `json:"move_number"`
+	SequenceNumber int `json:"sequence_number"`
 
 	// Timing
-	CreatedAt       time.Time     `json:"created_at"`
-	StartedAt       *time.Time    `json:"started_at"`
-	LastMoveAt      *time.Time    `json:"last_move_at"`
+	CreatedAt  time.Time  `json:"created_at"`
+	StartedAt  *time.Time `json:"started_at"`
+	LastMoveAt *time.Time `json:"last_move_at"`
 }
 
 // AuthenticPlayerAction represents a player's action in authentic Septica
 type AuthenticPlayerAction struct {
-	Type     string    `json:"type"`      // "PLAY_CARD" or "PASS"
+	Type     string    `json:"type"` // "PLAY_CARD" or "PASS"
 	PlayerID uuid.UUID `json:"player_id"`
 	Card     *Card     `json:"card,omitempty"` // nil for PASS
 }
 
 // AuthenticMoveResult represents the result of a move in authentic Septica
 type AuthenticMoveResult struct {
-	Valid              bool                `json:"valid"`
-	Error              string              `json:"error,omitempty"`
-	UpdatedState       *AuthenticGameState `json:"updated_state,omitempty"`
-	RoundComplete      bool                `json:"round_complete"`
-	GameComplete       bool                `json:"game_complete"`
-	WinnerID           *uuid.UUID          `json:"winner_id,omitempty"`
-	WinningTeam        *string             `json:"winning_team,omitempty"` // "team1", "team2"
-	PointsAwarded      int                 `json:"points_awarded"`
-	CollectorPlayerID  *uuid.UUID          `json:"collector_player_id,omitempty"`
-	ObjectionPhase     bool                `json:"objection_phase"`
-	NextPlayerID       uuid.UUID           `json:"next_player_id"`
+	Valid             bool                `json:"valid"`
+	Error             string              `json:"error,omitempty"`
+	UpdatedState      *AuthenticGameState `json:"updated_state,omitempty"`
+	RoundComplete     bool                `json:"round_complete"`
+	GameComplete      bool                `json:"game_complete"`
+	WinnerID          *uuid.UUID          `json:"winner_id,omitempty"`
+	WinningTeam       *string             `json:"winning_team,omitempty"` // "team1", "team2"
+	PointsAwarded     int                 `json:"points_awarded"`
+	CollectorPlayerID *uuid.UUID          `json:"collector_player_id,omitempty"`
+	ObjectionPhase    bool                `json:"objection_phase"`
+	NextPlayerID      uuid.UUID           `json:"next_player_id"`
 }
 
 // RoundResult represents the outcome of a completed round
@@ -96,10 +96,10 @@ type RoundResult struct {
 
 // AuthenticEngineConfig holds configuration for the authentic engine
 type AuthenticEngineConfig struct {
-	UseAuthenticRules bool          `json:"use_authentic_rules"`
+	UseAuthenticRules bool              `json:"use_authentic_rules"`
 	DefaultGameMode   AuthenticGameMode `json:"default_game_mode"`
-	MaxGameDuration   time.Duration `json:"max_game_duration"`
-	ObjectionTimeout  time.Duration `json:"objection_timeout"`
+	MaxGameDuration   time.Duration     `json:"max_game_duration"`
+	ObjectionTimeout  time.Duration     `json:"objection_timeout"`
 }
 
 // AuthenticEngine manages authentic Romanian Septica game logic
@@ -187,26 +187,26 @@ func (e *AuthenticEngine) CreateGame(playerIDs []uuid.UUID, gameMode AuthenticGa
 
 		// Objection state
 		WaitingForObjection: false,
-		LastPlayedCard:     nil,
-		LastPlayerID:       uuid.Nil,
-		TableCards:         []Card{},
+		LastPlayedCard:      nil,
+		LastPlayerID:        uuid.Nil,
+		TableCards:          []Card{},
 
 		// Player data
-		PlayerHands:     playerHands,
-		PlayerScores:    playerScores,
-		TeamScores:      teamScores,
+		PlayerHands:  playerHands,
+		PlayerScores: playerScores,
+		TeamScores:   teamScores,
 
 		// Deck
-		Deck:            remainingDeck,
-		WildEights:      gameMode == ModeThreePlayer,
+		Deck:       remainingDeck,
+		WildEights: gameMode == ModeThreePlayer,
 
 		// Progression
-		RoundNumber:     1,
-		MoveNumber:      1,
-		SequenceNumber:  0,
+		RoundNumber:    1,
+		MoveNumber:     1,
+		SequenceNumber: 0,
 
 		// Timing
-		CreatedAt:       time.Now(),
+		CreatedAt: time.Now(),
 	}
 
 	now := time.Now()
@@ -355,12 +355,12 @@ func (e *AuthenticEngine) processInitialPlay(game *AuthenticGameState, action Au
 	game.LastMoveAt = &now
 
 	return &AuthenticMoveResult{
-		Valid:         true,
-		UpdatedState:  game,
-		RoundComplete: false,
-		GameComplete:  false,
+		Valid:          true,
+		UpdatedState:   game,
+		RoundComplete:  false,
+		GameComplete:   false,
 		ObjectionPhase: true,
-		NextPlayerID:  game.CurrentPlayerID,
+		NextPlayerID:   game.CurrentPlayerID,
 	}, nil
 }
 

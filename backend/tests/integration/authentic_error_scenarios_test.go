@@ -280,7 +280,7 @@ func testMalformedMessageHandling(t *testing.T, suite *IntegrationTestSuite) {
 
 	// Connection should still be alive
 	err = player1.SendMessage(ws.Message{
-		Type: "ping",
+		Type:    "ping",
 		Payload: map[string]interface{}{},
 	})
 	assert.NoError(t, err)

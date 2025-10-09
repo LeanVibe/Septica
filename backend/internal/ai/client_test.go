@@ -210,7 +210,7 @@ func TestAIClient_HandleCardPlayMove(t *testing.T) {
 		Status:          "playing",
 		PlayerHands: map[uuid.UUID][]game.Card{
 			ai.ID: {
-				{ID: uuid.New().String(), Suit: "Hearts", Value: 7},  // 7 always beats
+				{ID: uuid.New().String(), Suit: "Hearts", Value: 7},    // 7 always beats
 				{ID: uuid.New().String(), Suit: "Diamonds", Value: 10}, // Point card
 			},
 		},

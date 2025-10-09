@@ -22,38 +22,38 @@ import (
 
 // TestConfig holds configuration for matchmaking integration tests
 type TestConfig struct {
-	BackendPort    int           `json:"backend_port"`
-	TestTimeout    time.Duration `json:"test_timeout"`
-	MaxConcurrentTests int       `json:"max_concurrent_tests"`
+	BackendPort         int           `json:"backend_port"`
+	TestTimeout         time.Duration `json:"test_timeout"`
+	MaxConcurrentTests  int           `json:"max_concurrent_tests"`
 	AIDeploymentTimeout time.Duration `json:"ai_deployment_timeout"`
-	ExpectedAICount    int           `json:"expected_ai_count"`
+	ExpectedAICount     int           `json:"expected_ai_count"`
 }
 
 // TestResult represents the result of a matchmaking integration test
 type MatchmakingTestResult struct {
-	TestName           string          `json:"test_name"`
-	Success            bool            `json:"success"`
-	ExecutionTime      time.Duration   `json:"execution_time"`
-	ErrorMessage       string          `json:"error_message,omitempty"`
-	AIDeploymentTime   time.Duration   `json:"ai_deployment_time,omitempty"`
-	AIPlayersDeployed  []string        `json:"ai_players_deployed,omitempty"`
-	MatchmakingStats   interface{}     `json:"matchmaking_stats,omitempty"`
-	DatabaseRecords    int             `json:"database_records,omitempty"`
+	TestName             string        `json:"test_name"`
+	Success              bool          `json:"success"`
+	ExecutionTime        time.Duration `json:"execution_time"`
+	ErrorMessage         string        `json:"error_message,omitempty"`
+	AIDeploymentTime     time.Duration `json:"ai_deployment_time,omitempty"`
+	AIPlayersDeployed    []string      `json:"ai_players_deployed,omitempty"`
+	MatchmakingStats     interface{}   `json:"matchmaking_stats,omitempty"`
+	DatabaseRecords      int           `json:"database_records,omitempty"`
 	WebSocketConnections int           `json:"websocket_connections,omitempty"`
-	Details            interface{}     `json:"details,omitempty"`
+	Details              interface{}   `json:"details,omitempty"`
 }
 
 // MatchmakingTestSuite manages all AI matchmaking integration tests
 type MatchmakingTestSuite struct {
-	config         *TestConfig
-	logger         *logger.Logger
-	db             *gorm.DB
-	hub            *websocket.Hub
-	aiManager      *ai.AIMatchmakingManager
-	results        []MatchmakingTestResult
-	totalTests     int
-	passedTests    int
-	startTime      time.Time
+	config      *TestConfig
+	logger      *logger.Logger
+	db          *gorm.DB
+	hub         *websocket.Hub
+	aiManager   *ai.AIMatchmakingManager
+	results     []MatchmakingTestResult
+	totalTests  int
+	passedTests int
+	startTime   time.Time
 }
 
 // NewMatchmakingTestSuite creates a new test suite for AI matchmaking integration
@@ -230,9 +230,9 @@ func (ts *MatchmakingTestSuite) TestAIManagerStartup() {
 		Success:       true,
 		ExecutionTime: time.Since(start),
 		Details: map[string]interface{}{
-			"config_valid":     configValid,
-			"active_ai_count":  activeAICount,
-			"manager_running":  true,
+			"config_valid":    configValid,
+			"active_ai_count": activeAICount,
+			"manager_running": true,
 		},
 	})
 }
@@ -274,10 +274,10 @@ func (ts *MatchmakingTestSuite) TestAIManagerConfiguration() {
 			return ""
 		}(),
 		Details: map[string]interface{}{
-			"expected_timeout":    newConfig.ActivationTimeout,
-			"actual_timeout":      updatedConfig.ActivationTimeout,
-			"expected_max_ai":     newConfig.MaxConcurrentAI,
-			"actual_max_ai":       updatedConfig.MaxConcurrentAI,
+			"expected_timeout": newConfig.ActivationTimeout,
+			"actual_timeout":   updatedConfig.ActivationTimeout,
+			"expected_max_ai":  newConfig.MaxConcurrentAI,
+			"actual_max_ai":    updatedConfig.MaxConcurrentAI,
 		},
 	})
 }
@@ -346,8 +346,8 @@ func (ts *MatchmakingTestSuite) TestAIPlayerDeployment() {
 		ExecutionTime:    time.Since(start),
 		AIDeploymentTime: time.Since(start),
 		Details: map[string]interface{}{
-			"initial_ai_count": initialAICount,
-			"final_ai_count":   finalAICount,
+			"initial_ai_count":     initialAICount,
+			"final_ai_count":       finalAICount,
 			"deployment_triggered": deploymentOccurred,
 		},
 	})
@@ -370,21 +370,21 @@ func (ts *MatchmakingTestSuite) TestMultipleAIDeployment() {
 	multipleDeployment := finalCount > initialCount
 
 	ts.recordResult(MatchmakingTestResult{
-		TestName:         testName,
-		Success:          multipleDeployment,
-		ExecutionTime:    time.Since(start),
+		TestName:      testName,
+		Success:       multipleDeployment,
+		ExecutionTime: time.Since(start),
 		AIPlayersDeployed: func() []string {
 			// In real implementation, this would capture actual AI player names
 			aiNames := []string{}
-			for i := 0; i < finalCount - initialCount; i++ {
+			for i := 0; i < finalCount-initialCount; i++ {
 				aiNames = append(aiNames, fmt.Sprintf("TestAI_%d", i+1))
 			}
 			return aiNames
 		}(),
 		Details: map[string]interface{}{
-			"initial_count":    initialCount,
-			"final_count":      finalCount,
-			"net_deployment":   finalCount - initialCount,
+			"initial_count":     initialCount,
+			"final_count":       finalCount,
+			"net_deployment":    finalCount - initialCount,
 			"deployment_cycles": 3,
 		},
 	})
@@ -430,7 +430,7 @@ func (ts *MatchmakingTestSuite) TestRomanianAINames() {
 				suffix := parts[1]
 
 				if authenticRomanianNames[firstName] &&
-				   validSuffixes[difficulty] == suffix {
+					validSuffixes[difficulty] == suffix {
 					validRomanianNames++
 				}
 			}
@@ -451,11 +451,11 @@ func (ts *MatchmakingTestSuite) TestRomanianAINames() {
 			return ""
 		}(),
 		Details: map[string]interface{}{
-			"generated_names":        generatedNames,
-			"total_names":           totalNames,
-			"valid_romanian_names":  validRomanianNames,
-			"cultural_accuracy":     culturalAccuracy * 100,
-			"difficulties_tested":   difficulties,
+			"generated_names":      generatedNames,
+			"total_names":          totalNames,
+			"valid_romanian_names": validRomanianNames,
+			"cultural_accuracy":    culturalAccuracy * 100,
+			"difficulties_tested":  difficulties,
 		},
 	})
 }
@@ -465,8 +465,8 @@ func (ts *MatchmakingTestSuite) TestRomanianAINames() {
 
 func (ts *MatchmakingTestSuite) TestAIDifficultyDistribution() {
 	ts.recordResult(MatchmakingTestResult{
-		TestName: "AI Difficulty Distribution",
-		Success:  true, // Placeholder
+		TestName:      "AI Difficulty Distribution",
+		Success:       true, // Placeholder
 		ExecutionTime: time.Millisecond * 150,
 		Details: map[string]interface{}{
 			"easy_percentage":   40.0,
@@ -478,8 +478,8 @@ func (ts *MatchmakingTestSuite) TestAIDifficultyDistribution() {
 
 func (ts *MatchmakingTestSuite) TestAIRatingGeneration() {
 	ts.recordResult(MatchmakingTestResult{
-		TestName: "AI Rating Generation Logic",
-		Success:  true,
+		TestName:      "AI Rating Generation Logic",
+		Success:       true,
 		ExecutionTime: time.Millisecond * 100,
 		Details: map[string]interface{}{
 			"rating_range_min": 800,
@@ -491,61 +491,61 @@ func (ts *MatchmakingTestSuite) TestAIRatingGeneration() {
 
 func (ts *MatchmakingTestSuite) TestAIPlayerDatabaseRecords() {
 	ts.recordResult(MatchmakingTestResult{
-		TestName: "AI Player Database Record Creation",
-		Success:  true,
-		ExecutionTime: time.Millisecond * 200,
+		TestName:        "AI Player Database Record Creation",
+		Success:         true,
+		ExecutionTime:   time.Millisecond * 200,
 		DatabaseRecords: 3,
 	})
 }
 
 func (ts *MatchmakingTestSuite) TestAIPlayerCleanup() {
 	ts.recordResult(MatchmakingTestResult{
-		TestName: "AI Player Cleanup After Games",
-		Success:  true,
+		TestName:      "AI Player Cleanup After Games",
+		Success:       true,
 		ExecutionTime: time.Millisecond * 180,
 	})
 }
 
 func (ts *MatchmakingTestSuite) TestDatabaseConsistency() {
 	ts.recordResult(MatchmakingTestResult{
-		TestName: "Database Consistency Validation",
-		Success:  true,
+		TestName:      "Database Consistency Validation",
+		Success:       true,
 		ExecutionTime: time.Millisecond * 250,
 	})
 }
 
 func (ts *MatchmakingTestSuite) TestAIWebSocketConnection() {
 	ts.recordResult(MatchmakingTestResult{
-		TestName: "AI WebSocket Connection Establishment",
-		Success:  true,
-		ExecutionTime: time.Millisecond * 300,
+		TestName:             "AI WebSocket Connection Establishment",
+		Success:              true,
+		ExecutionTime:        time.Millisecond * 300,
 		WebSocketConnections: 3,
 	})
 }
 
 func (ts *MatchmakingTestSuite) TestAIMatchmakingJoin() {
 	ts.recordResult(MatchmakingTestResult{
-		TestName: "AI Join Matchmaking Queue",
-		Success:  true,
+		TestName:      "AI Join Matchmaking Queue",
+		Success:       true,
 		ExecutionTime: time.Millisecond * 220,
 	})
 }
 
 func (ts *MatchmakingTestSuite) TestAIGameStateSync() {
 	ts.recordResult(MatchmakingTestResult{
-		TestName: "AI Game State Synchronization",
-		Success:  true,
+		TestName:      "AI Game State Synchronization",
+		Success:       true,
 		ExecutionTime: time.Millisecond * 180,
 	})
 }
 
 func (ts *MatchmakingTestSuite) TestQueueMonitoring() {
 	ts.recordResult(MatchmakingTestResult{
-		TestName: "Queue Monitoring and Statistics",
-		Success:  true,
+		TestName:      "Queue Monitoring and Statistics",
+		Success:       true,
 		ExecutionTime: time.Millisecond * 160,
 		MatchmakingStats: map[string]interface{}{
-			"queue_checks": 5,
+			"queue_checks":  5,
 			"avg_wait_time": "8.5s",
 		},
 	})
@@ -553,16 +553,16 @@ func (ts *MatchmakingTestSuite) TestQueueMonitoring() {
 
 func (ts *MatchmakingTestSuite) TestAIActivationTriggers() {
 	ts.recordResult(MatchmakingTestResult{
-		TestName: "AI Activation Trigger Conditions",
-		Success:  true,
+		TestName:      "AI Activation Trigger Conditions",
+		Success:       true,
 		ExecutionTime: time.Millisecond * 140,
 	})
 }
 
 func (ts *MatchmakingTestSuite) TestConcurrentPlayerLimits() {
 	ts.recordResult(MatchmakingTestResult{
-		TestName: "Concurrent AI Player Limits",
-		Success:  true,
+		TestName:      "Concurrent AI Player Limits",
+		Success:       true,
 		ExecutionTime: time.Millisecond * 120,
 		Details: map[string]interface{}{
 			"max_concurrent_limit": 10,
@@ -573,11 +573,11 @@ func (ts *MatchmakingTestSuite) TestConcurrentPlayerLimits() {
 
 func (ts *MatchmakingTestSuite) TestCulturalAuthenticity() {
 	ts.recordResult(MatchmakingTestResult{
-		TestName: "Overall Cultural Authenticity",
-		Success:  true,
+		TestName:      "Overall Cultural Authenticity",
+		Success:       true,
 		ExecutionTime: time.Millisecond * 200,
 		Details: map[string]interface{}{
-			"cultural_score": 95.0,
+			"cultural_score":     95.0,
 			"authenticity_level": "High",
 		},
 	})
@@ -585,11 +585,11 @@ func (ts *MatchmakingTestSuite) TestCulturalAuthenticity() {
 
 func (ts *MatchmakingTestSuite) TestAIPerformanceUnderLoad() {
 	ts.recordResult(MatchmakingTestResult{
-		TestName: "AI Performance Under Load",
-		Success:  true,
+		TestName:      "AI Performance Under Load",
+		Success:       true,
 		ExecutionTime: time.Millisecond * 300,
 		Details: map[string]interface{}{
-			"concurrent_ai": 10,
+			"concurrent_ai":     10,
 			"avg_response_time": "250ms",
 		},
 	})
@@ -597,23 +597,23 @@ func (ts *MatchmakingTestSuite) TestAIPerformanceUnderLoad() {
 
 func (ts *MatchmakingTestSuite) TestMemoryUsage() {
 	ts.recordResult(MatchmakingTestResult{
-		TestName: "Memory Usage Validation",
-		Success:  true,
+		TestName:      "Memory Usage Validation",
+		Success:       true,
 		ExecutionTime: time.Millisecond * 100,
 		Details: map[string]interface{}{
 			"memory_per_ai": "2.5MB",
-			"total_memory": "25MB",
+			"total_memory":  "25MB",
 		},
 	})
 }
 
 func (ts *MatchmakingTestSuite) TestConnectionStability() {
 	ts.recordResult(MatchmakingTestResult{
-		TestName: "WebSocket Connection Stability",
-		Success:  true,
+		TestName:      "WebSocket Connection Stability",
+		Success:       true,
 		ExecutionTime: time.Millisecond * 400,
 		Details: map[string]interface{}{
-			"connection_uptime": "100%",
+			"connection_uptime":     "100%",
 			"reconnection_attempts": 0,
 		},
 	})
@@ -719,22 +719,22 @@ func (ts *MatchmakingTestSuite) GenerateReport() {
 
 	// Generate JSON report
 	report := map[string]interface{}{
-		"test_suite": "Romanian Septica AI Matchmaking Integration",
-		"timestamp": time.Now().Format(time.RFC3339),
+		"test_suite":        "Romanian Septica AI Matchmaking Integration",
+		"timestamp":         time.Now().Format(time.RFC3339),
 		"execution_time_ms": totalTime.Milliseconds(),
-		"backend_port": ts.config.BackendPort,
+		"backend_port":      ts.config.BackendPort,
 		"summary": map[string]interface{}{
 			"total_tests": ts.totalTests,
-			"passed": ts.passedTests,
-			"failed": ts.totalTests - ts.passedTests,
-			"pass_rate": passRate,
+			"passed":      ts.passedTests,
+			"failed":      ts.totalTests - ts.passedTests,
+			"pass_rate":   passRate,
 		},
 		"integration_metrics": map[string]interface{}{
-			"ai_players_deployed": totalAIDeployed,
-			"database_records": totalDBRecords,
+			"ai_players_deployed":   totalAIDeployed,
+			"database_records":      totalDBRecords,
 			"websocket_connections": totalWSConnections,
 		},
-		"results": ts.results,
+		"results":         ts.results,
 		"critical_issues": criticalIssues,
 	}
 

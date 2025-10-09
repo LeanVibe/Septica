@@ -16,10 +16,10 @@ import (
 
 // QueueStats represents statistics about a matchmaking queue
 type QueueStats struct {
-	TotalPlayers    int                      `json:"total_players"`
-	LongestWaitTime time.Duration            `json:"longest_wait_time"`
-	AverageWaitTime time.Duration            `json:"average_wait_time"`
-	PlayersWaiting  []PlayerWaitInfo         `json:"players_waiting"`
+	TotalPlayers    int              `json:"total_players"`
+	LongestWaitTime time.Duration    `json:"longest_wait_time"`
+	AverageWaitTime time.Duration    `json:"average_wait_time"`
+	PlayersWaiting  []PlayerWaitInfo `json:"players_waiting"`
 }
 
 // PlayerWaitInfo represents a player waiting in queue
@@ -31,11 +31,11 @@ type PlayerWaitInfo struct {
 
 // AIMatchmakingConfig holds configuration for AI matchmaking integration
 type AIMatchmakingConfig struct {
-	Enabled               bool          `json:"enabled"`                 // Enable/disable AI matchmaking
-	ActivationTimeout     time.Duration `json:"activation_timeout"`      // 30-40 seconds
-	MaxConcurrentAI       int           `json:"max_concurrent_ai"`       // Max AI players active at once
+	Enabled                bool               `json:"enabled"`                 // Enable/disable AI matchmaking
+	ActivationTimeout      time.Duration      `json:"activation_timeout"`      // 30-40 seconds
+	MaxConcurrentAI        int                `json:"max_concurrent_ai"`       // Max AI players active at once
 	DifficultyDistribution map[string]float64 `json:"difficulty_distribution"` // % of each difficulty
-	RatingRange           struct {
+	RatingRange            struct {
 		Min int `json:"min"`
 		Max int `json:"max"`
 	} `json:"rating_range"`
@@ -61,19 +61,19 @@ func DefaultAIMatchmakingConfig() *AIMatchmakingConfig {
 
 // AIMatchmakingManager handles AI player integration with matchmaking
 type AIMatchmakingManager struct {
-	config          *AIMatchmakingConfig     `json:"config"`
-	hub             *websocket.Hub           `json:"-"`
-	db              *gorm.DB                 `json:"-"`
-	logger          *logger.Logger           `json:"-"`
+	config *AIMatchmakingConfig `json:"config"`
+	hub    *websocket.Hub       `json:"-"`
+	db     *gorm.DB             `json:"-"`
+	logger *logger.Logger       `json:"-"`
 
 	// Active AI players
-	activeAI        map[uuid.UUID]*AIWebSocketClient `json:"-"`
-	aiMutex         sync.RWMutex                     `json:"-"`
+	activeAI map[uuid.UUID]*AIWebSocketClient `json:"-"`
+	aiMutex  sync.RWMutex                     `json:"-"`
 
 	// Monitoring
 	queueMonitorTicker *time.Ticker `json:"-"`
-	stopChan           chan bool     `json:"-"`
-	isRunning          bool          `json:"is_running"`
+	stopChan           chan bool    `json:"-"`
+	isRunning          bool         `json:"is_running"`
 }
 
 // NewAIMatchmakingManager creates a new AI matchmaking manager

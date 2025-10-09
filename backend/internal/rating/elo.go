@@ -13,13 +13,13 @@ type ELOConfig struct {
 	BaseKFactor int
 
 	// K-factor adjustments based on player characteristics
-	ProvisionalKFactor   int // For players with < 30 games
-	HighRatedKFactor     int // For players with rating > 2400
+	ProvisionalKFactor   int     // For players with < 30 games
+	HighRatedKFactor     int     // For players with rating > 2400
 	TournamentMultiplier float64 // Multiplier for tournament games
 
 	// Rating boundaries
-	MinRating int
-	MaxRating int
+	MinRating      int
+	MaxRating      int
 	StartingRating int
 
 	// Provisional period
@@ -33,9 +33,9 @@ func DefaultELOConfig() *ELOConfig {
 		ProvisionalKFactor:   40,
 		HighRatedKFactor:     16,
 		TournamentMultiplier: 1.5,
-		MinRating:           600,
-		MaxRating:           3000,
-		StartingRating:      1200,
+		MinRating:            600,
+		MaxRating:            3000,
+		StartingRating:       1200,
 		ProvisionalGameCount: 30,
 	}
 }
@@ -61,24 +61,24 @@ type RatingCalculation struct {
 	ActualScore    float64
 	RatingChange   int
 	NewRating      int
-	
+
 	// Context information
-	GameID       *uuid.UUID
-	TournamentID *uuid.UUID
-	GameMode     string
-	IsMars       bool
+	GameID          *uuid.UUID
+	TournamentID    *uuid.UUID
+	GameMode        string
+	IsMars          bool
 	ScoreDifference int
 }
 
 // PlayerRatingInfo holds information about a player's current rating state
 type PlayerRatingInfo struct {
-	PlayerID        uuid.UUID
-	CurrentRating   int
-	GamesPlayed     int
-	IsProvisional   bool
-	LastGameDate    *time.Time
-	WinStreak       int
-	LossStreak      int
+	PlayerID      uuid.UUID
+	CurrentRating int
+	GamesPlayed   int
+	IsProvisional bool
+	LastGameDate  *time.Time
+	WinStreak     int
+	LossStreak    int
 }
 
 // ELOCalculator handles ELO rating calculations
@@ -103,43 +103,43 @@ func (calc *ELOCalculator) CalculateRatingChange(
 	result GameResult,
 	gameContext *GameContext,
 ) *RatingCalculation {
-	
+
 	// Determine K-factor
 	kFactor := calc.determineKFactor(playerInfo, gameContext)
-	
+
 	// Calculate expected score using ELO formula
 	expectedScore := calc.calculateExpectedScore(playerInfo.CurrentRating, opponentRating)
-	
+
 	// Convert game result to actual score
 	actualScore := calc.gameResultToScore(result)
-	
+
 	// Apply performance modifiers
 	performanceMultiplier := calc.calculatePerformanceMultiplier(result, gameContext)
-	
+
 	// Calculate raw rating change
 	rawChange := float64(kFactor) * (actualScore - expectedScore) * performanceMultiplier
-	
+
 	// Round and apply bounds
 	ratingChange := int(math.Round(rawChange))
 	newRating := calc.applyRatingBounds(playerInfo.CurrentRating + ratingChange)
-	
+
 	// Adjust change based on actual new rating (in case bounds were applied)
 	ratingChange = newRating - playerInfo.CurrentRating
-	
+
 	return &RatingCalculation{
-		PlayerID:       playerInfo.PlayerID,
-		PlayerRating:   playerInfo.CurrentRating,
-		OpponentRating: opponentRating,
-		Result:         result,
-		KFactor:        kFactor,
-		ExpectedScore:  expectedScore,
-		ActualScore:    actualScore,
-		RatingChange:   ratingChange,
-		NewRating:      newRating,
-		GameID:         gameContext.GameID,
-		TournamentID:   gameContext.TournamentID,
-		GameMode:       gameContext.GameMode,
-		IsMars:         gameContext.IsMars,
+		PlayerID:        playerInfo.PlayerID,
+		PlayerRating:    playerInfo.CurrentRating,
+		OpponentRating:  opponentRating,
+		Result:          result,
+		KFactor:         kFactor,
+		ExpectedScore:   expectedScore,
+		ActualScore:     actualScore,
+		RatingChange:    ratingChange,
+		NewRating:       newRating,
+		GameID:          gameContext.GameID,
+		TournamentID:    gameContext.TournamentID,
+		GameMode:        gameContext.GameMode,
+		IsMars:          gameContext.IsMars,
 		ScoreDifference: gameContext.ScoreDifference,
 	}
 }
@@ -151,10 +151,10 @@ func (calc *ELOCalculator) CalculateBothPlayersRatingChange(
 	winner GameResult, // From player 1's perspective
 	gameContext *GameContext,
 ) (*RatingCalculation, *RatingCalculation) {
-	
+
 	// Player 1's perspective
 	player1Result := winner
-	
+
 	// Player 2's perspective (opposite result)
 	var player2Result GameResult
 	switch winner {
@@ -165,15 +165,15 @@ func (calc *ELOCalculator) CalculateBothPlayersRatingChange(
 	case GameResultDraw:
 		player2Result = GameResultDraw
 	}
-	
+
 	// Calculate for both players
 	player1Calc := calc.CalculateRatingChange(player1Info, player2Info.CurrentRating, player1Result, gameContext)
 	player2Calc := calc.CalculateRatingChange(player2Info, player1Info.CurrentRating, player2Result, gameContext)
-	
+
 	// Set opponent IDs
 	player1Calc.OpponentID = player2Info.PlayerID
 	player2Calc.OpponentID = player1Info.PlayerID
-	
+
 	return player1Calc, player2Calc
 }
 
@@ -192,27 +192,27 @@ type GameContext struct {
 // determineKFactor calculates the appropriate K-factor for a player
 func (calc *ELOCalculator) determineKFactor(playerInfo *PlayerRatingInfo, gameContext *GameContext) int {
 	baseK := calc.config.BaseKFactor
-	
+
 	// Provisional period (higher K-factor for new players)
 	if playerInfo.IsProvisional || playerInfo.GamesPlayed < calc.config.ProvisionalGameCount {
 		baseK = calc.config.ProvisionalKFactor
 	}
-	
+
 	// Lower K-factor for highly rated players
 	if playerInfo.CurrentRating >= 2400 {
 		baseK = calc.config.HighRatedKFactor
 	}
-	
+
 	// Tournament games have higher impact
 	if gameContext.TournamentID != nil {
 		baseK = int(float64(baseK) * calc.config.TournamentMultiplier)
 	}
-	
+
 	// Playoff games have even higher impact
 	if gameContext.IsPlayoff {
 		baseK = int(float64(baseK) * 1.2)
 	}
-	
+
 	return baseK
 }
 
@@ -238,7 +238,7 @@ func (calc *ELOCalculator) gameResultToScore(result GameResult) float64 {
 // calculatePerformanceMultiplier applies modifiers based on game performance
 func (calc *ELOCalculator) calculatePerformanceMultiplier(result GameResult, gameContext *GameContext) float64 {
 	multiplier := 1.0
-	
+
 	// Mars wins/losses have higher impact
 	if gameContext.IsMars {
 		if result == GameResultWin {
@@ -247,7 +247,7 @@ func (calc *ELOCalculator) calculatePerformanceMultiplier(result GameResult, gam
 			multiplier *= 1.2 // Mars loss penalty
 		}
 	}
-	
+
 	// Score difference modifier (subtle)
 	if gameContext.ScoreDifference > 0 {
 		if result == GameResultWin {
@@ -259,7 +259,7 @@ func (calc *ELOCalculator) calculatePerformanceMultiplier(result GameResult, gam
 			multiplier *= scoreFactor
 		}
 	}
-	
+
 	return multiplier
 }
 
@@ -298,9 +298,9 @@ func (calc *ELOCalculator) CalculateRatingRequirement(opponentRating int, target
 	if targetWinRate <= 0.0 {
 		return calc.config.MinRating
 	}
-	
-	logValue := math.Log10((1.0/targetWinRate) - 1.0)
+
+	logValue := math.Log10((1.0 / targetWinRate) - 1.0)
 	requiredRating := float64(opponentRating) + (400.0 * logValue)
-	
+
 	return calc.applyRatingBounds(int(math.Round(requiredRating)))
 }

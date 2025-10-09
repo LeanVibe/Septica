@@ -29,56 +29,56 @@ type IncomingMessage struct {
 // Connection management messages
 const (
 	// Client -> Server
-	MessageTypePing             = "ping"
-	MessageTypeJoinGame         = "join_game"
-	MessageTypeLeaveGame        = "leave_game"
-	MessageTypePlayCard         = "play_card"
-	MessageTypePass             = "pass"              // New: Player chooses not to object
-	MessageTypeGetGameState     = "get_game_state"
-	MessageTypeChatMessage      = "chat_message"
-	MessageTypeJoinMatchmaking  = "join_matchmaking"
-	MessageTypeLeaveMatchmaking = "leave_matchmaking"
+	MessageTypePing              = "ping"
+	MessageTypeJoinGame          = "join_game"
+	MessageTypeLeaveGame         = "leave_game"
+	MessageTypePlayCard          = "play_card"
+	MessageTypePass              = "pass" // New: Player chooses not to object
+	MessageTypeGetGameState      = "get_game_state"
+	MessageTypeChatMessage       = "chat_message"
+	MessageTypeJoinMatchmaking   = "join_matchmaking"
+	MessageTypeLeaveMatchmaking  = "leave_matchmaking"
 	MessageTypeMatchmakingStatus = "matchmaking_status"
 
 	// Server -> Client
-	MessageTypePong                = "pong"
-	MessageTypeConnectionAck       = "connection_ack"
-	MessageTypeError               = "error"
-	MessageTypeGameState           = "game_state"
-	MessageTypeMoveResult          = "move_result"
-	MessageTypeObjectionWait       = "objection_wait"    // New: Waiting for objection decision
-	MessageTypeRoundComplete       = "round_complete"    // New: Round ended
-	MessageTypePlayerJoined        = "player_joined"
-	MessageTypePlayerLeft          = "player_left"
-	MessageTypeGameEnd             = "game_end"
-	MessageTypeHeartbeat           = "heartbeat"
-	MessageTypeChatReceived        = "chat_received"
-	MessageTypeMatchmakingJoined   = "matchmaking_joined"
-	MessageTypeMatchmakingUpdate   = "matchmaking_update"
-	MessageTypeMatchFound          = "match_found"
-	MessageTypeMatchmakingLeft     = "matchmaking_left"
-	MessageTypeMatchmakingError    = "matchmaking_error"
+	MessageTypePong              = "pong"
+	MessageTypeConnectionAck     = "connection_ack"
+	MessageTypeError             = "error"
+	MessageTypeGameState         = "game_state"
+	MessageTypeMoveResult        = "move_result"
+	MessageTypeObjectionWait     = "objection_wait" // New: Waiting for objection decision
+	MessageTypeRoundComplete     = "round_complete" // New: Round ended
+	MessageTypePlayerJoined      = "player_joined"
+	MessageTypePlayerLeft        = "player_left"
+	MessageTypeGameEnd           = "game_end"
+	MessageTypeHeartbeat         = "heartbeat"
+	MessageTypeChatReceived      = "chat_received"
+	MessageTypeMatchmakingJoined = "matchmaking_joined"
+	MessageTypeMatchmakingUpdate = "matchmaking_update"
+	MessageTypeMatchFound        = "match_found"
+	MessageTypeMatchmakingLeft   = "matchmaking_left"
+	MessageTypeMatchmakingError  = "matchmaking_error"
 
 	// Game state notifications
-	MessageTypeGameStarted    = "game_started"
-	MessageTypeTrickComplete  = "trick_complete"  // Legacy - kept for backward compatibility
-	MessageTypePlayerTurn     = "player_turn"
-	MessageTypeGamePaused     = "game_paused"
-	MessageTypeGameResumed    = "game_resumed"
+	MessageTypeGameStarted   = "game_started"
+	MessageTypeTrickComplete = "trick_complete" // Legacy - kept for backward compatibility
+	MessageTypePlayerTurn    = "player_turn"
+	MessageTypeGamePaused    = "game_paused"
+	MessageTypeGameResumed   = "game_resumed"
 )
 
 // Error types for consistent error handling
 const (
-	ErrorTypeInvalidMessage     = "invalid_message"
-	ErrorTypeNotAuthorized      = "not_authorized"
-	ErrorTypeGameNotFound       = "game_not_found"
-	ErrorTypePlayerNotInGame    = "player_not_in_game"
-	ErrorTypeInvalidMove        = "invalid_move"
-	ErrorTypeNotPlayerTurn      = "not_player_turn"
-	ErrorTypeGameFull           = "game_full"
-	ErrorTypeConnectionFailed   = "connection_failed"
-	ErrorTypeRateLimited        = "rate_limited"
-	ErrorTypeServerError        = "server_error"
+	ErrorTypeInvalidMessage   = "invalid_message"
+	ErrorTypeNotAuthorized    = "not_authorized"
+	ErrorTypeGameNotFound     = "game_not_found"
+	ErrorTypePlayerNotInGame  = "player_not_in_game"
+	ErrorTypeInvalidMove      = "invalid_move"
+	ErrorTypeNotPlayerTurn    = "not_player_turn"
+	ErrorTypeGameFull         = "game_full"
+	ErrorTypeConnectionFailed = "connection_failed"
+	ErrorTypeRateLimited      = "rate_limited"
+	ErrorTypeServerError      = "server_error"
 )
 
 // Payload structures for specific message types
@@ -109,28 +109,28 @@ type ChatMessagePayload struct {
 
 // GameStatePayload represents the game state sent to clients
 type GameStatePayload struct {
-	GameID             uuid.UUID `json:"game_id"`
-	CurrentPlayerID    uuid.UUID `json:"current_player_id"`
-	YourTurn           bool      `json:"your_turn"`
-	YourCards          []Card    `json:"your_cards"`
-	OpponentCardCount  int       `json:"opponent_card_count"`
-	TableCards         []Card    `json:"table_cards"`
-	ValidMoves         []Card    `json:"valid_moves"`
-	Scores             map[string]int `json:"scores"`
-	TrickNumber        int       `json:"trick_number"`
-	MoveNumber         int       `json:"move_number"`
-	SequenceNumber     int       `json:"sequence_number"`
-	Status             string    `json:"status"`
+	GameID            uuid.UUID      `json:"game_id"`
+	CurrentPlayerID   uuid.UUID      `json:"current_player_id"`
+	YourTurn          bool           `json:"your_turn"`
+	YourCards         []Card         `json:"your_cards"`
+	OpponentCardCount int            `json:"opponent_card_count"`
+	TableCards        []Card         `json:"table_cards"`
+	ValidMoves        []Card         `json:"valid_moves"`
+	Scores            map[string]int `json:"scores"`
+	TrickNumber       int            `json:"trick_number"`
+	MoveNumber        int            `json:"move_number"`
+	SequenceNumber    int            `json:"sequence_number"`
+	Status            string         `json:"status"`
 
 	// Authentic Septica extensions
-	WaitingForObjection bool       `json:"waiting_for_objection,omitempty"`
-	LastPlayedCard     *Card       `json:"last_played_card,omitempty"`
-	LastPlayerID       *uuid.UUID  `json:"last_player_id,omitempty"`
-	GameMode           string      `json:"game_mode,omitempty"`           // "2_player", "3_player", "4_player"
-	Teams              [][]uuid.UUID `json:"teams,omitempty"`              // For 4-player team mode
-	TeamScores         map[string]int `json:"team_scores,omitempty"`       // "team1", "team2"
-	CanPass            bool        `json:"can_pass,omitempty"`            // Can player pass (not object)
-	ObjectionTimeout   int         `json:"objection_timeout,omitempty"`   // Seconds remaining
+	WaitingForObjection bool           `json:"waiting_for_objection,omitempty"`
+	LastPlayedCard      *Card          `json:"last_played_card,omitempty"`
+	LastPlayerID        *uuid.UUID     `json:"last_player_id,omitempty"`
+	GameMode            string         `json:"game_mode,omitempty"`         // "2_player", "3_player", "4_player"
+	Teams               [][]uuid.UUID  `json:"teams,omitempty"`             // For 4-player team mode
+	TeamScores          map[string]int `json:"team_scores,omitempty"`       // "team1", "team2"
+	CanPass             bool           `json:"can_pass,omitempty"`          // Can player pass (not object)
+	ObjectionTimeout    int            `json:"objection_timeout,omitempty"` // Seconds remaining
 }
 
 // Card represents a playing card in message payloads
@@ -142,12 +142,12 @@ type Card struct {
 
 // MoveResultPayload represents the result of a move attempt
 type MoveResultPayload struct {
-	Valid          bool   `json:"valid"`
-	Error          string `json:"error,omitempty"`
-	TrickComplete  bool   `json:"trick_complete"`
-	GameComplete   bool   `json:"game_complete"`
-	WinnerID       *uuid.UUID `json:"winner_id,omitempty"`
-	PointsAwarded  int    `json:"points_awarded"`
+	Valid         bool       `json:"valid"`
+	Error         string     `json:"error,omitempty"`
+	TrickComplete bool       `json:"trick_complete"`
+	GameComplete  bool       `json:"game_complete"`
+	WinnerID      *uuid.UUID `json:"winner_id,omitempty"`
+	PointsAwarded int        `json:"points_awarded"`
 }
 
 // PlayerJoinedPayload represents a player joining notification
@@ -164,20 +164,20 @@ type PlayerLeftPayload struct {
 
 // GameEndPayload represents game completion notification
 type GameEndPayload struct {
-	WinnerID   *uuid.UUID `json:"winner_id,omitempty"`
-	Reason     string     `json:"reason"`           // "normal", "disconnection", "timeout", "forfeit"
+	WinnerID   *uuid.UUID     `json:"winner_id,omitempty"`
+	Reason     string         `json:"reason"` // "normal", "disconnection", "timeout", "forfeit"
 	FinalScore map[string]int `json:"final_score"`
-	GameStats  GameStats  `json:"game_stats,omitempty"`
+	GameStats  GameStats      `json:"game_stats,omitempty"`
 }
 
 // GameStats provides summary statistics for a completed game
 type GameStats struct {
-	Duration        int64 `json:"duration_ms"`
-	TotalMoves      int   `json:"total_moves"`
-	TotalTricks     int   `json:"total_tricks"`
-	SevensPlayed    int   `json:"sevens_played"`
-	EightsPlayed    int   `json:"eights_played"`
-	PointCardsWon   map[string]int `json:"point_cards_won"`
+	Duration      int64          `json:"duration_ms"`
+	TotalMoves    int            `json:"total_moves"`
+	TotalTricks   int            `json:"total_tricks"`
+	SevensPlayed  int            `json:"sevens_played"`
+	EightsPlayed  int            `json:"eights_played"`
+	PointCardsWon map[string]int `json:"point_cards_won"`
 }
 
 // ConnectionAckPayload represents connection acknowledgment data
@@ -191,17 +191,17 @@ type ConnectionAckPayload struct {
 
 // ErrorPayload represents error message data
 type ErrorPayload struct {
-	ErrorType string `json:"error_type"`
-	Message   string `json:"message"`
-	Code      int    `json:"code,omitempty"`
+	ErrorType string                 `json:"error_type"`
+	Message   string                 `json:"message"`
+	Code      int                    `json:"code,omitempty"`
 	Details   map[string]interface{} `json:"details,omitempty"`
 }
 
 // HeartbeatPayload represents heartbeat message data
 type HeartbeatPayload struct {
-	ServerTime   time.Time `json:"server_time"`
-	ClientCount  int       `json:"client_count,omitempty"`
-	ActiveGames  int       `json:"active_games,omitempty"`
+	ServerTime  time.Time `json:"server_time"`
+	ClientCount int       `json:"client_count,omitempty"`
+	ActiveGames int       `json:"active_games,omitempty"`
 }
 
 // MatchFoundPayload represents a match found notification
@@ -248,33 +248,33 @@ type PassPayload struct {
 
 // ObjectionWaitPayload represents server waiting for objection decision
 type ObjectionWaitPayload struct {
-	WaitingPlayerID    uuid.UUID `json:"waiting_player_id"`
-	LastPlayedCard     Card      `json:"last_played_card"`
-	LastPlayerID       uuid.UUID `json:"last_player_id"`
-	ValidObjections    []Card    `json:"valid_objections"`    // Cards that can beat
-	TimeoutSeconds     int       `json:"timeout_seconds"`
-	CanPass            bool      `json:"can_pass"`
+	WaitingPlayerID uuid.UUID `json:"waiting_player_id"`
+	LastPlayedCard  Card      `json:"last_played_card"`
+	LastPlayerID    uuid.UUID `json:"last_player_id"`
+	ValidObjections []Card    `json:"valid_objections"` // Cards that can beat
+	TimeoutSeconds  int       `json:"timeout_seconds"`
+	CanPass         bool      `json:"can_pass"`
 }
 
 // RoundCompletePayload represents a completed round in authentic Septica
 type RoundCompletePayload struct {
-	RoundNumber       int        `json:"round_number"`
-	CollectorPlayerID uuid.UUID  `json:"collector_player_id"`
-	CollectorTeam     *string    `json:"collector_team,omitempty"`  // "team1", "team2" for 4-player
-	PointsAwarded     int        `json:"points_awarded"`
-	CardsCollected    []Card     `json:"cards_collected"`
-	WasObjected       bool       `json:"was_objected"`
-	ObjectionCard     *Card      `json:"objection_card,omitempty"`
+	RoundNumber       int            `json:"round_number"`
+	CollectorPlayerID uuid.UUID      `json:"collector_player_id"`
+	CollectorTeam     *string        `json:"collector_team,omitempty"` // "team1", "team2" for 4-player
+	PointsAwarded     int            `json:"points_awarded"`
+	CardsCollected    []Card         `json:"cards_collected"`
+	WasObjected       bool           `json:"was_objected"`
+	ObjectionCard     *Card          `json:"objection_card,omitempty"`
 	UpdatedScores     map[string]int `json:"updated_scores"`
 	UpdatedTeamScores map[string]int `json:"updated_team_scores,omitempty"`
-	NextPlayerID      uuid.UUID  `json:"next_player_id"`
+	NextPlayerID      uuid.UUID      `json:"next_player_id"`
 }
 
 // JoinAuthenticGamePayload represents joining an authentic Septica game
 type JoinAuthenticGamePayload struct {
-	GameMode      string `json:"game_mode"`       // "2_player", "3_player", "4_player"
-	UseAuthentic  bool   `json:"use_authentic"`   // Use authentic rules vs legacy
-	TeamPlay      bool   `json:"team_play"`       // For 4-player mode
+	GameMode     string `json:"game_mode"`     // "2_player", "3_player", "4_player"
+	UseAuthentic bool   `json:"use_authentic"` // Use authentic rules vs legacy
+	TeamPlay     bool   `json:"team_play"`     // For 4-player mode
 }
 
 // Helper functions for creating common messages

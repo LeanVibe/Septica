@@ -183,11 +183,11 @@ func (h *Hub) handleRegister(client *Client) {
 		PlayerID:  client.userID,
 		Timestamp: time.Now(),
 		Payload: map[string]interface{}{
-			"session_id":        client.sessionID,
-			"server_time":       time.Now(),
+			"session_id":         client.sessionID,
+			"server_time":        time.Now(),
 			"heartbeat_interval": 30000, // 30 seconds
-			"max_message_queue": 100,
-			"is_reconnection":   isReconnection,
+			"max_message_queue":  100,
+			"is_reconnection":    isReconnection,
 		},
 	}
 
@@ -250,10 +250,10 @@ func (h *Hub) ensurePlayerExists(userID uuid.UUID) {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			// Create new user
 			user = database.User{
-				Username: "guest_" + userID.String()[:8],
-				Email:    userID.String() + "@septica.game", // Placeholder email
-				PasswordHash: "guest_password_hash", // Placeholder hash
-				IsActive: true,
+				Username:     "guest_" + userID.String()[:8],
+				Email:        userID.String() + "@septica.game", // Placeholder email
+				PasswordHash: "guest_password_hash",             // Placeholder hash
+				IsActive:     true,
 			}
 			user.ID = userID // Set the BaseModel ID
 			if err := h.db.Create(&user).Error; err != nil {
@@ -279,7 +279,7 @@ func (h *Hub) ensurePlayerExists(userID uuid.UUID) {
 				Level:    1,
 				XP:       0,
 				Rating:   1000, // Default rating
-				Arena:    1, // Bronze tier
+				Arena:    1,    // Bronze tier
 				Coins:    100,  // Starting coins
 				Gems:     0,
 			}
@@ -500,16 +500,16 @@ func (h *Hub) handleAuthenticMove(userID uuid.UUID, gameID uuid.UUID, card game.
 			GameID:    &gameID,
 			Timestamp: time.Now(),
 			Payload: map[string]interface{}{
-				"valid":                result.Valid,
-				"error":                result.Error,
-				"round_complete":       result.RoundComplete,
-				"game_complete":        result.GameComplete,
-				"winner_id":            result.WinnerID,
-				"winning_team":         result.WinningTeam,
-				"points_awarded":       result.PointsAwarded,
-				"collector_player_id":  result.CollectorPlayerID,
-				"objection_phase":      result.ObjectionPhase,
-				"next_player_id":       result.NextPlayerID,
+				"valid":               result.Valid,
+				"error":               result.Error,
+				"round_complete":      result.RoundComplete,
+				"game_complete":       result.GameComplete,
+				"winner_id":           result.WinnerID,
+				"winning_team":        result.WinningTeam,
+				"points_awarded":      result.PointsAwarded,
+				"collector_player_id": result.CollectorPlayerID,
+				"objection_phase":     result.ObjectionPhase,
+				"next_player_id":      result.NextPlayerID,
 			},
 		}
 		client.send <- moveResult
@@ -586,26 +586,26 @@ func (h *Hub) createAuthenticPlayerView(gameState *game.AuthenticGameState, play
 	}
 
 	return map[string]interface{}{
-		"game_id":                gameState.ID,
-		"current_player_id":      gameState.CurrentPlayerID,
-		"your_turn":              gameState.CurrentPlayerID == playerID,
-		"your_cards":             playerHand,
-		"opponent_card_counts":   opponentCardCounts,
-		"table_cards":            gameState.TableCards,
-		"valid_moves":            validMoves,
-		"scores":                 scores,
-		"round_number":           gameState.RoundNumber,
-		"move_number":            gameState.MoveNumber,
-		"sequence_number":        gameState.SequenceNumber,
-		"status":                 gameState.Status,
-		"game_mode":              gameState.GameMode,
-		"waiting_for_objection":  gameState.WaitingForObjection,
-		"last_played_card":       gameState.LastPlayedCard,
-		"last_player_id":         gameState.LastPlayerID,
-		"teams":                  gameState.Teams,
-		"team_scores":            gameState.TeamScores,
-		"wild_eights":            gameState.WildEights,
-		"can_pass":               gameState.WaitingForObjection && gameState.CurrentPlayerID == playerID,
+		"game_id":               gameState.ID,
+		"current_player_id":     gameState.CurrentPlayerID,
+		"your_turn":             gameState.CurrentPlayerID == playerID,
+		"your_cards":            playerHand,
+		"opponent_card_counts":  opponentCardCounts,
+		"table_cards":           gameState.TableCards,
+		"valid_moves":           validMoves,
+		"scores":                scores,
+		"round_number":          gameState.RoundNumber,
+		"move_number":           gameState.MoveNumber,
+		"sequence_number":       gameState.SequenceNumber,
+		"status":                gameState.Status,
+		"game_mode":             gameState.GameMode,
+		"waiting_for_objection": gameState.WaitingForObjection,
+		"last_played_card":      gameState.LastPlayedCard,
+		"last_player_id":        gameState.LastPlayerID,
+		"teams":                 gameState.Teams,
+		"team_scores":           gameState.TeamScores,
+		"wild_eights":           gameState.WildEights,
+		"can_pass":              gameState.WaitingForObjection && gameState.CurrentPlayerID == playerID,
 	}
 }
 
@@ -673,13 +673,13 @@ func (h *Hub) createPlayerView(gameState *game.GameState, playerID uuid.UUID) ma
 	validMoves, _ := h.gameEngine.GetValidMoves(gameState.ID, playerID)
 
 	return map[string]interface{}{
-		"game_id":            gameState.ID,
-		"current_player_id":  gameState.CurrentPlayerID,
-		"your_turn":          gameState.CurrentPlayerID == playerID,
-		"your_cards":         yourHand,
+		"game_id":             gameState.ID,
+		"current_player_id":   gameState.CurrentPlayerID,
+		"your_turn":           gameState.CurrentPlayerID == playerID,
+		"your_cards":          yourHand,
 		"opponent_card_count": opponentCardCount,
-		"table_cards":        gameState.TableCards,
-		"valid_moves":        validMoves,
+		"table_cards":         gameState.TableCards,
+		"valid_moves":         validMoves,
 		"scores": map[string]int{
 			gameState.Player1ID.String(): gameState.Player1Score,
 			gameState.Player2ID.String(): gameState.Player2Score,

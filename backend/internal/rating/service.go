@@ -24,7 +24,7 @@ func NewService(db *gorm.DB, config *ELOConfig, logger *logger.Logger) *Service 
 	if config == nil {
 		config = DefaultELOConfig()
 	}
-	
+
 	return &Service{
 		db:         db,
 		calculator: NewELOCalculator(config),
@@ -165,7 +165,7 @@ func (s *Service) GetLeaderboard(ctx context.Context, limit int, season string) 
 	if season != "" {
 		// Season-specific leaderboard using PlayerSeasonStats
 		query = s.db.WithContext(ctx).Table("players").
-			Select(baseSelect + `,
+			Select(baseSelect+`,
 				COALESCE(pss.ranked_games_played, 0) as games_played,
 				COALESCE(pss.ranked_games_won, 0) as games_won,
 				COALESCE(pss.ranked_games_played - pss.ranked_games_won, 0) as games_lost,
@@ -179,7 +179,7 @@ func (s *Service) GetLeaderboard(ctx context.Context, limit int, season string) 
 	} else {
 		// All-time leaderboard using PlayerStatistics
 		query = s.db.WithContext(ctx).Table("players").
-			Select(baseSelect + `,
+			Select(baseSelect+`,
 				COALESCE(stats.games_played, 0) as games_played,
 				COALESCE(stats.games_won, 0) as games_won,
 				COALESCE(stats.games_lost, 0) as games_lost,
@@ -420,32 +420,32 @@ func abs(x int) int {
 
 // LeaderboardEntry represents a leaderboard entry
 type LeaderboardEntry struct {
-	Rank         int       `json:"rank"`
-	PlayerID     uuid.UUID `json:"player_id"`
-	Username     string    `json:"username"`
-	Rating       int       `json:"rating"`
-	Level        int       `json:"level"`
-	Arena        int       `json:"arena"`
-	GamesPlayed  int       `json:"games_played"`
-	GamesWon     int       `json:"games_won"`
-	GamesLost    int       `json:"games_lost"`
-	WinRate      float64   `json:"win_rate"`
-	WinStreak    int       `json:"win_streak"`
-	LastActive   time.Time `json:"last_active"`
+	Rank        int       `json:"rank"`
+	PlayerID    uuid.UUID `json:"player_id"`
+	Username    string    `json:"username"`
+	Rating      int       `json:"rating"`
+	Level       int       `json:"level"`
+	Arena       int       `json:"arena"`
+	GamesPlayed int       `json:"games_played"`
+	GamesWon    int       `json:"games_won"`
+	GamesLost   int       `json:"games_lost"`
+	WinRate     float64   `json:"win_rate"`
+	WinStreak   int       `json:"win_streak"`
+	LastActive  time.Time `json:"last_active"`
 }
 
 // RatingDistribution represents rating distribution statistics
 type RatingDistribution struct {
-	MinRating     int                    `json:"min_rating"`
-	MaxRating     int                    `json:"max_rating"`
-	AvgRating     float64                `json:"avg_rating"`
-	MedianRating  float64                `json:"median_rating"`
-	TotalPlayers  int                    `json:"total_players"`
-	RatingRanges  []RatingRangeCount     `json:"rating_ranges"`
+	MinRating    int                `json:"min_rating"`
+	MaxRating    int                `json:"max_rating"`
+	AvgRating    float64            `json:"avg_rating"`
+	MedianRating float64            `json:"median_rating"`
+	TotalPlayers int                `json:"total_players"`
+	RatingRanges []RatingRangeCount `json:"rating_ranges"`
 }
 
 // RatingRangeCount represents count of players in a rating range
 type RatingRangeCount struct {
-	RatingRange  string `json:"rating_range"`
-	PlayerCount  int    `json:"player_count"`
+	RatingRange string `json:"rating_range"`
+	PlayerCount int    `json:"player_count"`
 }

@@ -13,14 +13,14 @@ import (
 // MatchmakingHandler handles matchmaking-related HTTP endpoints
 type MatchmakingHandler struct {
 	matchmakingService *matchmaking.MatchmakingService
-	logger            *logger.Logger
+	logger             *logger.Logger
 }
 
 // NewMatchmakingHandler creates a new matchmaking handler
 func NewMatchmakingHandler(service *matchmaking.MatchmakingService, logger *logger.Logger) *MatchmakingHandler {
 	return &MatchmakingHandler{
 		matchmakingService: service,
-		logger:            logger,
+		logger:             logger,
 	}
 }
 
@@ -92,8 +92,8 @@ func (h *MatchmakingHandler) JoinMatchmaking(c *gin.Context) {
 		return
 	}
 
-	h.logger.Info("Player joined matchmaking via API", 
-		"player_id", playerID, 
+	h.logger.Info("Player joined matchmaking via API",
+		"player_id", playerID,
 		"queue_type", request.QueueType,
 		"game_mode", request.GameMode)
 

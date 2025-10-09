@@ -98,10 +98,10 @@ func (m *MockAuthenticEngine) ProcessAction(gameID uuid.UUID, action game.Authen
 		}
 
 		return &game.AuthenticMoveResult{
-			Valid:         true,
-			UpdatedState:  gameState,
+			Valid:          true,
+			UpdatedState:   gameState,
 			ObjectionPhase: true,
-			NextPlayerID:  gameState.CurrentPlayerID,
+			NextPlayerID:   gameState.CurrentPlayerID,
 		}, nil
 
 	case "PASS":
@@ -239,11 +239,11 @@ func TestWebSocket_ObjectionWaitMessage(t *testing.T) {
 		LastPlayedCard:  lastPlayedCard,
 		LastPlayerID:    result.UpdatedState.LastPlayerID,
 		ValidObjections: []Card{
-			{Suit: "spades", Value: 7, ID: "wild1"},     // Wild card
-			{Suit: "diamonds", Value: 10, ID: "same1"},  // Same rank
+			{Suit: "spades", Value: 7, ID: "wild1"},    // Wild card
+			{Suit: "diamonds", Value: 10, ID: "same1"}, // Same rank
 		},
 		TimeoutSeconds: 30,
-		CanPass:       true,
+		CanPass:        true,
 	}
 
 	message := Message{
@@ -258,7 +258,7 @@ func TestWebSocket_ObjectionWaitMessage(t *testing.T) {
 			"last_player_id":    objectionPayload.LastPlayerID,
 			"valid_objections":  objectionPayload.ValidObjections,
 			"timeout_seconds":   objectionPayload.TimeoutSeconds,
-			"can_pass":         objectionPayload.CanPass,
+			"can_pass":          objectionPayload.CanPass,
 		},
 	}
 
@@ -317,9 +317,9 @@ func TestWebSocket_PassMessage(t *testing.T) {
 
 	// Test pass message structure
 	passMessage := IncomingMessage{
-		Type:   MessageTypePass,
-		ID:     uuid.New().String(),
-		GameID: &gameState.ID,
+		Type:    MessageTypePass,
+		ID:      uuid.New().String(),
+		GameID:  &gameState.ID,
 		Payload: PassPayload{}, // Empty payload for pass
 	}
 
@@ -338,7 +338,7 @@ func TestWebSocket_PassMessage(t *testing.T) {
 	assert.True(t, result.Valid)
 	assert.True(t, result.RoundComplete)
 	assert.Equal(t, player1ID, *result.CollectorPlayerID) // Original player collects
-	assert.Equal(t, 1, result.PointsAwarded) // 10 is worth 1 point
+	assert.Equal(t, 1, result.PointsAwarded)              // 10 is worth 1 point
 }
 
 // TestWebSocket_ObjectionMessage tests objection message handling
@@ -540,23 +540,23 @@ func TestWebSocket_AuthenticGameStateUpdates(t *testing.T) {
 
 			// Create game state payload
 			gameStatePayload := GameStatePayload{
-				GameID:             gameState.ID,
-				CurrentPlayerID:    gameState.CurrentPlayerID,
-				YourTurn:           true, // For current player
-				YourCards:          yourCards,
-				OpponentCardCount:  4,
-				TableCards:         tableCards,
-				ValidMoves:         yourCards, // All cards valid initially
-				Scores:             make(map[string]int),
-				TrickNumber:        gameState.RoundNumber,
-				MoveNumber:         gameState.MoveNumber,
-				Status:             gameState.Status,
+				GameID:            gameState.ID,
+				CurrentPlayerID:   gameState.CurrentPlayerID,
+				YourTurn:          true, // For current player
+				YourCards:         yourCards,
+				OpponentCardCount: 4,
+				TableCards:        tableCards,
+				ValidMoves:        yourCards, // All cards valid initially
+				Scores:            make(map[string]int),
+				TrickNumber:       gameState.RoundNumber,
+				MoveNumber:        gameState.MoveNumber,
+				Status:            gameState.Status,
 
 				// Authentic Septica extensions
 				WaitingForObjection: gameState.WaitingForObjection,
-				LastPlayedCard:     lastPlayedCard,
-				GameMode:           string(gameState.GameMode),
-				CanPass:            gameState.WaitingForObjection,
+				LastPlayedCard:      lastPlayedCard,
+				GameMode:            string(gameState.GameMode),
+				CanPass:             gameState.WaitingForObjection,
 			}
 
 			// Convert scores to string keys
@@ -685,12 +685,12 @@ func TestWebSocket_BackwardCompatibility(t *testing.T) {
 		// Test that GameStatePayload has authentic extensions
 		payload := GameStatePayload{
 			WaitingForObjection: true,
-			LastPlayedCard:     &Card{Suit: "hearts", Value: 10, ID: "test"},
-			GameMode:           "2_player",
-			Teams:              [][]uuid.UUID{},
-			TeamScores:         map[string]int{},
-			CanPass:            true,
-			ObjectionTimeout:   30,
+			LastPlayedCard:      &Card{Suit: "hearts", Value: 10, ID: "test"},
+			GameMode:            "2_player",
+			Teams:               [][]uuid.UUID{},
+			TeamScores:          map[string]int{},
+			CanPass:             true,
+			ObjectionTimeout:    30,
 		}
 
 		// Verify all new fields are accessible
@@ -716,7 +716,7 @@ func TestWebSocket_MessageSerialization(t *testing.T) {
 				{Suit: "diamonds", Value: 10, ID: "same1"},
 			},
 			TimeoutSeconds: 30,
-			CanPass:       true,
+			CanPass:        true,
 		}
 
 		// Serialize to JSON
@@ -746,7 +746,7 @@ func TestWebSocket_MessageSerialization(t *testing.T) {
 				{Suit: "hearts", Value: 10, ID: "ten1"},
 				{Suit: "spades", Value: 14, ID: "ace1"},
 			},
-			WasObjected: true,
+			WasObjected:   true,
 			ObjectionCard: &Card{Suit: "clubs", Value: 7, ID: "wild1"},
 			UpdatedScores: map[string]int{
 				"player1": 3,

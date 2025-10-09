@@ -15,12 +15,12 @@ import (
 
 // HealthHandler handles health check endpoints for monitoring and observability
 type HealthHandler struct {
-	db                   *gorm.DB
-	hub                  *websocket.Hub
-	matchmakingService   *matchmaking.MatchmakingService
-	aiManager            *ai.AIMatchmakingManager
-	logger               *logger.Logger
-	serverStartTime      time.Time
+	db                 *gorm.DB
+	hub                *websocket.Hub
+	matchmakingService *matchmaking.MatchmakingService
+	aiManager          *ai.AIMatchmakingManager
+	logger             *logger.Logger
+	serverStartTime    time.Time
 }
 
 // NewHealthHandler creates a new health handler instance
@@ -207,10 +207,10 @@ func (h *HealthHandler) Detailed(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"status":    "healthy",
-		"timestamp": time.Now().UTC().Format(time.RFC3339),
-		"version":   "1.0.0",
-		"uptime":    time.Since(h.serverStartTime).Seconds(),
+		"status":     "healthy",
+		"timestamp":  time.Now().UTC().Format(time.RFC3339),
+		"version":    "1.0.0",
+		"uptime":     time.Since(h.serverStartTime).Seconds(),
 		"components": components,
 	})
 }
@@ -289,9 +289,9 @@ func (h *HealthHandler) WebSocketHealth(c *gin.Context) {
 	games := h.hub.GetGameCount()
 
 	response := gin.H{
-		"status":      "healthy",
-		"timestamp":   time.Now().UTC().Format(time.RFC3339),
-		"connections": connections,
+		"status":       "healthy",
+		"timestamp":    time.Now().UTC().Format(time.RFC3339),
+		"connections":  connections,
 		"active_games": games,
 	}
 

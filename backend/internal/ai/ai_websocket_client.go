@@ -15,22 +15,22 @@ import (
 
 // AIWebSocketClient simulates a WebSocket client for AI players
 type AIWebSocketClient struct {
-	AI               *AIPlayer             `json:"ai_player"`
-	Hub              *websocket.Hub        `json:"-"`
-	Logger           *logger.Logger        `json:"-"`
-	UserID           uuid.UUID             `json:"user_id"`
-	SessionID        uuid.UUID             `json:"session_id"`
-	IsConnected      bool                  `json:"is_connected"`
-	CurrentGameID    *uuid.UUID            `json:"current_game_id,omitempty"`
+	AI            *AIPlayer      `json:"ai_player"`
+	Hub           *websocket.Hub `json:"-"`
+	Logger        *logger.Logger `json:"-"`
+	UserID        uuid.UUID      `json:"user_id"`
+	SessionID     uuid.UUID      `json:"session_id"`
+	IsConnected   bool           `json:"is_connected"`
+	CurrentGameID *uuid.UUID     `json:"current_game_id,omitempty"`
 
 	// Virtual connection management
-	messageChan      chan websocket.Message `json:"-"`
-	stopChan         chan bool              `json:"-"`
-	mutex            sync.RWMutex           `json:"-"`
+	messageChan chan websocket.Message `json:"-"`
+	stopChan    chan bool              `json:"-"`
+	mutex       sync.RWMutex           `json:"-"`
 
 	// Game state tracking
-	lastGameState    *game.AuthenticGameState `json:"-"`
-	awaitingMove     bool                     `json:"awaiting_move"`
+	lastGameState *game.AuthenticGameState `json:"-"`
+	awaitingMove  bool                     `json:"awaiting_move"`
 }
 
 // NewAIWebSocketClient creates a new AI WebSocket client
@@ -38,13 +38,13 @@ func NewAIWebSocketClient(ai *AIPlayer, hub *websocket.Hub, logger *logger.Logge
 	sessionID := uuid.New()
 
 	client := &AIWebSocketClient{
-		AI:           ai,
-		Hub:          hub,
-		Logger:       logger,
-		UserID:       ai.ID,
-		SessionID:    sessionID,
-		messageChan:  make(chan websocket.Message, 100),
-		stopChan:     make(chan bool),
+		AI:          ai,
+		Hub:         hub,
+		Logger:      logger,
+		UserID:      ai.ID,
+		SessionID:   sessionID,
+		messageChan: make(chan websocket.Message, 100),
+		stopChan:    make(chan bool),
 	}
 
 	logger.Info("Created AI WebSocket client",

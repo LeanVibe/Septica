@@ -85,14 +85,14 @@ func (l *Logger) Fatal(msg string, args ...interface{}) {
 func (l *Logger) log(level, msg string, args ...interface{}) {
 	// Simple structured logging - in production, consider using a more sophisticated logger
 	logMsg := "[" + level + "] " + msg
-	
+
 	// Add key-value pairs if provided
 	for i := 0; i < len(args); i += 2 {
 		if i+1 < len(args) {
 			logMsg += " " + args[i].(string) + "=" + formatValue(args[i+1])
 		}
 	}
-	
+
 	log.Println(logMsg)
 }
 

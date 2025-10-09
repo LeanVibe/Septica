@@ -379,10 +379,10 @@ func TestAIMatchmakingManager_RatingGeneration(t *testing.T) {
 	manager := NewAIMatchmakingManager(hub, db, testLogger)
 
 	testCases := []struct {
-		name         string
-		humanRating  int
-		expectedMin  int
-		expectedMax  int
+		name        string
+		humanRating int
+		expectedMin int
+		expectedMax int
 	}{
 		{
 			name:        "Mid-range rating",

@@ -19,8 +19,8 @@ func TestAuthenticEngine_DoubleVictoryCondition(t *testing.T) {
 	require.NoError(t, err)
 
 	// Simulate a game where player1 gets all points and player2 gets zero
-	game.PlayerScores[player1ID] = 8  // All possible points (4 tens + 4 aces)
-	game.PlayerScores[player2ID] = 0  // Zero points
+	game.PlayerScores[player1ID] = 8 // All possible points (4 tens + 4 aces)
+	game.PlayerScores[player2ID] = 0 // Zero points
 
 	// Mark game as complete
 	game.Status = "finished"
@@ -456,14 +456,14 @@ func TestAuthenticEngine_RomanianCulturalAuthenticity(t *testing.T) {
 	t.Run("Point system authenticity", func(t *testing.T) {
 		// Romanian Septica: only 10s and Aces are worth points
 		testCards := []Card{
-			{Suit: "hearts", Value: 7},   // 0 points
-			{Suit: "hearts", Value: 8},   // 0 points
-			{Suit: "hearts", Value: 9},   // 0 points
-			{Suit: "hearts", Value: 10},  // 1 point
-			{Suit: "hearts", Value: 11},  // 0 points (Jack)
-			{Suit: "hearts", Value: 12},  // 0 points (Queen)
-			{Suit: "hearts", Value: 13},  // 0 points (King)
-			{Suit: "hearts", Value: 14},  // 1 point (Ace)
+			{Suit: "hearts", Value: 7},  // 0 points
+			{Suit: "hearts", Value: 8},  // 0 points
+			{Suit: "hearts", Value: 9},  // 0 points
+			{Suit: "hearts", Value: 10}, // 1 point
+			{Suit: "hearts", Value: 11}, // 0 points (Jack)
+			{Suit: "hearts", Value: 12}, // 0 points (Queen)
+			{Suit: "hearts", Value: 13}, // 0 points (King)
+			{Suit: "hearts", Value: 14}, // 1 point (Ace)
 		}
 
 		points := calculateAuthenticPoints(testCards)

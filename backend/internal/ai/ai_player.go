@@ -16,12 +16,12 @@ import (
 
 // AIPlayerConfig holds configuration for AI behavior
 type AIPlayerConfig struct {
-	Difficulty        string        `json:"difficulty"`          // "easy", "medium", "hard"
-	ReactionTimeMin   time.Duration `json:"reaction_time_min"`   // Minimum thinking time
-	ReactionTimeMax   time.Duration `json:"reaction_time_max"`   // Maximum thinking time
-	PointCardPriority float64       `json:"point_card_priority"` // 0.0-1.0 priority for collecting 10s/Aces
-	SevenAggressiveness float64     `json:"seven_aggressiveness"` // 0.0-1.0 likelihood to play 7s early
-	EightTiming       float64       `json:"eight_timing"`        // 0.0-1.0 strategic timing for 8s
+	Difficulty          string        `json:"difficulty"`           // "easy", "medium", "hard"
+	ReactionTimeMin     time.Duration `json:"reaction_time_min"`    // Minimum thinking time
+	ReactionTimeMax     time.Duration `json:"reaction_time_max"`    // Maximum thinking time
+	PointCardPriority   float64       `json:"point_card_priority"`  // 0.0-1.0 priority for collecting 10s/Aces
+	SevenAggressiveness float64       `json:"seven_aggressiveness"` // 0.0-1.0 likelihood to play 7s early
+	EightTiming         float64       `json:"eight_timing"`         // 0.0-1.0 strategic timing for 8s
 }
 
 // DefaultAIConfig returns default AI configuration based on difficulty
@@ -29,30 +29,30 @@ func DefaultAIConfig(difficulty string) *AIPlayerConfig {
 	switch difficulty {
 	case "easy":
 		return &AIPlayerConfig{
-			Difficulty:        "easy",
-			ReactionTimeMin:   800 * time.Millisecond,
-			ReactionTimeMax:   2500 * time.Millisecond,
-			PointCardPriority: 0.3, // Less focused on points
+			Difficulty:          "easy",
+			ReactionTimeMin:     800 * time.Millisecond,
+			ReactionTimeMax:     2500 * time.Millisecond,
+			PointCardPriority:   0.3, // Less focused on points
 			SevenAggressiveness: 0.7, // Plays 7s readily
-			EightTiming:       0.2, // Poor 8 timing
+			EightTiming:         0.2, // Poor 8 timing
 		}
 	case "medium":
 		return &AIPlayerConfig{
-			Difficulty:        "medium",
-			ReactionTimeMin:   600 * time.Millisecond,
-			ReactionTimeMax:   1800 * time.Millisecond,
-			PointCardPriority: 0.6, // Moderate point focus
+			Difficulty:          "medium",
+			ReactionTimeMin:     600 * time.Millisecond,
+			ReactionTimeMax:     1800 * time.Millisecond,
+			PointCardPriority:   0.6, // Moderate point focus
 			SevenAggressiveness: 0.5, // Strategic 7 play
-			EightTiming:       0.6, // Good 8 timing
+			EightTiming:         0.6, // Good 8 timing
 		}
 	case "hard":
 		return &AIPlayerConfig{
-			Difficulty:        "hard",
-			ReactionTimeMin:   400 * time.Millisecond,
-			ReactionTimeMax:   1200 * time.Millisecond,
-			PointCardPriority: 0.8, // High point focus
+			Difficulty:          "hard",
+			ReactionTimeMin:     400 * time.Millisecond,
+			ReactionTimeMax:     1200 * time.Millisecond,
+			PointCardPriority:   0.8, // High point focus
 			SevenAggressiveness: 0.3, // Saves 7s strategically
-			EightTiming:       0.9, // Excellent 8 timing
+			EightTiming:         0.9, // Excellent 8 timing
 		}
 	default:
 		return DefaultAIConfig("medium")
@@ -61,16 +61,16 @@ func DefaultAIConfig(difficulty string) *AIPlayerConfig {
 
 // AIPlayer represents an AI opponent for Romanian Septica
 type AIPlayer struct {
-	ID          uuid.UUID        `json:"id"`
-	Username    string           `json:"username"`
-	Rating      int              `json:"rating"`
-	Config      *AIPlayerConfig  `json:"config"`
-	Logger      *logger.Logger   `json:"-"`
+	ID       uuid.UUID       `json:"id"`
+	Username string          `json:"username"`
+	Rating   int             `json:"rating"`
+	Config   *AIPlayerConfig `json:"config"`
+	Logger   *logger.Logger  `json:"-"`
 
 	// Game state awareness
-	CurrentGameID *uuid.UUID       `json:"current_game_id,omitempty"`
-	GameMode      game.AuthenticGameMode `json:"game_mode"` // Track current game mode for rule awareness
-	Hand          []game.Card      `json:"-"` // Keep private
+	CurrentGameID *uuid.UUID               `json:"current_game_id,omitempty"`
+	GameMode      game.AuthenticGameMode   `json:"game_mode"` // Track current game mode for rule awareness
+	Hand          []game.Card              `json:"-"`         // Keep private
 	GameState     *game.AuthenticGameState `json:"-"`
 }
 
@@ -112,9 +112,9 @@ func generateAIUsername(difficulty string) string {
 	case "easy":
 		suffix = "Incepator" // Beginner
 	case "medium":
-		suffix = "Mediu"     // Medium
+		suffix = "Mediu" // Medium
 	case "hard":
-		suffix = "Expert"    // Expert
+		suffix = "Expert" // Expert
 	default:
 		suffix = "AI"
 	}
@@ -300,9 +300,9 @@ func (ai *AIPlayer) scoreMove(card game.Card, gameState *game.AuthenticGameState
 		switch ai.GameMode {
 		case game.ModeThreePlayer:
 			// In 3-player mode, 8s ARE wild (along with 7s)
-			score += 8.0  // Similar to 7s but slightly less valuable
+			score += 8.0 // Similar to 7s but slightly less valuable
 			if len(tableCards) > 0 {
-				score += 5.0  // Strong bonus for beating cards
+				score += 5.0 // Strong bonus for beating cards
 			}
 			// Apply timing strategy
 			if rand.Float64() < ai.Config.EightTiming {
@@ -315,12 +315,12 @@ func (ai *AIPlayer) scoreMove(card game.Card, gameState *game.AuthenticGameState
 			for _, tableCard := range tableCards {
 				if tableCard.Value == 8 {
 					canBeat = true
-					score += 5.0  // Good move - beats via same value
+					score += 5.0 // Good move - beats via same value
 					break
 				}
 			}
 			if !canBeat && len(tableCards) > 0 {
-				score -= 3.0  // Penalty - 8 doesn't beat non-8 cards
+				score -= 3.0 // Penalty - 8 doesn't beat non-8 cards
 			}
 		default:
 			// Unknown mode - conservative strategy
@@ -364,15 +364,15 @@ func (ai *AIPlayer) scoreMove(card game.Card, gameState *game.AuthenticGameState
 // GetPlayerInfo returns player information for database integration
 func (ai *AIPlayer) GetPlayerInfo() *database.Player {
 	return &database.Player{
-		BaseModel: database.BaseModel{ID: ai.ID},
-		UserID:    ai.ID, // AI players use same ID for user and player
-		Username:  ai.Username,
-		Level:     1,
-		XP:        0,
-		Rating:    ai.Rating,
-		Arena:     1,
-		Coins:     0, // AI players don't earn coins
-		Gems:      0,
+		BaseModel:          database.BaseModel{ID: ai.ID},
+		UserID:             ai.ID, // AI players use same ID for user and player
+		Username:           ai.Username,
+		Level:              1,
+		XP:                 0,
+		Rating:             ai.Rating,
+		Arena:              1,
+		Coins:              0, // AI players don't earn coins
+		Gems:               0,
 		SelectedCardBack:   "ai_default",
 		SelectedTableTheme: "ai_default",
 		SelectedAvatar:     "ai_robot",

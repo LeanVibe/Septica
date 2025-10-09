@@ -36,7 +36,7 @@ func (s *Service) generateSingleEliminationBrackets(tx *gorm.DB, tournament *dat
 
 	// Calculate number of rounds needed
 	totalRounds := int(math.Ceil(math.Log2(float64(participantCount))))
-	
+
 	// Calculate first round size (might need byes)
 	firstRoundSize := int(math.Pow(2, float64(totalRounds)))
 	byeCount := firstRoundSize - participantCount
@@ -323,7 +323,7 @@ func (s *Service) generateSwissPairings(tx *gorm.DB, participants []database.Tou
 			}
 
 			candidate := participants[j]
-			
+
 			// Check if they've played before
 			if s.havePlayedBefore(player1.PlayerID, candidate.PlayerID, previousPairings) {
 				continue

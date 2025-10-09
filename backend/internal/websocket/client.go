@@ -61,11 +61,11 @@ type Client struct {
 	currentGameID *uuid.UUID
 
 	// Connection metadata
-	remoteAddr   string
-	userAgent    string
-	connectedAt  time.Time
-	lastPingAt   time.Time
-	lastPongAt   time.Time
+	remoteAddr  string
+	userAgent   string
+	connectedAt time.Time
+	lastPingAt  time.Time
+	lastPongAt  time.Time
 }
 
 // NewClient creates a new WebSocket client
@@ -435,17 +435,17 @@ func (c *Client) handlePassAction(msg IncomingMessage) {
 		GameID:    c.currentGameID,
 		Timestamp: time.Now(),
 		Payload: map[string]interface{}{
-			"valid":                result.Valid,
-			"error":                result.Error,
-			"round_complete":       result.RoundComplete,
-			"game_complete":        result.GameComplete,
-			"winner_id":            result.WinnerID,
-			"winning_team":         result.WinningTeam,
-			"points_awarded":       result.PointsAwarded,
-			"collector_player_id":  result.CollectorPlayerID,
-			"objection_phase":      result.ObjectionPhase,
-			"next_player_id":       result.NextPlayerID,
-			"action_type":          "pass",
+			"valid":               result.Valid,
+			"error":               result.Error,
+			"round_complete":      result.RoundComplete,
+			"game_complete":       result.GameComplete,
+			"winner_id":           result.WinnerID,
+			"winning_team":        result.WinningTeam,
+			"points_awarded":      result.PointsAwarded,
+			"collector_player_id": result.CollectorPlayerID,
+			"objection_phase":     result.ObjectionPhase,
+			"next_player_id":      result.NextPlayerID,
+			"action_type":         "pass",
 		},
 	}
 	c.send <- moveResult

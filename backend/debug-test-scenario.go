@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"septica-backend/internal/game"
 	"github.com/google/uuid"
+	"septica-backend/internal/game"
 )
 
 // Simulate the exact test scenario to understand the expectation

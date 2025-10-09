@@ -158,12 +158,12 @@ func registerRoutes(router *gin.Engine, wsHub *websocket.Hub, matchmakingService
 	healthHandler := handlers.NewHealthHandler(db, wsHub, matchmakingService, aiManager, logger)
 
 	// Health check endpoints (public, no authentication)
-	router.GET("/health", healthHandler.Basic)                     // Basic liveness probe
-	router.GET("/health/ready", healthHandler.Readiness)           // Readiness probe (Kubernetes)
-	router.GET("/health/detailed", healthHandler.Detailed)         // Comprehensive system status
-	router.GET("/health/ai", healthHandler.AIHealth)               // AI matchmaking manager status
+	router.GET("/health", healthHandler.Basic)                         // Basic liveness probe
+	router.GET("/health/ready", healthHandler.Readiness)               // Readiness probe (Kubernetes)
+	router.GET("/health/detailed", healthHandler.Detailed)             // Comprehensive system status
+	router.GET("/health/ai", healthHandler.AIHealth)                   // AI matchmaking manager status
 	router.GET("/health/matchmaking", healthHandler.MatchmakingHealth) // Matchmaking queue health
-	router.GET("/health/websocket", healthHandler.WebSocketHealth) // WebSocket hub status
+	router.GET("/health/websocket", healthHandler.WebSocketHealth)     // WebSocket hub status
 
 	// API version group
 	v1 := router.Group("/api/v1")
@@ -395,12 +395,12 @@ func createGameHandler(db *gorm.DB, wsHub *websocket.Hub, logger *logger.Logger)
 
 		// Create game in database
 		dbGame := &database.Game{
-			Player1ID:          userUUID,
-			Player2ID:          uuid.Nil, // Will be filled when player joins
-			Status:             "waiting",
-			GameMode:           req.Mode,
-			AuthenticMode:      authenticMode,
-			UseAuthenticRules:  true,
+			Player1ID:         userUUID,
+			Player2ID:         uuid.Nil, // Will be filled when player joins
+			Status:            "waiting",
+			GameMode:          req.Mode,
+			AuthenticMode:     authenticMode,
+			UseAuthenticRules: true,
 		}
 		dbGame.ID = gameID
 
@@ -417,9 +417,9 @@ func createGameHandler(db *gorm.DB, wsHub *websocket.Hub, logger *logger.Logger)
 			"max_players", req.MaxPlayers)
 
 		c.JSON(http.StatusCreated, gin.H{
-			"message":   "game created successfully",
-			"game_id":   gameID,
-			"game":      dbGame,
+			"message": "game created successfully",
+			"game_id": gameID,
+			"game":    dbGame,
 		})
 	}
 }

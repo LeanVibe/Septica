@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"septica-backend/internal/game"
 	"github.com/google/uuid"
+	"septica-backend/internal/game"
 )
 
 func main() {

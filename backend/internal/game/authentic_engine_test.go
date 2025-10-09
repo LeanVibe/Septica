@@ -124,11 +124,11 @@ func TestAuthenticEngine_CreateGame(t *testing.T) {
 // TestAuthenticEngine_ObjectionRules tests the core objection mechanics
 func TestAuthenticEngine_ObjectionRules(t *testing.T) {
 	tests := []struct {
-		name           string
-		playedCard     Card
-		objectionCard  Card
-		gameMode       AuthenticGameMode
-		canObject      bool
+		name          string
+		playedCard    Card
+		objectionCard Card
+		gameMode      AuthenticGameMode
+		canObject     bool
 	}{
 		{
 			name:          "7 can always object (wild card)",
@@ -247,7 +247,7 @@ func TestAuthenticEngine_GameFlow(t *testing.T) {
 	finalGame := result2.UpdatedState
 	assert.False(t, finalGame.WaitingForObjection)
 	assert.Nil(t, finalGame.LastPlayedCard)
-	assert.Empty(t, finalGame.TableCards) // Cards collected
+	assert.Empty(t, finalGame.TableCards)                 // Cards collected
 	assert.Equal(t, player1ID, finalGame.CurrentPlayerID) // Winner's turn
 }
 
@@ -271,7 +271,7 @@ func TestAuthenticEngine_ObjectionFlow(t *testing.T) {
 		{Suit: "spades", Value: 11, ID: "test4"},
 	}
 	game.PlayerHands[player2ID] = []Card{
-		{Suit: "hearts", Value: 7, ID: "test5"}, // Wild card
+		{Suit: "hearts", Value: 7, ID: "test5"},  // Wild card
 		{Suit: "spades", Value: 10, ID: "test6"}, // Same rank
 		{Suit: "clubs", Value: 9, ID: "test7"},
 		{Suit: "diamonds", Value: 12, ID: "test8"},
@@ -299,7 +299,7 @@ func TestAuthenticEngine_ObjectionFlow(t *testing.T) {
 	require.NoError(t, err)
 	assert.True(t, result2.Valid)
 	assert.True(t, result2.RoundComplete)
-	assert.Equal(t, 1, result2.PointsAwarded) // 10 is worth 1 point
+	assert.Equal(t, 1, result2.PointsAwarded)              // 10 is worth 1 point
 	assert.Equal(t, player2ID, *result2.CollectorPlayerID) // Objector wins
 
 	// Verify player 2 got the point
@@ -322,9 +322,9 @@ func TestAuthenticEngine_InvalidActions(t *testing.T) {
 	require.NoError(t, err)
 
 	tests := []struct {
-		name           string
-		action         AuthenticPlayerAction
-		expectedError  string
+		name          string
+		action        AuthenticPlayerAction
+		expectedError string
 	}{
 		{
 			name: "Wrong player's turn",
@@ -459,10 +459,10 @@ func TestAuthenticEngine_FourPlayerTeams(t *testing.T) {
 // TestAuthenticEngine_PointCalculation tests point card calculation
 func TestAuthenticEngine_PointCalculation(t *testing.T) {
 	tableCards := []Card{
-		{Suit: "hearts", Value: 10},  // 1 point
+		{Suit: "hearts", Value: 10},   // 1 point
 		{Suit: "diamonds", Value: 14}, // 1 point (Ace)
-		{Suit: "clubs", Value: 9},    // 0 points
-		{Suit: "spades", Value: 7},   // 0 points
+		{Suit: "clubs", Value: 9},     // 0 points
+		{Suit: "spades", Value: 7},    // 0 points
 	}
 
 	points := calculateAuthenticPoints(tableCards)
@@ -523,10 +523,10 @@ func TestAuthenticEngine_GetValidMoves(t *testing.T) {
 
 	// Force specific hand for testing objection rules
 	game.PlayerHands[player2ID] = []Card{
-		{Suit: "spades", Value: 7},   // Can object (wild)
+		{Suit: "spades", Value: 7},    // Can object (wild)
 		{Suit: "diamonds", Value: 10}, // Can object (same rank)
-		{Suit: "clubs", Value: 9},    // Cannot object
-		{Suit: "hearts", Value: 8},   // Cannot object (not wild in 2-player)
+		{Suit: "clubs", Value: 9},     // Cannot object
+		{Suit: "hearts", Value: 8},    // Cannot object (not wild in 2-player)
 	}
 
 	validObjections, err := engine.GetValidMoves(game.ID, player2ID)

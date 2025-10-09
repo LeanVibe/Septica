@@ -11,12 +11,12 @@ import (
 )
 
 var (
-	ErrInvalidMove      = errors.New("invalid move")
-	ErrNotPlayerTurn    = errors.New("not player turn")
-	ErrGameNotFound     = errors.New("game not found")
-	ErrGameNotActive    = errors.New("game not active")
-	ErrCardNotInHand    = errors.New("card not in hand")
-	ErrCannotBeatCard   = errors.New("cannot beat card")
+	ErrInvalidMove    = errors.New("invalid move")
+	ErrNotPlayerTurn  = errors.New("not player turn")
+	ErrGameNotFound   = errors.New("game not found")
+	ErrGameNotActive  = errors.New("game not active")
+	ErrCardNotInHand  = errors.New("card not in hand")
+	ErrCannotBeatCard = errors.New("cannot beat card")
 )
 
 // GameMode represents different Romanian Septica game modes
@@ -52,50 +52,50 @@ type Card struct {
 
 // GameState represents the complete state of a game
 type GameState struct {
-	ID                uuid.UUID `json:"id"`
-	Player1ID         uuid.UUID `json:"player1_id"`
-	Player2ID         uuid.UUID `json:"player2_id"`
-	CurrentPlayerID   uuid.UUID `json:"current_player_id"`
-	Status            string    `json:"status"` // waiting, in_progress, completed
+	ID              uuid.UUID `json:"id"`
+	Player1ID       uuid.UUID `json:"player1_id"`
+	Player2ID       uuid.UUID `json:"player2_id"`
+	CurrentPlayerID uuid.UUID `json:"current_player_id"`
+	Status          string    `json:"status"` // waiting, in_progress, completed
 
 	// Game configuration
-	GameMode          GameMode  `json:"game_mode"`
+	GameMode GameMode `json:"game_mode"`
 
 	// Game state
-	Player1Hand       []Card    `json:"player1_hand"`
-	Player2Hand       []Card    `json:"player2_hand"`
-	TableCards        []Card    `json:"table_cards"`
-	Deck              []Card    `json:"deck"`
+	Player1Hand []Card `json:"player1_hand"`
+	Player2Hand []Card `json:"player2_hand"`
+	TableCards  []Card `json:"table_cards"`
+	Deck        []Card `json:"deck"`
 
 	// Objection system (Authentic Romanian Septica)
-	WaitingForObjection bool      `json:"waiting_for_objection"`
+	WaitingForObjection bool       `json:"waiting_for_objection"`
 	ObjectionDeadline   *time.Time `json:"objection_deadline,omitempty"`
-	LastPlayedCard      *Card     `json:"last_played_card,omitempty"`
+	LastPlayedCard      *Card      `json:"last_played_card,omitempty"`
 
 	// Score tracking
-	Player1Score      int       `json:"player1_score"`
-	Player2Score      int       `json:"player2_score"`
-	TrickNumber       int       `json:"trick_number"`
-	MoveNumber        int       `json:"move_number"`
+	Player1Score int `json:"player1_score"`
+	Player2Score int `json:"player2_score"`
+	TrickNumber  int `json:"trick_number"`
+	MoveNumber   int `json:"move_number"`
 
 	// Timing
-	CreatedAt         time.Time `json:"created_at"`
-	StartedAt         *time.Time `json:"started_at"`
-	LastMoveAt        *time.Time `json:"last_move_at"`
+	CreatedAt  time.Time  `json:"created_at"`
+	StartedAt  *time.Time `json:"started_at"`
+	LastMoveAt *time.Time `json:"last_move_at"`
 
 	// Multiplayer sync
-	SequenceNumber    int       `json:"sequence_number"`
+	SequenceNumber int `json:"sequence_number"`
 }
 
 // MoveResult represents the result of a move
 type MoveResult struct {
-	Valid          bool      `json:"valid"`
-	Error          string    `json:"error,omitempty"`
-	UpdatedState   *GameState `json:"updated_state,omitempty"`
-	TrickComplete  bool      `json:"trick_complete"`
-	GameComplete   bool      `json:"game_complete"`
-	WinnerID       *uuid.UUID `json:"winner_id,omitempty"`
-	PointsAwarded  int       `json:"points_awarded"`
+	Valid         bool       `json:"valid"`
+	Error         string     `json:"error,omitempty"`
+	UpdatedState  *GameState `json:"updated_state,omitempty"`
+	TrickComplete bool       `json:"trick_complete"`
+	GameComplete  bool       `json:"game_complete"`
+	WinnerID      *uuid.UUID `json:"winner_id,omitempty"`
+	PointsAwarded int        `json:"points_awarded"`
 }
 
 // Engine manages game logic and state
@@ -170,7 +170,7 @@ func (e *Engine) PlayCard(gameID uuid.UUID, playerID uuid.UUID, card Card) (*Mov
 	if err != nil {
 		return nil, err
 	}
-	
+
 	// Validate game is active
 	if game.Status != "in_progress" {
 		metrics.GameErrors.WithLabelValues("game_not_active").Inc()
@@ -210,18 +210,18 @@ func (e *Engine) PlayCard(gameID uuid.UUID, playerID uuid.UUID, card Card) (*Mov
 		metrics.GameErrors.WithLabelValues("invalid_move").Inc()
 		return &MoveResult{Valid: false, Error: "cannot beat current card"}, nil
 	}
-	
+
 	// Execute the move
 	// Remove card from player's hand
 	*playerHand = append((*playerHand)[:cardIndex], (*playerHand)[cardIndex+1:]...)
-	
+
 	// Add card to table
 	game.TableCards = append(game.TableCards, card)
 	game.MoveNumber++
 	game.SequenceNumber++
 	now := time.Now()
 	game.LastMoveAt = &now
-	
+
 	// Determine opponent
 	opponentID := game.Player2ID
 	var opponentHand []Card
@@ -258,7 +258,7 @@ func (e *Engine) PlayCard(gameID uuid.UUID, playerID uuid.UUID, card Card) (*Mov
 		// Deal new cards if deck not empty
 		dealNewCards(game)
 	}
-	
+
 	// Check if game is complete
 	gameComplete := isGameComplete(game)
 	var winnerID *uuid.UUID
@@ -278,7 +278,7 @@ func (e *Engine) PlayCard(gameID uuid.UUID, playerID uuid.UUID, card Card) (*Mov
 			metrics.GameDuration.WithLabelValues(string(game.GameMode)).Observe(duration)
 		}
 	}
-	
+
 	return &MoveResult{
 		Valid:         true,
 		UpdatedState:  game,
@@ -294,7 +294,7 @@ func (e *Engine) PlayCard(gameID uuid.UUID, playerID uuid.UUID, card Card) (*Mov
 func createAndShuffleDeck() []Card {
 	suits := []string{"hearts", "diamonds", "clubs", "spades"}
 	values := []int{7, 8, 9, 10, 11, 12, 13, 14} // J=11, Q=12, K=13, A=14
-	
+
 	var deck []Card
 	for _, suit := range suits {
 		for _, value := range values {
@@ -306,14 +306,14 @@ func createAndShuffleDeck() []Card {
 			deck = append(deck, card)
 		}
 	}
-	
+
 	// Shuffle deck
 	rand.Seed(time.Now().UnixNano())
 	for i := len(deck) - 1; i > 0; i-- {
 		j := rand.Intn(i + 1)
 		deck[i], deck[j] = deck[j], deck[i]
 	}
-	
+
 	return deck
 }
 
@@ -394,7 +394,7 @@ func dealNewCards(game *GameState) {
 	if len(game.Player2Hand) < 4 && len(game.Deck) > cardsNeeded {
 		cardsNeeded++
 	}
-	
+
 	if cardsNeeded > 0 && len(game.Deck) >= cardsNeeded {
 		if len(game.Player1Hand) < 4 {
 			game.Player1Hand = append(game.Player1Hand, game.Deck[0])
@@ -418,13 +418,13 @@ func (e *Engine) GetPlayerHand(gameID uuid.UUID, playerID uuid.UUID) ([]Card, er
 	if err != nil {
 		return nil, err
 	}
-	
+
 	if playerID == game.Player1ID {
 		return game.Player1Hand, nil
 	} else if playerID == game.Player2ID {
 		return game.Player2Hand, nil
 	}
-	
+
 	return nil, errors.New("player not in game")
 }
 
@@ -434,18 +434,18 @@ func (e *Engine) GetValidMoves(gameID uuid.UUID, playerID uuid.UUID) ([]Card, er
 	if err != nil {
 		return nil, err
 	}
-	
+
 	hand, err := e.GetPlayerHand(gameID, playerID)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	var validMoves []Card
 	for _, card := range hand {
 		if isValidMove(card, game.TableCards, game.GameMode) {
 			validMoves = append(validMoves, card)
 		}
 	}
-	
+
 	return validMoves, nil
 }

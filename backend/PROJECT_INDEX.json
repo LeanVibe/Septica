@@ -1,1 +1,177 @@
-{"at":"2025-10-08T14:36:14.642601","root":".","tree":[".","\u251c\u2500\u2500 cmd/ (2 files)","\u2502   \u251c\u2500\u2500 cleanup/ (1 files)","\u2502   \u2514\u2500\u2500 server/ (1 files)","\u251c\u2500\u2500 deployments/","\u251c\u2500\u2500 docs/","\u2502   \u2514\u2500\u2500 fixes/","\u251c\u2500\u2500 internal/ (47 files)","\u2502   \u251c\u2500\u2500 ai/ (5 files)","\u2502   \u251c\u2500\u2500 api/","\u2502   \u251c\u2500\u2500 auth/ (1 files)","\u2502   \u251c\u2500\u2500 database/ (5 files)","\u2502   \u251c\u2500\u2500 game/ (7 files)","\u2502   \u251c\u2500\u2500 handlers/ (6 files)","\u2502   \u251c\u2500\u2500 logger/ (1 files)","\u2502   \u251c\u2500\u2500 matchmaking/ (4 files)","\u2502   \u251c\u2500\u2500 metrics/ (1 files)","\u2502   \u251c\u2500\u2500 middleware/ (5 files)","\u2502   \u251c\u2500\u2500 rating/ (3 files)","\u2502   \u251c\u2500\u2500 services/"],"stats":{"total_files":71,"total_directories":24,"fully_parsed":{"shell":1,"javascript":1},"listed_only":{"go":67,"json":2},"markdown_files":6},"f":{"run-all-ai-tests.sh":["s",["run_test_suite:0:()::Function to run a single test suite","check_prerequisites:0:()::Function to check prerequisites","check_puppeteer:0:()::Function to check if Puppeteer is available","generate_master_report:0:()::Function to generate master report","display_final_results:0:()::Function to display final results","main:0:()::Main execution flow"]],"test-ai-e2e.js":["j",["testAIEndToEnd:20:async ()::","checkBackendHealth:179:async (page)::","findMatchmakingControls:197:async (page)::","logAvailableElements:236:async (page)::","monitorAIDeployment:271:async (page)::","validateMatchWithAI:347:async (page)::","testAIGameplayBehavior:398:async (page, aiOpponent):checkForMoves:","captureTestEvidence:442:async (page, testReport)::","captureDebugInfo:471:async (page)::","checkPuppeteer:495:async ()::","checkForMoves:409:()::"]]},"g":[["testAIGameplayBehavior","checkForMoves"]],"d":{"AI-TESTING-GUIDE.md":["Romanian Septica AI Testing Guide","\ud83c\udfaf Overview","\ud83d\ude80 Quick Start","Prerequisites","Running All Tests","Make sure you're in the backend directory","Run the complete AI test suite","Running Individual Test Suites","Strategic Behavior Testing","Matchmaking Integration Testing"],"COMPREHENSIVE-AI-TEST-SUMMARY.md":["\ud83c\udfaf Romanian Septica AI Comprehensive Testing Suite - FINAL SUMMARY","\ud83d\udcca Executive Overview","\u2705 **COMPLETED: Comprehensive AI Testing Framework**","\ud83c\udfc6 Deliverables Summary","1. **AI Strategic Behavior Test Suite** (`test-ai-strategic-behavior.go`)","2. **AI Matchmaking Integration Tests** (`test-ai-matchmaking-integration.go`)","3. **AI Performance & Quality Tests** (`test-ai-performance-quality.go`)","4. **End-to-End Integration Tests** (`test-ai-e2e.js`)","5. **Master Test Runner** (`run-all-ai-tests.sh`)","6. **Comprehensive Testing Guide** (`AI-TESTING-GUIDE.md`)"],"DEPLOYMENT.md":["Romanian Septica Backend - Docker Deployment Guide","Overview","Performance Metrics","Docker Image Optimization","Runtime Performance","Database Metrics","Quick Start","Prerequisites","Local Development Setup","1. Navigate to backend directory"],"IMPLEMENTATION_SUMMARY.md":["Health Check Endpoints Implementation Summary","Overview","Files Created/Modified","Created Files:","Modified Files:","Implemented Endpoints","1. Basic Health Check (Liveness Probe)","2. Readiness Probe","3. Detailed Health Status","4. AI Matchmaking Health"],"docs/fixes/AI_MATCHMAKING_STATS_FIX.md":["AI Matchmaking Stats Integration Fix","Problem","Root Cause","Solution","Files Modified","Fixed Flow","Verification","Test Results","Success Criteria Met","Impact"],"docs/health-endpoints.md":["Health Check Endpoints Documentation","Overview","Endpoints","1. Basic Health Check (Liveness Probe)","2. Readiness Probe","3. Detailed Health Status","4. AI Matchmaking Health","5. Matchmaking Queue Health"]},"deps":{"test-ai-e2e.js":["puppeteer","fs","child_process"]},"dir_purposes":{"internal/middleware":"Middleware functions and handlers","internal/rating":"Test files and test utilities","docs":"Project documentation","internal/ai":"Test files and test utilities","internal/auth":"Authentication and authorization logic","internal/database":"Test files and test utilities","internal/game":"Test files and test utilities","internal/handlers":"Test files and test utilities","internal/matchmaking":"Test files and test utilities","internal/websocket":"Test files and test utilities","pkg/config":"Configuration files and settings","test":"Test files and test utilities","tests/integration":"Test files and test utilities"},"staleness":1759318574.685095}
+{
+  "at": "2025-10-10T01:20:49.147597",
+  "root": ".",
+  "tree": [
+    ".",
+    "\u251c\u2500\u2500 cmd/ (2 files)",
+    "\u2502   \u251c\u2500\u2500 cleanup/ (1 files)",
+    "\u2502   \u2514\u2500\u2500 server/ (1 files)",
+    "\u251c\u2500\u2500 deployments/",
+    "\u251c\u2500\u2500 docs/",
+    "\u2502   \u2514\u2500\u2500 fixes/",
+    "\u251c\u2500\u2500 internal/ (47 files)",
+    "\u2502   \u251c\u2500\u2500 ai/ (5 files)",
+    "\u2502   \u251c\u2500\u2500 api/",
+    "\u2502   \u251c\u2500\u2500 auth/ (1 files)",
+    "\u2502   \u251c\u2500\u2500 database/ (5 files)",
+    "\u2502   \u251c\u2500\u2500 game/ (7 files)",
+    "\u2502   \u251c\u2500\u2500 handlers/ (6 files)",
+    "\u2502   \u251c\u2500\u2500 logger/ (1 files)",
+    "\u2502   \u251c\u2500\u2500 matchmaking/ (4 files)",
+    "\u2502   \u251c\u2500\u2500 metrics/ (1 files)",
+    "\u2502   \u251c\u2500\u2500 middleware/ (5 files)",
+    "\u2502   \u251c\u2500\u2500 rating/ (3 files)",
+    "\u2502   \u251c\u2500\u2500 services/"
+  ],
+  "stats": {
+    "total_files": 71,
+    "total_directories": 24,
+    "fully_parsed": {
+      "shell": 1,
+      "javascript": 1
+    },
+    "listed_only": {
+      "json": 2,
+      "go": 67
+    },
+    "markdown_files": 6
+  },
+  "f": {
+    "run-all-ai-tests.sh": [
+      "s",
+      [
+        "run_test_suite:0:()::Function to run a single test suite",
+        "check_prerequisites:0:()::Function to check prerequisites",
+        "check_puppeteer:0:()::Function to check if Puppeteer is available",
+        "generate_master_report:0:()::Function to generate master report",
+        "display_final_results:0:()::Function to display final results",
+        "main:0:()::Main execution flow"
+      ]
+    ],
+    "test-ai-e2e.js": [
+      "j",
+      [
+        "testAIEndToEnd:20:async ()::",
+        "checkBackendHealth:179:async (page)::",
+        "findMatchmakingControls:197:async (page)::",
+        "logAvailableElements:236:async (page)::",
+        "monitorAIDeployment:271:async (page)::",
+        "validateMatchWithAI:347:async (page)::",
+        "testAIGameplayBehavior:398:async (page, aiOpponent):checkForMoves:",
+        "captureTestEvidence:442:async (page, testReport)::",
+        "captureDebugInfo:471:async (page)::",
+        "checkPuppeteer:495:async ()::",
+        "checkForMoves:409:()::"
+      ]
+    ]
+  },
+  "g": [
+    [
+      "testAIGameplayBehavior",
+      "checkForMoves"
+    ]
+  ],
+  "d": {
+    "AI-TESTING-GUIDE.md": [
+      "Romanian Septica AI Testing Guide",
+      "\ud83c\udfaf Overview",
+      "\ud83d\ude80 Quick Start",
+      "Prerequisites",
+      "Running All Tests",
+      "Make sure you're in the backend directory",
+      "Run the complete AI test suite",
+      "Running Individual Test Suites",
+      "Strategic Behavior Testing",
+      "Matchmaking Integration Testing"
+    ],
+    "COMPREHENSIVE-AI-TEST-SUMMARY.md": [
+      "\ud83c\udfaf Romanian Septica AI Comprehensive Testing Suite - FINAL SUMMARY",
+      "\ud83d\udcca Executive Overview",
+      "\u2705 **COMPLETED: Comprehensive AI Testing Framework**",
+      "\ud83c\udfc6 Deliverables Summary",
+      "1. **AI Strategic Behavior Test Suite** (`test-ai-strategic-behavior.go`)",
+      "2. **AI Matchmaking Integration Tests** (`test-ai-matchmaking-integration.go`)",
+      "3. **AI Performance & Quality Tests** (`test-ai-performance-quality.go`)",
+      "4. **End-to-End Integration Tests** (`test-ai-e2e.js`)",
+      "5. **Master Test Runner** (`run-all-ai-tests.sh`)",
+      "6. **Comprehensive Testing Guide** (`AI-TESTING-GUIDE.md`)"
+    ],
+    "DEPLOYMENT.md": [
+      "Romanian Septica Backend - Docker Deployment Guide",
+      "Overview",
+      "Performance Metrics",
+      "Docker Image Optimization",
+      "Runtime Performance",
+      "Database Metrics",
+      "Quick Start",
+      "Prerequisites",
+      "Local Development Setup",
+      "1. Navigate to backend directory"
+    ],
+    "IMPLEMENTATION_SUMMARY.md": [
+      "Health Check Endpoints Implementation Summary",
+      "Overview",
+      "Files Created/Modified",
+      "Created Files:",
+      "Modified Files:",
+      "Implemented Endpoints",
+      "1. Basic Health Check (Liveness Probe)",
+      "2. Readiness Probe",
+      "3. Detailed Health Status",
+      "4. AI Matchmaking Health"
+    ],
+    "docs/fixes/AI_MATCHMAKING_STATS_FIX.md": [
+      "AI Matchmaking Stats Integration Fix",
+      "Problem",
+      "Root Cause",
+      "Solution",
+      "Files Modified",
+      "Fixed Flow",
+      "Verification",
+      "Test Results",
+      "Success Criteria Met",
+      "Impact"
+    ],
+    "docs/health-endpoints.md": [
+      "Health Check Endpoints Documentation",
+      "Overview",
+      "Endpoints",
+      "1. Basic Health Check (Liveness Probe)",
+      "2. Readiness Probe",
+      "3. Detailed Health Status",
+      "4. AI Matchmaking Health",
+      "5. Matchmaking Queue Health"
+    ]
+  },
+  "deps": {
+    "test-ai-e2e.js": [
+      "puppeteer",
+      "fs",
+      "child_process"
+    ]
+  },
+  "dir_purposes": {
+    "docs": "Project documentation",
+    "internal/ai": "Test files and test utilities",
+    "internal/auth": "Authentication and authorization logic",
+    "internal/database": "Test files and test utilities",
+    "internal/game": "Test files and test utilities",
+    "internal/handlers": "Test files and test utilities",
+    "internal/matchmaking": "Test files and test utilities",
+    "internal/middleware": "Middleware functions and handlers",
+    "internal/rating": "Test files and test utilities",
+    "internal/websocket": "Test files and test utilities",
+    "pkg/config": "Configuration files and settings",
+    "test": "Test files and test utilities",
+    "tests/integration": "Test files and test utilities"
+  },
+  "staleness": 1759443649.201182,
+  "_meta": {
+    "target_size_k": 50,
+    "generated_at": 1760048449.20701,
+    "actual_size_k": 1,
+    "files_hash": "26da8c0c087a729e",
+    "compression_ratio": "2.0%",
+    "last_interactive_size_k": 50
+  }
+}

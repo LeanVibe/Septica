@@ -115,22 +115,22 @@ func (ts *TestSuite) TestRomanianSevenRule() {
 
 	// Create test scenarios where 7s should always beat
 	testScenarios := []struct {
-		description    string
-		sevenCard      game.Card
-		opponentCards  []game.Card
-		shouldBeat     bool
-		culturalScore  float64
+		description   string
+		sevenCard     game.Card
+		opponentCards []game.Card
+		shouldBeat    bool
+		culturalScore float64
 	}{
 		{
-			description: "7 of Spades vs King of Hearts",
-			sevenCard:   game.Card{Suit: "spades", Value: 7},
+			description:   "7 of Spades vs King of Hearts",
+			sevenCard:     game.Card{Suit: "spades", Value: 7},
 			opponentCards: []game.Card{{Suit: "hearts", Value: 13}},
 			shouldBeat:    true,
 			culturalScore: 1.0, // Perfect Romanian authenticity
 		},
 		{
-			description: "7 of Hearts vs Ace of Clubs",
-			sevenCard:   game.Card{Suit: "hearts", Value: 7},
+			description:   "7 of Hearts vs Ace of Clubs",
+			sevenCard:     game.Card{Suit: "hearts", Value: 7},
 			opponentCards: []game.Card{{Suit: "clubs", Value: 14}},
 			shouldBeat:    true,
 			culturalScore: 1.0,
@@ -197,7 +197,9 @@ func (ts *TestSuite) TestRomanianSevenRule() {
 		Details: map[string]interface{}{
 			"scenarios_tested": len(testScenarios),
 			"scenarios_passed": func() int {
-				if allPassed { return len(testScenarios) }
+				if allPassed {
+					return len(testScenarios)
+				}
 				return 0 // Calculate actual passed count if needed
 			}(),
 		},
@@ -338,7 +340,7 @@ func (ts *TestSuite) TestRomanianEightRuleCorrection() {
 			},
 		},
 		CurrentPlayerID: ai.ID,
-		GameMode: "2-player", // In 2-player mode, 8s should NOT be special
+		GameMode:        "2-player", // In 2-player mode, 8s should NOT be special
 	}
 
 	action, err := ai.DecideMove(gameState)
@@ -351,10 +353,10 @@ func (ts *TestSuite) TestRomanianEightRuleCorrection() {
 
 	// The test "succeeds" if we detect the wrong behavior (to document the bug)
 	ts.recordResult(TestResult{
-		TestName:      testName,
-		Success:       wrongBehaviorDetected, // "Success" = we detected the bug
-		ExecutionTime: time.Since(start),
-		CulturalScore: 0.0, // Zero cultural authenticity due to wrong rules
+		TestName:       testName,
+		Success:        wrongBehaviorDetected, // "Success" = we detected the bug
+		ExecutionTime:  time.Since(start),
+		CulturalScore:  0.0, // Zero cultural authenticity due to wrong rules
 		StrategicScore: 0.1, // Poor strategy due to wrong rules
 		ErrorMessage: func() string {
 			if wrongBehaviorDetected {
@@ -363,12 +365,12 @@ func (ts *TestSuite) TestRomanianEightRuleCorrection() {
 			return "Could not confirm bug - AI behavior unclear"
 		}(),
 		Details: map[string]interface{}{
-			"bug_type": "Wrong Romanian Septica 8 rule implementation",
-			"current_wrong_rule": "8s beat when table_cards % 3 == 0",
+			"bug_type":               "Wrong Romanian Septica 8 rule implementation",
+			"current_wrong_rule":     "8s beat when table_cards % 3 == 0",
 			"correct_authentic_rule": "8s are wild ONLY in 3-player variant when 2 eights removed from deck",
-			"impact": "AI plays completely non-authentic Romanian Septica",
-			"fix_required": true,
-			"priority": "CRITICAL - Cultural authenticity violation",
+			"impact":                 "AI plays completely non-authentic Romanian Septica",
+			"fix_required":           true,
+			"priority":               "CRITICAL - Cultural authenticity violation",
 		},
 	})
 }
@@ -465,15 +467,15 @@ func (ts *TestSuite) TestRomanianNameGeneration() {
 	avgCulturalScore := culturalScore / float64(totalTests)
 
 	ts.recordResult(TestResult{
-		TestName:       testName,
-		Success:        allPassed,
-		ExecutionTime:  time.Since(start),
-		CulturalScore:  avgCulturalScore,
+		TestName:      testName,
+		Success:       allPassed,
+		ExecutionTime: time.Since(start),
+		CulturalScore: avgCulturalScore,
 		Details: map[string]interface{}{
-			"names_tested":       totalTests,
-			"authentic_names":    len(authenticRomanianNames),
-			"difficulty_levels":  len(difficulties),
-			"cultural_accuracy":  fmt.Sprintf("%.1f%%", avgCulturalScore*100),
+			"names_tested":      totalTests,
+			"authentic_names":   len(authenticRomanianNames),
+			"difficulty_levels": len(difficulties),
+			"cultural_accuracy": fmt.Sprintf("%.1f%%", avgCulturalScore*100),
 		},
 	})
 }
@@ -497,7 +499,7 @@ func (ts *TestSuite) TestSevenConservationStrategy() {
 
 	// Test that AI saves 7s strategically rather than playing them immediately
 	testScenarios := []struct {
-		difficulty    string
+		difficulty       string
 		expectedStrategy float64 // Higher = more strategic conservation
 	}{
 		{"easy", 0.3},   // Easy AI should play 7s more readily
@@ -534,7 +536,7 @@ func (ts *TestSuite) TestSevenConservationStrategy() {
 			// Valuable table - AI should consider playing 7
 			valuableGameState := &game.AuthenticGameState{
 				TableCards: []game.Card{
-					{Suit: "hearts", Value: 10}, // Point card
+					{Suit: "hearts", Value: 10},   // Point card
 					{Suit: "diamonds", Value: 14}, // Ace
 				},
 				PlayerHands: map[uuid.UUID][]game.Card{
@@ -553,7 +555,7 @@ func (ts *TestSuite) TestSevenConservationStrategy() {
 		valuableTableStrategy := valuableTableScore / float64(testsPerScenario)
 		overallStrategy := (emptyTableStrategy + valuableTableStrategy) / 2.0
 
-		if overallStrategy < scenario.expectedStrategy - 0.2 {
+		if overallStrategy < scenario.expectedStrategy-0.2 {
 			allPassed = false
 			ts.logger.Error("Poor seven conservation strategy",
 				"difficulty", scenario.difficulty,
@@ -616,14 +618,20 @@ func (ts *TestSuite) TestDifficultyBasedBehavior() {
 	allPassed := reactionTimeDiffs && strategicDiffs && configValid
 
 	ts.recordResult(TestResult{
-		TestName:        testName,
-		Success:         allPassed,
-		ExecutionTime:   time.Since(start),
-		DifficultyScore: func() float64 { if allPassed { return 0.9 } else { return 0.4 } }(),
+		TestName:      testName,
+		Success:       allPassed,
+		ExecutionTime: time.Since(start),
+		DifficultyScore: func() float64 {
+			if allPassed {
+				return 0.9
+			} else {
+				return 0.4
+			}
+		}(),
 		Details: map[string]interface{}{
-			"reaction_times_valid":   reactionTimeDiffs,
-			"strategic_diffs_valid":  strategicDiffs,
-			"configurations_valid":   configValid,
+			"reaction_times_valid":  reactionTimeDiffs,
+			"strategic_diffs_valid": strategicDiffs,
+			"configurations_valid":  configValid,
 		},
 	})
 }
@@ -632,23 +640,23 @@ func (ts *TestSuite) TestDifficultyBasedBehavior() {
 func (ts *TestSuite) testReactionTimeDifferences(easy, medium, hard *ai.AIPlayer) bool {
 	// Easy should be slowest, hard should be fastest
 	return easy.Config.ReactionTimeMax > medium.Config.ReactionTimeMax &&
-		   medium.Config.ReactionTimeMax > hard.Config.ReactionTimeMax &&
-		   easy.Config.ReactionTimeMin > medium.Config.ReactionTimeMin &&
-		   medium.Config.ReactionTimeMin > hard.Config.ReactionTimeMin
+		medium.Config.ReactionTimeMax > hard.Config.ReactionTimeMax &&
+		easy.Config.ReactionTimeMin > medium.Config.ReactionTimeMin &&
+		medium.Config.ReactionTimeMin > hard.Config.ReactionTimeMin
 }
 
 func (ts *TestSuite) testStrategicDecisionDifferences(easy, medium, hard *ai.AIPlayer) bool {
 	// Hard should prioritize points more, be less aggressive with 7s
 	return hard.Config.PointCardPriority > medium.Config.PointCardPriority &&
-		   medium.Config.PointCardPriority > easy.Config.PointCardPriority &&
-		   easy.Config.SevenAggressiveness > medium.Config.SevenAggressiveness &&
-		   medium.Config.SevenAggressiveness > hard.Config.SevenAggressiveness
+		medium.Config.PointCardPriority > easy.Config.PointCardPriority &&
+		easy.Config.SevenAggressiveness > medium.Config.SevenAggressiveness &&
+		medium.Config.SevenAggressiveness > hard.Config.SevenAggressiveness
 }
 
 func (ts *TestSuite) testDifficultyConfigurations(easy, medium, hard *ai.AIPlayer) bool {
 	return easy.Config.Difficulty == "easy" &&
-		   medium.Config.Difficulty == "medium" &&
-		   hard.Config.Difficulty == "hard"
+		medium.Config.Difficulty == "medium" &&
+		hard.Config.Difficulty == "hard"
 }
 
 // ====================== PLACEHOLDER METHODS ======================
@@ -657,18 +665,18 @@ func (ts *TestSuite) testDifficultyConfigurations(easy, medium, hard *ai.AIPlaye
 func (ts *TestSuite) TestRomanianPointCardCollection() {
 	// Test AI prioritizes collecting 10s and Aces correctly
 	ts.recordResult(TestResult{
-		TestName: "Romanian Point Card Collection",
-		Success:  true, // Placeholder
-		ExecutionTime: time.Millisecond * 100,
-		CulturalScore: 0.8,
+		TestName:       "Romanian Point Card Collection",
+		Success:        true, // Placeholder
+		ExecutionTime:  time.Millisecond * 100,
+		CulturalScore:  0.8,
 		StrategicScore: 0.9,
 	})
 }
 
 func (ts *TestSuite) TestCulturalReactionTiming() {
 	ts.recordResult(TestResult{
-		TestName: "Cultural Reaction Timing",
-		Success:  true,
+		TestName:      "Cultural Reaction Timing",
+		Success:       true,
 		ExecutionTime: time.Millisecond * 150,
 		CulturalScore: 0.7,
 	})
@@ -676,81 +684,81 @@ func (ts *TestSuite) TestCulturalReactionTiming() {
 
 func (ts *TestSuite) TestPointCardPriorityStrategy() {
 	ts.recordResult(TestResult{
-		TestName: "Point Card Priority Strategy",
-		Success:  true,
-		ExecutionTime: time.Millisecond * 200,
+		TestName:       "Point Card Priority Strategy",
+		Success:        true,
+		ExecutionTime:  time.Millisecond * 200,
 		StrategicScore: 0.8,
 	})
 }
 
 func (ts *TestSuite) TestEndGameStrategy() {
 	ts.recordResult(TestResult{
-		TestName: "End Game Strategy",
-		Success:  true,
-		ExecutionTime: time.Millisecond * 180,
+		TestName:       "End Game Strategy",
+		Success:        true,
+		ExecutionTime:  time.Millisecond * 180,
 		StrategicScore: 0.7,
 	})
 }
 
 func (ts *TestSuite) TestOpponentAnalysis() {
 	ts.recordResult(TestResult{
-		TestName: "Opponent Analysis",
-		Success:  true,
-		ExecutionTime: time.Millisecond * 250,
+		TestName:       "Opponent Analysis",
+		Success:        true,
+		ExecutionTime:  time.Millisecond * 250,
 		StrategicScore: 0.6,
 	})
 }
 
 func (ts *TestSuite) TestEasyDifficultyBehavior() {
 	ts.recordResult(TestResult{
-		TestName: "Easy Difficulty Behavior",
-		Success:  true,
-		ExecutionTime: time.Millisecond * 120,
+		TestName:        "Easy Difficulty Behavior",
+		Success:         true,
+		ExecutionTime:   time.Millisecond * 120,
 		DifficultyScore: 0.8,
 	})
 }
 
 func (ts *TestSuite) TestMediumDifficultyBehavior() {
 	ts.recordResult(TestResult{
-		TestName: "Medium Difficulty Behavior",
-		Success:  true,
-		ExecutionTime: time.Millisecond * 140,
+		TestName:        "Medium Difficulty Behavior",
+		Success:         true,
+		ExecutionTime:   time.Millisecond * 140,
 		DifficultyScore: 0.9,
 	})
 }
 
 func (ts *TestSuite) TestHardDifficultyBehavior() {
 	ts.recordResult(TestResult{
-		TestName: "Hard Difficulty Behavior",
-		Success:  true,
-		ExecutionTime: time.Millisecond * 160,
+		TestName:        "Hard Difficulty Behavior",
+		Success:         true,
+		ExecutionTime:   time.Millisecond * 160,
 		DifficultyScore: 0.85,
 	})
 }
 
 func (ts *TestSuite) TestAIDecisionTiming() {
 	ts.recordResult(TestResult{
-		TestName: "AI Decision Timing",
-		Success:  true,
-		ExecutionTime: time.Millisecond * 90,
+		TestName:       "AI Decision Timing",
+		Success:        true,
+		ExecutionTime:  time.Millisecond * 90,
 		StrategicScore: 0.8,
 	})
 }
 
 func (ts *TestSuite) TestAIGameStateAwareness() {
 	ts.recordResult(TestResult{
-		TestName: "AI Game State Awareness",
-		Success:  true,
-		ExecutionTime: time.Millisecond * 200,
+		TestName:       "AI Game State Awareness",
+		Success:        true,
+		ExecutionTime:  time.Millisecond * 200,
 		StrategicScore: 0.85,
 	})
 }
 
 func (ts *TestSuite) TestAIMemoryAndLearning() {
 	ts.recordResult(TestResult{
-		TestName: "AI Memory and Learning",
-		Success:  true,
-		ExecutionTime: time.Millisecond * 300,
+		TestName:       "AI Memory and Learning",
+		Success:        true,
+		ExecutionTime:  time.Millisecond * 300,
 		StrategicScore: 0.6,
 	})
 }
@@ -853,21 +861,39 @@ func (ts *TestSuite) GenerateReport() {
 
 	// Generate JSON report
 	report := map[string]interface{}{
-		"test_suite": "Romanian Septica AI Strategic Behavior",
-		"timestamp": time.Now().Format(time.RFC3339),
+		"test_suite":        "Romanian Septica AI Strategic Behavior",
+		"timestamp":         time.Now().Format(time.RFC3339),
 		"execution_time_ms": totalTime.Milliseconds(),
 		"summary": map[string]interface{}{
 			"total_tests": ts.totalTests,
-			"passed": ts.passedTests,
-			"failed": ts.totalTests - ts.passedTests,
-			"pass_rate": passRate,
+			"passed":      ts.passedTests,
+			"failed":      ts.totalTests - ts.passedTests,
+			"pass_rate":   passRate,
 		},
 		"scores": map[string]interface{}{
-			"cultural_authenticity": func() float64 { if len(culturalScores) > 0 { return average(culturalScores) * 100 } else { return 0 } }(),
-			"strategic_intelligence": func() float64 { if len(strategicScores) > 0 { return average(strategicScores) * 100 } else { return 0 } }(),
-			"difficulty_implementation": func() float64 { if len(difficultyScores) > 0 { return average(difficultyScores) * 100 } else { return 0 } }(),
+			"cultural_authenticity": func() float64 {
+				if len(culturalScores) > 0 {
+					return average(culturalScores) * 100
+				} else {
+					return 0
+				}
+			}(),
+			"strategic_intelligence": func() float64 {
+				if len(strategicScores) > 0 {
+					return average(strategicScores) * 100
+				} else {
+					return 0
+				}
+			}(),
+			"difficulty_implementation": func() float64 {
+				if len(difficultyScores) > 0 {
+					return average(difficultyScores) * 100
+				} else {
+					return 0
+				}
+			}(),
 		},
-		"results": ts.results,
+		"results":         ts.results,
 		"critical_issues": criticalIssues,
 	}
 
@@ -905,23 +931,41 @@ func average(scores []float64) float64 {
 }
 
 func getCulturalGrade(score float64) string {
-	if score >= 0.9 { return "Excellent - Culturally Authentic" }
-	if score >= 0.7 { return "Good - Minor Cultural Issues" }
-	if score >= 0.5 { return "Fair - Some Cultural Problems" }
+	if score >= 0.9 {
+		return "Excellent - Culturally Authentic"
+	}
+	if score >= 0.7 {
+		return "Good - Minor Cultural Issues"
+	}
+	if score >= 0.5 {
+		return "Fair - Some Cultural Problems"
+	}
 	return "Poor - Major Cultural Issues"
 }
 
 func getStrategicGrade(score float64) string {
-	if score >= 0.9 { return "Excellent - Strategic Expert" }
-	if score >= 0.7 { return "Good - Strategic Competent" }
-	if score >= 0.5 { return "Fair - Basic Strategy" }
+	if score >= 0.9 {
+		return "Excellent - Strategic Expert"
+	}
+	if score >= 0.7 {
+		return "Good - Strategic Competent"
+	}
+	if score >= 0.5 {
+		return "Fair - Basic Strategy"
+	}
 	return "Poor - Weak Strategy"
 }
 
 func getDifficultyGrade(score float64) string {
-	if score >= 0.9 { return "Excellent - Clear Difficulty Levels" }
-	if score >= 0.7 { return "Good - Noticeable Differences" }
-	if score >= 0.5 { return "Fair - Some Differentiation" }
+	if score >= 0.9 {
+		return "Excellent - Clear Difficulty Levels"
+	}
+	if score >= 0.7 {
+		return "Good - Noticeable Differences"
+	}
+	if score >= 0.5 {
+		return "Fair - Some Differentiation"
+	}
 	return "Poor - Unclear Difficulty Levels"
 }
 
