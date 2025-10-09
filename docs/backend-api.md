@@ -465,8 +465,23 @@ Authorization: Bearer <access_token>
 **Query Parameters:**
 - `type`: `rating`, `wins`, `win_rate` (default: `rating`)
 - `period`: `all_time`, `season`, `monthly`, `weekly` (default: `season`)
+- `season`: season identifier (e.g., `2025-Q1`, `2025-Season-1`) - filters leaderboard to specific season
+  - If specified: Returns seasonal stats from `player_season_stats` table
+  - If omitted: Returns all-time stats from `player_statistics` table
 - `limit`: number of entries (default: 50, max: 100)
 - `offset`: pagination offset (default: 0)
+
+**Examples:**
+```http
+# Get current season leaderboard
+GET /api/v1/leaderboard?season=2025-Q1&limit=10
+
+# Get all-time leaderboard
+GET /api/v1/leaderboard?limit=10
+
+# Get Q4 2024 seasonal leaderboard
+GET /api/v1/leaderboard?season=2024-Q4&limit=50
+```
 
 **Response (200 OK):**
 ```json

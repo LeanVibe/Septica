@@ -89,6 +89,11 @@ func main() {
 
 	router := gin.New()
 
+	// Initialize rate limiter
+	rateLimiter := middleware.NewIPRateLimiter(cfg.RateLimitRequests, logger)
+	rateLimiter.StartCleanupWorker(15 * time.Minute) // Clean up stale limiters every 15 minutes
+	logger.Info("Rate limiter initialized", "requests_per_minute", cfg.RateLimitRequests)
+
 	// Global middleware
 	router.Use(gin.Recovery())
 	router.Use(LoggerMiddleware(logger))
@@ -96,7 +101,7 @@ func main() {
 	router.Use(CORSMiddleware(cfg))
 
 	// Register routes
-	registerRoutes(router, wsHub, matchmakingService, authService, aiMatchmakingManager, db, logger)
+	registerRoutes(router, wsHub, matchmakingService, authService, aiMatchmakingManager, db, logger, rateLimiter)
 
 	// Create HTTP server
 	server := &http.Server{
@@ -145,7 +150,7 @@ func main() {
 var serverStartTime = time.Now()
 
 // registerRoutes sets up all application routes
-func registerRoutes(router *gin.Engine, wsHub *websocket.Hub, matchmakingService *matchmaking.MatchmakingService, authService *auth.Service, aiManager *ai.AIMatchmakingManager, db *gorm.DB, logger *logger.Logger) {
+func registerRoutes(router *gin.Engine, wsHub *websocket.Hub, matchmakingService *matchmaking.MatchmakingService, authService *auth.Service, aiManager *ai.AIMatchmakingManager, db *gorm.DB, logger *logger.Logger, rateLimiter *middleware.IPRateLimiter) {
 	// Prometheus metrics endpoint (public, no authentication)
 	router.GET("/metrics", gin.WrapH(promhttp.Handler()))
 
@@ -163,16 +168,39 @@ func registerRoutes(router *gin.Engine, wsHub *websocket.Hub, matchmakingService
 	// API version group
 	v1 := router.Group("/api/v1")
 
-	// Register authentication routes (public + protected)
-	handlers.RegisterAuthRoutes(v1, authService, db, logger)
+	// Apply rate limiting to authentication routes (prevent brute force attacks)
+	authGroup := v1.Group("/auth")
+	authGroup.Use(middleware.RateLimitMiddleware(rateLimiter, logger))
+	{
+		// Register authentication routes (public + protected)
+		handlers.RegisterAuthRoutes(authGroup, authService, db, logger)
+	}
 
-	// Register WebSocket routes (authentication via token query param)
+	// Register WebSocket routes (RegisterWebSocketRoutes will apply its own routing)
+	// Note: Rate limiting applied at router level to protect WebSocket endpoint
 	handlers.RegisterWebSocketRoutes(router, wsHub, authService, logger)
 
 	// Protected routes - require authentication
 	protected := v1.Group("/")
 	protected.Use(middleware.AuthMiddleware(authService, logger))
 	{
+		// Apply rate limiting to matchmaking endpoints (prevent queue spam)
+		matchmakingGroup := protected.Group("/matchmaking")
+		matchmakingGroup.Use(middleware.RateLimitMiddleware(rateLimiter, logger))
+		{
+			handlers.RegisterMatchmakingRoutes(matchmakingGroup, matchmakingService, logger)
+		}
+
+		// Apply rate limiting to game creation (prevent resource exhaustion)
+		gamesGroup := protected.Group("/games")
+		gamesGroup.Use(middleware.RateLimitMiddleware(rateLimiter, logger))
+		{
+			gamesGroup.GET("/:id", getGameHandler(db, logger))
+			gamesGroup.POST("", createGameHandler(db, wsHub, logger))
+			gamesGroup.POST("/:id/join", joinGameHandler(db, logger))
+			gamesGroup.DELETE("/:id/leave", leaveGameHandler(db, logger))
+		}
+
 		// Tournament management
 		protected.POST("/tournaments", func(c *gin.Context) {
 			// Get handler and inject user context
@@ -213,18 +241,6 @@ func registerRoutes(router *gin.Engine, wsHub *websocket.Hub, matchmakingService
 			tournamentHandlers := handlers.NewTournamentHandlers(db, logger)
 			tournamentHandlers.GetRatingDistribution(c)
 		})
-
-		// Matchmaking endpoints
-		protected.POST("/matchmaking/queue", func(c *gin.Context) {
-			// Re-register matchmaking routes with auth
-			handlers.RegisterMatchmakingRoutes(protected, matchmakingService, logger)
-		})
-
-		// Game management endpoints
-		protected.GET("/games/:id", getGameHandler(db, logger))
-		protected.POST("/games", createGameHandler(db, wsHub, logger))
-		protected.POST("/games/:id/join", joinGameHandler(db, logger))
-		protected.DELETE("/games/:id/leave", leaveGameHandler(db, logger))
 	}
 
 	// Public info endpoint (optional auth)

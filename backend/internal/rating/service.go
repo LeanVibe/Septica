@@ -150,31 +150,49 @@ func (s *Service) ProcessGameResult(ctx context.Context, gameID uuid.UUID) error
 func (s *Service) GetLeaderboard(ctx context.Context, limit int, season string) ([]LeaderboardEntry, error) {
 	var entries []LeaderboardEntry
 
-	query := s.db.WithContext(ctx).Table("players").
-		Select(`
-			players.id as player_id,
-			players.username,
-			players.rating,
-			players.level,
-			players.arena,
-			COALESCE(stats.games_played, 0) as games_played,
-			COALESCE(stats.games_won, 0) as games_won,
-			COALESCE(stats.games_lost, 0) as games_lost,
-			CASE 
-				WHEN COALESCE(stats.games_played, 0) > 0 
-				THEN ROUND(CAST(COALESCE(stats.games_won, 0) AS FLOAT) / COALESCE(stats.games_played, 0) * 100, 1)
-				ELSE 0 
-			END as win_rate,
-			COALESCE(stats.current_win_streak, 0) as win_streak,
-			players.updated_at as last_active
-		`).
-		Joins("LEFT JOIN player_statistics stats ON players.id = stats.player_id").
-		Where("players.is_active = ?", true).
-		Order("players.rating DESC, players.updated_at DESC")
+	// Base query structure
+	baseSelect := `
+		players.id as player_id,
+		players.username,
+		players.rating,
+		players.level,
+		players.arena,
+		players.updated_at as last_active
+	`
+
+	var query *gorm.DB
 
 	if season != "" {
-		// TODO: Add season filtering when implemented
-		query = query.Where("1 = 1") // placeholder
+		// Season-specific leaderboard using PlayerSeasonStats
+		query = s.db.WithContext(ctx).Table("players").
+			Select(baseSelect + `,
+				COALESCE(pss.ranked_games_played, 0) as games_played,
+				COALESCE(pss.ranked_games_won, 0) as games_won,
+				COALESCE(pss.ranked_games_played - pss.ranked_games_won, 0) as games_lost,
+				COALESCE(pss.win_rate, 0) as win_rate,
+				0 as win_streak
+			`).
+			Joins("INNER JOIN player_season_stats pss ON players.id = pss.player_id").
+			Where("players.is_active = ?", true).
+			Where("pss.season = ?", season).
+			Order("players.rating DESC, players.updated_at DESC")
+	} else {
+		// All-time leaderboard using PlayerStatistics
+		query = s.db.WithContext(ctx).Table("players").
+			Select(baseSelect + `,
+				COALESCE(stats.games_played, 0) as games_played,
+				COALESCE(stats.games_won, 0) as games_won,
+				COALESCE(stats.games_lost, 0) as games_lost,
+				CASE
+					WHEN COALESCE(stats.games_played, 0) > 0
+					THEN ROUND(CAST(COALESCE(stats.games_won, 0) AS FLOAT) / COALESCE(stats.games_played, 0) * 100, 1)
+					ELSE 0
+				END as win_rate,
+				COALESCE(stats.current_win_streak, 0) as win_streak
+			`).
+			Joins("LEFT JOIN player_statistics stats ON players.id = stats.player_id").
+			Where("players.is_active = ?", true).
+			Order("players.rating DESC, players.updated_at DESC")
 	}
 
 	if limit > 0 {

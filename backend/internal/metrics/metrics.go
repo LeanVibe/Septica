@@ -94,6 +94,12 @@ var (
 		Help: "Total number of queue entries cleaned up",
 	}, []string{"type"}) // labels: orphaned, stale, completed_game
 
+	// Rate limiting metrics
+	RateLimitExceeded = promauto.NewCounterVec(prometheus.CounterOpts{
+		Name: "septica_rate_limit_exceeded_total",
+		Help: "Total number of rate limit violations",
+	}, []string{"ip", "path"})
+
 	// HTTP API metrics (automatically collected by prometheus middleware)
 	HTTPRequestDuration = promauto.NewHistogramVec(prometheus.HistogramOpts{
 		Name:    "septica_http_request_duration_seconds",
