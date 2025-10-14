@@ -14,10 +14,17 @@ struct WorkingGameScreen: View {
     @StateObject private var gameViewModel: GameViewModel
     @State private var selectedCard: Card?
     @State private var showingGameMenu = false
-    
+
     // Romanian Dialogue System Integration
     @StateObject private var dialogueSystem = RomanianDialogueSystem()
-    
+
+    // ShuffleCats Quality Enhancement Manager for premium visual effects
+    @StateObject private var qualityEnhancementManager = ShuffleCatsQualityEnhancementManager()
+
+    // Performance monitoring for adaptive quality
+    @State private var frameRate: Double = 60.0
+    @State private var lastFrameTime: TimeInterval = 0
+
     // Navigation manager for proper menu navigation
     @EnvironmentObject private var navigationManager: SimpleNavigationManager
     
@@ -28,6 +35,12 @@ struct WorkingGameScreen: View {
     var body: some View {
         GeometryReader { geometry in
             ZStack {
+                // Premium motion effects for the entire game screen
+                qualityEnhancementManager.applyMotionEffects(
+                    content: Color.clear,
+                    motionData: MotionData.zero // Will be updated with actual motion data
+                )
+
                 // Switch between layouts based on game mode
                 switch gameViewModel.gameState.gameMode {
                 case .twoPlayers:
@@ -85,6 +98,7 @@ struct WorkingGameScreen: View {
         .preferredColorScheme(.dark)
         .onAppear {
             setupGame()
+            startPerformanceMonitoring()
         }
         .onChange(of: gameViewModel.gamePhase) { _, newPhase in
             handleGamePhaseChange(newPhase)
@@ -104,8 +118,13 @@ struct WorkingGameScreen: View {
 
                 Spacer()
 
-                // Opponent area with Romanian styling
+                // Opponent area with Romanian styling and premium effects
                 opponentArea
+                    .premiumMotion(
+                        motionData: MotionData.zero,
+                        sensitivity: .low,
+                        enableParallax: true
+                    )
 
                 Spacer()
 
@@ -114,8 +133,13 @@ struct WorkingGameScreen: View {
 
                 Spacer()
 
-                // Player hand with Romanian styling
+                // Player hand with Romanian styling and premium effects
                 playerHandArea
+                    .premiumMotion(
+                        motionData: MotionData.zero,
+                        sensitivity: .medium,
+                        enableParallax: true
+                    )
 
                 // Game Action Controls - Professional Romanian interface
                 gameActionControlsArea
@@ -168,20 +192,21 @@ struct WorkingGameScreen: View {
     
     private var gameStatusBar: some View {
         HStack {
-            // Game info
+            // Game info with enhanced Romanian styling
             VStack(alignment: .leading, spacing: 4) {
                 Text("Rândul lui \(gameViewModel.currentPlayer?.name ?? "Jucător")")
                     .font(.headline.weight(.semibold))
                     .foregroundColor(.white)
-                
+                    .shadow(color: RomanianColors.primaryBlue.opacity(0.5), radius: 2, x: 0, y: 1)
+
                 Text("Rundă \(gameViewModel.gameState.roundNumber) • Mână \(gameViewModel.gameState.trickNumber)")
                     .font(.caption)
                     .foregroundColor(.white.opacity(0.8))
             }
-            
+
             Spacer()
-            
-            // Scores
+
+            // Scores with premium styling
             HStack(spacing: 16) {
                 ForEach(gameViewModel.playerScores.sorted(by: { $0.key < $1.key }), id: \.key) { playerName, score in
                     VStack(spacing: 2) {
@@ -190,22 +215,55 @@ struct WorkingGameScreen: View {
                             .foregroundColor(.white.opacity(0.7))
                         Text("\(score)")
                             .font(.headline.weight(.bold))
-                            .foregroundColor(RomanianColors.goldAccent)
+                            .foregroundStyle(
+                                LinearGradient(
+                                    colors: [
+                                        RomanianColors.goldAccent,
+                                        RomanianColors.primaryYellow
+                                    ],
+                                    startPoint: .top,
+                                    endPoint: .bottom
+                                )
+                            )
+                            .shadow(color: RomanianColors.primaryBlue.opacity(0.3), radius: 2, x: 0, y: 1)
                     }
+                    .padding(.vertical, 6)
+                    .padding(.horizontal, 12)
+                    .background(
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(Color.black.opacity(0.4))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(RomanianColors.goldAccent.opacity(0.3), lineWidth: 1)
+                            )
+                    )
                 }
             }
-            
+
             Spacer()
-            
-            // Menu button
+
+            // Menu button with premium styling
             Button(action: { showingGameMenu.toggle() }) {
-                Image(systemName: "line.horizontal.3")
-                    .font(.title2)
-                    .foregroundColor(.white)
-                    .padding(8)
-                    .background(Color.black.opacity(0.6))
-                    .clipShape(Circle())
+                ZStack {
+                    Circle()
+                        .fill(Color.black.opacity(0.6))
+                        .overlay(
+                            Circle()
+                                .stroke(RomanianColors.goldAccent.opacity(0.4), lineWidth: 1)
+                        )
+                        .shadow(color: RomanianColors.primaryBlue.opacity(0.3), radius: 4, x: 0, y: 2)
+
+                    Image(systemName: "line.horizontal.3")
+                        .font(.title2)
+                        .foregroundColor(.white)
+                }
+                .frame(width: 44, height: 44)
             }
+            .microInteractions(
+                state: .idle,
+                enhancementLevel: .high,
+                enabled: true
+            )
         }
         .padding(.horizontal)
         .padding(.top, 8)
@@ -264,41 +322,66 @@ struct WorkingGameScreen: View {
     
     private var gameTableArea: some View {
         VStack(spacing: 12) {
-            // Romanian ornate frame title
+            // Romanian ornate frame title with enhanced animations
             HStack {
                 RomanianOrnatePatternSystem.RomanianCrossPattern(
                     size: 16,
                     color: RomanianColors.goldAccent
                 )
-                
+                .scaleEffect(1.0 + sin(Date().timeIntervalSince1970 * 2) * 0.05)
+                .animation(.easeInOut(duration: 2.0).repeatForever(autoreverses: true), value: Date().timeIntervalSince1970)
+
                 Spacer()
-                
+
                 Text("Masa de Joc")
                     .font(.headline.weight(.bold))
                     .foregroundStyle(
                         LinearGradient(
                             colors: [
                                 RomanianColors.goldAccent,
-                                RomanianColors.primaryYellow
+                                RomanianColors.primaryYellow,
+                                RomanianColors.goldAccent
                             ],
                             startPoint: .leading,
                             endPoint: .trailing
                         )
                     )
                     .shadow(color: .black.opacity(0.5), radius: 2, x: 1, y: 1)
-                
+                    .shadow(color: RomanianColors.goldAccent.opacity(0.3), radius: 4, x: 0, y: 0)
+
                 Spacer()
-                
+
                 RomanianOrnatePatternSystem.RomanianCrossPattern(
                     size: 16,
                     color: RomanianColors.goldAccent
                 )
+                .scaleEffect(1.0 + sin(Date().timeIntervalSince1970 * 2 + .pi) * 0.05)
+                .animation(.easeInOut(duration: 2.0).repeatForever(autoreverses: true), value: Date().timeIntervalSince1970)
             }
             
             // Game table content
             ZStack {
-                // Romanian ornate table surface
-                OrnateRomanianTableSurface(size: CGSize(width: 350, height: 180))
+            // Romanian ornate table surface with enhanced lighting
+            OrnateRomanianTableSurface(size: CGSize(width: 350, height: 180))
+                .overlay(
+                    // Enhanced Romanian cultural lighting effects
+                    RadialGradient(
+                        colors: [
+                            RomanianColors.goldAccent.opacity(0.1),
+                            RomanianColors.primaryYellow.opacity(0.05),
+                            Color.clear
+                        ],
+                        center: .center,
+                        startRadius: 50,
+                        endRadius: 200
+                    )
+                )
+                .overlay(
+                    // Subtle Romanian pattern overlay for cultural depth
+                    RomanianOrnatePatternSystem.RomanianCulturalPatternOverlay()
+                        .opacity(0.15)
+                        .blendMode(.overlay)
+                )
                 
                 if !gameViewModel.tableCards.isEmpty {
                     // Fanned table card display
@@ -312,36 +395,50 @@ struct WorkingGameScreen: View {
                         }
                     )
                 } else {
-                    // Empty table placeholder
+                    // Empty table placeholder with enhanced Romanian cultural elements
                     VStack(spacing: 8) {
-                        Text("♠♥♣♦")
-                            .font(.title)
-                            .foregroundStyle(
-                                LinearGradient(
-                                    colors: [
-                                        RomanianColors.goldAccent,
-                                        RomanianColors.primaryYellow,
-                                        RomanianColors.goldAccent
-                                    ],
-                                    startPoint: .leading,
-                                    endPoint: .trailing
+                        ZStack {
+                            // Animated suit symbols with Romanian cultural glow
+                            Text("♠♥♣♦")
+                                .font(.title)
+                                .foregroundStyle(
+                                    LinearGradient(
+                                        colors: [
+                                            RomanianColors.goldAccent,
+                                            RomanianColors.primaryYellow,
+                                            RomanianColors.goldAccent
+                                        ],
+                                        startPoint: .leading,
+                                        endPoint: .trailing
+                                    )
                                 )
-                            )
-                            .shadow(color: RomanianColors.primaryBlue.opacity(0.4), radius: 3, x: 1, y: 1)
-                        
+                                .shadow(color: RomanianColors.primaryBlue.opacity(0.4), radius: 3, x: 1, y: 1)
+                                .scaleEffect(1.0 + sin(Date().timeIntervalSince1970 * 1.5) * 0.05)
+                                .animation(.easeInOut(duration: 3.0).repeatForever(autoreverses: true), value: Date().timeIntervalSince1970)
+
+                            // Romanian cultural glow effect
+                            Circle()
+                                .fill(RomanianColors.goldAccent.opacity(0.1))
+                                .frame(width: 60, height: 60)
+                                .blur(radius: 10)
+                                .scaleEffect(1.0 + sin(Date().timeIntervalSince1970 * 2) * 0.1)
+                        }
+
                         Text("Masa de Joc Organizată")
                             .font(.headline.weight(.bold))
                             .foregroundStyle(
                                 LinearGradient(
                                     colors: [
                                         RomanianColors.goldAccent,
-                                        RomanianColors.primaryYellow.opacity(0.9)
+                                        RomanianColors.primaryYellow.opacity(0.9),
+                                        RomanianColors.goldAccent
                                     ],
                                     startPoint: .top,
                                     endPoint: .bottom
                                 )
                             )
                             .shadow(color: Color.black.opacity(0.6), radius: 2, x: 1, y: 1)
+                            .shadow(color: RomanianColors.primaryYellow.opacity(0.3), radius: 4, x: 0, y: 0)
                     }
                 }
             }
@@ -405,18 +502,30 @@ struct WorkingGameScreen: View {
                     validMoves: gameViewModel.gameState.waitingForObjection
                         ? gameViewModel.gameState.validObjectionCards
                         : gameViewModel.validMoves,
-                    onCardTapped: { card in
-                        let movesToCheck = gameViewModel.gameState.waitingForObjection
-                            ? gameViewModel.gameState.validObjectionCards
-                            : gameViewModel.validMoves
+                        onCardTapped: { card in
+                            let movesToCheck = gameViewModel.gameState.waitingForObjection
+                                ? gameViewModel.gameState.validObjectionCards
+                                : gameViewModel.validMoves
 
-                        if movesToCheck.contains(card) {
-                            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                                // Tap to select card (use action buttons to play)
-                                selectedCard = card
+                            if movesToCheck.contains(card) {
+                                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                    // Tap to select card (use action buttons to play)
+                                    selectedCard = card
+                                }
+
+                                // Enhanced haptic feedback for card selection
+                                #if os(iOS)
+                                let impact = UIImpactFeedbackGenerator(style: .light)
+                                impact.impactOccurred()
+                                #endif
+                            } else {
+                                // Haptic feedback for invalid card selection
+                                #if os(iOS)
+                                let impact = UIImpactFeedbackGenerator(style: .soft)
+                                impact.impactOccurred()
+                                #endif
                             }
                         }
-                    }
                 )
                 .frame(height: 180) // Increased to accommodate proper card height (154) + fanning space
             }
@@ -472,6 +581,11 @@ struct WorkingGameScreen: View {
                             y: 3
                         )
                     }
+                    .microInteractions(
+                        state: selectedCard != nil ? .idle : .pressed,
+                        enhancementLevel: .high,
+                        enabled: true
+                    )
                     .disabled(selectedCard == nil || gameViewModel.gameState.waitingForObjection)
 
                     // Pass/Objection button
@@ -512,6 +626,11 @@ struct WorkingGameScreen: View {
                                     .stroke(RomanianColors.goldAccent.opacity(0.4), lineWidth: 2)
                             )
                         }
+                        .microInteractions(
+                            state: .idle,
+                            enhancementLevel: .high,
+                            enabled: true
+                        )
                     } else if shouldShowPassButton {
                         // Regular Pass Turn button
                         Button(action: {
@@ -539,6 +658,11 @@ struct WorkingGameScreen: View {
                             .clipShape(RoundedRectangle(cornerRadius: 12))
                             .shadow(color: RomanianColors.primaryRed.opacity(0.4), radius: 6, x: 0, y: 3)
                         }
+                        .microInteractions(
+                            state: .idle,
+                            enhancementLevel: .high,
+                            enabled: true
+                        )
                     }
                 }
                 .padding(.horizontal, 20)
@@ -642,10 +766,29 @@ struct WorkingGameScreen: View {
     
     private func setupGame() {
         gameViewModel.startGame()
-        
+
         // Initialize Romanian dialogue system with welcome message
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
             dialogueSystem.triggerDialogue(for: .gameStart, character: gameViewModel.currentOpponentAvatar)
+        }
+    }
+
+    private func startPerformanceMonitoring() {
+        // Monitor frame rate for adaptive quality adjustment
+        Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
+            let currentTime = CACurrentMediaTime()
+            if lastFrameTime > 0 {
+                let frameTime = currentTime - lastFrameTime
+                frameRate = 1.0 / frameTime
+
+                // Adaptive quality adjustment based on performance
+                if frameRate < 50.0 && qualityEnhancementManager.enhancementLevel != .minimal {
+                    qualityEnhancementManager.enhancementLevel = .medium
+                } else if frameRate > 55.0 && qualityEnhancementManager.enhancementLevel == .medium {
+                    qualityEnhancementManager.enhancementLevel = .high
+                }
+            }
+            lastFrameTime = currentTime
         }
     }
     
@@ -947,6 +1090,18 @@ struct FannedCardHandView: View {
                         onTap: { onCardTapped(card) },
                         onDragChanged: nil,
                         onDragEnded: nil
+                    )
+                    .shuffleCatsQuality(
+                        card: card,
+                        isSelected: isSelected,
+                        enhancementLevel: .high,
+                        preserveCultural: true
+                    )
+                    .shuffleCatsQuality(
+                        card: card,
+                        isSelected: isSelected,
+                        enhancementLevel: .high,
+                        preserveCultural: true
                     )
                     .rotationEffect(.degrees(fanAngle))
                     .offset(x: horizontalOffset, y: liftOffset)
