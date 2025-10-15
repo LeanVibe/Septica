@@ -25,8 +25,17 @@ struct PremiumGameScreen: View {
     var body: some View {
         GeometryReader { geometry in
             ZStack {
+                // Enhanced background with premium gradient overlay
                 ShuffleCatsInspiredBackground()
                     .ignoresSafeArea()
+
+                // Premium gradient overlay with Romanian cultural themes
+                PremiumGradientOverlays.GameScreenGradientOverlay(
+                    culturalTheme: .romanianHeritage,
+                    animationState: showVictoryEffects ? .celebration : .active,
+                    isInteractive: true
+                )
+                .ignoresSafeArea()
                 
                 VStack(spacing: 0) {
                     GameStatusView(
@@ -109,6 +118,26 @@ struct PremiumGameScreen: View {
                 if showVictoryEffects {
                     celebrationOverlay
                 }
+
+                // Premium floating action button
+                VStack {
+                    HStack {
+                        Spacer()
+                        PremiumButtonComponents.PremiumFloatingActionButton(
+                            iconName: "heart.fill",
+                            culturalAccent: .gold
+                        ) {
+                            // Handle favorite action
+                            withAnimation(.spring(response: 0.5, dampingFraction: 0.6)) {
+                                // Toggle favorite state
+                            }
+                        }
+                        .accessibilityEnhanced()
+                        .padding(.trailing, 24)
+                        .padding(.top, 100)
+                    }
+                    Spacer()
+                }
             }
         }
         .ignoresSafeArea(edges: .top)
@@ -118,39 +147,46 @@ struct PremiumGameScreen: View {
         }
     }
     
-    // MARK: - Premium Action Buttons
-    
+    // MARK: - Premium Glass Morphism Action Buttons
+
     private var premiumActionButtons: some View {
-        HStack(spacing: 28) {
-            SecondaryActionButton(
-                iconName: "hand.raised.fill",
+        HStack(spacing: 24) {
+            // Secondary glass button - Pass action
+            PremiumButtonComponents.PremiumGlassSecondaryButton(
                 title: "Treci",
-                subtitle: "Pasează turul",
-                gradient: [
-                    Color(red: 0.16, green: 0.27, blue: 0.58),
-                    Color(red: 0.08, green: 0.16, blue: 0.36)
-                ]
-            )
-            
-            PrimaryActionButton(
+                iconName: "hand.raised.fill",
+                culturalTheme: .carpathian
+            ) {
+                // Handle pass action
+                withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
+                    selectedCard = nil
+                }
+            }
+            .accessibilityEnhanced()
+
+            // Primary glass button - Play action
+            PremiumButtonComponents.PremiumGlassButton(
                 title: "Joacă",
                 subtitle: "Confirmă cartea",
-                iconName: "play.fill"
+                iconName: "play.fill",
+                style: .primary
             ) {
                 if let card = selectedCard {
                     playCard(card)
                 }
             }
-            
-            SecondaryActionButton(
-                iconName: "line.3.horizontal",
+            .accessibilityEnhanced()
+
+            // Secondary glass button - Menu action
+            PremiumButtonComponents.PremiumGlassSecondaryButton(
                 title: "Meniu",
-                subtitle: "Opțiuni rapide",
-                gradient: [
-                    Color(red: 0.60, green: 0.18, blue: 0.28),
-                    Color(red: 0.30, green: 0.08, blue: 0.14)
-                ]
-            )
+                iconName: "line.3.horizontal",
+                culturalTheme: .traditional
+            ) {
+                // Handle menu action
+                print("Menu button tapped")
+            }
+            .accessibilityEnhanced()
         }
     }
     
@@ -505,108 +541,7 @@ private struct ShuffleCatsInspiredBackground: View {
     }
 }
 
-private struct PrimaryActionButton: View {
-    let title: String
-    let subtitle: String
-    let iconName: String
-    let action: () -> Void
-    
-    @State private var pulsate = false
-    
-    var body: some View {
-        Button(action: action) {
-            ZStack {
-                RoundedRectangle(cornerRadius: 28)
-                    .fill(
-                        LinearGradient(
-                            colors: [
-                                RomanianColors.goldAccent,
-                                RomanianColors.primaryYellow,
-                                RomanianColors.goldAccent
-                            ],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                    .shadow(color: RomanianColors.primaryYellow.opacity(0.5), radius: 14, x: 0, y: 8)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 28)
-                            .stroke(Color.white.opacity(0.25), lineWidth: 1.5)
-                    )
-                    .scaleEffect(pulsate ? 1.02 : 0.98)
-                    .animation(.easeInOut(duration: 1.8).repeatForever(autoreverses: true), value: pulsate)
-                
-                HStack(spacing: 16) {
-                    Image(systemName: iconName)
-                        .font(.title2.weight(.heavy))
-                        .foregroundColor(.white)
-                        .shadow(color: .black.opacity(0.4), radius: 3, x: 0, y: 2)
-                    
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(title.uppercased())
-                            .font(.title3.weight(.black))
-                            .foregroundColor(.white)
-                            .tracking(2)
-                            .shadow(color: .black.opacity(0.4), radius: 2, x: 0, y: 1)
-                        Text(subtitle)
-                            .font(.caption.weight(.semibold))
-                            .foregroundColor(.white.opacity(0.85))
-                    }
-                    .padding(.vertical, 4)
-                }
-                .padding(.horizontal, 28)
-                .padding(.vertical, 18)
-            }
-            .frame(height: 72)
-        }
-        .buttonStyle(.plain)
-        .onAppear { pulsate = true }
-    }
-}
-
-private struct SecondaryActionButton: View {
-    let iconName: String
-    let title: String
-    let subtitle: String
-    let gradient: [Color]
-    var action: () -> Void = {}
-    
-    var body: some View {
-        Button(action: action) {
-            VStack(alignment: .leading, spacing: 6) {
-                HStack(spacing: 8) {
-                    Image(systemName: iconName)
-                        .font(.headline)
-                    Text(title.uppercased())
-                        .font(.subheadline.weight(.bold))
-                }
-                .foregroundColor(.white)
-                
-                Text(subtitle)
-                    .font(.caption2)
-                    .foregroundColor(.white.opacity(0.8))
-            }
-            .padding(.horizontal, 20)
-            .padding(.vertical, 14)
-            .background(
-                RoundedRectangle(cornerRadius: 20)
-                    .fill(
-                        LinearGradient(
-                            colors: gradient,
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 20)
-                            .stroke(Color.white.opacity(0.18), lineWidth: 1)
-                    )
-            )
-            .shadow(color: gradient.last?.opacity(0.45) ?? Color.black.opacity(0.3), radius: 10, x: 0, y: 5)
-        }
-        .buttonStyle(.plain)
-    }
-}
+// Old button components removed - replaced by premium glass morphism components
 
 // MARK: - Preview
 
