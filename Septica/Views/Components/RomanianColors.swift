@@ -145,3 +145,39 @@ extension RomanianColors {
         case culturalAccent
     }
 }
+
+// MARK: - SIMD Conversion Extensions
+
+extension Color {
+    func toSIMD3() -> simd_float3 {
+        #if canImport(UIKit)
+        let uiColor = UIColor(self)
+        var red: CGFloat = 0
+        var green: CGFloat = 0
+        var blue: CGFloat = 0
+        var alpha: CGFloat = 0
+
+        uiColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
+
+        return simd_float3(Float(red), Float(green), Float(blue))
+        #else
+        return simd_float3(1.0, 1.0, 1.0) // Fallback
+        #endif
+    }
+
+    func toSIMD4() -> simd_float4 {
+        #if canImport(UIKit)
+        let uiColor = UIColor(self)
+        var red: CGFloat = 0
+        var green: CGFloat = 0
+        var blue: CGFloat = 0
+        var alpha: CGFloat = 0
+
+        uiColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
+
+        return simd_float4(Float(red), Float(green), Float(blue), Float(alpha))
+        #else
+        return simd_float4(1.0, 1.0, 1.0, 1.0) // Fallback
+        #endif
+    }
+}

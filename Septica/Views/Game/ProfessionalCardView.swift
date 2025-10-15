@@ -29,6 +29,8 @@ struct ProfessionalCardView: View {
     @State private var renderTexture: MTLTexture?
     @State private var isPressed = false
     @State private var dragOffset = CGSize.zero
+    @State private var selectionGlowIntensity: Float = 0.0
+    @State private var selectionPulsePhase: Float = 0.0
     
     var body: some View {
         ZStack {
@@ -38,6 +40,10 @@ struct ProfessionalCardView: View {
                     .frame(width: cardSize.width, height: cardSize.height)
                     .scaleEffect(scaleEffect)
                     .offset(dragOffset)
+                    .overlay(
+                        // Enhanced selection glow effect
+                        selectionGlowOverlay
+                    )
                     .onTapGesture {
                         handleTap()
                     }
@@ -76,9 +82,13 @@ struct ProfessionalCardView: View {
         }
         .onChange(of: isSelected) { _, _ in
             renderProfessionalCard()
+            updateSelectionAnimation()
         }
         .onChange(of: transform) { _, _ in
             renderProfessionalCard()
+        }
+        .onAppear {
+            startSelectionAnimation()
         }
     }
     
@@ -96,18 +106,92 @@ struct ProfessionalCardView: View {
         return "\(card.suit.rawValue) \(card.value)"
     }
     
+    private var selectionGlowOverlay: some View {
+        ZStack {
+            if isSelected {
+                // Multi-layered glow effect for selected cards
+                RoundedRectangle(cornerRadius: cardSize.width * 0.08)
+                    .fill(
+                        RadialGradient(
+                            colors: [
+                                selectionGlowColor.opacity(Double(selectionGlowIntensity * 0.8)),
+                                selectionGlowColor.opacity(Double(selectionGlowIntensity * 0.4)),
+                                Color.clear
+                            ],
+                            center: .center,
+                            startRadius: 0,
+                            endRadius: cardSize.width * 0.6
+                        )
+                    )
+                    .scaleEffect(1.0 + Double(selectionPulsePhase) * 0.05)
+                    .blur(radius: 8)
+
+                // Inner glow for enhanced depth
+                RoundedRectangle(cornerRadius: cardSize.width * 0.08)
+                    .stroke(
+                        LinearGradient(
+                            colors: [
+                                selectionGlowColor.opacity(Double(selectionGlowIntensity)),
+                                selectionGlowColor.opacity(Double(selectionGlowIntensity * 0.6))
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ),
+                        lineWidth: 3
+                    )
+                    .scaleEffect(1.0 + Double(selectionPulsePhase) * 0.02)
+
+                // Outer rim highlight
+                RoundedRectangle(cornerRadius: cardSize.width * 0.08)
+                    .stroke(
+                        selectionGlowColor.opacity(Double(selectionGlowIntensity * 0.3)),
+                        lineWidth: 1
+                    )
+                    .scaleEffect(1.0 + Double(selectionPulsePhase) * 0.08)
+            }
+        }
+    }
+
+    private var selectionGlowColor: Color {
+        if card.value == 7 {
+            return Color.blue // Mystical blue for sevens
+        } else if card.isPointCard {
+            return Color.yellow // Gold for point cards
+        } else if card.suit == .hearts {
+            return Color.red // Red for hearts
+        } else if card.suit == .diamonds {
+            return Color.orange // Orange for diamonds
+        } else {
+            return Color.white // White for regular cards
+        }
+    }
+
     private func handleTap() {
         withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
             isPressed = true
         }
-        
+
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
                 isPressed = false
             }
         }
-        
+
         onTap?()
+    }
+
+    private func startSelectionAnimation() {
+        withAnimation(.easeInOut(duration: 2.0).repeatForever(autoreverses: true)) {
+            selectionPulsePhase = 1.0
+        }
+
+        updateSelectionAnimation()
+    }
+
+    private func updateSelectionAnimation() {
+        withAnimation(.easeInOut(duration: 0.4)) {
+            selectionGlowIntensity = isSelected ? 1.0 : 0.0
+        }
     }
     
     private func renderProfessionalCard() {

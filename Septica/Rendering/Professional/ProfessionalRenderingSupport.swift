@@ -92,41 +92,54 @@ func translationMatrix(_ translation: simd_float3) -> matrix_float4x4 {
 
 func rotationMatrix(_ angle: Float, axis: simd_float3) -> matrix_float4x4 {
     let normalizedAxis = normalize(axis)
-    
+
     let cos = cosf(angle)
     let sin = sinf(angle)
     let oneMinusCos = 1.0 - cos
-    
+
     let x = normalizedAxis.x
     let y = normalizedAxis.y
     let z = normalizedAxis.z
-    
+
     var matrix = matrix_identity_float4x4
-    
+
     matrix.columns.0 = simd_float4(
         cos + x * x * oneMinusCos,
         y * x * oneMinusCos + z * sin,
         z * x * oneMinusCos - y * sin,
         0
     )
-    
+
     matrix.columns.1 = simd_float4(
         x * y * oneMinusCos - z * sin,
         cos + y * y * oneMinusCos,
         z * y * oneMinusCos + x * sin,
         0
     )
-    
+
     matrix.columns.2 = simd_float4(
         x * z * oneMinusCos + y * sin,
         y * z * oneMinusCos - x * sin,
         cos + z * z * oneMinusCos,
         0
     )
-    
+
     matrix.columns.3 = simd_float4(0, 0, 0, 1)
-    
+
     return matrix
+}
+
+func lookAt(eye: simd_float3, center: simd_float3, up: simd_float3) -> matrix_float4x4 {
+    let f = normalize(center - eye)
+    let s = normalize(cross(f, up))
+    let u = cross(s, f)
+
+    return matrix_float4x4(
+        simd_float4(s.x, u.x, -f.x, 0),
+        simd_float4(s.y, u.y, -f.y, 0),
+        simd_float4(s.z, u.z, -f.z, 0),
+        simd_float4(-dot(s, eye), -dot(u, eye), dot(f, eye), 1)
+    )
 }
 
 // MARK: - Card Extensions

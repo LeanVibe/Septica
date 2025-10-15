@@ -38,13 +38,20 @@ struct MaterialProperties {
     var sheen: Float = 0.0                                        // Fabric-like sheen
     var sheenTint: simd_float3 = simd_float3(1.0, 1.0, 1.0)     // Sheen tint
     
-    // MARK: - Romanian Cultural Properties
-    
+    // MARK: - Enhanced Romanian Cultural Properties
+
     var folkPatternIntensity: Float = 0.0                         // Traditional pattern overlay
     var embroideryEffect: Float = 0.0                             // Embroidery simulation
     var goldLeafEffect: Float = 0.0                               // Gold leaf accents
     var weatheringFactor: Float = 0.0                             // Age/wear simulation
     var culturalColorShift: simd_float3 = simd_float3(1.0, 1.0, 1.0) // Cultural color tinting
+
+    // Enhanced Romanian authenticity properties
+    var traditionalCraftsmanship: Float = 0.0                      // Traditional Romanian techniques
+    var regionalVariationIntensity: Float = 0.0                    // Regional cultural differences
+    var byzantineInfluence: Float = 0.0                           // Byzantine art influence
+    var carpathianHeritage: Float = 0.0                           // Carpathian mountain heritage
+    var monasticTradition: Float = 0.0                            // Romanian monastic art traditions
     
     // MARK: - Animation Properties
     
@@ -61,27 +68,33 @@ struct MaterialProperties {
         roughnessFactor: 0.8,
         subsurfaceScattering: 0.3,
         folkPatternIntensity: 0.2,
-        weatheringFactor: 0.1
+        weatheringFactor: 0.1,
+        traditionalCraftsmanship: 0.8,
+        culturalColorShift: simd_float3(0.98, 0.95, 0.92)
     )
-    
+
     static let premiumCardstock = MaterialProperties(
         albedo: simd_float3(0.98, 0.96, 0.94),
         metallicFactor: 0.0,
         roughnessFactor: 0.3,
         subsurfaceScattering: 0.1,
         clearcoat: 0.5,
-        clearcoatRoughness: 0.1
+        clearcoatRoughness: 0.1,
+        embroideryEffect: 0.3,
+        traditionalCraftsmanship: 1.0
     )
-    
+
     static let romanianGold = MaterialProperties(
         albedo: simd_float3(1.0, 0.85, 0.4),
         metallicFactor: 1.0,
         roughnessFactor: 0.1,
         emissiveFactor: simd_float3(0.2, 0.15, 0.05),
         goldLeafEffect: 1.0,
-        culturalColorShift: simd_float3(1.1, 0.9, 0.6)
+        culturalColorShift: simd_float3(1.1, 0.9, 0.6),
+        byzantineInfluence: 0.9,
+        monasticTradition: 0.7
     )
-    
+
     static let magicalSeven = MaterialProperties(
         albedo: simd_float3(0.9, 0.9, 1.0),
         metallicFactor: 0.3,
@@ -89,16 +102,67 @@ struct MaterialProperties {
         emissiveFactor: simd_float3(0.1, 0.1, 0.3),
         pulseIntensity: 0.5,
         glowIntensity: 0.8,
-        magicEffectStrength: 1.0
+        magicEffectStrength: 1.0,
+        carpathianHeritage: 1.0,
+        regionalVariationIntensity: 0.8
     )
-    
+
     static let vintageCardboard = MaterialProperties(
         albedo: simd_float3(0.85, 0.8, 0.7),
         metallicFactor: 0.0,
         roughnessFactor: 0.9,
         folkPatternIntensity: 0.4,
         weatheringFactor: 0.6,
-        culturalColorShift: simd_float3(1.0, 0.95, 0.85)
+        culturalColorShift: simd_float3(1.0, 0.95, 0.85),
+        traditionalCraftsmanship: 0.9,
+        embroideryEffect: 0.5
+    )
+
+    // Enhanced Romanian premium materials
+    static let maramuresCraft = MaterialProperties(
+        albedo: simd_float3(0.92, 0.88, 0.85),
+        metallicFactor: 0.0,
+        roughnessFactor: 0.6,
+        subsurfaceScattering: 0.4,
+        folkPatternIntensity: 1.0,
+        embroideryEffect: 0.9,
+        traditionalCraftsmanship: 1.0,
+        culturalColorShift: simd_float3(0.95, 0.92, 0.88),
+        weatheringFactor: 0.2
+    )
+
+    static let transylvanianNobility = MaterialProperties(
+        albedo: simd_float3(0.96, 0.94, 0.91),
+        metallicFactor: 0.2,
+        roughnessFactor: 0.2,
+        goldLeafEffect: 0.8,
+        byzantineInfluence: 1.0,
+        monasticTradition: 0.6,
+        culturalColorShift: simd_float3(1.05, 0.95, 0.85),
+        clearcoat: 0.7,
+        clearcoatRoughness: 0.05
+    )
+
+    static let moldavianHeritage = MaterialProperties(
+        albedo: simd_float3(0.90, 0.87, 0.83),
+        metallicFactor: 0.1,
+        roughnessFactor: 0.4,
+        embroideryEffect: 0.7,
+        traditionalCraftsmanship: 0.8,
+        regionalVariationIntensity: 0.9,
+        culturalColorShift: simd_float3(0.92, 0.89, 0.85),
+        subsurfaceScattering: 0.3
+    )
+
+    static let danubianDelta = MaterialProperties(
+        albedo: simd_float3(0.93, 0.95, 0.92),
+        metallicFactor: 0.0,
+        roughnessFactor: 0.3,
+        weatheringFactor: 0.3,
+        carpathianHeritage: 0.6,
+        culturalColorShift: simd_float3(0.98, 1.02, 0.95),
+        folkPatternIntensity: 0.5,
+        embroideryEffect: 0.4
     )
 }
 
@@ -387,7 +451,7 @@ class MaterialEffectSystem: ObservableObject {
     
     private func blendMaterialProperties(_ a: MaterialProperties, _ b: MaterialProperties, blendFactor: Float) -> MaterialProperties {
         var result = a
-        
+
         result.albedo = simd_mix(a.albedo, b.albedo, simd_float3(repeating: blendFactor))
         result.metallicFactor = a.metallicFactor + (b.metallicFactor - a.metallicFactor) * blendFactor
         result.roughnessFactor = a.roughnessFactor + (b.roughnessFactor - a.roughnessFactor) * blendFactor
@@ -399,7 +463,14 @@ class MaterialEffectSystem: ObservableObject {
         result.goldLeafEffect = a.goldLeafEffect + (b.goldLeafEffect - a.goldLeafEffect) * blendFactor
         result.weatheringFactor = a.weatheringFactor + (b.weatheringFactor - a.weatheringFactor) * blendFactor
         result.culturalColorShift = simd_mix(a.culturalColorShift, b.culturalColorShift, simd_float3(repeating: blendFactor))
-        
+
+        // Enhanced Romanian cultural property blending
+        result.traditionalCraftsmanship = a.traditionalCraftsmanship + (b.traditionalCraftsmanship - a.traditionalCraftsmanship) * blendFactor
+        result.regionalVariationIntensity = a.regionalVariationIntensity + (b.regionalVariationIntensity - a.regionalVariationIntensity) * blendFactor
+        result.byzantineInfluence = a.byzantineInfluence + (b.byzantineInfluence - a.byzantineInfluence) * blendFactor
+        result.carpathianHeritage = a.carpathianHeritage + (b.carpathianHeritage - a.carpathianHeritage) * blendFactor
+        result.monasticTradition = a.monasticTradition + (b.monasticTradition - a.monasticTradition) * blendFactor
+
         return result
     }
 }
@@ -452,7 +523,7 @@ struct MaterialEffect {
     
     private func interpolateMaterialProperties(_ start: MaterialProperties, _ target: MaterialProperties, progress: Float) -> MaterialProperties {
         var result = start
-        
+
         result.albedo = simd_mix(start.albedo, target.albedo, simd_float3(repeating: progress))
         result.metallicFactor = start.metallicFactor + (target.metallicFactor - start.metallicFactor) * progress
         result.roughnessFactor = start.roughnessFactor + (target.roughnessFactor - start.roughnessFactor) * progress
@@ -464,7 +535,14 @@ struct MaterialEffect {
         result.goldLeafEffect = start.goldLeafEffect + (target.goldLeafEffect - start.goldLeafEffect) * progress
         result.weatheringFactor = start.weatheringFactor + (target.weatheringFactor - start.weatheringFactor) * progress
         result.culturalColorShift = simd_mix(start.culturalColorShift, target.culturalColorShift, simd_float3(repeating: progress))
-        
+
+        // Enhanced Romanian cultural property interpolation
+        result.traditionalCraftsmanship = start.traditionalCraftsmanship + (target.traditionalCraftsmanship - start.traditionalCraftsmanship) * progress
+        result.regionalVariationIntensity = start.regionalVariationIntensity + (target.regionalVariationIntensity - start.regionalVariationIntensity) * progress
+        result.byzantineInfluence = start.byzantineInfluence + (target.byzantineInfluence - start.byzantineInfluence) * progress
+        result.carpathianHeritage = start.carpathianHeritage + (target.carpathianHeritage - start.carpathianHeritage) * progress
+        result.monasticTradition = start.monasticTradition + (target.monasticTradition - start.monasticTradition) * progress
+
         return result
     }
 }

@@ -244,166 +244,369 @@ class GeometryCache: ObservableObject {
     
     private func generateRoundedCardVertices(width: Float, height: Float, thickness: Float, cornerRadius: Float, subdivisions: Int) -> [ProfessionalCardVertex] {
         var vertices: [ProfessionalCardVertex] = []
-        
-        let _ = width / Float(subdivisions)
-        let _ = height / Float(subdivisions)
-        
+
+        let stepX = width / Float(subdivisions)
+        let stepY = height / Float(subdivisions)
+
+        // Generate main card face with enhanced 3D thickness
         for y in 0...subdivisions {
             for x in 0...subdivisions {
                 let u = Float(x) / Float(subdivisions)
                 let v = Float(y) / Float(subdivisions)
-                
-                // Calculate position with rounded corners
+
+                // Calculate position with rounded corners and enhanced thickness profile
                 let worldX = (u - 0.5) * width
                 let worldY = (v - 0.5) * height
-                let worldZ = calculateCardDepth(u: u, v: v, thickness: thickness, cornerRadius: cornerRadius)
-                
-                // Calculate normal
-                let normal = calculateCardNormal(u: u, v: v, cornerRadius: cornerRadius)
-                
+
+                // Enhanced card thickness with realistic profile
+                let baseThickness = thickness
+                let edgeBevel = calculateEdgeBevel(u: u, v: v, thickness: thickness, cornerRadius: cornerRadius)
+                let cornerProfile = calculateCornerProfile(u: u, v: v, cornerRadius: cornerRadius, thickness: thickness)
+                let worldZ = baseThickness + edgeBevel + cornerProfile
+
+                // Calculate enhanced normal for better lighting
+                let normal = calculateEnhancedCardNormal(u: u, v: v, thickness: thickness, cornerRadius: cornerRadius)
+
                 // Calculate tangent for normal mapping
-                let tangent = calculateCardTangent(u: u, v: v)
-                
-                // Cultural pattern UV coordinates
-                let culturalU = u * 3.0 // Repeat pattern 3 times
-                let culturalV = v * 3.0
-                
+                let tangent = calculateEnhancedCardTangent(u: u, v: v, thickness: thickness)
+
+                // Enhanced cultural pattern UV coordinates
+                let culturalU = u * 4.0 // Repeat pattern more for detail
+                let culturalV = v * 4.0
+
+                // Edge UV coordinates for edge highlighting
+                let edgeU = calculateEdgeUV(u: u, v: v, width: width, height: height)
+                let edgeV = calculateEdgeDepthUV(worldZ: worldZ, thickness: thickness)
+
                 let vertex = ProfessionalCardVertex(
                     position: simd_float3(worldX, worldY, worldZ),
                     normal: normal,
                     texCoord: simd_float2(u, v),
                     tangent: tangent,
-                    culturalUV: simd_float2(culturalU, culturalV)
+                    culturalUV: simd_float2(culturalU, culturalV),
+                    edgeUV: simd_float2(edgeU, edgeV),
+                    thickness: worldZ
                 )
-                
+
                 vertices.append(vertex)
             }
         }
-        
+
+        // Generate edge geometry for true 3D appearance
+        let edgeVertices = generateCardEdgeVertices(width: width, height: height, thickness: thickness, subdivisions: subdivisions)
+        vertices.append(contentsOf: edgeVertices)
+
         return vertices
     }
     
     private func generateFlatCardVertices(width: Float, height: Float, subdivisions: Int) -> [ProfessionalCardVertex] {
         var vertices: [ProfessionalCardVertex] = []
-        
+
         for y in 0...subdivisions {
             for x in 0...subdivisions {
                 let u = Float(x) / Float(subdivisions)
                 let v = Float(y) / Float(subdivisions)
-                
+
                 let worldX = (u - 0.5) * width
                 let worldY = (v - 0.5) * height
                 let worldZ: Float = 0.0 // Flat card
-                
+
                 let normal = simd_float3(0, 0, 1) // Always pointing up
                 let tangent = simd_float3(1, 0, 0) // Always pointing right
-                
+
+                // Calculate edge UV for flat cards
+                let edgeU = calculateEdgeUV(u: u, v: v, width: width, height: height)
+                let edgeV = 0.0 // Flat card has no depth
+
                 let vertex = ProfessionalCardVertex(
                     position: simd_float3(worldX, worldY, worldZ),
                     normal: normal,
                     texCoord: simd_float2(u, v),
                     tangent: tangent,
-                    culturalUV: simd_float2(u * 2.0, v * 2.0)
+                    culturalUV: simd_float2(u * 2.0, v * 2.0),
+                    edgeUV: simd_float2(edgeU, edgeV),
+                    thickness: worldZ
                 )
-                
+
                 vertices.append(vertex)
             }
         }
-        
+
         return vertices
     }
     
     private func generateEmbossedCardVertices(width: Float, height: Float, thickness: Float, subdivisions: Int) -> [ProfessionalCardVertex] {
         var vertices: [ProfessionalCardVertex] = []
-        
+
         for y in 0...subdivisions {
             for x in 0...subdivisions {
                 let u = Float(x) / Float(subdivisions)
                 let v = Float(y) / Float(subdivisions)
-                
+
                 let worldX = (u - 0.5) * width
                 let worldY = (v - 0.5) * height
-                
+
                 // Create embossed pattern
                 let embossHeight = calculateEmbossHeight(u: u, v: v, thickness: thickness)
                 let worldZ = embossHeight
-                
+
                 let normal = calculateEmbossNormal(u: u, v: v, thickness: thickness)
                 let tangent = calculateEmbossTangent(u: u, v: v)
-                
+
+                // Calculate edge UV for embossed cards
+                let edgeU = calculateEdgeUV(u: u, v: v, width: width, height: height)
+                let edgeV = calculateEdgeDepthUV(worldZ: worldZ, thickness: thickness)
+
                 let vertex = ProfessionalCardVertex(
                     position: simd_float3(worldX, worldY, worldZ),
                     normal: normal,
                     texCoord: simd_float2(u, v),
                     tangent: tangent,
-                    culturalUV: simd_float2(u * 4.0, v * 4.0)
+                    culturalUV: simd_float2(u * 4.0, v * 4.0),
+                    edgeUV: simd_float2(edgeU, edgeV),
+                    thickness: worldZ
                 )
-                
+
                 vertices.append(vertex)
             }
         }
-        
+
         return vertices
     }
     
     private func generateMagicalCardVertices(width: Float, height: Float, thickness: Float, subdivisions: Int) -> [ProfessionalCardVertex] {
         var vertices: [ProfessionalCardVertex] = []
-        
+
         for y in 0...subdivisions {
             for x in 0...subdivisions {
                 let u = Float(x) / Float(subdivisions)
                 let v = Float(y) / Float(subdivisions)
-                
+
                 let worldX = (u - 0.5) * width
                 let worldY = (v - 0.5) * height
-                
+
                 // Create magical ripple effect
                 let magicalHeight = calculateMagicalHeight(u: u, v: v, thickness: thickness)
                 let worldZ = magicalHeight
-                
+
                 let normal = calculateMagicalNormal(u: u, v: v, thickness: thickness)
                 let tangent = calculateMagicalTangent(u: u, v: v)
-                
+
+                // Calculate edge UV for magical cards
+                let edgeU = calculateEdgeUV(u: u, v: v, width: width, height: height)
+                let edgeV = calculateEdgeDepthUV(worldZ: worldZ, thickness: thickness)
+
                 let vertex = ProfessionalCardVertex(
                     position: simd_float3(worldX, worldY, worldZ),
                     normal: normal,
                     texCoord: simd_float2(u, v),
                     tangent: tangent,
-                    culturalUV: simd_float2(u * 6.0, v * 6.0) // More detailed pattern for magical cards
+                    culturalUV: simd_float2(u * 6.0, v * 6.0), // More detailed pattern for magical cards
+                    edgeUV: simd_float2(edgeU, edgeV),
+                    thickness: worldZ
                 )
-                
+
                 vertices.append(vertex)
             }
         }
-        
+
         return vertices
     }
     
-    // MARK: - Geometry Calculation Helpers
-    
+    // MARK: - Enhanced Geometry Calculation Helpers
+
     private func calculateCardDepth(u: Float, v: Float, thickness: Float, cornerRadius: Float) -> Float {
         // Create subtle depth variation for Romanian cards
         let centerX = u - 0.5
         let centerY = v - 0.5
         let distanceFromCenter = sqrt(centerX * centerX + centerY * centerY)
-        
+
         // Subtle curvature
         let curvature = (1.0 - distanceFromCenter * 2.0) * thickness * 0.3
         return max(0, curvature)
     }
-    
+
+    private func calculateEdgeBevel(u: Float, v: Float, thickness: Float, cornerRadius: Float) -> Float {
+        // Calculate distance from edges for bevel effect
+        let edgeDistanceX = min(u, 1.0 - u)
+        let edgeDistanceY = min(v, 1.0 - v)
+        let edgeDistance = min(edgeDistanceX, edgeDistanceY)
+
+        // Bevel profile - rounded edge with smooth falloff
+        let bevelWidth: Float = 0.05
+        if edgeDistance < bevelWidth {
+            let bevelAmount = 1.0 - (edgeDistance / bevelWidth)
+            let smoothBevel = bevelAmount * bevelAmount * (3.0 - 2.0 * bevelAmount) // Smoothstep
+            return smoothBevel * thickness * 0.3
+        }
+
+        return 0.0
+    }
+
+    private func calculateCornerProfile(u: Float, v: Float, cornerRadius: Float, thickness: Float) -> Float {
+        // Calculate corner rounding profile
+        let centerU = u - 0.5
+        let centerV = v - 0.5
+        let cornerDistance = sqrt(centerU * centerU + centerV * centerV)
+
+        // Enhanced corner profile with Romanian cultural styling
+        let maxCornerDistance: Float = 0.45
+        if cornerDistance > maxCornerDistance {
+            let cornerAmount = (cornerDistance - maxCornerDistance) / 0.05
+            let smoothCorner = cornerAmount * cornerAmount * (3.0 - 2.0 * cornerAmount)
+            return smoothCorner * thickness * 0.2
+        }
+
+        return 0.0
+    }
+
+    private func calculateEnhancedCardNormal(u: Float, v: Float, thickness: Float, cornerRadius: Float) -> simd_float3 {
+        let centerX = u - 0.5
+        let centerY = v - 0.5
+        let distanceFromCenter = sqrt(centerX * centerX + centerY * centerY)
+
+        // Calculate normal based on enhanced surface profile
+        let bevelNormalX = centerX * -0.3
+        let bevelNormalY = centerY * -0.3
+        let bevelNormalZ: Float = 1.0
+
+        // Add edge contribution to normal
+        let edgeDistanceX = min(u, 1.0 - u)
+        let edgeDistanceY = min(v, 1.0 - v)
+        let edgeDistance = min(edgeDistanceX, edgeDistanceY)
+
+        let edgeNormalX = if edgeDistanceX < edgeDistanceY { centerX > 0 ? 0.3 : -0.3 } else { 0.0 }
+        let edgeNormalY = if edgeDistanceY < edgeDistanceX { centerY > 0 ? 0.3 : -0.3 } else { 0.0 }
+
+        let normalX = bevelNormalX + edgeNormalX * (1.0 - edgeDistance / 0.05)
+        let normalY = bevelNormalY + edgeNormalY * (1.0 - edgeDistance / 0.05)
+        let normalZ = bevelNormalZ
+
+        return simd_normalize(simd_float3(normalX, normalY, normalZ))
+    }
+
+    private func calculateEnhancedCardTangent(u: Float, v: Float, thickness: Float) -> simd_float3 {
+        // Enhanced tangent calculation for better normal mapping
+        let centerX = u - 0.5
+        let centerY = v - 0.5
+
+        // Tangent follows the surface curvature
+        let tangentX = 1.0
+        let tangentY = 0.0
+        let tangentZ = centerX * -0.1 // Slight curve along X axis
+
+        return simd_normalize(simd_float3(tangentX, tangentY, tangentZ))
+    }
+
+    private func calculateEdgeUV(u: Float, v: Float, width: Float, height: Float) -> Float {
+        // Calculate UV coordinate for edge highlighting (0 = center, 1 = edge)
+        let edgeDistanceX = min(u, 1.0 - u) * 2.0
+        let edgeDistanceY = min(v, 1.0 - v) * 2.0
+        let edgeDistance = min(edgeDistanceX, edgeDistanceY)
+
+        return edgeDistance
+    }
+
+    private func calculateEdgeDepthUV(worldZ: Float, thickness: Float) -> Float {
+        // Calculate depth UV for edge highlighting (0 = base, 1 = top)
+        return min(worldZ / thickness, 1.0)
+    }
+
+    private func generateCardEdgeVertices(width: Float, height: Float, thickness: Float, subdivisions: Int) -> [ProfessionalCardVertex] {
+        var vertices: [ProfessionalCardVertex] = []
+
+        // Generate side edge vertices for true 3D appearance
+        let edgeSubdivisions = max(4, subdivisions / 4)
+
+        // Front edges
+        for i in 0...edgeSubdivisions {
+            let t = Float(i) / Float(edgeSubdivisions)
+
+            // Top edge
+            let topX = (t - 0.5) * width
+            let topY = height * 0.5
+            let topZ = thickness
+
+            let topVertex = ProfessionalCardVertex(
+                position: simd_float3(topX, topY, topZ),
+                normal: simd_float3(0, 1, 0),
+                texCoord: simd_float2(t, 0),
+                tangent: simd_float3(1, 0, 0),
+                culturalUV: simd_float2(t * 2.0, 0),
+                edgeUV: simd_float2(1.0, 1.0),
+                thickness: thickness
+            )
+            vertices.append(topVertex)
+
+            // Bottom edge
+            let bottomX = (t - 0.5) * width
+            let bottomY = -height * 0.5
+            let bottomZ = thickness
+
+            let bottomVertex = ProfessionalCardVertex(
+                position: simd_float3(bottomX, bottomY, bottomZ),
+                normal: simd_float3(0, -1, 0),
+                texCoord: simd_float2(t, 1),
+                tangent: simd_float3(1, 0, 0),
+                culturalUV: simd_float2(t * 2.0, 1),
+                edgeUV: simd_float2(1.0, 1.0),
+                thickness: thickness
+            )
+            vertices.append(bottomVertex)
+        }
+
+        // Left and right edges
+        for i in 0...edgeSubdivisions {
+            let t = Float(i) / Float(edgeSubdivisions)
+
+            // Left edge
+            let leftX = -width * 0.5
+            let leftY = (t - 0.5) * height
+            let leftZ = thickness
+
+            let leftVertex = ProfessionalCardVertex(
+                position: simd_float3(leftX, leftY, leftZ),
+                normal: simd_float3(-1, 0, 0),
+                texCoord: simd_float2(0, t),
+                tangent: simd_float3(0, 1, 0),
+                culturalUV: simd_float2(0, t * 2.0),
+                edgeUV: simd_float2(1.0, 1.0),
+                thickness: thickness
+            )
+            vertices.append(leftVertex)
+
+            // Right edge
+            let rightX = width * 0.5
+            let rightY = (t - 0.5) * height
+            let rightZ = thickness
+
+            let rightVertex = ProfessionalCardVertex(
+                position: simd_float3(rightX, rightY, rightZ),
+                normal: simd_float3(1, 0, 0),
+                texCoord: simd_float2(1, t),
+                tangent: simd_float3(0, 1, 0),
+                culturalUV: simd_float2(1, t * 2.0),
+                edgeUV: simd_float2(1.0, 1.0),
+                thickness: thickness
+            )
+            vertices.append(rightVertex)
+        }
+
+        return vertices
+    }
+
     private func calculateCardNormal(u: Float, v: Float, cornerRadius: Float) -> simd_float3 {
         let centerX = u - 0.5
         let centerY = v - 0.5
-        
+
         // Calculate normal based on subtle curvature
         let normalX = centerX * -0.2
         let normalY = centerY * -0.2
         let normalZ: Float = 1.0
-        
+
         return simd_normalize(simd_float3(normalX, normalY, normalZ))
     }
-    
+
     private func calculateCardTangent(u: Float, v: Float) -> simd_float3 {
         // Simple tangent calculation for texture mapping
         return simd_normalize(simd_float3(1.0, 0.0, 0.1))
@@ -957,6 +1160,8 @@ struct ProfessionalCardVertex {
     let texCoord: simd_float2
     let tangent: simd_float3
     let culturalUV: simd_float2
+    let edgeUV: simd_float2           // UV coordinates for edge highlighting
+    let thickness: Float             // Vertex thickness for edge detection
 }
 
 enum CardGeometryType: String {

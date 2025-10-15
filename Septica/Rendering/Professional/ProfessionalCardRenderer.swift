@@ -29,12 +29,13 @@ class ProfessionalCardRenderer: ObservableObject {
     private let library: MTLLibrary
     
     // MARK: - Enhanced Pipeline States
-    
+
     private var cardPipelineState: MTLRenderPipelineState
     private var depthOnlyPipelineState: MTLRenderPipelineState
     private var shadowMapPipelineState: MTLRenderPipelineState
     private var materialEffectPipelineState: MTLRenderPipelineState
     private var culturalPatternPipelineState: MTLRenderPipelineState
+    private var edgeHighlightingPipelineState: MTLRenderPipelineState
     
     // MARK: - Advanced Resources
     
@@ -132,6 +133,7 @@ class ProfessionalCardRenderer: ObservableObject {
         self.shadowMapPipelineState = try Self.createShadowMapPipelineState(device: device, library: library)
         self.materialEffectPipelineState = try Self.createMaterialEffectPipelineState(device: device, library: library)
         self.culturalPatternPipelineState = try Self.createCulturalPatternPipelineState(device: device, library: library)
+        self.edgeHighlightingPipelineState = try Self.createEdgeHighlightingPipelineState(device: device, library: library)
         
         // Create depth stencil states
         self.depthStencilState = try Self.createDepthStencilState(device: device)
@@ -278,8 +280,18 @@ class ProfessionalCardRenderer: ObservableObject {
         vertexDescriptor.attributes[4].format = .float2
         vertexDescriptor.attributes[4].offset = 44
         vertexDescriptor.attributes[4].bufferIndex = 0
-        
-        vertexDescriptor.layouts[0].stride = 52
+
+        // Edge UV (float2) - for edge highlighting
+        vertexDescriptor.attributes[5].format = .float2
+        vertexDescriptor.attributes[5].offset = 52
+        vertexDescriptor.attributes[5].bufferIndex = 0
+
+        // Thickness (float) - for depth effects
+        vertexDescriptor.attributes[6].format = .float
+        vertexDescriptor.attributes[6].offset = 60
+        vertexDescriptor.attributes[6].bufferIndex = 0
+
+        vertexDescriptor.layouts[0].stride = 64
         vertexDescriptor.layouts[0].stepRate = 1
         vertexDescriptor.layouts[0].stepFunction = .perVertex
         
@@ -342,7 +354,74 @@ class ProfessionalCardRenderer: ObservableObject {
         descriptor.fragmentFunction = library.makeFunction(name: "culturalPatternFragmentShader")
         descriptor.colorAttachments[0].pixelFormat = .bgra8Unorm_srgb
         descriptor.depthAttachmentPixelFormat = .depth32Float
-        
+
+        return try device.makeRenderPipelineState(descriptor: descriptor)
+    }
+
+    private static func createEdgeHighlightingPipelineState(device: MTLDevice, library: MTLLibrary) throws -> MTLRenderPipelineState {
+        let descriptor = MTLRenderPipelineDescriptor()
+        descriptor.label = "EdgeHighlightingPipeline"
+        descriptor.vertexFunction = library.makeFunction(name: "edgeHighlightingVertexShader")
+        descriptor.fragmentFunction = library.makeFunction(name: "edgeHighlightingFragmentShader")
+
+        // Enhanced vertex descriptor for edge highlighting
+        let vertexDescriptor = MTLVertexDescriptor()
+
+        // Position (float3)
+        vertexDescriptor.attributes[0].format = .float3
+        vertexDescriptor.attributes[0].offset = 0
+        vertexDescriptor.attributes[0].bufferIndex = 0
+
+        // Normal (float3)
+        vertexDescriptor.attributes[1].format = .float3
+        vertexDescriptor.attributes[1].offset = 12
+        vertexDescriptor.attributes[1].bufferIndex = 0
+
+        // Texture coordinates (float2)
+        vertexDescriptor.attributes[2].format = .float2
+        vertexDescriptor.attributes[2].offset = 24
+        vertexDescriptor.attributes[2].bufferIndex = 0
+
+        // Tangent (float3)
+        vertexDescriptor.attributes[3].format = .float3
+        vertexDescriptor.attributes[3].offset = 32
+        vertexDescriptor.attributes[3].bufferIndex = 0
+
+        // Cultural pattern UV (float2)
+        vertexDescriptor.attributes[4].format = .float2
+        vertexDescriptor.attributes[4].offset = 44
+        vertexDescriptor.attributes[4].bufferIndex = 0
+
+        // Edge UV (float2) - for edge highlighting
+        vertexDescriptor.attributes[5].format = .float2
+        vertexDescriptor.attributes[5].offset = 52
+        vertexDescriptor.attributes[5].bufferIndex = 0
+
+        // Thickness (float)
+        vertexDescriptor.attributes[6].format = .float
+        vertexDescriptor.attributes[6].offset = 60
+        vertexDescriptor.attributes[6].bufferIndex = 0
+
+        vertexDescriptor.layouts[0].stride = 64
+        vertexDescriptor.layouts[0].stepRate = 1
+        vertexDescriptor.layouts[0].stepFunction = .perVertex
+
+        descriptor.vertexDescriptor = vertexDescriptor
+
+        // Color attachment configuration with additive blending for glow
+        descriptor.colorAttachments[0].pixelFormat = .bgra8Unorm_srgb
+        descriptor.colorAttachments[0].isBlendingEnabled = true
+        descriptor.colorAttachments[0].sourceRGBBlendFactor = .sourceAlpha
+        descriptor.colorAttachments[0].destinationRGBBlendFactor = .one
+        descriptor.colorAttachments[0].rgbBlendOperation = .add
+        descriptor.colorAttachments[0].sourceAlphaBlendFactor = .sourceAlpha
+        descriptor.colorAttachments[0].destinationAlphaBlendFactor = .oneMinusSourceAlpha
+        descriptor.colorAttachments[0].alphaBlendOperation = .add
+
+        // Depth attachment
+        descriptor.depthAttachmentPixelFormat = .depth32Float
+        descriptor.stencilAttachmentPixelFormat = .invalid
+
         return try device.makeRenderPipelineState(descriptor: descriptor)
     }
     
@@ -408,17 +487,18 @@ class ProfessionalCardRenderer: ObservableObject {
     
     private static func createShadowMapTexture(device: MTLDevice) throws -> MTLTexture {
         let descriptor = MTLTextureDescriptor()
-        descriptor.textureType = .type2D
+        descriptor.textureType = .type2DArray
         descriptor.pixelFormat = .depth32Float
-        descriptor.width = 2048  // High resolution shadow map
-        descriptor.height = 2048
+        descriptor.width = 4096  // Ultra high resolution shadow map for premium quality
+        descriptor.height = 4096
+        descriptor.arrayLength = 4  // Cascaded shadow maps
         descriptor.usage = [.renderTarget, .shaderRead]
         descriptor.storageMode = .private
-        
+
         guard let texture = device.makeTexture(descriptor: descriptor) else {
             throw ProfessionalRendererError.textureCreationFailed
         }
-        texture.label = "ShadowMapTexture"
+        texture.label = "EnhancedShadowMapTexture"
         return texture
     }
     
@@ -472,7 +552,10 @@ class ProfessionalCardRenderer: ObservableObject {
         if enableRomanianCulturalEffects {
             try renderCulturalPatternPass(commandBuffer: commandBuffer, card: card, renderTarget: renderTarget)
         }
-        
+
+        // Edge highlighting pass for premium visual quality
+        try renderEdgeHighlightingPass(commandBuffer: commandBuffer, card: card, renderTarget: renderTarget)
+
         commandBuffer.commit()
     }
     
@@ -563,36 +646,82 @@ class ProfessionalCardRenderer: ObservableObject {
     
     private func renderShadowMapPass(commandBuffer: MTLCommandBuffer) throws {
         guard let shadowMapTexture = shadowMapTexture else { return }
-        
-        let renderPassDescriptor = MTLRenderPassDescriptor()
-        renderPassDescriptor.depthAttachment.texture = shadowMapTexture
-        renderPassDescriptor.depthAttachment.loadAction = .clear
-        renderPassDescriptor.depthAttachment.storeAction = .store
-        renderPassDescriptor.depthAttachment.clearDepth = 1.0
-        
-        guard let renderEncoder = commandBuffer.makeRenderCommandEncoder(descriptor: renderPassDescriptor) else {
-            throw ProfessionalRendererError.renderEncoderCreationFailed
+
+        // Enhanced cascaded shadow map rendering
+        let shadowCascades = 4
+        let shadowDistances: [Float] = [0.1, 2.0, 8.0, 25.0]
+
+        for cascade in 0..<shadowCascades {
+            let renderPassDescriptor = MTLRenderPassDescriptor()
+            renderPassDescriptor.depthAttachment.texture = shadowMapTexture
+            renderPassDescriptor.depthAttachment.slice = cascade
+            renderPassDescriptor.depthAttachment.loadAction = cascade == 0 ? .clear : .load
+            renderPassDescriptor.depthAttachment.storeAction = .store
+            renderPassDescriptor.depthAttachment.clearDepth = 1.0
+
+            guard let renderEncoder = commandBuffer.makeRenderCommandEncoder(descriptor: renderPassDescriptor) else {
+                throw ProfessionalRendererError.renderEncoderCreationFailed
+            }
+            renderEncoder.label = "ShadowMapPass_Cascade\(cascade)"
+
+            renderEncoder.setRenderPipelineState(shadowMapPipelineState)
+            renderEncoder.setDepthStencilState(shadowDepthStencilState)
+
+            // Set enhanced shadow matrices for this cascade
+            var shadowMatrix = calculateShadowMatrixForCascade(cascade, distance: shadowDistances[cascade])
+            renderEncoder.setVertexBytes(&shadowMatrix, length: MemoryLayout<matrix_float4x4>.stride, index: 1)
+
+            // Set geometry
+            renderEncoder.setVertexBuffer(transformBuffer, offset: 0, index: 0)
+            renderEncoder.setVertexBuffer(cacheGeometryBuffer, offset: 0, index: 1)
+
+            // Render shadow-casting geometry with enhanced detail
+            let cachedGeometry = geometryCache.getCardGeometry(.romanian_traditional)
+            renderEncoder.drawIndexedPrimitives(
+                type: .triangle,
+                indexCount: cachedGeometry.indexCount,
+                indexType: cachedGeometry.indexType,
+                indexBuffer: cachedGeometry.indexBuffer,
+                indexBufferOffset: 0
+            )
+
+            renderEncoder.endEncoding()
         }
-        renderEncoder.label = "ShadowMapPass"
-        
-        renderEncoder.setRenderPipelineState(shadowMapPipelineState)
-        renderEncoder.setDepthStencilState(shadowDepthStencilState)
-        
-        // Set shadow matrices and geometry
-        renderEncoder.setVertexBuffer(transformBuffer, offset: 0, index: 0)
-        renderEncoder.setVertexBuffer(cacheGeometryBuffer, offset: 0, index: 1)
-        
-        // Render shadow-casting geometry
-        let cachedGeometry = geometryCache.getCardGeometry(.romanian_traditional)
-        renderEncoder.drawIndexedPrimitives(
-            type: .triangle,
-            indexCount: cachedGeometry.indexCount,
-            indexType: cachedGeometry.indexType,
-            indexBuffer: cachedGeometry.indexBuffer,
-            indexBufferOffset: 0
+    }
+
+    private func calculateShadowMatrixForCascade(_ cascade: Int, distance: Float) -> matrix_float4x4 {
+        // Calculate light view matrix
+        let lightPosition = simd_float3(5, 10, 5)
+        let lightTarget = simd_float3(0, 0, 0)
+        let lightUp = simd_float3(0, 1, 0)
+        let lightViewMatrix = lookAt(eye: lightPosition, center: lightTarget, up: lightUp)
+
+        // Calculate orthographic projection for this cascade
+        let cascadeSize = distance * 2.0
+        let aspectRatio: Float = 1.0
+        let left = -cascadeSize * aspectRatio / 2.0
+        let right = cascadeSize * aspectRatio / 2.0
+        let bottom = -cascadeSize / 2.0
+        let top = cascadeSize / 2.0
+        let near: Float = 0.1
+        let far: Float = distance * 2.0
+
+        let lightProjectionMatrix = orthographic(left: left, right: right, bottom: bottom, top: top, near: near, far: far)
+
+        return simd_mul(lightProjectionMatrix, lightViewMatrix)
+    }
+
+    private func orthographic(left: Float, right: Float, bottom: Float, top: Float, near: Float, far: Float) -> matrix_float4x4 {
+        let tx = -(left + right) / (right - left)
+        let ty = -(top + bottom) / (top - bottom)
+        let tz = near / (far - near)
+
+        return matrix_float4x4(
+            simd_float4(2.0 / (right - left), 0, 0, 0),
+            simd_float4(0, 2.0 / (top - bottom), 0, 0),
+            simd_float4(0, 0, 1.0 / (far - near), 0),
+            simd_float4(tx, ty, tz, 1)
         )
-        
-        renderEncoder.endEncoding()
     }
     
     private func renderMainCardPass(commandBuffer: MTLCommandBuffer, card: Card, renderTarget: MTLTexture) throws {
@@ -624,20 +753,40 @@ class ProfessionalCardRenderer: ObservableObject {
         renderEncoder.setFragmentBuffer(materialPropertiesBuffer, offset: 0, index: 0)
         renderEncoder.setFragmentBuffer(lightingBuffer, offset: 0, index: 1)
         
-        // Set textures
+        // Set enhanced textures for premium rendering
         let cardTexture = try textureCache.getCardTexture(for: card)
         renderEncoder.setFragmentTexture(cardTexture, index: 0)
-        
+
         if let shadowMapTexture = shadowMapTexture {
             renderEncoder.setFragmentTexture(shadowMapTexture, index: 1)
         }
-        
+
         let normalMapTexture = try textureCache.getNormalMapTexture(for: card)
         renderEncoder.setFragmentTexture(normalMapTexture, index: 2)
-        
-        // Set samplers
+
+        // Add Romanian cultural pattern texture for enhanced depth
+        let culturalTexture = try textureCache.getRomanianPatternTexture(for: card)
+        renderEncoder.setFragmentTexture(culturalTexture, index: 3)
+
+        // Set enhanced samplers with different filtering for shadow maps
         renderEncoder.setFragmentSamplerState(samplerState, index: 0)
         renderEncoder.setFragmentSamplerState(shadowSamplerState, index: 1)
+
+        // Set shadow uniforms for cascaded shadow mapping
+        var shadowUniforms = EnhancedShadowUniforms(
+            shadowMatrices: [
+                calculateShadowMatrixForCascade(0, distance: 0.1),
+                calculateShadowMatrixForCascade(1, distance: 2.0),
+                calculateShadowMatrixForCascade(2, distance: 8.0),
+                calculateShadowMatrixForCascade(3, distance: 25.0)
+            ],
+            shadowCascadeDistances: simd_float4(0.1, 2.0, 8.0, 25.0),
+            shadowBias: 0.002,
+            contactShadowStrength: 0.8,
+            shadowSoftness: 1.2
+        )
+
+        renderEncoder.setFragmentBytes(&shadowUniforms, length: MemoryLayout<EnhancedShadowUniforms>.stride, index: 2)
         
         // Render card geometry
         let cachedGeometry = geometryCache.getCardGeometry(.romanian_traditional)
@@ -676,19 +825,19 @@ class ProfessionalCardRenderer: ObservableObject {
         renderPassDescriptor.colorAttachments[0].texture = renderTarget
         renderPassDescriptor.colorAttachments[0].loadAction = .load
         renderPassDescriptor.colorAttachments[0].storeAction = .store
-        
+
         guard let renderEncoder = commandBuffer.makeRenderCommandEncoder(descriptor: renderPassDescriptor) else {
             throw ProfessionalRendererError.renderEncoderCreationFailed
         }
         renderEncoder.label = "CulturalPatternPass"
-        
+
         renderEncoder.setRenderPipelineState(culturalPatternPipelineState)
-        
+
         // Render Romanian cultural patterns based on card type
         let culturalTexture = try textureCache.getRomanianPatternTexture(for: card)
         renderEncoder.setFragmentTexture(culturalTexture, index: 0)
         renderEncoder.setFragmentSamplerState(samplerState, index: 0)
-        
+
         // Render pattern overlay geometry
         let patternGeometry = geometryCache.getCulturalPatternGeometry(for: card)
         renderEncoder.drawIndexedPrimitives(
@@ -698,8 +847,71 @@ class ProfessionalCardRenderer: ObservableObject {
             indexBuffer: patternGeometry.indexBuffer,
             indexBufferOffset: 0
         )
-        
+
         renderEncoder.endEncoding()
+    }
+
+    private func renderEdgeHighlightingPass(commandBuffer: MTLCommandBuffer, card: Card, renderTarget: MTLTexture) throws {
+        let renderPassDescriptor = MTLRenderPassDescriptor()
+        renderPassDescriptor.colorAttachments[0].texture = renderTarget
+        renderPassDescriptor.colorAttachments[0].loadAction = .load
+        renderPassDescriptor.colorAttachments[0].storeAction = .store
+
+        guard let renderEncoder = commandBuffer.makeRenderCommandEncoder(descriptor: renderPassDescriptor) else {
+            throw ProfessionalRendererError.renderEncoderCreationFailed
+        }
+        renderEncoder.label = "EdgeHighlightingPass"
+
+        renderEncoder.setRenderPipelineState(edgeHighlightingPipelineState)
+
+        // Set edge highlighting uniforms
+        var edgeHighlightingUniforms = EdgeHighlightingUniforms(
+            edgeColor: determineEdgeColor(for: card),
+            edgeIntensity: determineEdgeIntensity(for: card),
+            edgeWidth: 0.02,
+            glowIntensity: card.isSpecialCard ? 1.2 : 0.8,
+            pulseFrequency: card.value == 7 ? 3.0 : 0.0,
+            time: Float(CACurrentMediaTime())
+        )
+
+        renderEncoder.setFragmentBytes(&edgeHighlightingUniforms, length: MemoryLayout<EdgeHighlightingUniforms>.stride, index: 0)
+
+        // Set card geometry
+        let cardGeometry = createCardGeometry(for: card)
+        renderEncoder.setVertexBuffer(cardGeometry.vertexBuffer, offset: 0, index: 0)
+        renderEncoder.drawIndexedPrimitives(
+            type: .triangle,
+            indexCount: cardGeometry.indexCount,
+            indexType: cardGeometry.indexType,
+            indexBuffer: cardGeometry.indexBuffer,
+            indexBufferOffset: 0
+        )
+
+        renderEncoder.endEncoding()
+    }
+
+    private func determineEdgeColor(for card: Card) -> simd_float3 {
+        if card.value == 7 {
+            return simd_float3(0.9, 0.8, 1.0) // Mystical blue-white for sevens
+        } else if card.isPointCard {
+            return RomanianColors.goldAccent.toSIMD3() // Gold for point cards
+        } else if card.suit == .hearts {
+            return RomanianColors.embroideryRed.toSIMD3() // Red for hearts
+        } else if card.suit == .diamonds {
+            return RomanianColors.folkBlue.toSIMD3() // Blue for diamonds
+        } else {
+            return simd_float3(0.7, 0.7, 0.7) // Silver for regular cards
+        }
+    }
+
+    private func determineEdgeIntensity(for card: Card) -> Float {
+        if card.value == 7 {
+            return 1.0 // Maximum intensity for special sevens
+        } else if card.isPointCard {
+            return 0.8 // High intensity for point cards
+        } else {
+            return 0.4 // Subtle intensity for regular cards
+        }
     }
     
     // MARK: - Helper Methods
@@ -1060,12 +1272,29 @@ struct Phase2SystemStatus {
     let advancedLighting: Bool
     let enhancedMaterials: Bool
     let advancedVisualEffects: Bool
-    
+
     var allSystemsEnabled: Bool {
         return advancedLighting && enhancedMaterials && advancedVisualEffects
     }
-    
+
     var enabledSystemsCount: Int {
         return (advancedLighting ? 1 : 0) + (enhancedMaterials ? 1 : 0) + (advancedVisualEffects ? 1 : 0)
     }
+}
+
+struct EdgeHighlightingUniforms {
+    let edgeColor: simd_float3
+    let edgeIntensity: Float
+    let edgeWidth: Float
+    let glowIntensity: Float
+    let pulseFrequency: Float
+    let time: Float
+}
+
+struct EnhancedShadowUniforms {
+    let shadowMatrices: [matrix_float4x4]
+    let shadowCascadeDistances: simd_float4
+    let shadowBias: Float
+    let contactShadowStrength: Float
+    let shadowSoftness: Float
 }
