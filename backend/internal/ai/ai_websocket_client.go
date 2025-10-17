@@ -249,8 +249,14 @@ func (c *AIWebSocketClient) handleGameFound(message websocket.Message) {
 // handleGameState processes complete game state updates
 func (c *AIWebSocketClient) handleGameState(message websocket.Message) {
 	if message.GameID == nil {
+		c.Logger.Error("AI client received game state without game_id", "ai_id", c.AI.ID)
 		return
 	}
+
+	// Store the game ID for subsequent moves
+	c.CurrentGameID = message.GameID
+	c.AI.CurrentGameID = message.GameID
+	c.Logger.Debug("AI client updated game context", "ai_id", c.AI.ID, "game_id", *message.GameID)
 
 	// Parse game state from message payload
 	var gameState game.AuthenticGameState
@@ -319,6 +325,12 @@ func (c *AIWebSocketClient) handleError(message websocket.Message) {
 // processAIMove generates and sends AI's move decision
 func (c *AIWebSocketClient) processAIMove(gameState *game.AuthenticGameState) {
 	if !c.awaitingMove {
+		return
+	}
+
+	// Validate game context before processing move
+	if c.CurrentGameID == nil {
+		c.Logger.Error("AI cannot process move without valid game_id", "ai_id", c.AI.ID)
 		return
 	}
 

@@ -11,6 +11,7 @@ import (
 	"septica-backend/internal/websocket"
 
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 // runQueueProcessor is the main queue processing loop
@@ -163,37 +164,56 @@ func (s *MatchmakingService) createMatch(player1, player2 *QueueEntry, queueType
 	s.sendMatchFound(player1.PlayerID, gameState.ID, player2.PlayerID, player2.Rating, player2Info.Username, player1WaitTime, gameState.GameMode)
 	s.sendMatchFound(player2.PlayerID, gameState.ID, player1.PlayerID, player1.Rating, player1Info.Username, player2WaitTime, gameState.GameMode)
 
-	// Auto-join both players to the game via WebSocket hub with retry logic
-	s.autoJoinPlayerWithRetry(player1.PlayerID, gameState.ID, "player1")
-	s.autoJoinPlayerWithRetry(player2.PlayerID, gameState.ID, "player2")
-
 	// CRITICAL FIX: Broadcast initial game state to both players
 	s.broadcastAuthenticGameState(gameState)
 
-	// Update database queue entries as matched
-	s.db.Where("player_id IN (?, ?) AND is_active = true", player1.PlayerID, player2.PlayerID).
-		Update("is_active", false)
+	// TRANSACTION SAFETY: Use database transaction for atomic match creation
+	err = s.db.Transaction(func(tx *gorm.DB) error {
+		// Create game record in database with matchmaking context
+		// CRITICAL FIX: Use the actual Player.ID from database, not userID
+		dbGame := &database.Game{
+			Player1ID:           player1Info.ID, // Use actual Player.ID
+			Player2ID:           player2Info.ID, // Use actual Player.ID
+			Status:              "in_progress",
+			GameMode:            queueType,
+			Player1RatingBefore: player1.Rating,
+			Player2RatingBefore: player2.Rating,
+			StartedAt:           &gameState.CreatedAt,
+		}
 
-	// Create game record in database with matchmaking context
-	// CRITICAL FIX: Use the actual Player.ID from database, not userID
-	dbGame := &database.Game{
-		Player1ID:           player1Info.ID, // Use actual Player.ID
-		Player2ID:           player2Info.ID, // Use actual Player.ID
-		Status:              "in_progress",
-		GameMode:            queueType,
-		Player1RatingBefore: player1.Rating,
-		Player2RatingBefore: player2.Rating,
-		StartedAt:           &gameState.CreatedAt,
+		// Set the game ID to match the engine's game ID
+		dbGame.ID = gameState.ID
+		if err := tx.Create(dbGame).Error; err != nil {
+			s.logger.Error("Failed to create game record in database", "error", err, "game_id", gameState.ID)
+			return err // Transaction will rollback
+		}
+
+		// Update database queue entries as matched (within transaction)
+		if err := tx.Where("player_id IN (?, ?) AND is_active = true", player1.PlayerID, player2.PlayerID).
+			Update("is_active", false).Error; err != nil {
+			s.logger.Error("Failed to update queue entries", "error", err)
+			return err // Transaction will rollback
+		}
+
+		return nil // Transaction will commit
+	})
+
+	if err != nil {
+		s.logger.Error("Match creation transaction failed, rolling back",
+			"error", err,
+			"game_id", gameState.ID,
+			"player1_id", player1.PlayerID,
+			"player2_id", player2.PlayerID)
+		// Players remain in queue, will be matched again
+		return err
 	}
 
-	// Set the game ID to match the engine's game ID
-	dbGame.ID = gameState.ID
-	if err := s.db.Create(dbGame).Error; err != nil {
-		s.logger.Error("Failed to create game record in database", "error", err, "game_id", gameState.ID)
-		// Continue anyway, as the game exists in the engine
-	}
+	// Auto-join both players to the game AFTER successful database transaction
+	// This ensures database consistency even if auto-join fails
+	s.autoJoinPlayerWithRetry(player1.PlayerID, gameState.ID, "player1")
+	s.autoJoinPlayerWithRetry(player2.PlayerID, gameState.ID, "player2")
 
-	s.logger.Info("Match created and players auto-joined",
+	s.logger.Info("Match created successfully with transaction safety",
 		"game_id", gameState.ID,
 		"player1_id", player1.PlayerID,
 		"player2_id", player2.PlayerID,

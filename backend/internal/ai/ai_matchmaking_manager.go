@@ -349,25 +349,27 @@ func (m *AIMatchmakingManager) createAIPlayerRecord(ai *AIPlayer) error {
 		return fmt.Errorf("failed to create/retrieve AI user: %w", err)
 	}
 
-	m.logger.Debug("AI user ready", "ai_id", ai.ID, "username", user.Username)
+	m.logger.Debug("AI user ready", "ai_id", ai.ID, "username", user.Username, "user_id", user.ID)
 
-	// Check if player already exists
+	// Check if player already exists using the actual user ID from GetOrCreateUser
 	var existingPlayer database.Player
-	err = m.db.Where("user_id = ?", ai.ID).First(&existingPlayer).Error
+	err = m.db.Where("user_id = ?", user.ID).First(&existingPlayer).Error
 	if err == nil {
 		// Player already exists
-		m.logger.Debug("AI player already exists, skipping player creation", "ai_id", ai.ID)
+		m.logger.Debug("AI player already exists, skipping player creation", "ai_id", ai.ID, "user_id", user.ID)
 		return nil
 	}
 
-	// Create player record
+	// Create player record with proper user ID reference
 	player := ai.GetPlayerInfo()
+	player.UserID = user.ID // Ensure player links to the correct user ID
 	err = m.db.Create(player).Error
 	if err != nil {
 		metrics.AIDeploymentFailures.WithLabelValues("database_error").Inc()
 		return fmt.Errorf("failed to create AI player: %w", err)
 	}
 
+	m.logger.Debug("AI player created successfully", "ai_id", ai.ID, "player_id", player.ID, "user_id", user.ID)
 	return nil
 }
 
