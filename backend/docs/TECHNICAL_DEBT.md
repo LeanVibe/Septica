@@ -338,6 +338,24 @@ System ready for production deployment. Remaining work is for extreme-scale opti
 
 ---
 
+### ✅ Additional Technical Debt Resolved (October 18, 2025)
+
+**1. Player Model Missing IsActive Field**
+- **Issue**: Rating service queries filtered by `players.is_active = true` but Player model lacked IsActive field
+- **Impact**: SQL error "no such column: players.is_active", TestGetLeaderboard_Limit failing
+- **Resolution**: Added IsActive bool field to Player struct with default value true
+- **Files**: `internal/database/models.go`, `internal/rating/service_test.go`
+- **Status**: ✅ Resolved - All rating tests passing
+
+**2. Matchmaking Integration Test Build Failures**
+- **Issue**: Tests accessed unexported members (createAIPlayerRecord, lastGameState), unused variables
+- **Impact**: Matchmaking integration tests couldn't compile
+- **Resolution**: Exported CreateAIPlayerRecord method and LastGameState field, removed unused variables
+- **Files**: `internal/ai/ai_matchmaking_manager.go`, `internal/ai/ai_websocket_client.go`, `internal/ai/client_test.go`, `internal/ai/matchmaking_manager_test.go`, `internal/matchmaking/service_integration_test.go`
+- **Status**: ✅ Resolved - All packages build successfully
+
+---
+
 **Last Review**: October 18, 2025
 **Next Review**: After deployment monitoring
 **Maintained By**: Development Team
