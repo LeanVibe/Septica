@@ -38,6 +38,7 @@ type Player struct {
 	Arena    int       `gorm:"default:1" json:"arena"`
 	Coins    int       `gorm:"default:1000" json:"coins"`
 	Gems     int       `gorm:"default:0" json:"gems"`
+	IsActive bool      `gorm:"default:true" json:"is_active"` // Whether player account is active
 
 	// Cosmetic preferences
 	SelectedCardBack   string `gorm:"default:default" json:"selected_card_back"`

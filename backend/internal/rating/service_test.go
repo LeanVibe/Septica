@@ -49,6 +49,7 @@ func createTestPlayer(t *testing.T, db *gorm.DB, username string, rating int) *d
 		Rating:    rating,
 		Level:     10,
 		Arena:     5,
+		IsActive:  true,
 	}
 	require.NoError(t, db.Create(player).Error)
 
