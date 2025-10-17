@@ -1,6 +1,7 @@
 package ai
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
@@ -18,8 +19,9 @@ import (
 
 // setupTestEnvironment creates a test database and hub for AI testing
 func setupTestEnvironment(t *testing.T) (*gorm.DB, *websocket.Hub, *logger.Logger, func()) {
-	// Use in-memory SQLite for testing
-	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+	// Use in-memory SQLite for testing with unique name for test isolation
+	dbName := fmt.Sprintf("file:test_%s?mode=memory&cache=shared", t.Name())
+	db, err := gorm.Open(sqlite.Open(dbName), &gorm.Config{})
 	require.NoError(t, err)
 
 	// Auto-migrate database schema

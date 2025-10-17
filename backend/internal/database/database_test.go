@@ -12,10 +12,11 @@ import (
 	"gorm.io/gorm"
 )
 
-// setupTestDB creates an in-memory SQLite database for testing
+// setupTestDB creates an in-memory SQLite database for testing with unique name
 func setupTestDB(t *testing.T) (*gorm.DB, func()) {
-	// Create in-memory SQLite database
-	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+	// Create in-memory SQLite database with unique name for test isolation
+	dbName := fmt.Sprintf("file:test_%s?mode=memory&cache=shared", t.Name())
+	db, err := gorm.Open(sqlite.Open(dbName), &gorm.Config{})
 	require.NoError(t, err, "Failed to open in-memory database")
 
 	// Run migrations

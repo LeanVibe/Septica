@@ -11,7 +11,7 @@ import Observation
 import Combine
 
 /// Romanian character archetypes with authentic cultural personalities
-enum RomanianCharacterType: String, CaseIterable {
+enum RomanianArchetypeType: String, CaseIterable {
     case oldWiseMan = "Moșu Înțelept"           // Wise Old Man
     case playfulGirl = "Fetița Jucăușă"         // Playful Girl
     case mountainShepherd = "Ciobanu Munților"   // Mountain Shepherd
@@ -90,7 +90,7 @@ enum CharacterReaction: String, CaseIterable {
 /// Character expression data with Romanian cultural authenticity
 struct CharacterExpression {
     let reaction: CharacterReaction
-    let characterType: RomanianCharacterType
+    let characterType: RomanianArchetypeType
     let romanianPhrase: String
     let englishTranslation: String
     let facialExpression: FacialExpression

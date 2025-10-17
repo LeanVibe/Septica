@@ -302,8 +302,9 @@ func TestGameIDValidationScenarios(t *testing.T) {
 
 // TestDatabaseIntegration tests database integration for game moves
 func TestDatabaseIntegration(t *testing.T) {
-	// Setup in-memory database
-	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+	// Setup in-memory database with unique name for test isolation
+	dbName := fmt.Sprintf("file:test_%s?mode=memory&cache=shared", t.Name())
+	db, err := gorm.Open(sqlite.Open(dbName), &gorm.Config{})
 	require.NoError(t, err)
 
 	// Auto-migrate required models

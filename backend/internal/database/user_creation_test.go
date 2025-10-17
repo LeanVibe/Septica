@@ -1,6 +1,7 @@
 package database
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/google/uuid"
@@ -11,12 +12,12 @@ import (
 )
 
 func TestGetOrCreateUser(t *testing.T) {
-	// Setup in-memory database
-	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
-	require.NoError(t, err)
+	// Setup in-memory database with unique name for test isolation
+	db, cleanup := setupTestDB(t)
+	defer cleanup()
 
 	// Auto-migrate User model
-	err = db.AutoMigrate(&User{})
+	err := db.AutoMigrate(&User{})
 	require.NoError(t, err)
 
 	// Create database service
@@ -66,12 +67,12 @@ func TestGetOrCreateUser(t *testing.T) {
 }
 
 func TestGetOrCreateUser_Concurrency(t *testing.T) {
-	// Setup in-memory database
-	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
-	require.NoError(t, err)
+	// Setup in-memory database with unique name for test isolation
+	db, cleanup := setupTestDB(t)
+	defer cleanup()
 
 	// Auto-migrate User model
-	err = db.AutoMigrate(&User{})
+	err := db.AutoMigrate(&User{})
 	require.NoError(t, err)
 
 	// Create database service
@@ -120,12 +121,12 @@ func TestGetOrCreateUser_Concurrency(t *testing.T) {
 }
 
 func TestGetOrCreateUser_ErrorHandling(t *testing.T) {
-	// Setup in-memory database
-	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
-	require.NoError(t, err)
+	// Setup in-memory database with unique name for test isolation
+	db, cleanup := setupTestDB(t)
+	defer cleanup()
 
 	// Auto-migrate User model
-	err = db.AutoMigrate(&User{})
+	err := db.AutoMigrate(&User{})
 	require.NoError(t, err)
 
 	// Create database service
@@ -146,12 +147,12 @@ func TestGetOrCreateUser_ErrorHandling(t *testing.T) {
 }
 
 func TestGetOrCreateUser_PlayerLinking(t *testing.T) {
-	// Setup in-memory database
-	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
-	require.NoError(t, err)
+	// Setup in-memory database with unique name for test isolation
+	db, cleanup := setupTestDB(t)
+	defer cleanup()
 
 	// Auto-migrate User and Player models
-	err = db.AutoMigrate(&User{}, &Player{})
+	err := db.AutoMigrate(&User{}, &Player{})
 	require.NoError(t, err)
 
 	// Create database service
@@ -193,7 +194,8 @@ func TestGetOrCreateUser_PlayerLinking(t *testing.T) {
 
 // Benchmark test for GetOrCreateUser performance
 func BenchmarkGetOrCreateUser(b *testing.B) {
-	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+	dbName := fmt.Sprintf("file:bench_%s?mode=memory&cache=shared", b.Name())
+	db, err := gorm.Open(sqlite.Open(dbName), &gorm.Config{})
 	if err != nil {
 		b.Fatal(err)
 	}
@@ -217,7 +219,8 @@ func BenchmarkGetOrCreateUser(b *testing.B) {
 
 // Benchmark test for concurrent GetOrCreateUser
 func BenchmarkGetOrCreateUser_Concurrent(b *testing.B) {
-	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+	dbName := fmt.Sprintf("file:bench_%s?mode=memory&cache=shared", b.Name())
+	db, err := gorm.Open(sqlite.Open(dbName), &gorm.Config{})
 	if err != nil {
 		b.Fatal(err)
 	}
@@ -243,7 +246,8 @@ func BenchmarkGetOrCreateUser_Concurrent(b *testing.B) {
 
 // Benchmark test for GetOrCreateUser with same ID (race condition scenario)
 func BenchmarkGetOrCreateUser_SameID(b *testing.B) {
-	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+	dbName := fmt.Sprintf("file:bench_%s?mode=memory&cache=shared", b.Name())
+	db, err := gorm.Open(sqlite.Open(dbName), &gorm.Config{})
 	if err != nil {
 		b.Fatal(err)
 	}

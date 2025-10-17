@@ -60,6 +60,38 @@ enum RomanianCharacterAvatar: String, CaseIterable, Codable {
         case .dobrudjanMerchant: return "Negustor Dobrogean"
         }
     }
+
+    /// Emoji representation for the avatar
+    var emoji: String {
+        switch self {
+        case .traditionalPlayer: return "👤"
+        case .villageElder: return "👴"
+        case .folkMusician: return "🎵"
+        case .carpathianShepherd: return "🐑"
+        case .transylvanianNoble: return "👑"
+        case .moldovanScholar: return "📚"
+        case .wallachianWarrior: return "⚔️"
+        case .danubianFisherman: return "🎣"
+        case .bucovinianArtisan: return "🎨"
+        case .dobrudjanMerchant: return "💰"
+        }
+    }
+
+    /// Cultural theme associated with the avatar
+    var culturalTheme: String {
+        switch self {
+        case .traditionalPlayer: return "Tradițional"
+        case .villageElder: return "Sat Românesc"
+        case .folkMusician: return "Muzică Populară"
+        case .carpathianShepherd: return "Carpați"
+        case .transylvanianNoble: return "Transilvania"
+        case .moldovanScholar: return "Moldova"
+        case .wallachianWarrior: return "Țara Românească"
+        case .danubianFisherman: return "Dunăre"
+        case .bucovinianArtisan: return "Bucovina"
+        case .dobrudjanMerchant: return "Dobrogea"
+        }
+    }
 }
 
 enum AvatarFrame: String, CaseIterable, Codable {

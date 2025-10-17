@@ -1,7 +1,6 @@
 package database
 
 import (
-	"errors"
 	"fmt"
 	"time"
 
@@ -126,18 +125,8 @@ func (d *Database) GetUserByUsername(username string) (*User, error) {
 
 // GetOrCreateUser gets existing user or creates new one (handles race conditions)
 func (d *Database) GetOrCreateUser(id uuid.UUID, username, email, passwordHash string) (*User, error) {
-	// Try to get existing user by ID or username
-	var user User
-	err := d.db.Where("id = ? OR username = ?", id, username).First(&user).Error
-	if err == nil {
-		return &user, nil // User exists
-	}
-	if !errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, err // Real error
-	}
-
-	// Create new user
-	user = User{
+	// Use optimistic locking: try to create first, then get if failed
+	user := User{
 		BaseModel:    BaseModel{ID: id},
 		Username:     username,
 		Email:        email,
@@ -145,9 +134,29 @@ func (d *Database) GetOrCreateUser(id uuid.UUID, username, email, passwordHash s
 		IsActive:     true,
 	}
 
-	err = d.db.Create(&user).Error
-	if err != nil {
-		return nil, err
+	// Try to create new user
+	err := d.db.Create(&user).Error
+	if err == nil {
+		return &user, nil // Successfully created new user
 	}
-	return &user, nil
+
+	// If create failed, try to get existing user (handles race conditions)
+	// Retry a few times to handle SQLite's "database locked" errors during concurrent access
+	var existingUser User
+	maxRetries := 3
+	for attempt := 0; attempt < maxRetries; attempt++ {
+		err = d.db.Where("id = ? OR username = ?", id, username).First(&existingUser).Error
+		if err == nil {
+			return &existingUser, nil // User exists
+		}
+		// If not found and this is the last retry, break
+		if attempt == maxRetries-1 {
+			break
+		}
+		// Small delay before retry (helps with SQLite lock contention)
+		time.Sleep(10 * time.Millisecond)
+	}
+
+	// If both create and get failed after retries, return the error
+	return nil, err
 }
