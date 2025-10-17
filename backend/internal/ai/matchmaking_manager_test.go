@@ -79,7 +79,7 @@ func TestAIMatchmakingManager_CreateSingleAIPlayer(t *testing.T) {
 
 	// Create database record for AI player BEFORE connecting
 	// This ensures AI player data is used instead of hub auto-creation
-	err := manager.createAIPlayerRecord(ai)
+	err := manager.CreateAIPlayerRecord(ai)
 	assert.NoError(t, err, "Should create AI player database record")
 
 	// Verify records created with AI data
@@ -114,7 +114,7 @@ func TestAIMatchmakingManager_DuplicateUserCreation(t *testing.T) {
 
 	// Create first AI player
 	ai1 := NewAIPlayer("easy", 1100, testLogger)
-	err := manager.createAIPlayerRecord(ai1)
+	err := manager.CreateAIPlayerRecord(ai1)
 	assert.NoError(t, err, "First AI player creation should succeed")
 
 	// Verify user exists
@@ -124,7 +124,7 @@ func TestAIMatchmakingManager_DuplicateUserCreation(t *testing.T) {
 
 	// Attempt to create duplicate user record (should handle gracefully - NO ERROR)
 	// This is correct behavior - the implementation detects existing records and skips creation
-	err = manager.createAIPlayerRecord(ai1)
+	err = manager.CreateAIPlayerRecord(ai1)
 	assert.NoError(t, err, "Duplicate creation should be handled gracefully without error")
 
 	// Verify still only one user record
@@ -155,7 +155,7 @@ func TestAIMatchmakingManager_ConcurrentAICreation(t *testing.T) {
 			aiClient := NewAIWebSocketClient(ai, hub, testLogger)
 
 			// Create database record BEFORE connecting
-			err := manager.createAIPlayerRecord(ai)
+			err := manager.CreateAIPlayerRecord(ai)
 			assert.NoError(t, err, "Should create AI player record")
 
 			// Then connect (will use existing records)
@@ -229,7 +229,7 @@ func TestAIMatchmakingManager_SingleUserRecordCreation(t *testing.T) {
 	ai := NewAIPlayer("hard", 1400, testLogger)
 
 	// Create database record
-	err := manager.createAIPlayerRecord(ai)
+	err := manager.CreateAIPlayerRecord(ai)
 	assert.NoError(t, err, "Should create AI player record")
 
 	// Count user records

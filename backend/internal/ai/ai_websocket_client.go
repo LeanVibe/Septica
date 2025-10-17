@@ -29,7 +29,7 @@ type AIWebSocketClient struct {
 	mutex       sync.RWMutex           `json:"-"`
 
 	// Game state tracking
-	lastGameState *game.AuthenticGameState `json:"-"`
+	LastGameState *game.AuthenticGameState `json:"-"`
 	awaitingMove  bool                     `json:"awaiting_move"`
 }
 
@@ -274,7 +274,7 @@ func (c *AIWebSocketClient) handleGameState(message websocket.Message) {
 		}
 	}
 
-	c.lastGameState = &gameState
+	c.LastGameState = &gameState
 	c.AI.GameState = &gameState
 
 	// Update AI game mode from game state
@@ -297,9 +297,9 @@ func (c *AIWebSocketClient) handleGameUpdate(message websocket.Message) {
 
 // handleTurnTimeout processes turn timeout notifications
 func (c *AIWebSocketClient) handleTurnTimeout(message websocket.Message) {
-	if c.awaitingMove && c.lastGameState != nil {
+	if c.awaitingMove && c.LastGameState != nil {
 		c.Logger.Warn("AI client received turn timeout, making emergency move", "ai_id", c.AI.ID)
-		go c.processAIMove(c.lastGameState)
+		go c.processAIMove(c.LastGameState)
 	}
 }
 
@@ -308,7 +308,7 @@ func (c *AIWebSocketClient) handleGameEnded(message websocket.Message) {
 	c.CurrentGameID = nil
 	c.AI.CurrentGameID = nil
 	c.awaitingMove = false
-	c.lastGameState = nil
+	c.LastGameState = nil
 
 	c.Logger.Info("AI client game ended",
 		"ai_id", c.AI.ID,

@@ -85,7 +85,7 @@ func createTestPlayer(t *testing.T, db *gorm.DB, rating int) (uuid.UUID, uuid.UU
 
 // TestMatchmaking_AutoJoinSuccess tests that auto-join succeeds when client is registered
 func TestMatchmaking_AutoJoinSuccess(t *testing.T) {
-	db, hub, matchmakingService, testLogger, cleanup := setupMatchmakingTestEnvironment(t)
+	db, _, matchmakingService, _, cleanup := setupMatchmakingTestEnvironment(t)
 	defer cleanup()
 
 	// Create two test players
@@ -145,7 +145,7 @@ func TestMatchmaking_AIAutoJoinRetry(t *testing.T) {
 
 	// Create AI player database record
 	aiManager := ai.NewAIMatchmakingManager(hub, db, testLogger)
-	err = aiManager.createAIPlayerRecord(aiPlayer)
+	err = aiManager.CreateAIPlayerRecord(aiPlayer)
 	require.NoError(t, err)
 
 	// AI joins matchmaking
@@ -164,7 +164,7 @@ func TestMatchmaking_AIAutoJoinRetry(t *testing.T) {
 
 // TestMatchmaking_MatchCreationDoesNotFailOnAutoJoinFailure tests that match creation proceeds even if auto-join fails
 func TestMatchmaking_MatchCreationDoesNotFailOnAutoJoinFailure(t *testing.T) {
-	db, hub, matchmakingService, testLogger, cleanup := setupMatchmakingTestEnvironment(t)
+	db, _, matchmakingService, _, cleanup := setupMatchmakingTestEnvironment(t)
 	defer cleanup()
 
 	// Create two players
@@ -211,7 +211,7 @@ func TestMatchmaking_BothPlayersReceiveGameState(t *testing.T) {
 
 	// Create AI database record
 	aiManager := ai.NewAIMatchmakingManager(hub, db, testLogger)
-	err = aiManager.createAIPlayerRecord(aiPlayer)
+	err = aiManager.CreateAIPlayerRecord(aiPlayer)
 	require.NoError(t, err)
 
 	// Start matchmaking service
@@ -229,10 +229,10 @@ func TestMatchmaking_BothPlayersReceiveGameState(t *testing.T) {
 	time.Sleep(6 * time.Second)
 
 	// Verify AI client received game state
-	assert.NotNil(t, aiClient.lastGameState, "AI should have received game state")
+	assert.NotNil(t, aiClient.LastGameState, "AI should have received game state")
 
-	if aiClient.lastGameState != nil {
-		assert.NotEqual(t, uuid.Nil, aiClient.lastGameState.GameID, "Game state should have valid game_id")
+	if aiClient.LastGameState != nil {
+		assert.NotEqual(t, uuid.Nil, aiClient.LastGameState.ID, "Game state should have valid game ID")
 	}
 }
 
@@ -258,9 +258,9 @@ func TestMatchmaking_GameStateIncludesCorrectPlayerIDs(t *testing.T) {
 
 	// Create AI database records
 	aiManager := ai.NewAIMatchmakingManager(hub, db, testLogger)
-	err = aiManager.createAIPlayerRecord(ai1)
+	err = aiManager.CreateAIPlayerRecord(ai1)
 	require.NoError(t, err)
-	err = aiManager.createAIPlayerRecord(ai2)
+	err = aiManager.CreateAIPlayerRecord(ai2)
 	require.NoError(t, err)
 
 	// Start matchmaking
@@ -278,9 +278,9 @@ func TestMatchmaking_GameStateIncludesCorrectPlayerIDs(t *testing.T) {
 	time.Sleep(6 * time.Second)
 
 	// Verify game state contains both player IDs
-	if aiClient1.lastGameState != nil {
+	if aiClient1.LastGameState != nil {
 		playerIDs := []uuid.UUID{}
-		for playerID := range aiClient1.lastGameState.PlayerHands {
+		for playerID := range aiClient1.LastGameState.PlayerHands {
 			playerIDs = append(playerIDs, playerID)
 		}
 
@@ -291,7 +291,7 @@ func TestMatchmaking_GameStateIncludesCorrectPlayerIDs(t *testing.T) {
 
 // TestMatchmaking_QueueStatusReporting tests getting queue status for player
 func TestMatchmaking_QueueStatusReporting(t *testing.T) {
-	db, hub, matchmakingService, testLogger, cleanup := setupMatchmakingTestEnvironment(t)
+	db, _, matchmakingService, _, cleanup := setupMatchmakingTestEnvironment(t)
 	defer cleanup()
 
 	// Create player
@@ -322,7 +322,7 @@ func TestMatchmaking_QueueStatusReporting(t *testing.T) {
 
 // TestMatchmaking_LeaveQueueBeforeMatch tests leaving queue before getting matched
 func TestMatchmaking_LeaveQueueBeforeMatch(t *testing.T) {
-	db, hub, matchmakingService, testLogger, cleanup := setupMatchmakingTestEnvironment(t)
+	db, _, matchmakingService, _, cleanup := setupMatchmakingTestEnvironment(t)
 	defer cleanup()
 
 	// Create player
@@ -349,7 +349,7 @@ func TestMatchmaking_LeaveQueueBeforeMatch(t *testing.T) {
 
 // TestMatchmaking_PlayerRatingMatchingRange tests that players are matched within rating range
 func TestMatchmaking_PlayerRatingMatchingRange(t *testing.T) {
-	db, hub, matchmakingService, testLogger, cleanup := setupMatchmakingTestEnvironment(t)
+	db, _, matchmakingService, _, cleanup := setupMatchmakingTestEnvironment(t)
 	defer cleanup()
 
 	// Create players with different ratings
@@ -380,11 +380,11 @@ func TestMatchmaking_PlayerRatingMatchingRange(t *testing.T) {
 
 // TestMatchmaking_SearchRangeExpansion tests that search range expands over time
 func TestMatchmaking_SearchRangeExpansion(t *testing.T) {
-	db, hub, matchmakingService, testLogger, cleanup := setupMatchmakingTestEnvironment(t)
+	_, _, matchmakingService, _, cleanup := setupMatchmakingTestEnvironment(t)
 	defer cleanup()
 
 	// Create player
-	playerUserID, _ := createTestPlayer(t, db, 1200)
+	playerUserID := uuid.New()
 
 	// Create queue entry manually
 	entry := &QueueEntry{
@@ -407,7 +407,7 @@ func TestMatchmaking_SearchRangeExpansion(t *testing.T) {
 
 // TestMatchmaking_MaxWaitTimeExpiration tests handling of expired queue entries
 func TestMatchmaking_MaxWaitTimeExpiration(t *testing.T) {
-	db, hub, matchmakingService, testLogger, cleanup := setupMatchmakingTestEnvironment(t)
+	_, _, matchmakingService, _, cleanup := setupMatchmakingTestEnvironment(t)
 	defer cleanup()
 
 	// Create queue entry that's expired
@@ -427,7 +427,7 @@ func TestMatchmaking_MaxWaitTimeExpiration(t *testing.T) {
 
 // TestMatchmaking_DuplicateQueueJoinPrevention tests preventing player from joining multiple queues
 func TestMatchmaking_DuplicateQueueJoinPrevention(t *testing.T) {
-	db, hub, matchmakingService, testLogger, cleanup := setupMatchmakingTestEnvironment(t)
+	db, _, matchmakingService, _, cleanup := setupMatchmakingTestEnvironment(t)
 	defer cleanup()
 
 	// Create player
@@ -449,7 +449,7 @@ func TestMatchmaking_DuplicateQueueJoinPrevention(t *testing.T) {
 
 // TestMatchmaking_QueueStatistics tests getting overall queue statistics
 func TestMatchmaking_QueueStatistics(t *testing.T) {
-	db, hub, matchmakingService, testLogger, cleanup := setupMatchmakingTestEnvironment(t)
+	db, _, matchmakingService, _, cleanup := setupMatchmakingTestEnvironment(t)
 	defer cleanup()
 
 	// Create multiple players

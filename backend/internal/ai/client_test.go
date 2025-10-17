@@ -133,7 +133,7 @@ func TestAIClient_MoveReachesHub(t *testing.T) {
 	}
 
 	// Update AI game state
-	aiClient.lastGameState = gameState
+	aiClient.LastGameState = gameState
 	aiClient.awaitingMove = true
 
 	// Process AI move (this should send message to hub)
@@ -295,7 +295,7 @@ func TestAIClient_TurnTimeout(t *testing.T) {
 		},
 		TableCards: []game.Card{},
 	}
-	aiClient.lastGameState = gameState
+	aiClient.LastGameState = gameState
 	aiClient.awaitingMove = true
 
 	// Send turn timeout message
@@ -362,7 +362,7 @@ func TestAIClient_GameEndedMessage(t *testing.T) {
 	assert.Nil(t, aiClient.CurrentGameID, "AI client should clear game_id")
 	assert.Nil(t, ai.CurrentGameID, "AI player should clear game_id")
 	assert.False(t, aiClient.awaitingMove, "AI should not be awaiting move")
-	assert.Nil(t, aiClient.lastGameState, "AI should clear last game state")
+	assert.Nil(t, aiClient.LastGameState, "AI should clear last game state")
 }
 
 // TestAIClient_ErrorMessage tests handling of error messages

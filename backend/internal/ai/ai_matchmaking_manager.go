@@ -258,7 +258,7 @@ func (m *AIMatchmakingManager) deployAIPlayer(queueType string, humanRating int,
 	metrics.AIDeployments.WithLabelValues(string(difficulty)).Inc()
 
 	// Create player record in database for AI
-	err = m.createAIPlayerRecord(ai)
+	err = m.CreateAIPlayerRecord(ai)
 	if err != nil {
 		m.logger.Error("Failed to create AI player database record",
 			"error", err,
@@ -334,8 +334,8 @@ func (m *AIMatchmakingManager) generateAIRating(humanRating int) int {
 	return minRating + randomOffset
 }
 
-// createAIPlayerRecord creates database records for AI player
-func (m *AIMatchmakingManager) createAIPlayerRecord(ai *AIPlayer) error {
+// CreateAIPlayerRecord creates database records for AI player
+func (m *AIMatchmakingManager) CreateAIPlayerRecord(ai *AIPlayer) error {
 	// Use GetOrCreateUser to handle race conditions properly
 	dbService := database.NewDatabase(m.db)
 	user, err := dbService.GetOrCreateUser(
