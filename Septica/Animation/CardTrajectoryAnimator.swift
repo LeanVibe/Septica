@@ -136,7 +136,7 @@ class CardTrajectoryAnimator: ObservableObject {
     func calculateDealingTrajectory(
         from deckPosition: CGPoint,
         to playerPosition: CGPoint,
-        dealingStyle: DealingStyle = .smooth
+        dealingStyle: CardDealingTrajectory = .smooth
     ) -> [CGPoint] {
         switch dealingStyle {
         case .smooth:
@@ -396,8 +396,8 @@ class CardTrajectoryAnimator: ObservableObject {
 
 // MARK: - Supporting Types
 
-/// Style of dealing animation
-enum DealingStyle {
+/// Card dealing trajectory physics style
+enum CardDealingTrajectory {
     case smooth     // Smooth arc trajectory
     case direct     // Straight line movement
     case circular   // Circular dealing path

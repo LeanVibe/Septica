@@ -271,7 +271,7 @@ class ElasticAnimationEngine: ObservableObject {
     func trackAnimationPerformance(
         animationId: String,
         duration: TimeInterval,
-        complexity: AnimationComplexity
+        complexity: AnimationPerformanceLevel
     ) {
         performanceTracker.recordAnimation(
             id: animationId,
@@ -302,8 +302,8 @@ class ElasticAnimationEngine: ObservableObject {
 
 // MARK: - Supporting Types
 
-/// Animation complexity levels for performance tracking
-enum AnimationComplexity {
+/// Animation performance levels for tracking and optimization
+enum AnimationPerformanceLevel {
     case simple      // Basic transforms
     case moderate    // Keyframe animations
     case complex     // Multiple chained animations
@@ -337,7 +337,7 @@ struct DeviceCapabilities {
 class AnimationPerformanceTracker {
     private var animationRecords: [AnimationRecord] = []
 
-    func recordAnimation(id: String, duration: TimeInterval, complexity: AnimationComplexity) {
+    func recordAnimation(id: String, duration: TimeInterval, complexity: AnimationPerformanceLevel) {
         let record = AnimationRecord(
             id: id,
             timestamp: Date(),
@@ -373,13 +373,13 @@ struct AnimationRecord {
     let id: String
     let timestamp: Date
     let duration: TimeInterval
-    let complexity: AnimationComplexity
+    let complexity: AnimationPerformanceLevel
 }
 
 struct AnimationPerformanceStats {
     let averageAnimationDuration: TimeInterval
     let totalAnimations: Int
-    let complexityDistribution: [AnimationComplexity: Int]
+    let complexityDistribution: [AnimationPerformanceLevel: Int]
 }
 
 // MARK: - SwiftUI Extensions
