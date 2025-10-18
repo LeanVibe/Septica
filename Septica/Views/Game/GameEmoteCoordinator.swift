@@ -22,7 +22,9 @@ class GameEmoteCoordinator: NSObject, ObservableObject, EmoteManagerDelegate {
     // MARK: - Private Properties
 
     private weak var gameScreen: MultiplayerReadyGameScreen?
+    private weak var emoteManager: EmoteManager?
     private let soundManager = SoundManager.shared
+    private var players: [Player] = []
 
     // MARK: - Emote Display State
 
@@ -62,9 +64,14 @@ class GameEmoteCoordinator: NSObject, ObservableObject, EmoteManagerDelegate {
 
     // MARK: - Initialization
 
-    init(gameScreen: MultiplayerReadyGameScreen) {
+    init(gameScreen: MultiplayerReadyGameScreen, emoteManager: EmoteManager, players: [Player]) {
         self.gameScreen = gameScreen
+        self.emoteManager = emoteManager
+        self.players = players
         super.init()
+
+        // Set self as delegate
+        emoteManager.setDelegate(self)
     }
 
     // MARK: - Emote Manager Delegate
@@ -191,9 +198,10 @@ class GameEmoteCoordinator: NSObject, ObservableObject, EmoteManagerDelegate {
     }
 
     private func getPlayerCharacterType(for playerId: UUID) -> RomanianCharacterType {
-        // This would get the character type from the player system
-        // For now, return a default
-        return .pacala
+        if let player = players.first(where: { $0.id == playerId }) {
+            return player.romanianAvatar.characterType
+        }
+        return .pacala // Fallback default
     }
 
     private func getEmoteDuration(_ emoteType: EmoteType) -> TimeInterval {
@@ -215,9 +223,7 @@ class GameEmoteCoordinator: NSObject, ObservableObject, EmoteManagerDelegate {
     }
 
     private func getEmoteManager() -> EmoteManager? {
-        // This would get the emote manager from the game screen
-        // For now, return nil (would be injected in production)
-        return nil
+        return emoteManager
     }
 }
 

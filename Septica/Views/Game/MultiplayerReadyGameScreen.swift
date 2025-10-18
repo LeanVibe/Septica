@@ -21,6 +21,7 @@ struct MultiplayerReadyGameScreen: View {
     @State private var players: [Player] = []
     @State private var currentPlayerIndex = 0
     @State private var isMultiplayer = false
+    @State private var emoteCoordinator: GameEmoteCoordinator?
 
     // MARK: - Initialization
 
@@ -208,16 +209,24 @@ struct MultiplayerReadyGameScreen: View {
 
             HStack(spacing: spacing) {
                 ForEach(Array(players.dropFirst().enumerated()), id: \.element.id) { index, opponent in
-                    AdaptivePlayerHandView(
-                        player: opponent,
-                        selectedCard: nil,
-                        validMoves: [],
-                        onCardSelected: { _ in },
-                        onCardPlayed: { _ in },
-                        isCurrentPlayer: index == currentPlayerIndex - 1,
-                        isInteractionEnabled: false,
-                        playerType: .ai // Will be .remote for multiplayer
-                    )
+                    ZStack {
+                        AdaptivePlayerHandView(
+                            player: opponent,
+                            selectedCard: nil,
+                            validMoves: [],
+                            onCardSelected: { _ in },
+                            onCardPlayed: { _ in },
+                            isCurrentPlayer: index == currentPlayerIndex - 1,
+                            isInteractionEnabled: false,
+                            playerType: .ai // Will be .remote for multiplayer
+                        )
+
+                        // Emote overlay for this player
+                        if let coordinator = emoteCoordinator {
+                            AnyView(coordinator.emoteOverlay(for: opponent.id))
+                                .offset(y: -60)
+                        }
+                    }
                     .frame(width: min(cardWidth, 200))
                 }
             }
@@ -599,6 +608,10 @@ struct MultiplayerReadyGameScreen: View {
                     .onTapGesture {
                         showEmoteMenu = false
                     }
+
+                // Emote selection menu
+                emoteSelectionMenu
+                    .transition(.scale.combined(with: .opacity))
             }
 
             // Premium floating action button
@@ -624,6 +637,49 @@ struct MultiplayerReadyGameScreen: View {
     private func toggleEmoteMenu() {
         withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
             showEmoteMenu.toggle()
+        }
+    }
+
+    private var emoteSelectionMenu: some View {
+        VStack(spacing: 20) {
+            Text("Alege Emoticon")
+                .font(.title2.bold())
+                .foregroundColor(.white)
+
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 3), spacing: 16) {
+                ForEach(EmoteType.allCases, id: \.self) { emoteType in
+                    EmoteButton(emoteType: emoteType) {
+                        sendEmote(emoteType)
+                        showEmoteMenu = false
+                    }
+                }
+            }
+            .padding()
+        }
+        .padding()
+        .background(
+            RoundedRectangle(cornerRadius: 20)
+                .fill(Color.black.opacity(0.8))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 20)
+                        .stroke(RomanianColors.goldAccent, lineWidth: 2)
+                )
+        )
+        .padding()
+    }
+
+    private func sendEmote(_ emoteType: EmoteType) {
+        guard let currentPlayer = players.first,
+              let coordinator = emoteCoordinator else {
+            return
+        }
+
+        Task {
+            await coordinator.sendEmote(
+                emoteType,
+                from: currentPlayer.id,
+                in: "current_game" // TODO: Use actual game ID
+            )
         }
     }
 
@@ -698,6 +754,13 @@ struct MultiplayerReadyGameScreen: View {
         aiPlayer.hand = generateRandomHand(count: 6)
 
         players = [humanPlayer, aiPlayer]
+
+        // Initialize emote coordinator
+        emoteCoordinator = GameEmoteCoordinator(
+            gameScreen: self,
+            emoteManager: emoteManager,
+            players: players
+        )
 
         // Start background pulse
         backgroundPulse = true
@@ -813,7 +876,43 @@ struct MultiplayerReadyGameScreen: View {
     private func handleRemoteEmote(_ notification: Notification) {
         // Handle emote notifications from other players
         if let emoteData = notification.object as? EmoteData {
-            print("Player \(emoteData.playerId) sent emote: \(emoteData.emote.rawValue)")
+            // Find player to get character type
+            guard let player = players.first(where: { $0.id == emoteData.playerId }) else {
+                print("⚠️ Unknown player for emote: \(emoteData.playerId)")
+                return
+            }
+
+            // Create EmoteMessage for the manager
+            let emoteMessage = EmoteMessage(
+                playerId: emoteData.playerId,
+                emoteType: emoteData.emote,
+                gameId: "current_game", // TODO: Get actual game ID
+                characterType: player.romanianAvatar.characterType,
+                targetPlayerId: nil,
+                intensity: 1.0,
+                duration: getEmoteDuration(emoteData.emote)
+            )
+
+            // Process through emote manager
+            Task {
+                do {
+                    try await emoteManager.receiveEmote(emoteMessage)
+                } catch {
+                    print("⚠️ Failed to process remote emote: \(error)")
+                }
+            }
+        }
+    }
+
+    private func getEmoteDuration(_ emoteType: EmoteType) -> TimeInterval {
+        switch emoteType {
+        case .greeting: return 2.0
+        case .goodMove: return 1.5
+        case .badMove: return 2.0
+        case .thinking: return 3.0
+        case .taunt: return 2.5
+        case .victory: return 4.0
+        case .defeat: return 2.0
         }
     }
 }
@@ -1018,6 +1117,57 @@ enum GameScreenPhase: String, Codable {
         switch self {
         case .playing: return "În Joc"
         case .ended: return "Finalizat"
+        }
+    }
+}
+
+struct EmoteButton: View {
+    let emoteType: EmoteType
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            VStack(spacing: 8) {
+                Text(emoteIcon)
+                    .font(.system(size: 40))
+
+                Text(emoteType.rawValue)
+                    .font(.caption2.bold())
+                    .foregroundColor(.white)
+                    .lineLimit(2)
+                    .multilineTextAlignment(.center)
+            }
+            .frame(width: 80, height: 90)
+            .background(
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                RomanianColors.primaryBlue.opacity(0.3),
+                                RomanianColors.primaryBlue.opacity(0.5)
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(RomanianColors.goldAccent.opacity(0.5), lineWidth: 1)
+            )
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var emoteIcon: String {
+        switch emoteType {
+        case .greeting: return "👋"
+        case .goodMove: return "👍"
+        case .badMove: return "👎"
+        case .thinking: return "🤔"
+        case .taunt: return "😏"
+        case .victory: return "🎉"
+        case .defeat: return "😢"
         }
     }
 }

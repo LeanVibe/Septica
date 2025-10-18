@@ -102,7 +102,10 @@ struct CharacterExpression {
         character: RomanianCharacterType,
         reaction: CharacterReaction
     ) -> CharacterExpression {
-        switch (character, reaction) {
+        // Map RomanianCharacterType to RomanianArchetypeType for expressions
+        let archetypeType = mapToArchetype(character)
+
+        switch (archetypeType, reaction) {
         case (.oldWiseMan, .victory):
             return CharacterExpression(
                 reaction: .victory,
@@ -114,7 +117,7 @@ struct CharacterExpression {
                 voiceTone: .gentle,
                 culturalNotes: "Romanian grandfathers express pride through gentle encouragement"
             )
-            
+
         case (.playfulGirl, .goodMove):
             return CharacterExpression(
                 reaction: .goodMove,
@@ -126,7 +129,7 @@ struct CharacterExpression {
                 voiceTone: .cheerful,
                 culturalNotes: "Romanian children express joy through physical celebration"
             )
-            
+
         case (.mountainShepherd, .thinking):
             return CharacterExpression(
                 reaction: .thinking,
@@ -138,7 +141,7 @@ struct CharacterExpression {
                 voiceTone: .contemplative,
                 culturalNotes: "Mountain shepherds are known for patient, careful thinking"
             )
-            
+
         case (.villageTeacher, .encouragement):
             return CharacterExpression(
                 reaction: .encouragement,
@@ -150,7 +153,7 @@ struct CharacterExpression {
                 voiceTone: .encouraging,
                 culturalNotes: "Romanian teachers emphasize learning and growth over perfection"
             )
-            
+
         case (.folkDancer, .celebration):
             return CharacterExpression(
                 reaction: .celebration,
@@ -162,7 +165,7 @@ struct CharacterExpression {
                 voiceTone: .festive,
                 culturalNotes: "Romanian folk culture celebrates achievements with dance and joy"
             )
-            
+
         case (.cardMaster, .respect):
             return CharacterExpression(
                 reaction: .respect,
@@ -174,11 +177,11 @@ struct CharacterExpression {
                 voiceTone: .respectful,
                 culturalNotes: "Romanian card masters show respect through traditional gestures"
             )
-            
+
         default:
             return CharacterExpression(
                 reaction: reaction,
-                characterType: character,
+                characterType: archetypeType,
                 romanianPhrase: "Foarte bine!",
                 englishTranslation: "Very good!",
                 facialExpression: .neutralSmile,
@@ -186,6 +189,22 @@ struct CharacterExpression {
                 voiceTone: .friendly,
                 culturalNotes: "General positive Romanian expression"
             )
+        }
+    }
+
+    /// Map RomanianCharacterType to RomanianArchetypeType for expression system
+    private static func mapToArchetype(_ character: RomanianCharacterType) -> RomanianArchetypeType {
+        switch character {
+        case .pacala, .fatFrumos:
+            return .oldWiseMan
+        case .iele:
+            return .playfulGirl
+        case .strigoi:
+            return .mountainShepherd
+        case .babaCloantza:
+            return .villageTeacher
+        case .zmeu:
+            return .cardMaster
         }
     }
 }
@@ -363,7 +382,7 @@ enum BodyPosition: String {
 @Observable
 class RomanianCharacterAnimator {
     
-    var currentCharacter: RomanianCharacterType = .oldWiseMan
+    var currentCharacter: RomanianArchetypeType = .oldWiseMan
     var currentExpression: CharacterExpression?
     var isAnimating = false
     var animationProgress: Double = 0.0
@@ -375,7 +394,7 @@ class RomanianCharacterAnimator {
     private let audioManager = AudioManager()
     
     // Character selection based on game context
-    func selectAppropriateCharacter(for context: GameContext) -> RomanianCharacterType {
+    func selectAppropriateCharacter(for context: GameContext) -> RomanianArchetypeType {
         switch context {
         case .teaching, .rules_explanation:
             return .villageTeacher
