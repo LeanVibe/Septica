@@ -470,3 +470,17 @@ class MockEmoteManagerDelegate: EmoteManagerDelegate {
         errors.append(error)
     }
 }
+
+// MARK: - Mock Message Sender
+
+class MockMessageSender: MessageSending {
+    var sentMessages: [GameWebSocketMessage] = []
+    var shouldFail = false
+
+    func sendMessage(_ message: GameWebSocketMessage) async throws {
+        if shouldFail {
+            throw EmoteError.networkUnavailable
+        }
+        sentMessages.append(message)
+    }
+}

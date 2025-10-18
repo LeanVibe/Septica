@@ -410,6 +410,39 @@ struct AvatarSelectionView: View {
     }
 }
 
+// MARK: - RomanianAvatar Extension
+
+extension RomanianAvatar {
+    /// Display name for the avatar (localized)
+    var displayName: String {
+        return name
+    }
+
+    /// Emoji representation of the character
+    var emoji: String {
+        switch characterType {
+        case .pacala: return "🎭"
+        case .iele: return "✨"
+        case .strigoi: return "👻"
+        case .fatFrumos: return "⚔️"
+        case .babaCloantza: return "🧙‍♀️"
+        case .zmeu: return "🐉"
+        }
+    }
+
+    /// Cultural theme description
+    var culturalTheme: String {
+        switch characterType {
+        case .pacala: return "Romanian Folklore Trickster"
+        case .iele: return "Ethereal Nymphs of Romanian Mythology"
+        case .strigoi: return "Romanian Undead Spirits"
+        case .fatFrumos: return "Heroic Prince of Romanian Fairy Tales"
+        case .babaCloantza: return "Wise Forest Witch"
+        case .zmeu: return "Romanian Dragon of Legend"
+        }
+    }
+}
+
 // MARK: - Player Extension for Avatar Display
 
 extension Player {

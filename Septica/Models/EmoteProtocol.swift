@@ -278,7 +278,7 @@ extension GameWebSocketMessage {
 
 extension EmoteMessage {
     /// Validate emote message integrity
-    func validate() -> ValidationResult {
+    func validate() -> EmoteValidationResult {
         var errors: [String] = []
 
         // Validate intensity range
@@ -307,8 +307,8 @@ extension EmoteMessage {
     }
 }
 
-/// Validation result for message integrity
-enum ValidationResult {
+/// Validation result for emote message integrity
+enum EmoteValidationResult {
     case valid
     case invalid([String])
 

@@ -106,12 +106,26 @@ class EmoteManager: ObservableObject {
 
     // MARK: - Connection Status
 
-    enum ConnectionStatus {
+    enum ConnectionStatus: Equatable {
         case disconnected
         case connecting
         case connected
         case reconnecting
-        case error(Error)
+        case error(String) // Changed from Error to String for Equatable conformance
+
+        static func == (lhs: ConnectionStatus, rhs: ConnectionStatus) -> Bool {
+            switch (lhs, rhs) {
+            case (.disconnected, .disconnected),
+                 (.connecting, .connecting),
+                 (.connected, .connected),
+                 (.reconnecting, .reconnecting):
+                return true
+            case (.error(let lhsMessage), .error(let rhsMessage)):
+                return lhsMessage == rhsMessage
+            default:
+                return false
+            }
+        }
     }
 
     // MARK: - Initialization
@@ -121,8 +135,9 @@ class EmoteManager: ObservableObject {
         setupQueueProcessor()
     }
 
-    deinit {
-        stopQueueProcessor()
+    nonisolated deinit {
+        // Timer will be automatically invalidated when deallocated
+        // No need to explicitly call stopQueueProcessor
     }
 
     // MARK: - Public Interface
