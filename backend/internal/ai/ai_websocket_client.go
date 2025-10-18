@@ -30,7 +30,7 @@ type AIWebSocketClient struct {
 
 	// Game state tracking
 	LastGameState *game.AuthenticGameState `json:"-"`
-	awaitingMove  bool                     `json:"awaiting_move"`
+	awaitingMove  bool
 }
 
 // NewAIWebSocketClient creates a new AI WebSocket client

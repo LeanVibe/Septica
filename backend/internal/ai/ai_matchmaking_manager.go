@@ -61,10 +61,10 @@ func DefaultAIMatchmakingConfig() *AIMatchmakingConfig {
 
 // AIMatchmakingManager handles AI player integration with matchmaking
 type AIMatchmakingManager struct {
-	config *AIMatchmakingConfig `json:"config"`
-	hub    *websocket.Hub       `json:"-"`
-	db     *gorm.DB             `json:"-"`
-	logger *logger.Logger       `json:"-"`
+	config *AIMatchmakingConfig
+	hub    *websocket.Hub  `json:"-"`
+	db     *gorm.DB        `json:"-"`
+	logger *logger.Logger  `json:"-"`
 
 	// Active AI players
 	activeAI map[uuid.UUID]*AIWebSocketClient `json:"-"`
@@ -73,7 +73,7 @@ type AIMatchmakingManager struct {
 	// Monitoring
 	queueMonitorTicker *time.Ticker `json:"-"`
 	stopChan           chan bool    `json:"-"`
-	isRunning          bool         `json:"is_running"`
+	isRunning          bool
 }
 
 // NewAIMatchmakingManager creates a new AI matchmaking manager
