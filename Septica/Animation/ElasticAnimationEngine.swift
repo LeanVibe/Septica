@@ -9,7 +9,7 @@
 import SwiftUI
 
 /// Core physics engine for elastic animations with spring dynamics
-class ElasticAnimationEngine: ObservableObject {
+class ElasticAnimationEngine {
 
     // MARK: - Physics Constants
 

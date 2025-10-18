@@ -9,7 +9,7 @@
 import SwiftUI
 
 /// Calculates smooth arc trajectories for card movements with natural physics
-class CardTrajectoryAnimator: ObservableObject {
+class CardTrajectoryAnimator {
 
     // MARK: - Trajectory Constants
 
