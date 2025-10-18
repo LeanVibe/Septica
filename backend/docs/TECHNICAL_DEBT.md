@@ -232,7 +232,29 @@ Comprehensive load testing (1000+ users, soak tests, stress tests) should be con
 
 ## Low Priority Issues
 
-### ⚪ Issue 8 - Circuit Breakers for Auto-Join
+### ⚪ Issue 8 - Loss Streak Calculation
+**Priority**: LOW
+**Status**: ⚪ **FUTURE**
+**Phase**: 5+ (optional enhancement)
+
+**Description**: PlayerRatingInfo struct has LossStreak field but it's hardcoded to 0. The WinStreak is calculated correctly from CurrentWinStreak, but there's no corresponding CurrentLossStreak in player stats.
+
+**Impact**:
+- User experience: Could show loss streaks in player profiles
+- Production stability risk: NONE (field already exists, just not populated)
+
+**Proposed Solution**:
+- Add CurrentLossStreak field to PlayerStats model
+- Calculate loss streak in rating service (similar to win streak)
+- Update GetPlayerRatingInfo to return actual loss streak value
+
+**Location**: `internal/rating/service.go:339`
+
+**Estimated Effort**: 2-3 hours
+
+---
+
+### ⚪ Issue 9 - Circuit Breakers for Auto-Join
 **Priority**: LOW
 **Status**: ⚪ **FUTURE**
 **Phase**: 5+ (proposed)
@@ -281,9 +303,9 @@ Comprehensive load testing (1000+ users, soak tests, stress tests) should be con
 - **Critical Issues**: 0 (all resolved)
 - **High Priority Issues**: 0 (all resolved)
 - **Medium Priority Issues**: 1 (down from 2)
-- **Low Priority Issues**: 1
-- **Total Open Issues**: 2 (down from 3)
-- **Total Resolved Issues**: 6 (up from 5)
+- **Low Priority Issues**: 2 (optional enhancements)
+- **Total Open Issues**: 3 (1 medium + 2 low priority)
+- **Total Resolved Issues**: 6
 
 ### Production Readiness
 - ✅ **Core Functionality**: All critical bugs resolved
