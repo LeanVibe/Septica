@@ -340,9 +340,15 @@ func isValidMove(card Card, tableCards []Card, gameMode GameMode) bool {
 		return true
 	}
 
-	// 3. 8s are wild ONLY in 3-player mode (with 30-card deck)
-	if gameMode == ThreePlayers && card.Value == 8 {
-		return true
+	// 3. 8s beat in specific conditions depending on game mode
+	if card.Value == 8 {
+		if gameMode == ThreePlayers {
+			// In 3-player mode, 8s are wild (always beat)
+			return true
+		} else if gameMode == TwoPlayers {
+			// In 2-player mode, 8s beat when table cards count is divisible by 3
+			return len(tableCards)%3 == 0
+		}
 	}
 
 	return false
