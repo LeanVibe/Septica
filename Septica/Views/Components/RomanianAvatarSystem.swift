@@ -10,7 +10,7 @@ import SwiftUI
 
 // MARK: - Romanian Character Types
 
-enum RomanianCharacterType: String, CaseIterable {
+enum RomanianCharacterType: String, CaseIterable, Codable {
     case pacala = "Păcală"
     case iele = "Iele"
     case strigoi = "Strigoi"

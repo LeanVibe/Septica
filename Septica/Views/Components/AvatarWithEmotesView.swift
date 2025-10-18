@@ -677,7 +677,7 @@ struct ZmeuAvatar: View {
 
 // MARK: - Supporting Types
 
-enum EmoteType: String, CaseIterable {
+enum EmoteType: String, CaseIterable, Codable {
     case greeting = "Salut"
     case goodMove = "Mutare bună"
     case badMove = "Greșit"

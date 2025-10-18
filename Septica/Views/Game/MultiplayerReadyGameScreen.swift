@@ -1010,7 +1010,7 @@ class GameStateManager: ObservableObject {
     }
 }
 
-enum GameScreenPhase {
+enum GameScreenPhase: String, Codable {
     case playing
     case ended
 
