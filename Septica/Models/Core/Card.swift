@@ -173,3 +173,17 @@ extension Card {
         return value == 10 || value == 14 // 10s and Aces are worth 1 point each
     }
 }
+
+// MARK: - TableCard
+
+/// Represents a card on the game table with metadata about its state
+struct TableCard: Identifiable, Equatable {
+    let id = UUID()
+    let card: Card
+    let playOrder: Int
+    let isWinning: Bool
+
+    static func == (lhs: TableCard, rhs: TableCard) -> Bool {
+        return lhs.card == rhs.card && lhs.playOrder == rhs.playOrder && lhs.isWinning == rhs.isWinning
+    }
+}

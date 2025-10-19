@@ -213,12 +213,6 @@ struct CardTransform {
     let zOffset: Double
 }
 
-struct TableCard {
-    let card: Card
-    let playOrder: Int
-    let isWinning: Bool
-}
-
 enum TablePosition {
     case center
     case playerSide(Int)

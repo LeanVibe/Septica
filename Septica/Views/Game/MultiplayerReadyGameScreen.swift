@@ -502,7 +502,6 @@ struct MultiplayerReadyGameScreen: View {
                     gameState.processPlayerPass()
                 }
             }
-            .accessibilityEnhanced()
 
             // Primary glass button - Play action
             PremiumButtonComponents.PremiumGlassButton(
@@ -526,7 +525,6 @@ struct MultiplayerReadyGameScreen: View {
                 // Handle menu action
                 gameState.showGameMenu = true
             }
-            .accessibilityEnhanced()
         }
     }
 
@@ -563,7 +561,6 @@ struct MultiplayerReadyGameScreen: View {
                         // Handle favorite/emote action
                         toggleEmoteMenu()
                     }
-                    .accessibilityEnhanced()
                     .padding(.trailing, 24)
                     .padding(.top, 100)
                 }
@@ -828,16 +825,14 @@ struct MultiplayerReadyGameScreen: View {
                 playerId: emoteData.playerId,
                 emoteType: emoteData.emote,
                 gameId: "current_game", // TODO: Get actual game ID
-                characterType: player.romanianAvatar.characterType,
+                characterType: (player.romanianAvatar ?? .traditionalPlayer).characterType,
                 targetPlayerId: nil,
                 intensity: 1.0,
                 duration: getEmoteDuration(emoteData.emote)
             )
 
-            // Display emote through coordinator
-            if let coordinator = emoteCoordinator {
-                coordinator.handleEmoteReceived(emote: emoteMessage, playerId: player.id)
-            }
+            // Display emote through emote manager (which notifies the coordinator via delegate)
+            emoteManager.receiveEmote(.emoteBroadcast(emoteMessage))
         }
     }
 
@@ -1005,41 +1000,8 @@ class GameStateManager: ObservableObject {
         // Process pass logic
         validMoves = []
 
-        // AI plays after delay
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-            self.performAITurn()
-        }
-    }
-
-    private func performAITurn() {
-        // AI turn logic - simplified for now
-        guard let aiPlayer = self.players.last, !aiPlayer.hand.isEmpty else {
-            processAITurn()
-            return
-        }
-
-        // AI plays first card for simplicity
-        let cardToPlay = aiPlayer.hand.first!
-
-        // Perform AI card play using same logic as playCard
-        let tableCard = TableCard(
-            card: cardToPlay,
-            playOrder: gameState.tableCards.count,
-            isWinningCard: false
-        )
-
-        withAnimation {
-            // Remove from AI hand
-            if let index = aiPlayer.hand.firstIndex(where: { $0.id == cardToPlay.id }) {
-                aiPlayer.hand.remove(at: index)
-            }
-
-            // Add to table
-            gameState.tableCards.append(tableCard)
-        }
-
-        // Switch back to player
-        processAITurn()
+        // AI turn will be triggered by the screen's game loop
+        // processAITurn() will be called after delay
     }
 
     func processAITurn() {
