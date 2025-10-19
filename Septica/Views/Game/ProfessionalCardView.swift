@@ -496,29 +496,7 @@ func perspective(fovy: Float, aspect: Float, near: Float, far: Float) -> matrix_
 }
 
 // MARK: - Color Extensions
-
-extension Color {
-    func toSIMD3() -> simd_float3 {
-        let cgColor = self.cgColor ?? UIColor.white.cgColor
-        let components = cgColor.components ?? [1, 1, 1, 1]
-        return simd_float3(
-            Float(components[0]),
-            Float(components[1]),
-            Float(components[2])
-        )
-    }
-    
-    func toSIMD4() -> simd_float4 {
-        let cgColor = self.cgColor ?? UIColor.white.cgColor
-        let components = cgColor.components ?? [1, 1, 1, 1]
-        return simd_float4(
-            Float(components[0]),
-            Float(components[1]),
-            Float(components[2]),
-            Float(components[3])
-        )
-    }
-}
+// Note: toSIMD3() and toSIMD4() are defined in RomanianColors.swift
 
 // MARK: - Error Types
 

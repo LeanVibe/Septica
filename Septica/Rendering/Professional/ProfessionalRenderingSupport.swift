@@ -129,19 +129,6 @@ func rotationMatrix(_ angle: Float, axis: simd_float3) -> matrix_float4x4 {
     return matrix
 }
 
-func lookAt(eye: simd_float3, center: simd_float3, up: simd_float3) -> matrix_float4x4 {
-    let f = normalize(center - eye)
-    let s = normalize(cross(f, up))
-    let u = cross(s, f)
-
-    return matrix_float4x4(
-        simd_float4(s.x, u.x, -f.x, 0),
-        simd_float4(s.y, u.y, -f.y, 0),
-        simd_float4(s.z, u.z, -f.z, 0),
-        simd_float4(-dot(s, eye), -dot(u, eye), dot(f, eye), 1)
-    )
-}
-
 // MARK: - Card Extensions
 
 extension Card {
@@ -151,16 +138,7 @@ extension Card {
 }
 
 // MARK: - Romanian Colors Support
-
-extension RomanianColors {
-    static func toSIMD3(_ color: Color) -> simd_float3 {
-        return color.toSIMD3()
-    }
-    
-    static func toSIMD4(_ color: Color) -> simd_float4 {
-        return color.toSIMD4()
-    }
-}
+// Note: toSIMD3() and toSIMD4() are already defined as Color extensions in RomanianColors.swift
 
 
 // MARK: - Device Capability Detection

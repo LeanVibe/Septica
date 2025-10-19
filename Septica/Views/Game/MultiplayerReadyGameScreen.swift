@@ -7,6 +7,7 @@
 //
 
 import SwiftUI
+import Combine
 
 struct MultiplayerReadyGameScreen: View {
     // Game state
@@ -757,7 +758,6 @@ struct MultiplayerReadyGameScreen: View {
 
         // Initialize emote coordinator
         emoteCoordinator = GameEmoteCoordinator(
-            gameScreen: self,
             emoteManager: emoteManager,
             players: players
         )

@@ -7,6 +7,7 @@
 //
 
 import SwiftUI
+import Combine
 
 // MARK: - Game Emote Coordinator
 
@@ -21,8 +22,7 @@ class GameEmoteCoordinator: NSObject, ObservableObject, EmoteManagerDelegate {
 
     // MARK: - Private Properties
 
-    private weak var gameScreen: MultiplayerReadyGameScreen?
-    private weak var emoteManager: EmoteManager?
+    private var emoteManager: EmoteManager
     private let soundManager = SoundManager.shared
     private var players: [Player] = []
 
@@ -64,8 +64,7 @@ class GameEmoteCoordinator: NSObject, ObservableObject, EmoteManagerDelegate {
 
     // MARK: - Initialization
 
-    init(gameScreen: MultiplayerReadyGameScreen, emoteManager: EmoteManager, players: [Player]) {
-        self.gameScreen = gameScreen
+    init(emoteManager: EmoteManager, players: [Player]) {
         self.emoteManager = emoteManager
         self.players = players
         super.init()
@@ -472,7 +471,10 @@ struct ZmeuEmoteView: View {
 
 struct GameEmoteCoordinator_Previews: PreviewProvider {
     static var previews: some View {
-        let coordinator = GameEmoteCoordinator(gameScreen: MultiplayerReadyGameScreen())
+        let coordinator = GameEmoteCoordinator(
+            emoteManager: EmoteManager(),
+            players: []
+        )
 
         return VStack(spacing: 20) {
             EmoteOverlayView(
