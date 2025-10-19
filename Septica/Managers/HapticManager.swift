@@ -162,12 +162,26 @@ class HapticManager: ObservableObject {
         }
     }
     
+    // MARK: - Public Haptic Methods
+
+    /// Trigger light impact haptic feedback
+    func lightImpact() {
+        guard isHapticsEnabled && UIDevice.current.userInterfaceIdiom == .phone else { return }
+        triggerLightImpact()
+    }
+
+    /// Trigger medium impact haptic feedback
+    func mediumImpact() {
+        guard isHapticsEnabled && UIDevice.current.userInterfaceIdiom == .phone else { return }
+        triggerMediumImpact()
+    }
+
     // MARK: - Basic Haptic Generators
-    
+
     private func triggerLightImpact() {
         lightImpactGenerator.impactOccurred()
     }
-    
+
     private func triggerMediumImpact() {
         mediumImpactGenerator.impactOccurred()
     }

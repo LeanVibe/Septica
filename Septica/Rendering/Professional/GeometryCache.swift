@@ -315,8 +315,8 @@ class GeometryCache: ObservableObject {
                 let tangent = simd_float3(1, 0, 0) // Always pointing right
 
                 // Calculate edge UV for flat cards
-                let edgeU = calculateEdgeUV(u: u, v: v, width: width, height: height)
-                let edgeV = 0.0 // Flat card has no depth
+                let edgeU = Float(calculateEdgeUV(u: u, v: v, width: width, height: height))
+                let edgeV: Float = 0.0 // Flat card has no depth
 
                 let vertex = ProfessionalCardVertex(
                     position: simd_float3(worldX, worldY, worldZ),
@@ -475,14 +475,15 @@ class GeometryCache: ObservableObject {
         let edgeDistanceY = min(v, 1.0 - v)
         let edgeDistance = min(edgeDistanceX, edgeDistanceY)
 
-        let edgeNormalX = if edgeDistanceX < edgeDistanceY { centerX > 0 ? 0.3 : -0.3 } else { 0.0 }
-        let edgeNormalY = if edgeDistanceY < edgeDistanceX { centerY > 0 ? 0.3 : -0.3 } else { 0.0 }
+        let edgeNormalX: Float = if edgeDistanceX < edgeDistanceY { centerX > 0 ? 0.3 : -0.3 } else { 0.0 }
+        let edgeNormalY: Float = if edgeDistanceY < edgeDistanceX { centerY > 0 ? 0.3 : -0.3 } else { 0.0 }
 
-        let normalX = bevelNormalX + edgeNormalX * (1.0 - edgeDistance / 0.05)
-        let normalY = bevelNormalY + edgeNormalY * (1.0 - edgeDistance / 0.05)
+        let edgeFactor = Float(1.0 - edgeDistance / 0.05)
+        let normalX = bevelNormalX + edgeNormalX * edgeFactor
+        let normalY = bevelNormalY + edgeNormalY * edgeFactor
         let normalZ = bevelNormalZ
 
-        return simd_normalize(simd_float3(normalX, normalY, normalZ))
+        return simd_normalize(simd_float3(Float(normalX), Float(normalY), Float(normalZ)))
     }
 
     private func calculateEnhancedCardTangent(u: Float, v: Float, thickness: Float) -> simd_float3 {
@@ -491,9 +492,9 @@ class GeometryCache: ObservableObject {
         let centerY = v - 0.5
 
         // Tangent follows the surface curvature
-        let tangentX = 1.0
-        let tangentY = 0.0
-        let tangentZ = centerX * -0.1 // Slight curve along X axis
+        let tangentX: Float = 1.0
+        let tangentY: Float = 0.0
+        let tangentZ: Float = centerX * -0.1 // Slight curve along X axis
 
         return simd_normalize(simd_float3(tangentX, tangentY, tangentZ))
     }
@@ -796,7 +797,9 @@ class GeometryCache: ObservableObject {
                 normal: simd_float3(0, 0, 1),
                 texCoord: simd_float2(t, 0),
                 tangent: simd_float3(1, 0, 0),
-                culturalUV: simd_float2(t * 4.0, 0)
+                culturalUV: simd_float2(t * 4.0, 0),
+                edgeUV: simd_float2(t, 0),
+                thickness: z
             )
             
             vertices.append(vertex)
@@ -823,15 +826,17 @@ class GeometryCache: ObservableObject {
                 normal: simd_float3(0, 0, 1),
                 texCoord: simd_float2(t, 0),
                 tangent: simd_float3(1, 0, 0),
-                culturalUV: simd_float2(t * 8.0, t * 8.0)
+                culturalUV: simd_float2(t * 8.0, t * 8.0),
+                edgeUV: simd_float2(radius, 0),
+                thickness: z
             )
-            
+
             vertices.append(vertex)
         }
-        
+
         return vertices
     }
-    
+
     private func generateGeometricVertices(subdivisions: Int) -> [ProfessionalCardVertex] {
         var vertices: [ProfessionalCardVertex] = []
         
@@ -845,13 +850,15 @@ class GeometryCache: ObservableObject {
                 let worldX = (u - 0.5) * 2.0
                 let worldY = (v - 0.5) * 2.0
                 let worldZ: Float = ((Int(x + y) % 2) == 0) ? 0.01 : 0.0 // Checkerboard height
-                
+
                 let vertex = ProfessionalCardVertex(
                     position: simd_float3(worldX, worldY, worldZ),
                     normal: simd_float3(0, 0, 1),
                     texCoord: simd_float2(u, v),
                     tangent: simd_float3(1, 0, 0),
-                    culturalUV: simd_float2(u * 4.0, v * 4.0)
+                    culturalUV: simd_float2(u * 4.0, v * 4.0),
+                    edgeUV: simd_float2(u, v),
+                    thickness: worldZ
                 )
                 
                 vertices.append(vertex)
@@ -870,13 +877,15 @@ class GeometryCache: ObservableObject {
             let x = (t - 0.5) * 2.0
             let y = sin(t * 12.0 * .pi) * 0.1 // Zigzag pattern
             let z: Float = 0.005
-            
+
             let vertex = ProfessionalCardVertex(
                 position: simd_float3(x, y, z),
                 normal: simd_float3(0, 0, 1),
                 texCoord: simd_float2(t, 0.5),
                 tangent: simd_float3(1, 0, 0),
-                culturalUV: simd_float2(t * 16.0, 0.5)
+                culturalUV: simd_float2(t * 16.0, 0.5),
+                edgeUV: simd_float2(t, 0.5),
+                thickness: z
             )
             
             vertices.append(vertex)
@@ -990,7 +999,9 @@ class GeometryCache: ObservableObject {
                     normal: calculateEmbossNormal(u: u, v: v, thickness: intensity * 0.1),
                     texCoord: simd_float2(u, v),
                     tangent: simd_float3(1, 0, 0),
-                    culturalUV: simd_float2(u * 2.0, v * 2.0)
+                    culturalUV: simd_float2(u * 2.0, v * 2.0),
+                    edgeUV: simd_float2(u, v),
+                    thickness: embossHeight
                 )
                 
                 vertices.append(vertex)

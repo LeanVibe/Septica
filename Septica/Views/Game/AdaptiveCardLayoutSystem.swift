@@ -102,7 +102,7 @@ struct AdaptiveCardLayoutSystem {
         return CardTransform(
             position: CGPoint(
                 x: xOffset,
-                y: selectionOffset - yOffset
+                y: Double(selectionOffset) - yOffset
             ),
             rotation: Angle.degrees(rotation),
             scale: scale * selectionScale,
@@ -148,7 +148,7 @@ struct AdaptiveCardLayoutSystem {
                 position: .zero,
                 rotation: .zero,
                 scale: 1.0,
-                zOffset: card.playOrder * 10
+                zOffset: Double(card.playOrder * 10)
             )
         case .playerSide(let playerIndex):
             // Position cards around the table based on player position
@@ -162,21 +162,21 @@ struct AdaptiveCardLayoutSystem {
                 ),
                 rotation: Angle.degrees(angle * 180 / .pi),
                 scale: 0.9,
-                zOffset: card.playOrder * 10
+                zOffset: Double(card.playOrder * 10)
             )
         case .leftSide(let index):
             return CardTransform(
                 position: CGPoint(x: -80 - CGFloat(index) * 65, y: 0),
                 rotation: Angle.degrees(-5),
                 scale: 0.85,
-                zOffset: index
+                zOffset: Double(index)
             )
         case .rightSide(let index):
             return CardTransform(
                 position: CGPoint(x: 80 + CGFloat(index) * 65, y: 0),
                 rotation: Angle.degrees(5),
                 scale: 0.85,
-                zOffset: index
+                zOffset: Double(index)
             )
         }
     }
@@ -377,10 +377,10 @@ struct AdaptivePlayerHandView: View {
                                     handleCardTap(card)
                                 }
                             },
-                            onDragChanged: playerType == .human ? handleCardDrag : nil,
-                            onDragEnded: playerType == .human ? handleCardDrop : nil
+                            onDragChanged: nil,
+                            onDragEnded: nil
                         )
-                        .offset(transform.position)
+                        .offset(x: transform.position.x, y: transform.position.y)
                         .rotationEffect(transform.rotation)
                         .scaleEffect(transform.scale)
                         .zIndex(transform.zOffset)

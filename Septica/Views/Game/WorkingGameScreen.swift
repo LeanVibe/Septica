@@ -18,9 +18,6 @@ struct WorkingGameScreen: View {
     // Romanian Dialogue System Integration
     @StateObject private var dialogueSystem = RomanianDialogueSystem()
 
-    // ShuffleCats Quality Enhancement Manager for premium visual effects
-    @StateObject private var qualityEnhancementManager = ShuffleCatsQualityEnhancementManager()
-
     // Performance monitoring for adaptive quality
     @State private var frameRate: Double = 60.0
     @State private var lastFrameTime: TimeInterval = 0
@@ -35,12 +32,6 @@ struct WorkingGameScreen: View {
     var body: some View {
         GeometryReader { geometry in
             ZStack {
-                // Premium motion effects for the entire game screen
-                qualityEnhancementManager.applyMotionEffects(
-                    content: Color.clear,
-                    motionData: MotionData.zero // Will be updated with actual motion data
-                )
-
                 // Switch between layouts based on game mode
                 switch gameViewModel.gameState.gameMode {
                 case .twoPlayers:
@@ -376,13 +367,7 @@ struct WorkingGameScreen: View {
                         endRadius: 200
                     )
                 )
-                .overlay(
-                    // Subtle Romanian pattern overlay for cultural depth
-                    RomanianOrnatePatternSystem.RomanianCulturalPatternOverlay()
-                        .opacity(0.15)
-                        .blendMode(.overlay)
-                )
-                
+
                 if !gameViewModel.tableCards.isEmpty {
                     // Fanned table card display
                     FannedTableCardsView(
@@ -774,19 +759,12 @@ struct WorkingGameScreen: View {
     }
 
     private func startPerformanceMonitoring() {
-        // Monitor frame rate for adaptive quality adjustment
+        // Monitor frame rate for performance tracking
         Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
             let currentTime = CACurrentMediaTime()
             if lastFrameTime > 0 {
                 let frameTime = currentTime - lastFrameTime
                 frameRate = 1.0 / frameTime
-
-                // Adaptive quality adjustment based on performance
-                if frameRate < 50.0 && qualityEnhancementManager.enhancementLevel != .minimal {
-                    qualityEnhancementManager.enhancementLevel = .medium
-                } else if frameRate > 55.0 && qualityEnhancementManager.enhancementLevel == .medium {
-                    qualityEnhancementManager.enhancementLevel = .high
-                }
             }
             lastFrameTime = currentTime
         }

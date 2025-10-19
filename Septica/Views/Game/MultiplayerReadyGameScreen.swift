@@ -39,13 +39,12 @@ struct MultiplayerReadyGameScreen: View {
                 premiumBackground
 
                 // Premium gradient overlay with Romanian cultural themes
-                if let gradientOverlay = PremiumGradientOverlays.GameScreenGradientOverlay(
+                PremiumGradientOverlays.GameScreenGradientOverlay(
                     culturalTheme: .romanianHeritage,
                     animationState: gameState.gamePhase == .ended ? .celebration : .active,
                     isInteractive: true
-                ) {
-                    gradientOverlay.ignoresSafeArea()
-                }
+                )
+                .ignoresSafeArea()
 
                 // Main game layout
                 gameLayout(geometry: geometry)
@@ -292,18 +291,18 @@ struct MultiplayerReadyGameScreen: View {
             if cardCount <= 4 {
                 // Small layout - single row
                 HStack(spacing: 12) {
-                    ForEach(Array(gameState.tableCards.enumerated()), id: \.element.id) { index, tableCard in
-                        tableCardView(tableCard, at: index, in: tableSize)
+                    ForEach(Array(gameState.tableCards.enumerated()), id: \.element.id) { item in
+                        tableCardView(item.element, at: item.offset, in: tableSize)
                     }
                 }
                 .frame(width: tableSize.width, height: tableSize.height)
             } else {
                 // Large layout - circular arrangement
-                ForEach(Array(gameState.tableCards.enumerated()), id: \.element.id) { index, tableCard in
-                    let angle = Double(index) * (360.0 / Double(cardCount)) * (.pi / 180.0)
+                ForEach(Array(gameState.tableCards.enumerated()), id: \.element.id) { item in
+                    let angle = Double(item.offset) * (360.0 / Double(cardCount)) * (.pi / 180.0)
                     let radius = min(tableSize.width, tableSize.height) * 0.25
 
-                    tableCardView(tableCard, at: index, in: tableSize)
+                    tableCardView(item.element, at: item.offset, in: tableSize)
                         .position(
                             x: tableSize.width / 2 + cos(angle) * radius,
                             y: tableSize.height / 2 + sin(angle) * radius

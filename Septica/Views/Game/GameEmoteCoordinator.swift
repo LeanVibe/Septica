@@ -23,7 +23,6 @@ class GameEmoteCoordinator: NSObject, ObservableObject, EmoteManagerDelegate {
     // MARK: - Private Properties
 
     private var emoteManager: EmoteManager
-    private let soundManager = SoundManager.shared
     private var players: [Player] = []
 
     // MARK: - Emote Display State
@@ -146,15 +145,17 @@ class GameEmoteCoordinator: NSObject, ObservableObject, EmoteManagerDelegate {
     }
 
     /// Get emote overlay for specific player
+    @ViewBuilder
     func emoteOverlay(for playerId: UUID) -> some View {
         if let emoteState = activeEmotes[playerId],
            let animationState = emoteAnimations[playerId] {
-            return EmoteOverlayView(
+            EmoteOverlayView(
                 emoteState: emoteState,
                 animationState: animationState
             )
+        } else {
+            EmptyView()
         }
-        return EmptyView()
     }
 
     /// Cleanup expired emotes
@@ -173,8 +174,8 @@ class GameEmoteCoordinator: NSObject, ObservableObject, EmoteManagerDelegate {
     // MARK: - Private Methods
 
     private func playEmoteSound(_ emoteType: EmoteType, for characterType: RomanianCharacterType) {
-        let soundName = getSoundName(for: emoteType, characterType: characterType)
-        soundManager.playEmoteSound(soundName)
+        // Sound playback will be implemented when SoundManager is available
+        _ = getSoundName(for: emoteType, characterType: characterType)
     }
 
     private func getSoundName(for emoteType: EmoteType, characterType: RomanianCharacterType) -> String {
@@ -260,7 +261,7 @@ struct EmoteOverlayView: View {
         .scaleEffect(animationState.scale)
         .opacity(animationState.opacity)
         .rotationEffect(.degrees(animationState.rotation))
-        .offset(animationState.position)
+        .offset(x: animationState.position.x, y: animationState.position.y)
         .animation(.spring(response: 0.6, dampingFraction: 0.5), value: animationState.scale)
         .animation(.easeOut(duration: 0.3), value: animationState.opacity)
     }

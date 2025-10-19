@@ -215,7 +215,7 @@ struct PremiumGradientOverlays {
 
         private func startAnimations() {
             withAnimation(.linear(duration: 20.0).repeatForever(autoreverses: false)) {
-                gradientOffset = CGPoint(x: 1, y: 1)
+                gradientOffset = UnitPoint(x: 1, y: 1)
             }
 
             withAnimation(.easeInOut(duration: 3.0).repeatForever(autoreverses: true)) {
@@ -241,7 +241,7 @@ struct PremiumGradientOverlays {
                 }
             case .transition:
                 withAnimation(.easeInOut(duration: 0.6)) {
-                    gradientOffset = CGPoint(x: 0, y: 0)
+                    gradientOffset = UnitPoint(x: 0, y: 0)
                 }
             }
         }
