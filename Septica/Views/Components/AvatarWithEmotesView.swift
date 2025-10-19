@@ -699,17 +699,6 @@ enum EmoteType: String, CaseIterable, Codable {
     }
 }
 
-// MARK: - Sound Manager
-
-class SoundManager {
-    static let shared = SoundManager()
-
-    func playEmoteSound(for emote: EmoteType) {
-        // Implement sound effects for emotes
-        print("🔊 Playing sound for emote: \(emote.rawValue)")
-    }
-}
-
 // MARK: - View Extensions
 
 extension View {
