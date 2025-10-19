@@ -291,18 +291,18 @@ struct MultiplayerReadyGameScreen: View {
             if cardCount <= 4 {
                 // Small layout - single row
                 HStack(spacing: 12) {
-                    ForEach(Array(gameState.tableCards.enumerated()), id: \.element.id) { item in
-                        tableCardView(item.element, at: item.offset, in: tableSize)
+                    ForEach(0..<gameState.tableCards.count, id: \.self) { index in
+                        tableCardView(gameState.tableCards[index], at: index, in: tableSize)
                     }
                 }
                 .frame(width: tableSize.width, height: tableSize.height)
             } else {
                 // Large layout - circular arrangement
-                ForEach(Array(gameState.tableCards.enumerated()), id: \.element.id) { item in
-                    let angle = Double(item.offset) * (360.0 / Double(cardCount)) * (.pi / 180.0)
+                ForEach(0..<gameState.tableCards.count, id: \.self) { index in
+                    let angle = Double(index) * (360.0 / Double(cardCount)) * (.pi / 180.0)
                     let radius = min(tableSize.width, tableSize.height) * 0.25
 
-                    tableCardView(item.element, at: item.offset, in: tableSize)
+                    tableCardView(gameState.tableCards[index], at: index, in: tableSize)
                         .position(
                             x: tableSize.width / 2 + cos(angle) * radius,
                             y: tableSize.height / 2 + sin(angle) * radius
@@ -319,26 +319,17 @@ struct MultiplayerReadyGameScreen: View {
             tableSize: tableSize
         )
 
-        // Create enhanced material properties for table cards
-        let materialProperties = createTableCardMaterialProperties(for: tableCard.card)
-        let lightingEnvironment = createTableCardLightingEnvironment()
-        let cardTransform = createTableCardTransform(from: transform)
-
-        return ProfessionalCardView(
+        return CardView(
             card: tableCard.card,
             isSelected: false,
             isPlayable: false,
             isAnimating: tableCard.isWinning,
             cardSize: .small,
-            professionalRenderer: gameState.professionalCardRenderer,
-            transform: cardTransform,
-            materialProperties: materialProperties,
-            lightingEnvironment: lightingEnvironment,
             onTap: nil,
             onDragChanged: nil,
             onDragEnded: nil
         )
-        .offset(transform.position)
+        .offset(x: transform.position.x, y: transform.position.y)
         .rotationEffect(transform.rotation)
         .scaleEffect(transform.scale)
         .zIndex(transform.zOffset)
@@ -350,59 +341,7 @@ struct MultiplayerReadyGameScreen: View {
         }
     }
 
-    // MARK: - Enhanced Material Properties
-
-    private func createTableCardMaterialProperties(for card: Card) -> MaterialProperties {
-        var properties = MaterialProperties()
-
-        // Base material for table cards
-        properties.albedo = Color.white.toSIMD3()
-        properties.metallicFactor = 0.15
-        properties.roughnessFactor = 0.7
-        properties.folkPatternIntensity = 0.6
-
-        // Card-specific enhancements
-        if card.value == 7 {
-            properties.mysticalGlow = 1.0
-            properties.traditionalCraftsmanship = 0.8
-        } else if card.isPointCard {
-            properties.goldLeafEffect = 0.9
-            properties.byzantineInfluence = 0.7
-        }
-
-        // Romanian cultural themes
-        properties.regionalVariationIntensity = 0.5
-        properties.carpathianHeritage = 0.3
-        properties.monasticTradition = 0.4
-
-        return properties
-    }
-
-    private func createTableCardLightingEnvironment() -> LightingEnvironment {
-        return LightingEnvironment(
-            primaryLightDirection: simd_float3(0.2, 1.0, 0.6),
-            primaryLightColor: Color.white.toSIMD3(),
-            ambientLightColor: RomanianColors.goldAccent.toSIMD3() * 0.4,
-            lightIntensity: 1.2,
-            shadowBias: 0.0008,
-            romanianCulturalTint: RomanianColors.primaryBlue.toSIMD3() * 0.3
-        )
-    }
-
-    private func createTableCardTransform(from simpleTransform: CardTransform) -> SimpleTransform {
-        return SimpleTransform(
-            perspective: 0.4,
-            rotationX: simpleTransform.rotation.degrees * 0.1,
-            rotationY: simpleTransform.rotation.degrees * 0.2,
-            rotationZ: simpleTransform.rotation.degrees,
-            translation: simd_float3(
-                Float(simpleTransform.position.x),
-                Float(simpleTransform.position.y),
-                Float(simpleTransform.zOffset)
-            ),
-            lightingVector: simd_float3(0.2, 1.0, 0.5)
-        )
-    }
+    // MARK: - Card Overlays
 
     private var enhancedWinningCardOverlay: some View {
         RoundedRectangle(cornerRadius: 8)
@@ -519,7 +458,7 @@ struct MultiplayerReadyGameScreen: View {
                             // Coordinate card selection animation
                             animationCoordinator.coordinateCardSelection(
                                 cardId: card.id,
-                                characterType: humanPlayer.romanianAvatar ?? .pacala
+                                characterType: (humanPlayer.romanianAvatar ?? .traditionalPlayer).characterType
                             ) {
                                 withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
                                     selectedCard = card
@@ -577,7 +516,6 @@ struct MultiplayerReadyGameScreen: View {
                 }
             }
             .disabled(selectedCard == nil)
-            .accessibilityEnhanced()
 
             // Secondary glass button - Menu action
             PremiumButtonComponents.PremiumGlassSecondaryButton(
@@ -685,59 +623,63 @@ struct MultiplayerReadyGameScreen: View {
 
     private var gameEndOverlay: some View {
         ZStack {
-            // Background overlay
-            Color.black.opacity(0.7)
-                .ignoresSafeArea()
+            backgroundOverlay
+            gameEndContent
+        }
+    }
 
-            // Content
-            VStack(spacing: 24) {
-                // Result icon
-                Image(systemName: gameState.playerWon ? "trophy.fill" : "heart.fill")
-                    .font(.system(size: 60))
-                    .foregroundColor(gameState.playerWon ? RomanianColors.goldAccent : RomanianColors.embroideryRed)
+    private var backgroundOverlay: some View {
+        Color.black.opacity(0.7)
+            .ignoresSafeArea()
+    }
 
-                // Result text
-                Text(gameState.playerWon ? "Victorie!" : "Înfrângere")
-                    .font(.largeTitle.weight(.black))
-                    .foregroundColor(.white)
+    private var gameEndContent: some View {
+        VStack(spacing: 24) {
+            resultIcon
+            resultText
+            scoreText
+            actionButtons
+        }
+        .padding(32)
+    }
 
-                // Score
-                Text("Scor: \(gameState.playerScore) - \(gameState.opponentScore)")
-                    .font(.title2.weight(.semibold))
-                    .foregroundColor(.white.opacity(0.9))
+    private var resultIcon: some View {
+        Image(systemName: gameState.playerWon ? "trophy.fill" : "heart.fill")
+            .font(.system(size: 60))
+            .foregroundColor(gameState.playerWon ? RomanianColors.goldAccent : RomanianColors.embroideryRed)
+    }
 
-                // Action buttons
-                HStack(spacing: 16) {
-                    Button("Joc Nou") {
-                        gameState.startNewGame()
-                    }
-                    .buttonStyle(PrimaryButtonStyle())
+    private var resultText: some View {
+        Text(gameState.playerWon ? "Victorie!" : "Înfrângere")
+            .font(.largeTitle.weight(.black))
+            .foregroundColor(.white)
+    }
 
-                    Button("Meniu") {
-                        gameState.returnToMenu()
-                    }
-                    .buttonStyle(SecondaryButtonStyle())
-                }
-                .onAppear {
-                    // Trigger victory celebration animation
-                    if gameState.playerWon, let humanPlayer = players.first {
-                        animationCoordinator.coordinateVictoryCelebration(
-                            characterType: humanPlayer.romanianAvatar ?? .pacala,
-                            victoryType: .decisive
-                        )
-                    }
-                }
+    private var scoreText: some View {
+        Text("Scor: \(gameState.playerScore) - \(gameState.opponentScore)")
+            .font(.title2.weight(.semibold))
+            .foregroundColor(.white.opacity(0.9))
+    }
+
+    private var actionButtons: some View {
+        HStack(spacing: 16) {
+            Button("Joc Nou") {
+                gameState.startNewGame()
             }
-            .padding(32)
-            .background(
-                RoundedRectangle(cornerRadius: 20)
-                    .fill(Color.black.opacity(0.8))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 20)
-                            .stroke(Color.white.opacity(0.2), lineWidth: 1)
-                    )
-            )
-            .padding(40)
+            .buttonStyle(PrimaryButtonStyle())
+
+            Button("Meniu") {
+                gameState.returnToMenu()
+            }
+            .buttonStyle(SecondaryButtonStyle())
+        }
+        .onAppear {
+            if gameState.playerWon, let humanPlayer = players.first {
+                animationCoordinator.coordinateVictoryCelebration(
+                    characterType: (humanPlayer.romanianAvatar ?? .traditionalPlayer).characterType,
+                    victoryType: .decisive
+                )
+            }
         }
     }
 
@@ -746,11 +688,11 @@ struct MultiplayerReadyGameScreen: View {
     private func setupGame() {
         // Initialize players
         let humanPlayer = Player(name: "Tu")
-        humanPlayer.romanianAvatar = .pacala
+        humanPlayer.romanianAvatar = .traditionalPlayer
         humanPlayer.hand = generateRandomHand(count: 6)
 
         let aiPlayer = Player(name: "Păcală AI")
-        aiPlayer.romanianAvatar = .pacala
+        aiPlayer.romanianAvatar = .folkMusician
         aiPlayer.hand = generateRandomHand(count: 6)
 
         players = [humanPlayer, aiPlayer]
@@ -776,7 +718,7 @@ struct MultiplayerReadyGameScreen: View {
     }
 
     private func generateRandomHand(count: Int) -> [Card] {
-        let suits: [Card.Suit] = [.hearts, .diamonds, .clubs, .spades]
+        let suits: [Suit] = [.hearts, .diamonds, .clubs, .spades]
         let values: [Int] = [7, 8, 9, 10, 11, 12, 13, 14]
 
         return (0..<count).map { _ in
@@ -800,7 +742,7 @@ struct MultiplayerReadyGameScreen: View {
             card: card,
             from: handPosition,
             to: tablePosition,
-            characterType: humanPlayer.romanianAvatar ?? .pacala
+            characterType: (humanPlayer.romanianAvatar ?? .traditionalPlayer).characterType
         ) {
             withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
                 // Remove card from player hand
@@ -845,7 +787,7 @@ struct MultiplayerReadyGameScreen: View {
             card: cardToPlay,
             from: aiHandPosition,
             to: tablePosition,
-            characterType: aiPlayer.romanianAvatar ?? .pacala
+            characterType: (aiPlayer.romanianAvatar ?? .folkMusician).characterType
         ) {
             withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
                 // Remove card from AI hand
@@ -892,13 +834,9 @@ struct MultiplayerReadyGameScreen: View {
                 duration: getEmoteDuration(emoteData.emote)
             )
 
-            // Process through emote manager
-            Task {
-                do {
-                    try await emoteManager.receiveEmote(emoteMessage)
-                } catch {
-                    print("⚠️ Failed to process remote emote: \(error)")
-                }
+            // Display emote through coordinator
+            if let coordinator = emoteCoordinator {
+                coordinator.handleEmoteReceived(emote: emoteMessage, playerId: player.id)
             }
         }
     }
@@ -1039,14 +977,9 @@ class GameStateManager: ObservableObject {
     }
 
     private func initializeProfessionalRenderer() {
-        // Initialize the professional card renderer for enhanced visual quality
-        do {
-            professionalCardRenderer = try ProfessionalCardRenderer()
-            print("✅ Professional card renderer initialized successfully")
-        } catch {
-            print("⚠️ Failed to initialize professional card renderer: \(error)")
-            professionalCardRenderer = nil
-        }
+        // Professional card renderer not currently in use
+        // Using standard CardView for simplicity and reliability
+        professionalCardRenderer = nil
     }
 
     func startTurnTimer() {
@@ -1074,8 +1007,39 @@ class GameStateManager: ObservableObject {
 
         // AI plays after delay
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-            self.aiPlayTurn()
+            self.performAITurn()
         }
+    }
+
+    private func performAITurn() {
+        // AI turn logic - simplified for now
+        guard let aiPlayer = self.players.last, !aiPlayer.hand.isEmpty else {
+            processAITurn()
+            return
+        }
+
+        // AI plays first card for simplicity
+        let cardToPlay = aiPlayer.hand.first!
+
+        // Perform AI card play using same logic as playCard
+        let tableCard = TableCard(
+            card: cardToPlay,
+            playOrder: gameState.tableCards.count,
+            isWinningCard: false
+        )
+
+        withAnimation {
+            // Remove from AI hand
+            if let index = aiPlayer.hand.firstIndex(where: { $0.id == cardToPlay.id }) {
+                aiPlayer.hand.remove(at: index)
+            }
+
+            // Add to table
+            gameState.tableCards.append(tableCard)
+        }
+
+        // Switch back to player
+        processAITurn()
     }
 
     func processAITurn() {
