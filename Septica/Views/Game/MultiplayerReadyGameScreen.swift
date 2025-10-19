@@ -23,11 +23,12 @@ struct MultiplayerReadyGameScreen: View {
     @State private var currentPlayerIndex = 0
     @State private var isMultiplayer = false
     @State private var emoteCoordinator: GameEmoteCoordinator?
+    @State private var gameId: String = ""
 
     // MARK: - Initialization
 
     init() {
-        // Setup emote manager delegate
+        // Game ID will be assigned in setupGame()
     }
 
     // MARK: - Body
@@ -613,7 +614,7 @@ struct MultiplayerReadyGameScreen: View {
             await coordinator.sendEmote(
                 emoteType,
                 from: currentPlayer.id,
-                in: "current_game" // TODO: Use actual game ID
+                in: gameId
             )
         }
     }
@@ -683,6 +684,9 @@ struct MultiplayerReadyGameScreen: View {
     // MARK: - Game Logic
 
     private func setupGame() {
+        // Generate unique game session ID
+        gameId = UUID().uuidString
+
         // Initialize players
         let humanPlayer = Player(name: "Tu")
         humanPlayer.romanianAvatar = .traditionalPlayer
@@ -824,7 +828,7 @@ struct MultiplayerReadyGameScreen: View {
             let emoteMessage = EmoteMessage(
                 playerId: emoteData.playerId,
                 emoteType: emoteData.emote,
-                gameId: "current_game", // TODO: Get actual game ID
+                gameId: gameId,
                 characterType: (player.romanianAvatar ?? .traditionalPlayer).characterType,
                 targetPlayerId: nil,
                 intensity: 1.0,
