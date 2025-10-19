@@ -21,7 +21,7 @@ class AnimationCoordinator: ObservableObject {
 
     // MARK: - Animation State
 
-    private struct AnimationState {
+    struct AnimationState {
         let id: UUID
         let startTime: Date
         let duration: TimeInterval

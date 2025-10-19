@@ -71,14 +71,9 @@ class CardTrajectoryAnimator {
         flipAxis: String = "y",
         flipCount: Int = 1
     ) -> Animation {
-        return .keyframes(
-            with: generateFlipKeyframes(
-                from: startPosition,
-                to: endPosition,
-                flipAxis: flipAxis,
-                flipCount: flipCount
-            )
-        )
+        // Simplified implementation using spring animation for smooth flip
+        // TODO: Implement proper keyframe animation when SwiftUI APIs available
+        return .spring(response: 0.6, dampingFraction: 0.7)
     }
 
     /// Create smooth animation along calculated path
@@ -96,10 +91,9 @@ class CardTrajectoryAnimator {
             return .easeInOut(duration: duration)
         }
 
-        // Generate keyframes for smooth path following
-        let keyframes = generatePathKeyframes(path: path, duration: duration)
-
-        return .keyframes(with: keyframes)
+        // Use smooth easing curve for path following
+        // TODO: Implement proper keyframe animation when SwiftUI APIs available
+        return .easeInOut(duration: duration)
     }
 
     /// Calculate card shuffle trajectory for deck animations
@@ -217,63 +211,42 @@ class CardTrajectoryAnimator {
         return CGPoint(x: x, y: y)
     }
 
-    /// Generate keyframes for path animation
+    // MARK: - Future: Advanced Keyframe Animations
+    // TODO: Implement when SwiftUI keyframe APIs become available
+    //
+    // These methods are commented out as they use hypothetical Transform3DEffect
+    // and AnimationKeyframe types that don't exist in current SwiftUI.
+    //
+    // Future implementation will use:
+    // - SwiftUI KeyframeAnimator (iOS 17+)
+    // - CATransform3D for 3D effects
+    // - Custom interpolation with GeometryEffect
+
+    /*
+    /// Generate keyframes for path animation (placeholder for future implementation)
     private func generatePathKeyframes(
         path: [CGPoint],
         duration: TimeInterval
-    ) -> [AnimationKeyframe] {
-        var keyframes: [AnimationKeyframe] = []
-
-        let timeStep = duration / Double(path.count)
-
-        for (index, point) in path.enumerated() {
-            let time = Double(index) * timeStep / duration
-            let transform = Transform3DEffect(
-                translation: CGPoint(x: point.x, y: point.y)
-            )
-
-            keyframes.append(AnimationKeyframe(time, transform: transform))
-        }
-
-        return keyframes
+    ) -> [CGPoint] {
+        // Simplified version: just return the path points
+        return path
     }
 
-    /// Generate flip animation keyframes
-    private func generateFlipKeyframes(
+    /// Generate flip animation parameters (placeholder for future implementation)
+    private func generateFlipParameters(
         from startPoint: CGPoint,
         to endPosition: CGPoint,
-        flipAxis: Character,
+        flipAxis: String,
         flipCount: Int
-    ) -> [AnimationKeyframe] {
-        var keyframes: [AnimationKeyframe] = []
-
-        // Start position
-        keyframes.append(AnimationKeyframe(0.0, transform: Transform3DEffect(translation: startPoint)))
-
-        // Half flip
+    ) -> (midPoint: CGPoint, rotationAngle: Angle) {
         let midPoint = CGPoint(
             x: (startPoint.x + endPosition.x) / 2,
-            y: (startPoint.y + endPosition.y) / 2 - 20 // Lift up during flip
+            y: (startPoint.y + endPosition.y) / 2 - 20
         )
-
-        let rotationAngle = Angle.degrees(180 * flipCount)
-        let flipTransform = flipAxis == "y" ?
-            Transform3DEffect.identity.rotation3DEffect(
-                by: .degrees(180 * flipCount),
-                axis: (x: 0, y: 1, z: 0)
-            ) :
-            Transform3DEffect.identity.rotation3DEffect(
-                by: .degrees(180 * flipCount),
-                axis: (x: 1, y: 0, z: 0)
-            )
-
-        keyframes.append(AnimationKeyframe(0.5, transform: flipTransform.translation(midPoint)))
-
-        // End position
-        keyframes.append(AnimationKeyframe(1.0, transform: Transform3DEffect(translation: endPosition)))
-
-        return keyframes
+        let rotationAngle = Angle.degrees(Double(180 * flipCount))
+        return (midPoint, rotationAngle)
     }
+    */
 
     /// Generate arc points for circular motion
     private func generateArcPoints(
