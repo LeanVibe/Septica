@@ -118,7 +118,7 @@ class CulturalAnimationTiming {
         let baseTiming = CharacterTiming.pacalaQuick // Default
 
         // Adjust for character type
-        let characterTiming = getCharacterTiming(characterType)
+        let characterTiming = getCharacterTiming(characterType: characterType)
 
         // Adjust for selection speed
         let speedMultiplier: TimeInterval

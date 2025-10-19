@@ -7,16 +7,25 @@
 //
 
 import SwiftUI
+import Combine
 
 /// Unified animation management system that coordinates all game animations
 @MainActor
 class AnimationCoordinator: ObservableObject {
 
-    // MARK: - Properties
+    // MARK: - Published Properties
+
+    @Published private(set) var activeAnimationCount: Int = 0
+
+    // MARK: - Private Properties
 
     private let elasticEngine = ElasticAnimationEngine()
     private let trajectoryAnimator = CardTrajectoryAnimator()
-    private var activeAnimations: [UUID: AnimationState] = [:]
+    private var activeAnimations: [UUID: AnimationState] = [:] {
+        didSet {
+            activeAnimationCount = activeAnimations.count
+        }
+    }
     private let animationQueue = DispatchQueue(label: "com.septica.animations", qos: .userInteractive)
 
     // MARK: - Animation State
@@ -244,11 +253,6 @@ class AnimationCoordinator: ObservableObject {
             animationState.completion?()
         }
         activeAnimations.removeAll()
-    }
-
-    /// Get active animations count
-    var activeAnimationCount: Int {
-        return activeAnimations.count
     }
 
     // MARK: - Private Helper Methods
