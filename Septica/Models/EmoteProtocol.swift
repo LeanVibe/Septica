@@ -331,6 +331,20 @@ enum EmoteValidationResult {
     }
 }
 
+// MARK: - Emote Notification Data
+
+/// Simple data structure for emote notifications
+struct EmoteData {
+    let playerId: UUID
+    let emote: EmoteType
+}
+
+// MARK: - Notification Extension
+
+extension Notification.Name {
+    static let playerDidEmote = Notification.Name("playerDidEmote")
+}
+
 // MARK: - Factory Methods
 
 extension GameWebSocketMessage {

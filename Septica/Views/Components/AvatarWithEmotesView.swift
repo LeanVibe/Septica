@@ -699,15 +699,6 @@ enum EmoteType: String, CaseIterable, Codable {
     }
 }
 
-struct EmoteData {
-    let playerId: UUID
-    let emote: EmoteType
-}
-
-extension Notification.Name {
-    static let playerDidEmote = Notification.Name("playerDidEmote")
-}
-
 // MARK: - Sound Manager
 
 class SoundManager {
