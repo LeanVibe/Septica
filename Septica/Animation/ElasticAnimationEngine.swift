@@ -94,16 +94,11 @@ class ElasticAnimationEngine {
     ) -> Animation {
         let duration = customDuration ?? TimeInterval(0.3 + Double(intensity) * 0.2)
 
+        // Use timingCurve with control points for elastic bounce effect
         return .timingCurve(
-            TimingCurve(
-                controlPoints: [
-                    CGPoint(x: 0, y: 0),
-                    CGPoint(x: 0.2, y: 1.0),
-                    CGPoint(x: 0.4, y: 0.8),
-                    CGPoint(x: 1.0, y: 1.0)
-                ],
-                duration: duration
-            )
+            0.2, 1.0,  // First control point
+            0.4, 0.8,  // Second control point
+            duration: duration
         )
     }
 
@@ -131,17 +126,23 @@ class ElasticAnimationEngine {
         // Different celebration styles based on character type
         switch characterType {
         case .pacala:
-            return calculateTricksterVictoryAnimation()
+            // Păcală's victory: playful, bouncy
+            return .spring(response: 0.5, dampingFraction: 0.6)
         case .iele:
-            return calculateEtherealVictoryAnimation()
+            // Iele's victory: graceful, flowing
+            return .easeInOut(duration: 1.2)
         case .strigoi:
-            return calculateDramaticVictoryAnimation()
+            // Strigoi's victory: dramatic, intense
+            return .spring(response: 0.8, dampingFraction: 0.5)
         case .fatFrumos:
-            return calculateHeroicVictoryAnimation()
+            // Făt-Frumos's victory: proud, upright
+            return .spring(response: 0.7, dampingFraction: 0.7)
         case .babaCloantza:
-            return calculateWiseVictoryAnimation()
+            // Baba Cloanța's victory: subtle, knowing
+            return .easeInOut(duration: 0.8)
         case .zmeu:
-            return calculateEnergeticVictoryAnimation()
+            // Zmeu's victory: explosive, energetic
+            return .spring(response: 0.4, dampingFraction: 0.4)
         }
     }
 
@@ -163,107 +164,77 @@ class ElasticAnimationEngine {
         )
     }
 
-    /// Create custom easing curve from control points
+    // MARK: - Future: Custom Animation Composition
+    // TODO: Implement when needed with proper SwiftUI APIs
+
+    /*
+    /// Create custom easing curve from control points (placeholder)
     func customEasingCurve(
         controlPoints: [CGPoint],
         duration: TimeInterval = 1.0
     ) -> Animation {
-        return .timingCurve(
-            TimingCurve(controlPoints: controlPoints, duration: duration)
-        )
+        // Simplified fallback to easeInOut
+        return .easeInOut(duration: duration)
     }
 
-    /// Chain multiple animations sequentially
+    /// Chain multiple animations sequentially (placeholder)
     func chainAnimations(
         animations: [() -> Animation],
         completion: (() -> Void)? = nil
     ) -> Animation {
-        return .sequential(
-            with: animations,
-            completion: completion
-        )
+        // Simplified: return first animation
+        return animations.first?() ?? .default
     }
+    */
 
-    /// Create parallel animations for multiple properties
-    func parallelAnimations(
-        animations: [Animation]
-    ) -> Animation {
-        return .parallel(animations)
+    // MARK: - Future: Advanced Animation Composition
+    // TODO: Implement when SwiftUI keyframe and parallel APIs become available
+    //
+    // Parallel animations and character-specific victory animations use hypothetical
+    // Animation.keyframes() and Animation.parallel() that don't exist in current SwiftUI.
+    //
+    // Future implementation options:
+    // - Use KeyframeAnimator (iOS 17+)
+    // - Combine multiple withAnimation blocks
+    // - Use AnimationGroup with GeometryEffect
+
+    /*
+    /// Create parallel animations for multiple properties (placeholder)
+    func parallelAnimations(animations: [Animation]) -> Animation {
+        // Simplified: return first animation as fallback
+        return animations.first ?? .default
     }
-
-    // MARK: - Character-Specific Victory Animations
 
     private func calculateTricksterVictoryAnimation() -> Animation {
         // Păcală's victory: playful, bouncy
-        return .keyframes(
-            with: [
-                AnimationKeyframe(0.0, transform: .identity),
-                AnimationKeyframe(0.3, transform: .scale(1.2).rotation(.degrees(10))),
-                AnimationKeyframe(0.6, transform: .scale(0.9).rotation(.degrees(-5))),
-                AnimationKeyframe(1.0, transform: .identity)
-            ]
-        )
+        return .spring(response: 0.5, dampingFraction: 0.6)
     }
 
     private func calculateEtherealVictoryAnimation() -> Animation {
         // Iele's victory: graceful, flowing
-        return .keyframes(
-            with: [
-                AnimationKeyframe(0.0, transform: .identity, opacity: 1.0),
-                AnimationKeyframe(0.4, transform: .scale(1.1), opacity: 0.8),
-                AnimationKeyframe(0.8, transform: .scale(1.15), opacity: 1.0),
-                AnimationKeyframe(1.0, transform: .identity, opacity: 1.0)
-            ]
-        )
+        return .easeInOut(duration: 1.2)
     }
 
     private func calculateDramaticVictoryAnimation() -> Animation {
         // Strigoi's victory: dramatic, intense
-        return .keyframes(
-            with: [
-                AnimationKeyframe(0.0, transform: .identity),
-                AnimationKeyframe(0.2, transform: .scale(0.8).rotation(.degrees(-15))),
-                AnimationKeyframe(0.5, transform: .scale(1.3).rotation(.degrees(15))),
-                AnimationKeyframe(1.0, transform: .identity)
-            ]
-        )
+        return .spring(response: 0.8, dampingFraction: 0.5)
     }
 
     private func calculateHeroicVictoryAnimation() -> Animation {
         // Făt-Frumos's victory: proud, upright
-        return .keyframes(
-            with: [
-                AnimationKeyframe(0.0, transform: .identity),
-                AnimationKeyframe(0.3, transform: .scale(1.15)),
-                AnimationKeyframe(0.6, transform: .scale(1.25).rotation(.degrees(5))),
-                AnimationKeyframe(1.0, transform: .identity)
-            ]
-        )
+        return .spring(response: 0.7, dampingFraction: 0.7)
     }
 
     private func calculateWiseVictoryAnimation() -> Animation {
         // Baba Cloanța's victory: subtle, knowing
-        return .keyframes(
-            with: [
-                AnimationKeyframe(0.0, transform: .identity),
-                AnimationKeyframe(0.5, transform: .scale(1.05)),
-                AnimationKeyframe(1.0, transform: .identity)
-            ]
-        )
+        return .easeInOut(duration: 0.8)
     }
 
     private func calculateEnergeticVictoryAnimation() -> Animation {
         // Zmeu's victory: explosive, energetic
-        return .keyframes(
-            with: [
-                AnimationKeyframe(0.0, transform: .identity),
-                AnimationKeyframe(0.15, transform: .scale(0.7)),
-                AnimationKeyframe(0.4, transform: .scale(1.4).rotation(.degrees(20))),
-                AnimationKeyframe(0.7, transform: .scale(1.2).rotation(.degrees(-10))),
-                AnimationKeyframe(1.0, transform: .identity)
-            ]
-        )
+        return .spring(response: 0.4, dampingFraction: 0.4)
     }
+    */
 
     // MARK: - Performance Optimization
 
@@ -383,18 +354,20 @@ struct AnimationPerformanceStats {
 }
 
 // MARK: - SwiftUI Extensions
+// TODO: Implement when needed
 
+/*
 extension Animation {
-    /// Create sequential animation chain
+    /// Create sequential animation chain (placeholder)
     static func sequential(
         with animations: [() -> Animation],
         completion: (() -> Void)? = nil
     ) -> Animation {
-        // This would implement animation sequencing
-        // For now, return a combined animation
-        return .parallel(animations.map { $0() })
+        // Simplified: return first animation
+        return animations.first?() ?? .default
     }
 }
+*/
 
 /// Custom timing curve for complex animations
 struct TimingCurve {
@@ -407,25 +380,27 @@ struct TimingCurve {
     }
 }
 
-/// Animation keyframe for complex animations
+// MARK: - Future: Keyframe Animation Support Types
+// TODO: Implement when SwiftUI keyframe APIs become available
+
+/*
+/// Animation keyframe for complex animations (placeholder)
 struct AnimationKeyframe {
     let time: Double
-    let transform: Transform3DEffect
     let opacity: Double?
     let scale: Double?
     let rotation: Angle?
 
     init(
         _ time: Double,
-        transform: Transform3DEffect = .identity,
         opacity: Double? = nil,
         scale: Double? = nil,
         rotation: Angle? = nil
     ) {
         self.time = time
-        self.transform = transform
         self.opacity = opacity
         self.scale = scale
         self.rotation = rotation
     }
 }
+*/
