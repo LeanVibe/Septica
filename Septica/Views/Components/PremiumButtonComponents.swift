@@ -20,7 +20,7 @@ struct PremiumButtonComponents {
         let subtitle: String?
         let iconName: String?
         let action: () -> Void
-        let buttonStyle: GlassButtonStyle
+        let buttonStyle: GlassButtonVariant
 
         @State private var isHovered = false
         @State private var isPressed = false
@@ -31,7 +31,7 @@ struct PremiumButtonComponents {
             title: String,
             subtitle: String? = nil,
             iconName: String? = nil,
-            style: GlassButtonStyle = .primary,
+            style: GlassButtonVariant = .primary,
             action: @escaping () -> Void
         ) {
             self.title = title
@@ -435,7 +435,7 @@ struct PremiumButtonComponents {
 
     // MARK: - Supporting Types
 
-    enum GlassButtonStyle {
+    enum GlassButtonVariant {
         case primary    // Gold accent Romanian theme
         case secondary  // Blue accent Romanian theme
         case tertiary   // Green accent Romanian theme

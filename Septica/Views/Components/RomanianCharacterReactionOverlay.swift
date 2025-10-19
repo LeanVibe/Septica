@@ -246,14 +246,14 @@ private struct CharacterReactionTriangle: Shape {
 /// Manages character reactions throughout the game
 class CharacterReactionManager: ObservableObject {
     @Published var showReactionOverlay = false
-    @Published var currentCharacter: RomanianCharacterType = .oldWiseMan
+    @Published var currentCharacter: RomanianCharacterType = .babaCloantza
     @Published var currentReaction: CharacterReaction = .encouragement
     @Published var currentPhrase: String = ""
     @Published var currentTranslation: String = ""
-    
+
     /// Show a quick character reaction overlay
     func showQuickReaction(
-        character: RomanianCharacterType = .oldWiseMan,
+        character: RomanianCharacterType = .babaCloantza,
         reaction: CharacterReaction,
         romanianPhrase: String,
         englishTranslation: String

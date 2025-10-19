@@ -69,8 +69,8 @@ struct MaterialProperties {
         subsurfaceScattering: 0.3,
         folkPatternIntensity: 0.2,
         weatheringFactor: 0.1,
-        traditionalCraftsmanship: 0.8,
-        culturalColorShift: simd_float3(0.98, 0.95, 0.92)
+        culturalColorShift: simd_float3(0.98, 0.95, 0.92),
+        traditionalCraftsmanship: 0.8
     )
 
     static let premiumCardstock = MaterialProperties(
@@ -100,11 +100,11 @@ struct MaterialProperties {
         metallicFactor: 0.3,
         roughnessFactor: 0.2,
         emissiveFactor: simd_float3(0.1, 0.1, 0.3),
+        regionalVariationIntensity: 0.8,
+        carpathianHeritage: 1.0,
         pulseIntensity: 0.5,
         glowIntensity: 0.8,
-        magicEffectStrength: 1.0,
-        carpathianHeritage: 1.0,
-        regionalVariationIntensity: 0.8
+        magicEffectStrength: 1.0
     )
 
     static let vintageCardboard = MaterialProperties(
@@ -112,10 +112,10 @@ struct MaterialProperties {
         metallicFactor: 0.0,
         roughnessFactor: 0.9,
         folkPatternIntensity: 0.4,
+        embroideryEffect: 0.5,
         weatheringFactor: 0.6,
         culturalColorShift: simd_float3(1.0, 0.95, 0.85),
-        traditionalCraftsmanship: 0.9,
-        embroideryEffect: 0.5
+        traditionalCraftsmanship: 0.9
     )
 
     // Enhanced Romanian premium materials
@@ -126,43 +126,43 @@ struct MaterialProperties {
         subsurfaceScattering: 0.4,
         folkPatternIntensity: 1.0,
         embroideryEffect: 0.9,
-        traditionalCraftsmanship: 1.0,
+        weatheringFactor: 0.2,
         culturalColorShift: simd_float3(0.95, 0.92, 0.88),
-        weatheringFactor: 0.2
+        traditionalCraftsmanship: 1.0
     )
 
     static let transylvanianNobility = MaterialProperties(
         albedo: simd_float3(0.96, 0.94, 0.91),
         metallicFactor: 0.2,
         roughnessFactor: 0.2,
-        goldLeafEffect: 0.8,
-        byzantineInfluence: 1.0,
-        monasticTradition: 0.6,
-        culturalColorShift: simd_float3(1.05, 0.95, 0.85),
         clearcoat: 0.7,
-        clearcoatRoughness: 0.05
+        clearcoatRoughness: 0.05,
+        goldLeafEffect: 0.8,
+        culturalColorShift: simd_float3(1.05, 0.95, 0.85),
+        byzantineInfluence: 1.0,
+        monasticTradition: 0.6
     )
 
     static let moldavianHeritage = MaterialProperties(
         albedo: simd_float3(0.90, 0.87, 0.83),
         metallicFactor: 0.1,
         roughnessFactor: 0.4,
+        subsurfaceScattering: 0.3,
         embroideryEffect: 0.7,
-        traditionalCraftsmanship: 0.8,
-        regionalVariationIntensity: 0.9,
         culturalColorShift: simd_float3(0.92, 0.89, 0.85),
-        subsurfaceScattering: 0.3
+        traditionalCraftsmanship: 0.8,
+        regionalVariationIntensity: 0.9
     )
 
     static let danubianDelta = MaterialProperties(
         albedo: simd_float3(0.93, 0.95, 0.92),
         metallicFactor: 0.0,
         roughnessFactor: 0.3,
-        weatheringFactor: 0.3,
-        carpathianHeritage: 0.6,
-        culturalColorShift: simd_float3(0.98, 1.02, 0.95),
         folkPatternIntensity: 0.5,
-        embroideryEffect: 0.4
+        embroideryEffect: 0.4,
+        weatheringFactor: 0.3,
+        culturalColorShift: simd_float3(0.98, 1.02, 0.95),
+        carpathianHeritage: 0.6
     )
 }
 
