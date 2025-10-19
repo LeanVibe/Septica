@@ -92,6 +92,22 @@ enum RomanianCharacterAvatar: String, CaseIterable, Codable {
         case .dobrudjanMerchant: return "Dobrogea"
         }
     }
+
+    /// Maps avatar to character type for emote system integration
+    var characterType: RomanianCharacterType {
+        switch self {
+        case .traditionalPlayer: return .pacala
+        case .villageElder: return .babaCloantza
+        case .folkMusician: return .pacala
+        case .carpathianShepherd: return .fatFrumos
+        case .transylvanianNoble: return .fatFrumos
+        case .moldovanScholar: return .babaCloantza
+        case .wallachianWarrior: return .strigoi
+        case .danubianFisherman: return .zmeu
+        case .bucovinianArtisan: return .iele
+        case .dobrudjanMerchant: return .zmeu
+        }
+    }
 }
 
 enum AvatarFrame: String, CaseIterable, Codable {

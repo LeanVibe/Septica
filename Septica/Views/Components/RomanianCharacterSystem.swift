@@ -207,6 +207,23 @@ struct CharacterExpression {
             return .cardMaster
         }
     }
+
+    static func mapFromArchetype(_ archetype: RomanianArchetypeType) -> RomanianCharacterType {
+        switch archetype {
+        case .oldWiseMan:
+            return .pacala
+        case .playfulGirl:
+            return .iele
+        case .mountainShepherd:
+            return .strigoi
+        case .villageTeacher:
+            return .babaCloantza
+        case .folkDancer:
+            return .iele
+        case .cardMaster:
+            return .zmeu
+        }
+    }
 }
 
 /// Facial expression animation states
@@ -419,10 +436,10 @@ class RomanianCharacterAnimator {
     ) {
         currentCharacter = selectAppropriateCharacter(for: context)
         let expression = CharacterExpression.getExpression(
-            character: currentCharacter,
+            character: CharacterExpression.mapFromArchetype(currentCharacter),
             reaction: reaction
         )
-        
+
         performReaction(expression, intensity: intensity)
     }
     

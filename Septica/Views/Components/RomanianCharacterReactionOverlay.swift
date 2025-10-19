@@ -119,37 +119,31 @@ struct RomanianCharacterReactionOverlay: View {
     
     private var characterGradient: LinearGradient {
         switch character {
-        case .oldWiseMan:
+        case .pacala, .fatFrumos:
             return LinearGradient(
                 colors: [RomanianColors.primaryBlue, RomanianColors.primaryBlue.opacity(0.8)],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
-        case .playfulGirl:
+        case .iele:
             return LinearGradient(
                 colors: [RomanianColors.primaryRed, RomanianColors.primaryRed.opacity(0.8)],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
-        case .mountainShepherd:
+        case .strigoi:
             return LinearGradient(
                 colors: [RomanianColors.countrysideGreen, RomanianColors.countrysideGreen.opacity(0.8)],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
-        case .villageTeacher:
+        case .babaCloantza:
             return LinearGradient(
                 colors: [RomanianColors.primaryYellow, RomanianColors.goldAccent],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
-        case .folkDancer:
-            return LinearGradient(
-                colors: [RomanianColors.embroideryRed, RomanianColors.embroideryRed.opacity(0.8)],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-        case .cardMaster:
+        case .zmeu:
             return LinearGradient(
                 colors: [RomanianColors.goldAccent, RomanianColors.primaryYellow],
                 startPoint: .topLeading,
@@ -160,17 +154,17 @@ struct RomanianCharacterReactionOverlay: View {
     
     private var characterIcon: String {
         switch character {
-        case .oldWiseMan:
+        case .pacala:
             return "figure.2.and.child.holdinghands"
-        case .playfulGirl:
+        case .iele:
             return "figure.child"
-        case .mountainShepherd:
+        case .strigoi:
             return "mountain.2"
-        case .villageTeacher:
+        case .babaCloantza:
             return "book.fill"
-        case .folkDancer:
+        case .fatFrumos:
             return "figure.dance"
-        case .cardMaster:
+        case .zmeu:
             return "suit.spade.fill"
         }
     }
@@ -277,31 +271,31 @@ class CharacterReactionManager: ObservableObject {
         
         switch gameEvent {
         case .firstSevenPlayed:
-            character = .cardMaster
+            character = .zmeu
             reaction = .wisdom
             phrase = "Șapte învinge tot! Această carte este specială în jocul nostru tradițional."
             translation = "Seven beats all! This card is special in our traditional game."
             
         case .eightPlayedAtRightTime:
-            character = .villageTeacher
+            character = .babaCloantza
             reaction = .goodMove
             phrase = "Perfect! Opt învinge când avem trei cărți pe masă!"
             translation = "Perfect! Eight wins when we have three cards on the table!"
             
         case .pointCardCaptured:
-            character = .oldWiseMan
+            character = .pacala
             reaction = .encouragement
             phrase = "Bine ai prins cartea cu puncte! Așa se adună victoria!"
             translation = "Good job catching the point card! That's how victory is built!"
             
         case .strategicThinking:
-            character = .mountainShepherd
+            character = .strigoi
             reaction = .thinking
             phrase = "Gândește-te bine... Ciobanul nu se grăbește niciodată."
             translation = "Think carefully... The shepherd never rushes."
             
         case .gameWon:
-            character = .folkDancer
+            character = .iele
             reaction = .celebration
             phrase = "Sărbătorim! Ai învins cu înțelepciune românească!"
             translation = "Let's celebrate! You won with Romanian wisdom!"

@@ -731,9 +731,11 @@ extension View {
 
 struct AvatarWithEmotesView_Previews: PreviewProvider {
     static var previews: some View {
-        let player = Player(name: "Păcală")
-        player.romanianAvatar = RomanianAvatar(characterType: .pacala)
+        let player = Player(name: "Păcală", romanianAvatar: .traditionalPlayer)
         player.playerLevel = 3
+
+        let aiPlayer = Player(name: "Iele", romanianAvatar: .villageElder)
+        aiPlayer.playerLevel = 1
 
         return VStack(spacing: 30) {
             AvatarWithEmotesView(
@@ -741,10 +743,6 @@ struct AvatarWithEmotesView_Previews: PreviewProvider {
                 playerType: .human,
                 isCurrentPlayer: true
             )
-
-            let aiPlayer = Player(name: "Iele")
-            aiPlayer.romanianAvatar = RomanianAvatar(characterType: .iele)
-            aiPlayer.playerLevel = 1
 
             AvatarWithEmotesView(
                 player: aiPlayer,
