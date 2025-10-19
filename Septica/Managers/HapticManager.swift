@@ -14,9 +14,13 @@ import Combine
 /// Centralized haptic feedback management for the entire application
 @MainActor
 class HapticManager: ObservableObject {
-    
+
+    // MARK: - Singleton
+
+    static let shared = HapticManager()
+
     // MARK: - Properties
-    
+
     private let lightImpactGenerator = UIImpactFeedbackGenerator(style: .light)
     private let mediumImpactGenerator = UIImpactFeedbackGenerator(style: .medium)
     private let heavyImpactGenerator = UIImpactFeedbackGenerator(style: .heavy)

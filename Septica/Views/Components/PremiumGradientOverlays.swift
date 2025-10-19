@@ -20,7 +20,7 @@ struct PremiumGradientOverlays {
         let animationState: OverlayAnimationState
         let isInteractive: Bool
 
-        @State private var gradientOffset: CGPoint = .zero
+        @State private var gradientOffset: UnitPoint = .zero
         @State private var pulseOpacity: Double = 1.0
         @State private var rotationAngle: Double = 0.0
 
@@ -60,7 +60,7 @@ struct PremiumGradientOverlays {
             LinearGradient(
                 colors: culturalTheme.baseGradient,
                 startPoint: gradientOffset,
-                endPoint: CGPoint(x: gradientOffset.x + 1, y: gradientOffset.y + 1)
+                endPoint: UnitPoint(x: gradientOffset.x + 1, y: gradientOffset.y + 1)
             )
             .opacity(pulseOpacity)
             .animation(.easeInOut(duration: 4.0).repeatForever(autoreverses: true), value: pulseOpacity)
