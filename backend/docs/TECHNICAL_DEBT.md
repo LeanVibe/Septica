@@ -1,7 +1,7 @@
 # Technical Debt Tracking
 
-**Last Updated**: October 18, 2025
-**Status**: Phase 3 Complete - 3 Critical Issues Resolved + Test Infrastructure Improvements
+**Last Updated**: October 20, 2025
+**Status**: Phase 3 Complete - All Critical Issues Resolved + GORM Fix + Test Infrastructure Analysis
 
 ---
 
@@ -303,9 +303,9 @@ Comprehensive load testing (1000+ users, soak tests, stress tests) should be con
 - **Critical Issues**: 0 (all resolved)
 - **High Priority Issues**: 0 (all resolved)
 - **Medium Priority Issues**: 1 (down from 2)
-- **Low Priority Issues**: 2 (optional enhancements)
-- **Total Open Issues**: 3 (1 medium + 2 low priority)
-- **Total Resolved Issues**: 6
+- **Low Priority Issues**: 3 (2 optional enhancements + 1 test infrastructure)
+- **Total Open Issues**: 4 (1 medium + 3 low priority)
+- **Total Resolved Issues**: 9 (6 from Phase 3 + 3 from Phase 4)
 
 ### Production Readiness
 - ✅ **Core Functionality**: All critical bugs resolved
@@ -376,8 +376,55 @@ System ready for production deployment. Remaining work is for extreme-scale opti
 - **Files**: `internal/ai/ai_matchmaking_manager.go`, `internal/ai/ai_websocket_client.go`, `internal/ai/client_test.go`, `internal/ai/matchmaking_manager_test.go`, `internal/matchmaking/service_integration_test.go`
 - **Status**: ✅ Resolved - All packages build successfully
 
+**3. GORM Bulk Update Error in Matchmaking**
+- **Issue**: Match creation and leave queue operations failing with "Table not set" GORM error
+- **Impact**: Transaction-based match creation failing, queue cleanup operations broken
+- **Root Cause**: Used `.Where().Update()` pattern without `.Model()`, GORM couldn't determine target table
+- **Resolution**: Changed to `.Model(&database.MatchmakingQueue{}).Where().Updates(map[string]interface{}{"is_active": false})`
+- **Files**: `internal/matchmaking/processor.go:191-197`, `internal/matchmaking/service.go:328-336`, `internal/matchmaking/gorm_fix_test.go` (new test file, 218 lines)
+- **Status**: ✅ Resolved - All GORM tests passing (6 test scenarios)
+- **Date**: October 20, 2025
+
 ---
 
-**Last Review**: October 18, 2025
+## Low Priority Issues (Test Infrastructure)
+
+### 🟡 Issue 10 - Hub Goroutine Cleanup in Tests
+**Priority**: LOW (Test Infrastructure)
+**Status**: 🟡 **IDENTIFIED** (October 20, 2025)
+**Phase**: Test Infrastructure Improvement
+
+**Description**: WebSocket Hub's `Run()` method has an infinite loop with no shutdown mechanism, causing test goroutines to leak. Tests show individual PASS but suite fails/hangs waiting for goroutines to exit.
+
+**Impact**:
+- Test suite hangs after all tests pass: Confusing developer experience
+- Race detector timeout: Makes race condition testing difficult
+- Goroutine leaks: One per test (not a production issue)
+- Production stability risk: NONE (production uses long-lived Hub)
+
+**Root Cause**:
+- `Hub.Run()` has `for { select { ... } }` with no exit channel
+- Test setup does `go hub.Run()` but cleanup never stops the goroutine
+- `internal/matchmaking/service_integration_test.go:44` starts Hub but line 50 cleanup only stops matchmaking service
+
+**Proposed Solution**:
+1. Add `shutdown chan struct{}` to Hub struct
+2. Modify `Run()` to check shutdown channel
+3. Add `Hub.Stop()` method that closes shutdown channel
+4. Update test cleanup: `hub.Stop()`
+
+**Workaround**: Tests pass individually when run with `-run` flag to isolate them. Full suite failure is cosmetic.
+
+**Estimated Effort**: 2-3 hours
+
+**Files Affected**:
+- `internal/websocket/hub.go:112-125` (Run method)
+- `internal/matchmaking/service_integration_test.go:44,50` (test cleanup)
+
+**Note**: This is purely a test infrastructure issue. Production uses long-lived Hub instances that never shutdown until server restart.
+
+---
+
+**Last Review**: October 20, 2025
 **Next Review**: After deployment monitoring
 **Maintained By**: Development Team
