@@ -189,8 +189,9 @@ func (s *MatchmakingService) createMatch(player1, player2 *QueueEntry, queueType
 		}
 
 		// Update database queue entries as matched (within transaction)
-		if err := tx.Where("player_id IN (?, ?) AND is_active = true", player1.PlayerID, player2.PlayerID).
-			Update("is_active", false).Error; err != nil {
+		if err := tx.Model(&database.MatchmakingQueue{}).
+			Where("player_id IN (?, ?) AND is_active = true", player1.PlayerID, player2.PlayerID).
+			Updates(map[string]interface{}{"is_active": false}).Error; err != nil {
 			s.logger.Error("Failed to update queue entries", "error", err)
 			return err // Transaction will rollback
 		}

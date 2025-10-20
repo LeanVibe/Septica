@@ -328,8 +328,9 @@ func (s *MatchmakingService) LeaveQueue(playerID uuid.UUID) error {
 	// Remove from database - need to get Player.ID for the UserID
 	var player database.Player
 	if err := s.db.Where("user_id = ?", playerID).First(&player).Error; err == nil {
-		if err := s.db.Where("player_id = ? AND is_active = true", player.ID).
-			Update("is_active", false).Error; err != nil {
+		if err := s.db.Model(&database.MatchmakingQueue{}).
+			Where("player_id = ? AND is_active = true", player.ID).
+			Updates(map[string]interface{}{"is_active": false}).Error; err != nil {
 			s.logger.Error("Failed to update queue entry in database", "error", err, "player_id", player.ID)
 		}
 	}
