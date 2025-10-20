@@ -477,7 +477,8 @@ func (s *MatchmakingService) createAuthenticPlayerView(gameState *game.Authentic
 	}
 
 	return map[string]interface{}{
-		"game_id":               gameState.ID,
+		"id":                    gameState.ID,
+		"players":               gameState.Players,
 		"current_player_id":     gameState.CurrentPlayerID,
 		"your_turn":             gameState.CurrentPlayerID == playerID,
 		"your_cards":            playerHand,
@@ -485,6 +486,8 @@ func (s *MatchmakingService) createAuthenticPlayerView(gameState *game.Authentic
 		"table_cards":           gameState.TableCards,
 		"valid_moves":           validMoves,
 		"scores":                scores,
+		"player_hands":          gameState.PlayerHands,
+		"player_scores":         gameState.PlayerScores,
 		"round_number":          gameState.RoundNumber,
 		"move_number":           gameState.MoveNumber,
 		"sequence_number":       gameState.SequenceNumber,

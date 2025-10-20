@@ -355,8 +355,17 @@ func (m *AIMatchmakingManager) CreateAIPlayerRecord(ai *AIPlayer) error {
 	var existingPlayer database.Player
 	err = m.db.Where("user_id = ?", user.ID).First(&existingPlayer).Error
 	if err == nil {
-		// Player already exists
-		m.logger.Debug("AI player already exists, skipping player creation", "ai_id", ai.ID, "user_id", user.ID)
+		// Player exists - update rating from AI config
+		playerInfo := ai.GetPlayerInfo()
+		err = m.db.Model(&existingPlayer).Updates(map[string]interface{}{
+			"rating":   playerInfo.Rating,
+			"username": playerInfo.Username,
+		}).Error
+		if err != nil {
+			metrics.AIDeploymentFailures.WithLabelValues("database_error").Inc()
+			return fmt.Errorf("failed to update AI player rating: %w", err)
+		}
+		m.logger.Debug("AI player rating updated", "ai_id", ai.ID, "user_id", user.ID, "rating", playerInfo.Rating)
 		return nil
 	}
 
@@ -369,7 +378,7 @@ func (m *AIMatchmakingManager) CreateAIPlayerRecord(ai *AIPlayer) error {
 		return fmt.Errorf("failed to create AI player: %w", err)
 	}
 
-	m.logger.Debug("AI player created successfully", "ai_id", ai.ID, "player_id", player.ID, "user_id", user.ID)
+	m.logger.Debug("AI player created successfully", "ai_id", ai.ID, "player_id", player.ID, "user_id", user.ID, "rating", player.Rating)
 	return nil
 }
 
