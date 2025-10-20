@@ -3,6 +3,7 @@ package game
 import (
 	"errors"
 	"math/rand"
+	"sync"
 	"time"
 
 	"septica-backend/internal/metrics"
@@ -101,6 +102,7 @@ type MoveResult struct {
 // Engine manages game logic and state
 type Engine struct {
 	games map[uuid.UUID]*GameState
+	mu    sync.RWMutex
 }
 
 // NewEngine creates a new game engine
@@ -146,7 +148,9 @@ func (e *Engine) CreateGame(player1ID, player2ID uuid.UUID) *GameState {
 	now := time.Now()
 	game.StartedAt = &now
 
+	e.mu.Lock()
 	e.games[gameID] = game
+	e.mu.Unlock()
 
 	// Update game metrics
 	metrics.ConcurrentGames.Inc()
@@ -157,7 +161,10 @@ func (e *Engine) CreateGame(player1ID, player2ID uuid.UUID) *GameState {
 
 // GetGame retrieves a game by ID
 func (e *Engine) GetGame(gameID uuid.UUID) (*GameState, error) {
+	e.mu.RLock()
 	game, exists := e.games[gameID]
+	e.mu.RUnlock()
+
 	if !exists {
 		return nil, ErrGameNotFound
 	}

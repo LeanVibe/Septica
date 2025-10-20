@@ -109,7 +109,6 @@ type AuthenticEngine struct {
 	config *AuthenticEngineConfig
 	db     *gorm.DB
 	logger *logger.Logger
-	randGen *rand.Rand
 	mu     sync.RWMutex
 }
 
@@ -125,7 +124,6 @@ func NewAuthenticEngine() *AuthenticEngine {
 		},
 		db:     nil,
 		logger: nil,
-		randGen: rand.New(rand.NewSource(time.Now().UnixNano())),
 	}
 }
 
@@ -141,7 +139,6 @@ func NewAuthenticEngineWithDB(db *gorm.DB, logger *logger.Logger) *AuthenticEngi
 		},
 		db:     db,
 		logger: logger,
-		randGen: rand.New(rand.NewSource(time.Now().UnixNano())),
 	}
 }
 
@@ -159,7 +156,9 @@ func (e *AuthenticEngine) CreateGame(playerIDs []uuid.UUID, gameMode AuthenticGa
 	gameID := uuid.New()
 
 	// Create authentic deck based on player count
-	deck := createAuthenticDeck(gameMode, e.randGen)
+	// Use a fresh random generator for thread safety
+	deckRand := rand.New(rand.NewSource(time.Now().UnixNano() + int64(gameID[0])))
+	deck := createAuthenticDeck(gameMode, deckRand)
 
 	// Deal 4 cards to each player
 	playerHands, remainingDeck := dealAuthenticCards(deck, playerIDs)
