@@ -337,7 +337,10 @@ func TestAuthenticEngine_EdgeCaseScenarios(t *testing.T) {
 func TestAuthenticEngine_ConcurrentGameCreation(t *testing.T) {
 	engine := NewAuthenticEngine()
 	numGames := 100
-	done := make(chan bool, numGames)
+	type result struct {
+		err error
+	}
+	results := make(chan result, numGames)
 
 	// Create multiple games concurrently
 	for i := 0; i < numGames; i++ {
@@ -347,14 +350,14 @@ func TestAuthenticEngine_ConcurrentGameCreation(t *testing.T) {
 			playerIDs := []uuid.UUID{player1ID, player2ID}
 
 			_, err := engine.CreateGame(playerIDs, ModeTwoPlayer)
-			assert.NoError(t, err)
-			done <- true
+			results <- result{err: err}
 		}()
 	}
 
-	// Wait for all games to be created
+	// Wait for all games to be created and check errors
 	for i := 0; i < numGames; i++ {
-		<-done
+		res := <-results
+		assert.NoError(t, res.err)
 	}
 
 	// Verify all games were created

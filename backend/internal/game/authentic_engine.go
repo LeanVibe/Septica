@@ -3,6 +3,7 @@ package game
 import (
 	"errors"
 	"math/rand"
+	"sync"
 	"time"
 
 	"septica-backend/internal/database"
@@ -108,6 +109,8 @@ type AuthenticEngine struct {
 	config *AuthenticEngineConfig
 	db     *gorm.DB
 	logger *logger.Logger
+	randGen *rand.Rand
+	mu     sync.RWMutex
 }
 
 // NewAuthenticEngine creates a new authentic game engine
@@ -122,6 +125,7 @@ func NewAuthenticEngine() *AuthenticEngine {
 		},
 		db:     nil,
 		logger: nil,
+		randGen: rand.New(rand.NewSource(time.Now().UnixNano())),
 	}
 }
 
@@ -137,6 +141,7 @@ func NewAuthenticEngineWithDB(db *gorm.DB, logger *logger.Logger) *AuthenticEngi
 		},
 		db:     db,
 		logger: logger,
+		randGen: rand.New(rand.NewSource(time.Now().UnixNano())),
 	}
 }
 
@@ -154,7 +159,7 @@ func (e *AuthenticEngine) CreateGame(playerIDs []uuid.UUID, gameMode AuthenticGa
 	gameID := uuid.New()
 
 	// Create authentic deck based on player count
-	deck := createAuthenticDeck(gameMode)
+	deck := createAuthenticDeck(gameMode, e.randGen)
 
 	// Deal 4 cards to each player
 	playerHands, remainingDeck := dealAuthenticCards(deck, playerIDs)
@@ -212,13 +217,19 @@ func (e *AuthenticEngine) CreateGame(playerIDs []uuid.UUID, gameMode AuthenticGa
 	now := time.Now()
 	game.StartedAt = &now
 
+	e.mu.Lock()
 	e.games[gameID] = game
+	e.mu.Unlock()
+
 	return game, nil
 }
 
 // GetGame retrieves an authentic game by ID
 func (e *AuthenticEngine) GetGame(gameID uuid.UUID) (*AuthenticGameState, error) {
+	e.mu.RLock()
 	game, exists := e.games[gameID]
+	e.mu.RUnlock()
+
 	if !exists {
 		return nil, ErrGameNotFound
 	}
@@ -488,7 +499,7 @@ func validateGameModeAndPlayers(gameMode AuthenticGameMode, playerCount int) err
 	return nil
 }
 
-func createAuthenticDeck(gameMode AuthenticGameMode) []Card {
+func createAuthenticDeck(gameMode AuthenticGameMode, randGen *rand.Rand) []Card {
 	suits := []string{"hearts", "diamonds", "clubs", "spades"}
 	values := []int{7, 8, 9, 10, 11, 12, 13, 14} // J=11, Q=12, K=13, A=14
 
@@ -519,10 +530,9 @@ func createAuthenticDeck(gameMode AuthenticGameMode) []Card {
 		deck = filteredDeck
 	}
 
-	// Shuffle deck
-	rand.Seed(time.Now().UnixNano())
+	// Shuffle deck using engine's random generator
 	for i := len(deck) - 1; i > 0; i-- {
-		j := rand.Intn(i + 1)
+		j := randGen.Intn(i + 1)
 		deck[i], deck[j] = deck[j], deck[i]
 	}
 
