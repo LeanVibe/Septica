@@ -451,28 +451,36 @@ struct MultiplayerReadyGameScreen: View {
             // Player hand
             Group {
                 if let humanPlayer = players.first {
-                    AdaptivePlayerHandView(
-                        player: humanPlayer,
-                        selectedCard: selectedCard,
-                        validMoves: gameState.validMoves,
-                        onCardSelected: { card in
-                            // Coordinate card selection animation
-                            animationCoordinator.coordinateCardSelection(
-                                cardId: card.id,
-                                characterType: (humanPlayer.romanianAvatar ?? .traditionalPlayer).characterType
-                            ) {
-                                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                    selectedCard = card
+                    ZStack {
+                        AdaptivePlayerHandView(
+                            player: humanPlayer,
+                            selectedCard: selectedCard,
+                            validMoves: gameState.validMoves,
+                            onCardSelected: { card in
+                                // Coordinate card selection animation
+                                animationCoordinator.coordinateCardSelection(
+                                    cardId: card.id,
+                                    characterType: (humanPlayer.romanianAvatar ?? .traditionalPlayer).characterType
+                                ) {
+                                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                        selectedCard = card
+                                    }
                                 }
-                            }
-                        },
-                        onCardPlayed: { card in
-                            playCard(card)
-                        },
-                        isCurrentPlayer: gameState.isPlayerTurn,
-                        isInteractionEnabled: gameState.isPlayerTurn,
-                        playerType: .human
-                    )
+                            },
+                            onCardPlayed: { card in
+                                playCard(card)
+                            },
+                            isCurrentPlayer: gameState.isPlayerTurn,
+                            isInteractionEnabled: gameState.isPlayerTurn,
+                            playerType: .human
+                        )
+
+                        // Emote overlay for current player
+                        if let coordinator = emoteCoordinator {
+                            AnyView(coordinator.emoteOverlay(for: humanPlayer.id))
+                                .offset(y: -80)
+                        }
+                    }
                     .padding(.horizontal, 16)
                 }
             }

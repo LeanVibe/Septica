@@ -24,6 +24,7 @@ class GameEmoteCoordinator: NSObject, ObservableObject, EmoteManagerDelegate {
 
     private var emoteManager: EmoteManager
     private var players: [Player] = []
+    private let soundManager = SoundManager.shared
 
     // MARK: - Emote Display State
 
@@ -174,8 +175,8 @@ class GameEmoteCoordinator: NSObject, ObservableObject, EmoteManagerDelegate {
     // MARK: - Private Methods
 
     private func playEmoteSound(_ emoteType: EmoteType, for characterType: RomanianCharacterType) {
-        // Sound playback will be implemented when SoundManager is available
-        _ = getSoundName(for: emoteType, characterType: characterType)
+        // Play sound with haptic feedback
+        soundManager.playEmoteSound(for: emoteType, withHaptics: true)
     }
 
     private func getSoundName(for emoteType: EmoteType, characterType: RomanianCharacterType) -> String {
