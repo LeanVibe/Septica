@@ -47,6 +47,9 @@ type Hub struct {
 	// Unregister requests from clients
 	unregister chan *Client
 
+	// Shutdown signal for graceful shutdown
+	shutdown chan struct{}
+
 	// Game engines for validating moves
 	gameEngine      *game.Engine
 	authenticEngine *game.AuthenticEngine
@@ -99,6 +102,7 @@ func NewHub(gameEngine *game.Engine, authenticEngine *game.AuthenticEngine, db *
 		broadcast:       make(chan []byte),
 		register:        make(chan *Client),
 		unregister:      make(chan *Client),
+		shutdown:        make(chan struct{}),
 		gameEngine:      gameEngine,
 		authenticEngine: authenticEngine,
 		sessionStore:    sessionStore,
@@ -120,8 +124,17 @@ func (h *Hub) Run() {
 
 		case message := <-h.broadcast:
 			h.handleBroadcast(message)
+
+		case <-h.shutdown:
+			h.logger.Info("Hub shutting down gracefully")
+			return
 		}
 	}
+}
+
+// Stop gracefully shuts down the hub
+func (h *Hub) Stop() {
+	close(h.shutdown)
 }
 
 // handleRegister processes new client registrations

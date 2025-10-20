@@ -48,6 +48,7 @@ func setupMatchmakingTestEnvironment(t *testing.T) (*gorm.DB, *websocket.Hub, *M
 
 	cleanup := func() {
 		matchmakingService.Stop()
+		hub.Stop()
 	}
 
 	return db, hub, matchmakingService, testLogger, cleanup
