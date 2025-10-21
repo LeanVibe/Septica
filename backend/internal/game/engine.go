@@ -86,6 +86,9 @@ type GameState struct {
 
 	// Multiplayer sync
 	SequenceNumber int `json:"sequence_number"`
+
+	// Concurrency protection
+	mu sync.Mutex `json:"-"`
 }
 
 // MoveResult represents the result of a move
@@ -178,6 +181,10 @@ func (e *Engine) PlayCard(gameID uuid.UUID, playerID uuid.UUID, card Card) (*Mov
 		return nil, err
 	}
 
+	// Lock game state for the entire operation
+	game.mu.Lock()
+	defer game.mu.Unlock()
+
 	// Validate game is active
 	if game.Status != "in_progress" {
 		metrics.GameErrors.WithLabelValues("game_not_active").Inc()
@@ -201,7 +208,7 @@ func (e *Engine) PlayCard(gameID uuid.UUID, playerID uuid.UUID, card Card) (*Mov
 	// Validate card is in player's hand
 	cardIndex := -1
 	for i, handCard := range *playerHand {
-		if handCard.Suit == card.Suit && handCard.Value == card.Value {
+		if handCard.ID == card.ID && handCard.Suit == card.Suit && handCard.Value == card.Value {
 			cardIndex = i
 			break
 		}
@@ -314,10 +321,10 @@ func createAndShuffleDeck() []Card {
 		}
 	}
 
-	// Shuffle deck
-	rand.Seed(time.Now().UnixNano())
+	// Shuffle deck using a fresh random generator for thread safety
+	rng := rand.New(rand.NewSource(time.Now().UnixNano()))
 	for i := len(deck) - 1; i > 0; i-- {
-		j := rand.Intn(i + 1)
+		j := rng.Intn(i + 1)
 		deck[i], deck[j] = deck[j], deck[i]
 	}
 
