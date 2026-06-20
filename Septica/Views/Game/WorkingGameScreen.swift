@@ -24,6 +24,16 @@ struct WorkingGameScreen: View {
 
     // Navigation manager for proper menu navigation
     @EnvironmentObject private var navigationManager: SimpleNavigationManager
+
+    private var isUITesting: Bool {
+        ProcessInfo.processInfo.environment["UI_TESTING"] == "1" ||
+            ProcessInfo.processInfo.arguments.contains("UI_TESTING") ||
+            ProcessInfo.processInfo.arguments.contains("--uitesting")
+    }
+
+    private var uiTestPlayableCard: Card? {
+        gameViewModel.validMoves.first ?? gameViewModel.humanPlayer?.hand.first
+    }
     
     init(gameState: GameState) {
         self._gameViewModel = StateObject(wrappedValue: GameViewModel(gameState: gameState))
@@ -32,6 +42,12 @@ struct WorkingGameScreen: View {
     var body: some View {
         GeometryReader { geometry in
             ZStack {
+                Text("Game board ready")
+                    .font(.caption2)
+                    .foregroundColor(.clear)
+                    .frame(width: 1, height: 1)
+                    .accessibilityIdentifier("game-board")
+
                 // Switch between layouts based on game mode
                 switch gameViewModel.gameState.gameMode {
                 case .twoPlayers:
@@ -82,6 +98,30 @@ struct WorkingGameScreen: View {
                 // Game menu overlay
                 if showingGameMenu {
                     gameMenuOverlay
+                }
+
+                if isUITesting,
+                   let firstPlayableCard = uiTestPlayableCard {
+                    VStack {
+                        HStack {
+                            Button("UITest Select First Card") {
+                                selectedCard = firstPlayableCard
+                            }
+                            .font(.caption2.weight(.semibold))
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 6)
+                            .background(RomanianColors.goldAccent)
+                            .foregroundColor(.black)
+                            .clipShape(RoundedRectangle(cornerRadius: 6))
+                            .accessibilityIdentifier("player-card-0")
+                            .padding(.top, 56)
+                            .padding(.leading, 12)
+
+                            Spacer()
+                        }
+                        Spacer()
+                    }
+                    .zIndex(200)
                 }
             }
         }
@@ -429,6 +469,7 @@ struct WorkingGameScreen: View {
             }
             .frame(width: 380, height: 150) // Adjusted for proper compact card height (126) + fanning space
         }
+        .accessibilityIdentifier("table-cards")
     }
 
     // MARK: - Player Hand Area
@@ -515,6 +556,7 @@ struct WorkingGameScreen: View {
                 .frame(height: 180) // Increased to accommodate proper card height (154) + fanning space
             }
         }
+        .accessibilityIdentifier("player-hand")
     }
     
     // MARK: - Game Action Controls
@@ -571,6 +613,7 @@ struct WorkingGameScreen: View {
                         enhancementLevel: .high,
                         enabled: true
                     )
+                    .accessibilityIdentifier("play-selected-card")
                     .disabled(selectedCard == nil || gameViewModel.gameState.waitingForObjection)
 
                     // Pass/Objection button
@@ -1059,28 +1102,37 @@ struct FannedCardHandView: View {
                     let horizontalOffset = CGFloat(Double(index) - centerIndex) * spacing
                     let liftOffset: CGFloat = isSelected ? -28 : verticalOffset
                     
-                    CardView(
-                        card: card,
-                        isSelected: isSelected,
-                        isPlayable: isPlayable,
-                        isAnimating: false,
-                        cardSize: .normal,
-                        onTap: { onCardTapped(card) },
-                        onDragChanged: nil,
-                        onDragEnded: nil
-                    )
-                    .shuffleCatsQuality(
-                        card: card,
-                        isSelected: isSelected,
-                        enhancementLevel: .high,
-                        preserveCultural: true
-                    )
-                    .shuffleCatsQuality(
-                        card: card,
-                        isSelected: isSelected,
-                        enhancementLevel: .high,
-                        preserveCultural: true
-                    )
+                    ZStack {
+                        CardView(
+                            card: card,
+                            isSelected: isSelected,
+                            isPlayable: isPlayable,
+                            isAnimating: false,
+                            cardSize: .normal,
+                            onTap: { onCardTapped(card) },
+                            onDragChanged: nil,
+                            onDragEnded: nil
+                        )
+                        .shuffleCatsQuality(
+                            card: card,
+                            isSelected: isSelected,
+                            enhancementLevel: .high,
+                            preserveCultural: true
+                        )
+
+                        if ProcessInfo.processInfo.environment["UI_TESTING"] == "1" ||
+                            ProcessInfo.processInfo.arguments.contains("UI_TESTING") {
+                            Button(action: { onCardTapped(card) }) {
+                                Rectangle()
+                                    .fill(Color.clear)
+                                    .frame(width: CardSize.normal.width, height: CardSize.normal.height)
+                                    .contentShape(Rectangle())
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityLabel("Player card \(index + 1)")
+                            .accessibilityIdentifier("player-card-\(index)")
+                        }
+                    }
                     .rotationEffect(.degrees(fanAngle))
                     .offset(x: horizontalOffset, y: liftOffset)
                     .scaleEffect(isSelected ? 1.1 : 1.0)

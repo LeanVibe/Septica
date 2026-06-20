@@ -145,6 +145,9 @@ struct GameSetupView: View {
                     .foregroundColor(.white)
                     .clipShape(RoundedRectangle(cornerRadius: 12))
                     .shadow(radius: 8)
+                    .accessibilityElement(children: .combine)
+                    .accessibilityIdentifier("game-setup-start-local-game")
+                    .accessibilityAddTraits(.isButton)
                 }
                 .padding(.horizontal)
 

@@ -47,6 +47,9 @@ struct MainMenuView: View {
                                 icon: "play.fill",
                                 gradient: [Color.blue, Color.purple]
                             )
+                            .accessibilityElement(children: .combine)
+                            .accessibilityIdentifier("main-menu-start-game")
+                            .accessibilityAddTraits(.isButton)
                         }
 
                         NavigationLink(destination: RulesView()) {
@@ -56,6 +59,9 @@ struct MainMenuView: View {
                                 icon: "book.fill",
                                 gradient: [Color.orange, Color.red]
                             )
+                            .accessibilityElement(children: .combine)
+                            .accessibilityIdentifier("main-menu-rules")
+                            .accessibilityAddTraits(.isButton)
                         }
 
                         NavigationLink(destination: SettingsView()) {
@@ -65,6 +71,9 @@ struct MainMenuView: View {
                                 icon: "gearshape.fill",
                                 gradient: [Color.green, Color.teal]
                             )
+                            .accessibilityElement(children: .combine)
+                            .accessibilityIdentifier("main-menu-settings")
+                            .accessibilityAddTraits(.isButton)
                         }
                     }
                     .padding(.horizontal)
